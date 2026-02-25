@@ -66,7 +66,7 @@
 
   <div class="max-w-7xl mx-auto px-4 py-8">
     <!-- Stats cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
       <div class="bg-white rounded-xl shadow p-4">
         <div class="text-gray-500 text-sm">News Items</div>
         <div id="stat-news" class="text-3xl font-bold text-primary mt-1">-</div>
@@ -83,6 +83,10 @@
         <div class="text-gray-500 text-sm">Research Areas</div>
         <div id="stat-research" class="text-3xl font-bold text-primary mt-1">-</div>
       </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">Sponsors</div>
+        <div id="stat-sponsors" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -92,6 +96,7 @@
         <button onclick="switchTab('publications')" id="tab-publications" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128218; Publications</button>
         <button onclick="switchTab('people')" id="tab-people" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128101; People</button>
         <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
+        <button onclick="switchTab('sponsors')" id="tab-sponsors" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127970; Sponsors</button>
       </div>
       
       <!-- NEWS TAB -->
@@ -129,7 +134,15 @@
         </div>
         <div id="research-table" class="space-y-2"></div>
       </div>
-    </div>
+      
+      <!-- SPONSORS TAB -->
+      <div id="content-sponsors" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-primary">Sponsors &amp; Partners</h2>
+          <button onclick="openModal('sponsor')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Sponsor</button>
+        </div>
+        <div id="sponsors-table" class="space-y-2"></div>
+      </div>
   </div>
 </div>
 
@@ -165,12 +178,14 @@ let currentTab = 'news';
 let editingId = null;
 let editingType = null;
 let deleteCallback = null;
+let csrfToken = '';
 
 // Auth
 async function checkAuth() {
   const r = await fetch('/admin/check');
   const data = await r.json();
   if (data.loggedIn) {
+    csrfToken = data.csrfToken || '';
     showDashboard(data.username);
   } else {
     document.getElementById('login-screen').classList.remove('hidden');
@@ -184,6 +199,7 @@ async function doLogin(e) {
   const r = await fetch('/admin/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username, password}) });
   if (r.ok) {
     const data = await r.json();
+    csrfToken = data.csrfToken || '';
     showDashboard(data.username);
   } else {
     document.getElementById('login-error').classList.remove('hidden');
@@ -191,7 +207,7 @@ async function doLogin(e) {
 }
 
 async function doLogout() {
-  await fetch('/admin/logout', { method: 'POST' });
+  await fetch('/admin/logout', { method: 'POST', headers: {'x-csrf-token': csrfToken} });
   location.reload();
 }
 
@@ -206,7 +222,7 @@ function showDashboard(username) {
 // Tabs
 function switchTab(tab) {
   currentTab = tab;
-  ['news','publications','people','research'].forEach(t => {
+  ['news','publications','people','research','sponsors'].forEach(t => {
     document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
     const content = document.getElementById('content-' + t);
     if (content) content.classList.toggle('hidden', t !== tab);
@@ -216,16 +232,18 @@ function switchTab(tab) {
 // Stats
 async function loadStats() {
   try {
-    const [news, pubs, people, research] = await Promise.all([
+    const [news, pubs, people, research, sponsors] = await Promise.all([
       fetch('/api/news').then(r => r.json()),
       fetch('/api/publications').then(r => r.json()),
       fetch('/api/people').then(r => r.json()),
       fetch('/api/research').then(r => r.json()),
+      fetch('/api/sponsors').then(r => r.json()),
     ]);
     document.getElementById('stat-news').textContent = news.length;
     document.getElementById('stat-pubs').textContent = pubs.length;
     document.getElementById('stat-people').textContent = people.length;
     document.getElementById('stat-research').textContent = research.length;
+    document.getElementById('stat-sponsors').textContent = sponsors.length;
   } catch(e) {}
 }
 
@@ -235,6 +253,7 @@ async function loadAllData() {
   loadPubData();
   loadPeopleData();
   loadResearchData();
+  loadSponsorsData();
 }
 
 async function loadNewsData() {
@@ -303,6 +322,26 @@ async function loadResearchData() {
       </div>
     </div>
   `).join('') : '<p class="text-gray-500 text-sm">No research areas yet.</p>';
+}
+
+async function loadSponsorsData() {
+  const items = await fetch('/api/sponsors').then(r => r.json());
+  const el = document.getElementById('sponsors-table');
+  el.innerHTML = items.length ? items.map(s => `
+    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
+      <div class="flex-1 min-w-0 flex items-center gap-3">
+        ${s.logo_url ? `<img src="${s.logo_url}" alt="${escHtml(s.name)}" class="h-8 object-contain flex-shrink-0">` : `<div class="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center bg-primary text-white text-xs font-bold">${s.name.charAt(0)}</div>`}
+        <div>
+          <div class="font-medium text-gray-800 text-sm">${escHtml(s.name)}</div>
+          <div class="text-gray-400 text-xs">${escHtml(s.website_url || '—')}</div>
+        </div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editItem('sponsor',${s.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
+        <button onclick="confirmDelete('sponsor',${s.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-gray-500 text-sm">No sponsors yet.</p>';
 }
 
 // Modal forms
@@ -398,13 +437,31 @@ function openModal(type, data) {
           <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
         </div>
       </form>`;
+  } else if (type === 'sponsor') {
+    title.textContent = editingId ? 'Edit Sponsor' : 'Add Sponsor';
+    body.innerHTML = `
+      <form onsubmit="saveItem(event,'sponsor')" class="space-y-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
+          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+          <input name="logo_url" value="${data && data.logo_url ? escHtml(data.logo_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. images/nsf-logo.png"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+          <input name="website_url" type="url" value="${data && data.website_url ? escHtml(data.website_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://..."></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
+        </div>
+      </form>`;
   }
   
   modal.classList.add('modal-open');
 }
 
 async function editItem(type, id) {
-  let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type;
+  const endpointMap = { news:'news', publication:'publications', person:'people', research:'research', sponsor:'sponsors' };
+  const endpoint = endpointMap[type] || type;
   const items = await fetch('/api/' + endpoint).then(r => r.json());
   const item = items.find(i => i.id === id);
   if (item) openModal(type, item);
@@ -429,11 +486,12 @@ async function saveItem(e, type) {
   else if (type === 'publication') endpoint = 'publications';
   else if (type === 'person') endpoint = 'people';
   else if (type === 'research') endpoint = 'research';
+  else if (type === 'sponsor') endpoint = 'sponsors';
   
   const method = editingId ? 'PUT' : 'POST';
   const url = '/api/' + endpoint + (editingId ? '/' + editingId : '');
   
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  const r = await fetch(url, { method, headers: {'Content-Type':'application/json', 'x-csrf-token': csrfToken}, body: JSON.stringify(data) });
   if (r.ok) {
     closeModal();
     loadAllData();
@@ -445,8 +503,8 @@ async function saveItem(e, type) {
 
 function confirmDelete(type, id) {
   deleteCallback = async () => {
-    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type;
-    await fetch('/api/' + endpoint + '/' + id, { method: 'DELETE' });
+    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type === 'sponsor' ? 'sponsors' : type;
+    await fetch('/api/' + endpoint + '/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
     closeDeleteModal();
     loadAllData();
     loadStats();

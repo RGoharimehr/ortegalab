@@ -2,6 +2,7 @@ const express = require('express');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
 
@@ -136,12 +137,15 @@ const sponsorCount = db.prepare('SELECT COUNT(*) as cnt FROM sponsors').get();
 if (sponsorCount.cnt === 0) {
   const sponsors = [
     { name: 'National Science Foundation', logo_url: 'images/sponnsf.gif', website_url: 'https://www.nsf.gov', sort_order: 1 },
-    { name: 'Villanova University', logo_url: 'images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 2 },
-    { name: 'E3S Center', logo_url: '', website_url: 'http://www1.villanova.edu/villanova/engineering/research/centers/ES2.html', sort_order: 3 },
-    { name: 'Intel Corporation', logo_url: '', website_url: 'https://www.intel.com', sort_order: 4 },
-    { name: 'IBM Research', logo_url: '', website_url: 'https://research.ibm.com', sort_order: 5 },
-    { name: 'Cisco Systems', logo_url: '', website_url: 'https://www.cisco.com', sort_order: 6 },
-    { name: 'Hewlett-Packard', logo_url: '', website_url: 'https://www.hp.com', sort_order: 7 },
+    { name: 'Intel Corporation', logo_url: 'images/sponintel.gif', website_url: 'https://www.intel.com', sort_order: 2 },
+    { name: 'AMD', logo_url: 'images/sponamd.gif', website_url: 'https://www.amd.com', sort_order: 3 },
+    { name: 'Cisco Systems', logo_url: 'images/sponcis.gif', website_url: 'https://www.cisco.com', sort_order: 4 },
+    { name: 'Honeywell', logo_url: 'images/sponhon.gif', website_url: 'https://www.honeywell.com', sort_order: 5 },
+    { name: 'Raytheon', logo_url: 'images/sponray.gif', website_url: 'https://www.rtx.com', sort_order: 6 },
+    { name: 'Texas Instruments', logo_url: 'images/sponti.gif', website_url: 'https://www.ti.com', sort_order: 7 },
+    { name: 'SRC', logo_url: 'images/sponsrc.gif', website_url: 'https://www.src.org', sort_order: 8 },
+    { name: 'Delphi Technologies', logo_url: 'images/sponde.gif', website_url: 'https://www.delphi.com', sort_order: 9 },
+    { name: 'Villanova University', logo_url: 'images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 10 },
   ];
   for (const s of sponsors) {
     db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(s.name, s.logo_url, s.website_url, s.sort_order);
@@ -155,11 +159,16 @@ app.use(session({
   secret: 'latfs-secret-key-2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 }
+  cookie: { maxAge: 24 * 60 * 60 * 1000, sameSite: 'strict' }
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 // Serve old static files for legacy URLs
 app.use(express.static(__dirname));
+
+// Rate limiters
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+const apiWriteLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
+const apiReadLimiter = rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false });
 
 // Auth middleware
 function requireAuth(req, res, next) {
@@ -170,14 +179,24 @@ function requireAuth(req, res, next) {
   }
 }
 
+// CSRF token middleware for mutating admin routes
+function requireCsrf(req, res, next) {
+  const token = req.headers['x-csrf-token'];
+  if (!token || token !== req.session.csrfToken) {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next();
+}
+
 // Admin auth routes
-app.post('/admin/login', (req, res) => {
+app.post('/admin/login', authLimiter, (req, res) => {
   const { username, password } = req.body;
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (user && bcrypt.compareSync(password, user.password)) {
     req.session.userId = user.id;
     req.session.username = user.username;
-    res.json({ success: true, username: user.username });
+    req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+    res.json({ success: true, username: user.username, csrfToken: req.session.csrfToken });
   } else {
     res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -190,62 +209,65 @@ app.post('/admin/logout', (req, res) => {
 
 app.get('/admin/check', (req, res) => {
   if (req.session && req.session.userId) {
-    res.json({ loggedIn: true, username: req.session.username });
+    if (!req.session.csrfToken) {
+      req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+    }
+    res.json({ loggedIn: true, username: req.session.username, csrfToken: req.session.csrfToken });
   } else {
     res.json({ loggedIn: false });
   }
 });
 
 // NEWS API
-app.get('/api/news', (req, res) => {
+app.get('/api/news', apiReadLimiter, (req, res) => {
   const news = db.prepare('SELECT * FROM news ORDER BY date DESC, id DESC').all();
   res.json(news);
 });
 
-app.post('/api/news', requireAuth, (req, res) => {
+app.post('/api/news', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, content, date } = req.body;
   if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO news (title, content, date) VALUES (?, ?, ?)').run(title, content, date);
   res.json({ id: result.lastInsertRowid, title, content, date });
 });
 
-app.put('/api/news/:id', requireAuth, (req, res) => {
+app.put('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, content, date } = req.body;
   db.prepare('UPDATE news SET title=?, content=?, date=? WHERE id=?').run(title, content, date, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/news/:id', requireAuth, (req, res) => {
+app.delete('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM news WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
 // PUBLICATIONS API
-app.get('/api/publications', (req, res) => {
+app.get('/api/publications', apiReadLimiter, (req, res) => {
   const pubs = db.prepare('SELECT * FROM publications ORDER BY year DESC, id DESC').all();
   res.json(pubs);
 });
 
-app.post('/api/publications', requireAuth, (req, res) => {
+app.post('/api/publications', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, authors, venue, year, pdf_url, citation_url } = req.body;
   if (!title || !authors || !venue || !year) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO publications (title, authors, venue, year, pdf_url, citation_url) VALUES (?, ?, ?, ?, ?, ?)').run(title, authors, venue, year, pdf_url || null, citation_url || null);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/publications/:id', requireAuth, (req, res) => {
+app.put('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, authors, venue, year, pdf_url, citation_url } = req.body;
   db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, citation_url=? WHERE id=?').run(title, authors, venue, year, pdf_url || null, citation_url || null, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/publications/:id', requireAuth, (req, res) => {
+app.delete('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM publications WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
 // PEOPLE API
-app.get('/api/people', (req, res) => {
+app.get('/api/people', apiReadLimiter, (req, res) => {
   const { category, active } = req.query;
   let sql = 'SELECT * FROM people WHERE 1=1';
   const params = [];
@@ -256,68 +278,68 @@ app.get('/api/people', (req, res) => {
   res.json(people);
 });
 
-app.post('/api/people', requireAuth, (req, res) => {
+app.post('/api/people', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { name, role, category, bio, photo_url, email, active } = req.body;
   if (!name || !role || !category) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO people (name, role, category, bio, photo_url, email, active) VALUES (?, ?, ?, ?, ?, ?, ?)').run(name, role, category, bio || '', photo_url || '', email || '', active !== false ? 1 : 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/people/:id', requireAuth, (req, res) => {
+app.put('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { name, role, category, bio, photo_url, email, active } = req.body;
   db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, email=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', email || '', active ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/people/:id', requireAuth, (req, res) => {
+app.delete('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM people WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
 // RESEARCH API
-app.get('/api/research', (req, res) => {
+app.get('/api/research', apiReadLimiter, (req, res) => {
   const areas = db.prepare('SELECT * FROM research ORDER BY sort_order, id').all();
   res.json(areas);
 });
 
-app.post('/api/research', requireAuth, (req, res) => {
+app.post('/api/research', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, description, image_url, sort_order } = req.body;
   if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO research (title, description, image_url, sort_order) VALUES (?, ?, ?, ?)').run(title, description, image_url || '', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/research/:id', requireAuth, (req, res) => {
+app.put('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, description, image_url, sort_order } = req.body;
   db.prepare('UPDATE research SET title=?, description=?, image_url=?, sort_order=? WHERE id=?').run(title, description, image_url || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/research/:id', requireAuth, (req, res) => {
+app.delete('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM research WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
 // SPONSORS API
-app.get('/api/sponsors', (req, res) => {
+app.get('/api/sponsors', apiReadLimiter, (req, res) => {
   const sponsors = db.prepare('SELECT * FROM sponsors ORDER BY sort_order, id').all();
   res.json(sponsors);
 });
 
-app.post('/api/sponsors', requireAuth, (req, res) => {
+app.post('/api/sponsors', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { name, logo_url, website_url, sort_order } = req.body;
   if (!name) return res.status(400).json({ error: 'Missing name' });
   const result = db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(name, logo_url || '', website_url || '', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/sponsors/:id', requireAuth, (req, res) => {
+app.put('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { name, logo_url, website_url, sort_order } = req.body;
   db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/sponsors/:id', requireAuth, (req, res) => {
+app.delete('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM sponsors WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
