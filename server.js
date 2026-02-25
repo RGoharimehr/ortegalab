@@ -58,6 +58,7 @@ db.exec(`
     venue TEXT NOT NULL,
     year INTEGER NOT NULL,
     pdf_url TEXT,
+    doi_url TEXT,
     citation_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -70,6 +71,8 @@ db.exec(`
     bio TEXT,
     photo_url TEXT,
     email TEXT,
+    linkedin_url TEXT DEFAULT '',
+    website_url TEXT DEFAULT '',
     active INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -78,7 +81,9 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
+    content TEXT DEFAULT '',
     image_url TEXT,
+    links TEXT DEFAULT '[]',
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -92,6 +97,13 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+// Migrations: add new columns to existing databases
+try { db.exec('ALTER TABLE research ADD COLUMN content TEXT DEFAULT ""'); } catch(e) {}
+try { db.exec('ALTER TABLE research ADD COLUMN links TEXT DEFAULT "[]"'); } catch(e) {}
+try { db.exec('ALTER TABLE publications ADD COLUMN doi_url TEXT'); } catch(e) {}
+try { db.exec('ALTER TABLE people ADD COLUMN linkedin_url TEXT DEFAULT ""'); } catch(e) {}
+try { db.exec('ALTER TABLE people ADD COLUMN website_url TEXT DEFAULT ""'); } catch(e) {}
 
 // Seed admin user
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
@@ -268,15 +280,15 @@ app.get('/api/publications', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/publications', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, authors, venue, year, pdf_url, citation_url } = req.body;
+  const { title, authors, venue, year, pdf_url, doi_url, citation_url } = req.body;
   if (!title || !authors || !venue || !year) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO publications (title, authors, venue, year, pdf_url, citation_url) VALUES (?, ?, ?, ?, ?, ?)').run(title, authors, venue, year, pdf_url || null, citation_url || null);
+  const result = db.prepare('INSERT INTO publications (title, authors, venue, year, pdf_url, doi_url, citation_url) VALUES (?, ?, ?, ?, ?, ?, ?)').run(title, authors, venue, year, pdf_url || null, doi_url || null, citation_url || null);
   res.json({ id: result.lastInsertRowid });
 });
 
 app.put('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, authors, venue, year, pdf_url, citation_url } = req.body;
-  db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, citation_url=? WHERE id=?').run(title, authors, venue, year, pdf_url || null, citation_url || null, req.params.id);
+  const { title, authors, venue, year, pdf_url, doi_url, citation_url } = req.body;
+  db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, doi_url=?, citation_url=? WHERE id=?').run(title, authors, venue, year, pdf_url || null, doi_url || null, citation_url || null, req.params.id);
   res.json({ success: true });
 });
 
@@ -298,15 +310,15 @@ app.get('/api/people', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/people', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { name, role, category, bio, photo_url, email, active } = req.body;
+  const { name, role, category, bio, photo_url, email, linkedin_url, website_url, active } = req.body;
   if (!name || !role || !category) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO people (name, role, category, bio, photo_url, email, active) VALUES (?, ?, ?, ?, ?, ?, ?)').run(name, role, category, bio || '', photo_url || '', email || '', active !== false ? 1 : 0);
+  const result = db.prepare('INSERT INTO people (name, role, category, bio, photo_url, email, linkedin_url, website_url, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(name, role, category, bio || '', photo_url || '', email || '', linkedin_url || '', website_url || '', active !== false ? 1 : 0);
   res.json({ id: result.lastInsertRowid });
 });
 
 app.put('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { name, role, category, bio, photo_url, email, active } = req.body;
-  db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, email=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', email || '', active ? 1 : 0, req.params.id);
+  const { name, role, category, bio, photo_url, email, linkedin_url, website_url, active } = req.body;
+  db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, email=?, linkedin_url=?, website_url=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', email || '', linkedin_url || '', website_url || '', active ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
@@ -322,15 +334,15 @@ app.get('/api/research', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/research', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, description, image_url, sort_order } = req.body;
+  const { title, description, content, image_url, links, sort_order } = req.body;
   if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO research (title, description, image_url, sort_order) VALUES (?, ?, ?, ?)').run(title, description, image_url || '', sort_order || 0);
+  const result = db.prepare('INSERT INTO research (title, description, content, image_url, links, sort_order) VALUES (?, ?, ?, ?, ?, ?)').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 
 app.put('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, description, image_url, sort_order } = req.body;
-  db.prepare('UPDATE research SET title=?, description=?, image_url=?, sort_order=? WHERE id=?').run(title, description, image_url || '', sort_order || 0, req.params.id);
+  const { title, description, content, image_url, links, sort_order } = req.body;
+  db.prepare('UPDATE research SET title=?, description=?, content=?, image_url=?, links=?, sort_order=? WHERE id=?').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 

@@ -1161,7 +1161,7 @@
     if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No research areas yet.</p>'; return; }
     _allResearch = items;
     el.innerHTML = items.slice(0, 6).map((r, i) => `
-      <div class="res-card" onclick="openResearchDetail(${r.id})">
+      <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openResearchDetail(${r.id})">
         <div class="res-icon">${RES_ICONS[i % 6]}</div>
         <div class="res-card-title">${escHtml(r.title)}</div>
         <div class="res-card-desc">${escHtml((r.description||'').slice(0,100))}${(r.description||'').length>100?'&#8230;':''}</div>
@@ -1277,7 +1277,7 @@
       _allResearch = data;
       if (!data.length) { el.innerHTML = '<p class="text-gray-400">No research areas yet.</p>'; return; }
       el.innerHTML = data.map((r, i) => `
-        <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openResearchDetail(${r.id})">
+        <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openResearchDetail(${r.id})">
           <div class="res-icon">${RES_ICONS[i % 6]}</div>
           <div class="res-card-title">${escHtml(r.title)}</div>
           <div class="res-card-desc">${escHtml(r.description||'')}</div>
@@ -1365,6 +1365,7 @@
     const slides = document.querySelectorAll('.slide');
     if (!slides.length) return;
     const dotsContainer = document.getElementById('slideDots');
+    const INTERVAL_MS = 5000;
     let slideIdx = 0;
     slides.forEach((_, i) => {
       const d = document.createElement('button');
@@ -1381,11 +1382,11 @@
       dotsContainer.children[slideIdx].classList.add('active');
     }
     window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
-    let timer = setInterval(() => goToSlide(slideIdx + 1), 5000);
+    let timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
     const ss = document.getElementById('slideshow');
     if (ss) {
-      ss.addEventListener('mouseenter', () => clearInterval(timer));
-      ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), 5000); });
+      ss.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; });
+      ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); });
     }
   })();
 </script>
