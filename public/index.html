@@ -462,7 +462,7 @@
       <span class="nav-link" id="nav-contact" onclick="showSection('contact')">Contact</span>
     </div>
     <!-- Mobile hamburger -->
-    <button class="md:hidden text-white text-xl px-2" onclick="toggleMobileMenu()" aria-label="Open menu">&#9776;</button>
+    <button id="mobileMenuBtn" class="md:hidden text-white text-xl px-2" onclick="toggleMobileMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">&#9776;</button>
   </div>
   <!-- Mobile menu -->
   <div id="mobileMenu" class="md:hidden px-4 pb-3 border-t" style="border-color:rgba(255,255,255,0.07)">
@@ -489,7 +489,7 @@
         Villanova University &middot; Mechanical Engineering
       </p>
       <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;max-width:620px">
-        Laboratory for Advanced<br>Thermal &amp; Fluid Systems
+        Laboratory for Advanced Thermal &amp; Fluid Systems
       </h1>
       <p style="font-size:1.1rem;color:rgba(255,255,255,0.7);line-height:1.6;max-width:540px;margin-bottom:2rem">
         Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
@@ -1028,7 +1028,10 @@
 
   function toggleMobileMenu() {
     const m = document.getElementById('mobileMenu');
-    m.classList.toggle('open');
+    const btn = document.getElementById('mobileMenuBtn');
+    const isOpen = m.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    btn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
   }
 
   // ── XSS prevention ───────────────────────────────────────────
