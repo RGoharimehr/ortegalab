@@ -68,6 +68,51 @@
       left: 0.75rem;
       right: 0.75rem;
     }
+    /* ── Slideshow ──────────────────────────────────────── */
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .slide.active { opacity: 1; }
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, rgba(30,58,95,0.6) 0%, rgba(0,0,0,0.1) 100%);
+    }
+    .slide-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.2s;
+    }
+    .slide-arrow:hover { background: rgba(255,255,255,0.3); }
+    .slide-arrow.prev { left: 12px; }
+    .slide-arrow.next { right: 12px; }
+    #slideDots { position: absolute; bottom: 14px; right: 16px; display: flex; gap: 5px; z-index: 10; }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+    .dot.active { background: #fff; }
     /* Mobile nav */
     #mobileMenu { display: none; }
     #mobileMenu.open { display: block; }
@@ -482,27 +527,51 @@
 <!-- ══ HOME SECTION ════════════════════════════════════════════ -->
 <div id="sec-home">
 
-  <!-- Hero -->
-  <section id="sec-home-hero" style="background: var(--navy-700);" class="text-white">
-    <div class="max-w-5xl mx-auto px-6 py-20">
-      <p style="color:rgba(255,255,255,0.55);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
-        Villanova University &middot; Mechanical Engineering
-      </p>
-      <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;max-width:620px">
-        Laboratory for Advanced Thermal &amp; Fluid Systems
-      </h1>
-      <p style="font-size:1.1rem;color:rgba(255,255,255,0.7);line-height:1.6;max-width:540px;margin-bottom:2rem">
-        Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
-      </p>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-        <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
-        <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
+  <!-- Hero: 2-col split -->
+  <section id="sec-home-hero" style="background: var(--navy-700);" class="text-white overflow-hidden">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 min-h-[480px]">
+      <!-- Left: text content -->
+      <div class="px-8 py-14 flex flex-col justify-center lg:py-20 lg:pr-12">
+        <p style="color:rgba(255,255,255,0.55);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
+          Villanova University &middot; Mechanical Engineering
+        </p>
+        <h1 style="font-size:clamp(1.75rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem">
+          Laboratory for Advanced Thermal &amp; Fluid Systems
+        </h1>
+        <p style="font-size:1rem;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:2rem">
+          Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
+        </p>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+          <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
+          <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
+          <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
+          <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
+          <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
+        </div>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
-        <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
-        <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
-        <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
+      <!-- Right: slideshow -->
+      <div class="relative hidden lg:block" id="slideshow" style="min-height:400px">
+        <div class="slide active" style="background-image:url('/images/top1a.png')">
+          <div class="slide-overlay"></div>
+        </div>
+        <div class="slide" style="background-image:url('/images/top2a.png')">
+          <div class="slide-overlay"></div>
+        </div>
+        <div class="slide" style="background-image:url('/images/top3a.png')">
+          <div class="slide-overlay"></div>
+        </div>
+        <div class="slide" style="background-image:url('/images/CSP123_20130911_0195-Edit.jpg')">
+          <div class="slide-overlay"></div>
+        </div>
+        <div class="slide" style="background-image:url('/images/IMG_1526.JPG')">
+          <div class="slide-overlay"></div>
+        </div>
+        <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
+        <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
+        <div id="slideDots"></div>
       </div>
     </div>
   </section>
@@ -568,44 +637,8 @@
         <button onclick="showSection('publications')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">All publications &#8594;</button>
       </div>
 
-      <!-- Social Media -->
-      <div>
-        <div class="section-header">
-          <div class="section-header-bar"></div>
-          <h2 class="section-header-title">Social Media</h2>
-        </div>
-
-        <!-- Twitter / X -->
-        <div class="social-widget">
-          <div class="social-widget-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.836L2.25 2.25h6.988l4.243 5.628L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" fill="#1d9bf0"/>
-            </svg>
-            <span class="text-sm font-semibold text-gray-700">Twitter / X</span>
-          </div>
-          <a class="twitter-timeline" data-height="280" data-theme="light" href="https://twitter.com/VillanovaEng" aria-label="View Villanova Engineering Twitter timeline">Tweets by VillanovaEng</a>
-        </div>
-
-        <!-- LinkedIn -->
-        <div class="social-widget">
-          <div class="social-widget-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#0077b5"/>
-            </svg>
-            <span class="text-sm font-semibold text-gray-700">LinkedIn</span>
-          </div>
-          <a href="https://www.linkedin.com/school/villanova-university/" target="_blank" rel="noopener"
-             class="inline-flex items-center gap-2 text-sm text-white font-semibold px-4 py-2 rounded-lg"
-             style="background:#0077b5"
-             aria-label="Follow Villanova University on LinkedIn">
-            Follow on LinkedIn
-          </a>
-        </div>
-      </div>
     </div>
   </div>
-  <!-- Twitter widget script -->
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
   <!-- Partners & Sponsors Marquee -->
   <div class="max-w-7xl mx-auto px-4 pb-12">
@@ -636,10 +669,18 @@
 <!-- ══ RESEARCH SECTION ════════════════════════════════════════ -->
 <div id="sec-research" class="section-hidden max-w-7xl mx-auto px-4 py-10">
   <h1 class="page-title">Research</h1>
-  <p class="page-subtitle">Exploring the frontiers of thermal and fluid systems.</p>
+  <p class="page-subtitle">Exploring the frontiers of thermal and fluid systems. Click any area for details.</p>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="researchGrid">
     <p class="text-gray-400">Loading&#8230;</p>
   </div>
+</div>
+
+<!-- ══ RESEARCH DETAIL SECTION ════════════════════════════════ -->
+<div id="sec-research-detail" class="section-hidden max-w-5xl mx-auto px-4 py-10">
+  <button onclick="showSection('research')" class="inline-flex items-center gap-1.5 text-sm font-semibold mb-8 hover:underline" style="color:var(--gold)">
+    &#8592; Back to Research Areas
+  </button>
+  <div id="researchDetailContent"></div>
 </div>
 
 <!-- ══ PEOPLE SECTION ══════════════════════════════════════════ -->
@@ -1006,8 +1047,41 @@
 
 <script>
   // ── Navigation ───────────────────────────────────────────────
-  const ALL_SECTIONS = ['home','research','people','publications','facilities','news','join','contact','sponsors','collaborators'];
+  const ALL_SECTIONS = ['home','research','research-detail','people','publications','facilities','news','join','contact','sponsors','collaborators'];
   let _allPeople = [];
+  let _allResearch = [];
+
+  function openResearchDetail(id) {
+    const item = _allResearch.find(r => r.id === id);
+    if (!item) return;
+    renderResearchDetail(item);
+    showSection('research-detail');
+  }
+
+  function renderResearchDetail(item) {
+    let links = [];
+    try { links = JSON.parse(item.links || '[]'); } catch(e) {}
+    const bodyText = item.content || item.description || '';
+    document.getElementById('researchDetailContent').innerHTML = `
+      <h1 class="page-title" style="margin-bottom:1.25rem">${escHtml(item.title)}</h1>
+      ${item.image_url ? `<img src="${escHtml(item.image_url)}" alt="${escHtml(item.title)}" style="width:100%;max-height:380px;object-fit:cover;border-radius:12px;margin-bottom:1.75rem;display:block">` : ''}
+      <div class="content-card" style="margin-bottom:1.5rem">
+        <p style="color:var(--gray-700);line-height:1.8;font-size:0.9375rem;white-space:pre-wrap;margin:0">${escHtml(bodyText)}</p>
+      </div>
+      ${links.length > 0 ? `
+      <div class="content-card">
+        <h2>Links &amp; Resources</h2>
+        <ul style="list-style:none;padding:0;margin:0">
+          ${links.map(l => `
+          <li style="padding:0.5rem 0;border-bottom:1px solid var(--gray-100)">
+            <a href="${escHtml(l.url)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;font-size:0.875rem">
+              ${escHtml(l.label || l.url)} &#8599;
+            </a>
+          </li>`).join('')}
+        </ul>
+      </div>` : ''}
+    `;
+  }
 
   function showSection(sec, sub) {
     ALL_SECTIONS.forEach(s => {
@@ -1085,8 +1159,9 @@
   function renderHomeResearch(items) {
     const el = document.getElementById('homeResearch');
     if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No research areas yet.</p>'; return; }
+    _allResearch = items;
     el.innerHTML = items.slice(0, 6).map((r, i) => `
-      <div class="res-card" onclick="showSection('research')">
+      <div class="res-card" onclick="openResearchDetail(${r.id})">
         <div class="res-icon">${RES_ICONS[i % 6]}</div>
         <div class="res-card-title">${escHtml(r.title)}</div>
         <div class="res-card-desc">${escHtml((r.description||'').slice(0,100))}${(r.description||'').length>100?'&#8230;':''}</div>
@@ -1100,7 +1175,9 @@
       <div class="pub-row">
         <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
         <div>
-          <div class="pub-title">${escHtml(p.title)}</div>
+          <div class="pub-title">
+            ${p.doi_url ? `<a href="${escHtml(p.doi_url)}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold)">${escHtml(p.title)}</a>` : escHtml(p.title)}
+          </div>
           <div class="pub-authors">${escHtml(p.authors)}</div>
           <div class="pub-venue">${escHtml(p.venue)}</div>
           <div class="flex gap-3 mt-1">
@@ -1178,6 +1255,14 @@
           <span class="category-badge">${escHtml(p.category||'')}</span>
           ${p.bio ? `<p class="text-xs mt-2 leading-relaxed" style="color:var(--gray-500)">${escHtml(p.bio.slice(0,100))}${p.bio.length>100?'&#8230;':''}</p>`:''}
           ${p.email ? `<a href="mailto:${escHtml(p.email)}" class="text-xs mt-1 block" style="color:var(--gold)">${escHtml(p.email)}</a>`:''}
+          <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:0.5rem">
+            ${p.linkedin_url ? `<a href="${escHtml(p.linkedin_url)}" target="_blank" rel="noopener" title="LinkedIn" style="color:#0077b5;display:inline-flex;align-items:center" aria-label="${escHtml(p.name)} LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>` : ''}
+            ${p.website_url ? `<a href="${escHtml(p.website_url)}" target="_blank" rel="noopener" title="Personal Website" style="color:var(--navy);display:inline-flex;align-items:center" aria-label="${escHtml(p.name)} website">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </a>` : ''}
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -1189,12 +1274,14 @@
     el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
     try {
       const data = await fetch('/api/research').then(r => r.json());
+      _allResearch = data;
       if (!data.length) { el.innerHTML = '<p class="text-gray-400">No research areas yet.</p>'; return; }
       el.innerHTML = data.map((r, i) => `
-        <div class="res-card">
+        <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openResearchDetail(${r.id})">
           <div class="res-icon">${RES_ICONS[i % 6]}</div>
           <div class="res-card-title">${escHtml(r.title)}</div>
           <div class="res-card-desc">${escHtml(r.description||'')}</div>
+          <div style="margin-top:0.75rem;font-size:0.78rem;font-weight:600;color:var(--gold)">View details &#8594;</div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load research.</p>'; }
   }
@@ -1231,7 +1318,9 @@
       <div class="pub-row">
         <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
         <div class="flex-1">
-          <div class="pub-title">${escHtml(p.title)}</div>
+          <div class="pub-title">
+            ${p.doi_url ? `<a href="${escHtml(p.doi_url)}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold)">${escHtml(p.title)}</a>` : escHtml(p.title)}
+          </div>
           <div class="pub-authors">${escHtml(p.authors)}</div>
           <div class="pub-venue">${escHtml(p.venue)}</div>
           <div class="flex gap-3 mt-1">
@@ -1270,6 +1359,35 @@
 
   // ── Init ──────────────────────────────────────────────────────
   loadHomeData();
+
+  // ── Slideshow ─────────────────────────────────────────────────
+  (function() {
+    const slides = document.querySelectorAll('.slide');
+    if (!slides.length) return;
+    const dotsContainer = document.getElementById('slideDots');
+    let slideIdx = 0;
+    slides.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.setAttribute('aria-label', 'Slide ' + (i + 1));
+      d.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(d);
+    });
+    function goToSlide(n) {
+      slides[slideIdx].classList.remove('active');
+      dotsContainer.children[slideIdx].classList.remove('active');
+      slideIdx = (n + slides.length) % slides.length;
+      slides[slideIdx].classList.add('active');
+      dotsContainer.children[slideIdx].classList.add('active');
+    }
+    window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
+    let timer = setInterval(() => goToSlide(slideIdx + 1), 5000);
+    const ss = document.getElementById('slideshow');
+    if (ss) {
+      ss.addEventListener('mouseenter', () => clearInterval(timer));
+      ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), 5000); });
+    }
+  })();
 </script>
 </body>
 </html>
