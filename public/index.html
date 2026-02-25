@@ -5,169 +5,439 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LATFS - Laboratory for Advanced Thermal and Fluid Systems</title>
   <meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tailwind.css">
   <style>
     :root {
-      --navy: #0b1f3a;
-      --green: #10b981;
-      --light: #f0f7ff;
+      --navy: #0f172a;
+      --navy-700: #1e3a5f;
+      --gold: #b8912a;
+      --gold-light: #fef7e4;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-700: #374151;
+      /* Legacy aliases */
+      --primary: #0f172a;
+      --secondary: #b8912a;
+      --accent: #b8912a;
+      --green: #b8912a;
+      --light: #f8fafc;
       --border: #e2e8f0;
-      /* Keep legacy aliases for JS references */
-      --primary: #0b1f3a;
-      --secondary: #10b981;
-      --accent: #10b981;
     }
 
-    /* ── Slideshow ───────────────────────────────────────────── */
-    .slideshow { position:relative; width:100%; height:520px; overflow:hidden; background:#0a1a2e; }
-    @media(max-width:640px){ .slideshow{ height:320px; } }
-    .slide { position:absolute; inset:0; background-size:cover; background-position:center;
-             opacity:0; transition:opacity 0.8s ease; }
-    .slide.active { opacity:1; }
-    .slide-overlay { position:absolute; inset:0;
-      background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
-    .slide-caption { position:absolute; bottom:60px; left:0; right:0; text-align:center;
-                     color:#fff; padding:0 1rem; }
-    .slide-caption h2 { font-size:clamp(1.1rem,3vw,2rem); font-weight:700; text-shadow:0 2px 8px rgba(0,0,0,0.6); }
-    .slide-arrow { position:absolute; top:50%; transform:translateY(-50%);
-                   background:rgba(255,255,255,0.15); backdrop-filter:blur(4px);
-                   border:none; color:#fff; font-size:1.5rem; width:44px; height:44px;
-                   border-radius:50%; cursor:pointer; z-index:10; transition:background 0.2s; }
-    .slide-arrow:hover { background:rgba(255,255,255,0.35); }
-    .slide-arrow.prev { left:16px; }
-    .slide-arrow.next { right:16px; }
-    #slideDots { position:absolute; bottom:16px; right:20px; display:flex; gap:6px; z-index:10; }
-    .dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.4);
-           cursor:pointer; transition:background 0.2s; border:none; }
-    .dot.active { background:#fff; }
+    body {
+      background: var(--gray-50);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
 
-    /* ── News Ticker ─────────────────────────────────────────── */
-    .ticker-wrap { background:var(--green); color:#fff; overflow:hidden;
-                   display:flex; align-items:center; height:38px; }
-    .ticker-label { background:var(--navy); color:#fff; font-weight:700; font-size:.8rem;
-                    padding:0 14px; height:100%; display:flex; align-items:center;
-                    white-space:nowrap; flex-shrink:0; letter-spacing:.08em; }
-    .ticker-inner { overflow:hidden; flex:1; }
-    .ticker-track { display:flex; white-space:nowrap; animation:tickerScroll 40s linear infinite; }
-    .ticker-track:hover { animation-play-state:paused; }
-    @keyframes tickerScroll { 0%{ transform:translateX(0); } 100%{ transform:translateX(-50%); } }
-    .ticker-item { padding:0 32px; font-size:.85rem; font-weight:600; }
+    /* ── Section visibility ────────────────────────────── */
+    .section-hidden { display: none !important; }
 
-    /* ── Navigation ──────────────────────────────────────────── */
-    nav { background:var(--navy); position:sticky; top:0; z-index:100;
-          box-shadow:0 2px 12px rgba(0,0,0,0.3); }
-    .nav-link { color:#cbd5e1; cursor:pointer; padding:.5rem .75rem; border-radius:4px;
-                transition:color .2s,background .2s; font-size:.9rem; font-weight:500; }
-    .nav-link:hover,.nav-link.active { color:#fff; background:rgba(255,255,255,0.12); }
-    .dropdown { position:relative; }
-    .dropdown-menu { display:none; position:absolute; top:100%; left:0; min-width:160px;
-                     background:var(--navy); border:1px solid rgba(255,255,255,0.1);
-                     border-radius:6px; box-shadow:0 8px 24px rgba(0,0,0,0.3); z-index:200; }
-    .dropdown:hover .dropdown-menu { display:block; }
-    .dropdown-item { display:block; padding:.6rem 1rem; color:#cbd5e1; font-size:.85rem;
-                     cursor:pointer; transition:background .15s; white-space:nowrap; }
-    .dropdown-item:hover { background:rgba(255,255,255,0.1); color:#fff; }
+    /* ── Navigation ────────────────────────────────────── */
+    nav {
+      background: var(--navy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      transition: color 0.2s;
+      font-size: 0.875rem;
+      font-weight: 500;
+      position: relative;
+      display: inline-block;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #fff; }
+    .nav-link.active::after {
+      content: '';
+      display: block;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 1px;
+      position: absolute;
+      bottom: -2px;
+      left: 0.75rem;
+      right: 0.75rem;
+    }
+    /* Mobile nav */
+    #mobileMenu { display: none; }
+    #mobileMenu.open { display: block; }
 
-    /* ── Quick Access Grid ───────────────────────────────────── */
-    .quick-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:1rem; }
-    @media(max-width:768px){ .quick-grid{ grid-template-columns:repeat(3,1fr); } }
-    .quick-card { background:#fff; border-radius:12px; padding:1.25rem .75rem;
-                  text-align:center; cursor:pointer; border:2px solid transparent;
-                  transition:border-color .2s,transform .2s,box-shadow .2s;
-                  box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-    .quick-card:hover { border-color:var(--green); transform:translateY(-4px);
-                        box-shadow:0 8px 24px rgba(0,0,0,0.12); }
-    .quick-icon { font-size:2rem; margin-bottom:.5rem; }
-    .quick-label { font-size:.8rem; font-weight:700; color:var(--navy); text-transform:uppercase;
-                   letter-spacing:.05em; }
+    /* ── News Ticker ────────────────────────────────────── */
+    .ticker-wrap {
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      height: 36px;
+    }
+    .ticker-label {
+      background: var(--gold);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 0 14px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .ticker-inner { overflow: hidden; flex: 1; }
+    .ticker-track {
+      display: flex;
+      white-space: nowrap;
+      animation: tickerScroll 40s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+    @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .ticker-item {
+      padding: 0 28px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+    }
 
-    /* ── Stats Bar ───────────────────────────────────────────── */
-    .stats-bar { background:var(--navy); color:#fff; display:flex;
-                 justify-content:space-around; flex-wrap:wrap; gap:.5rem; }
-    .stat-item { text-align:center; padding:.75rem 1rem; }
-    .stat-num { font-size:1.6rem; font-weight:800; color:var(--green); }
-    .stat-label { font-size:.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; }
+    /* ── Buttons ────────────────────────────────────────── */
+    .btn-primary {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .btn-primary:hover { background: var(--navy-700); }
+    .btn-ghost {
+      border: 1.5px solid var(--gray-200);
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: transparent;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--navy); }
+    .btn-primary-inv {
+      background: #fff;
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-primary-inv:hover { opacity: 0.9; }
+    .btn-ghost-inv {
+      border: 1.5px solid rgba(255,255,255,0.35);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: transparent;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .btn-ghost-inv:hover { border-color: rgba(255,255,255,0.7); }
+    *:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
-    /* ── Section visibility ──────────────────────────────────── */
-    .section-hidden { display:none !important; }
+    /* ── Hero stats ─────────────────────────────────────── */
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 1.5rem;
+    }
+    .hero-stat { display: flex; flex-direction: column; }
+    .hero-stat-num { font-size: 1.5rem; font-weight: 800; color: #fff; }
+    .hero-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
 
-    /* ── Research cards — white + left green border ──────────── */
-    .res-card { background:#fff; border-radius:12px; border-left:4px solid var(--green);
-                padding:1.25rem; box-shadow:0 1px 6px rgba(0,0,0,0.07); cursor:pointer;
-                transition:transform 0.2s,box-shadow 0.2s; }
-    .res-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.12); }
-    .res-icon { width:44px; height:44px; background:var(--navy); border-radius:10px;
-                display:flex; align-items:center; justify-content:center; margin-bottom:.75rem;
-                flex-shrink:0; }
-    .res-card-title { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:.3rem; }
-    .res-card-desc { font-size:.82rem; color:#475569; line-height:1.5; }
+    /* ── Page headings ──────────────────────────────────── */
+    .page-title {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .page-subtitle { font-size: 1rem; color: var(--gray-500); margin-bottom: 2rem; }
 
-    /* ── People cards ────────────────────────────────────────── */
-    .person-card { background:#fff; border-radius:14px; overflow:hidden;
-                   box-shadow:0 1px 6px rgba(0,0,0,0.07); transition:transform .2s,box-shadow .2s; }
-    .person-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.12); }
-    .person-avatar { width:80px; height:80px; border-radius:50%; background:var(--navy);
-                     display:flex; align-items:center; justify-content:center;
-                     font-size:1.5rem; font-weight:700; color:#fff;
-                     margin:1.25rem auto 0; overflow:hidden; }
-    .person-avatar img { width:100%; height:100%; object-fit:cover; }
-    .person-body { padding:1rem; text-align:center; }
-    .person-name { font-weight:700; color:var(--navy); font-size:1rem; }
-    .person-role { font-size:.82rem; color:#64748b; margin:.15rem 0; }
-    .category-badge { display:inline-block; font-size:.72rem; padding:.2rem .6rem;
-                      border-radius:999px; font-weight:600; margin-top:.4rem;
-                      background:#d1fae5; color:#065f46; }
+    /* ── Section header with gold accent bar ────────────── */
+    .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .section-header-bar { width: 3px; height: 1.5rem; background: var(--gold); border-radius: 2px; flex-shrink: 0; }
+    .section-header-title { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
 
-    /* ── News card ───────────────────────────────────────────── */
-    .news-card { background:#fff; border-radius:10px; border-left:3px solid var(--green);
-                 padding:.9rem 1rem; margin-bottom:.6rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
-    .news-date { font-size:.75rem; color:#94a3b8; font-weight:600; }
-    .news-title { font-size:.95rem; font-weight:700; color:var(--navy); margin:.2rem 0; }
-    .news-body { font-size:.85rem; color:#475569; line-height:1.5; }
+    /* ── Content card ───────────────────────────────────── */
+    .content-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+    }
+    .content-card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
 
-    /* ── Publications ────────────────────────────────────────── */
-    .pub-row { background:#fff; border-radius:8px; padding:.9rem 1rem;
-               box-shadow:0 1px 6px rgba(0,0,0,0.06); margin-bottom:.6rem; display:flex; gap:.75rem;
-               align-items:flex-start; }
-    .pub-year-badge { background:var(--navy); color:#fff; border-radius:6px;
-                      padding:.25rem .5rem; font-size:.75rem; font-weight:700; white-space:nowrap; flex-shrink:0; }
-    .pub-title { font-size:.88rem; font-weight:700; color:var(--navy); }
-    .pub-authors { font-size:.8rem; color:#64748b; }
-    .pub-venue { font-size:.78rem; color:#94a3b8; font-style:italic; }
+    /* ── Badge ──────────────────────────────────────────── */
+    .badge-gold {
+      display: inline-flex;
+      align-items: center;
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
 
-    /* ── Facility cards — white + top green line ─────────────── */
-    .facility-card { background:#fff; border-radius:12px; overflow:hidden;
-                     box-shadow:0 1px 6px rgba(0,0,0,0.07); border-top:3px solid var(--green); }
-    .facility-icon { padding:1.25rem 1.25rem 0; }
-    .facility-body { padding:1.25rem; }
-    .facility-body h3 { font-weight:700; color:var(--navy); margin-bottom:.5rem; }
+    /* ── Opening items ──────────────────────────────────── */
+    .opening-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .opening-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .opening-item strong { display: block; font-size: 0.9rem; color: var(--navy); margin-bottom: 0.25rem; }
+    .opening-item p { font-size: 0.84rem; color: var(--gray-500); margin: 0; }
 
-    /* ── Sponsors marquee ────────────────────────────────────── */
-    .marquee-wrap { overflow:hidden; background:#f8fafc; border-radius:12px; }
-    .marquee-track { display:flex; animation:marqueeScroll 30s linear infinite; }
-    .marquee-track:hover { animation-play-state:paused; }
-    @keyframes marqueeScroll { 0%{ transform:translateX(0); } 100%{ transform:translateX(-50%); } }
-    .sponsor-chip { display:flex; align-items:center; gap:.5rem; background:#fff;
-                    border:1px solid #e2e8f0; border-radius:8px; padding:.5rem 1rem;
-                    margin:0 .5rem; white-space:nowrap; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
-    .sponsor-init { width:36px; height:36px; border-radius:6px; display:flex; align-items:center;
-                    justify-content:center; font-weight:800; font-size:.9rem; color:#fff; flex-shrink:0; }
-    .sponsor-name { font-size:.82rem; font-weight:600; color:#334155; }
+    /* ── Lists ──────────────────────────────────────────── */
+    .offer-list { list-style: none; padding: 0; margin: 0; }
+    .offer-list li { font-size: 0.88rem; color: var(--gray-700); padding: 0.35rem 0; padding-left: 1.25rem; position: relative; }
+    .offer-list li::before { content: "✓"; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+    .apply-list { padding-left: 1.25rem; margin: 0.75rem 0; }
+    .apply-list li { font-size: 0.88rem; color: var(--gray-700); padding: 0.2rem 0; }
 
-    /* ── Featured video ──────────────────────────────────────── */
-    .video-wrap { border-radius:14px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.15); }
-    .video-wrap iframe { display:block; width:100%; aspect-ratio:16/9; border:none; }
+    /* ── FAQ ────────────────────────────────────────────── */
+    .faq-list { margin: 0; }
+    .faq-item { border-bottom: 1px solid var(--gray-100); }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item summary {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--navy);
+      padding: 0.85rem 0;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "▾"; font-size: 0.85rem; color: var(--gray-400); }
+    .faq-item[open] summary::after { content: "▴"; }
+    .faq-item p { font-size: 0.85rem; color: var(--gray-500); padding: 0 0 1rem; line-height: 1.6; margin: 0; }
 
-    body { background:#f6f8fc; font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+    /* ── News cards ─────────────────────────────────────── */
+    .news-card {
+      background: #fff;
+      border-radius: 10px;
+      border-left: 3px solid var(--gold);
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.6rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .news-full-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: box-shadow 0.2s;
+    }
+    .news-full-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .news-date { font-size: 0.75rem; color: var(--gray-400); font-weight: 600; }
+    .news-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin: 0.2rem 0; }
+    .news-body { font-size: 0.85rem; color: #475569; line-height: 1.5; }
 
-    /* ── Mobile nav ──────────────────────────────────────────── */
-    #mobileMenu { display:none; }
-    #mobileMenu.open { display:block; }
+    /* ── Research cards ─────────────────────────────────── */
+    .res-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+      border-left: 4px solid var(--gold);
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .res-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .res-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--navy);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      flex-shrink: 0;
+    }
+    .res-card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
+    .res-card-desc { font-size: 0.82rem; color: #475569; line-height: 1.5; }
 
-    /* ── Social media section ────────────────────────────────── */
-    .social-widget { background:#fff; border-radius:12px; border:1px solid var(--border);
-                     box-shadow:0 1px 4px rgba(0,0,0,0.05); padding:.75rem; margin-bottom:.75rem; }
-    .social-widget-header { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
+    /* ── People cards ───────────────────────────────────── */
+    .person-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .person-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .person-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 1.25rem auto 0;
+      overflow: hidden;
+    }
+    .person-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .person-body { padding: 1rem; text-align: center; }
+    .person-name { font-weight: 700; color: var(--navy); font-size: 1rem; }
+    .person-role { font-size: 0.82rem; color: #64748b; margin: 0.15rem 0; }
+    .category-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      background: var(--gold-light);
+      color: var(--gold);
+    }
+
+    /* ── Publications ───────────────────────────────────── */
+    .pub-row {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 0.6rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .pub-year-badge {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pub-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); }
+    .pub-authors { font-size: 0.8rem; color: #64748b; }
+    .pub-venue { font-size: 0.78rem; color: var(--gray-400); font-style: italic; }
+
+    /* ── Facility cards ─────────────────────────────────── */
+    .facility-card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+      border-top: 3px solid var(--gold);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .facility-icon { padding: 1.25rem 1.25rem 0; }
+    .facility-body { padding: 1.25rem; }
+    .facility-body h3 { font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+
+    /* ── Sponsors marquee ───────────────────────────────── */
+    .marquee-wrap { overflow: hidden; background: var(--gray-50); border-radius: 12px; }
+    .marquee-track { display: flex; animation: marqueeScroll 30s linear infinite; }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .sponsor-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .sponsor-init {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .sponsor-name { font-size: 0.82rem; font-weight: 600; color: #334155; }
+
+    /* ── Video ──────────────────────────────────────────── */
+    .video-wrap { border-radius: 14px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+    .video-wrap iframe { display: block; width: 100%; aspect-ratio: 16/9; border: none; }
+
+    /* ── Social media ───────────────────────────────────── */
+    .social-widget {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .social-widget-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .footer-heading { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 0.75rem; }
+    .logo-mark { font-weight: 900; font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    footer ul { list-style: none; padding: 0; margin: 0; }
+    footer ul li { font-size: 0.85rem; color: rgba(255,255,255,0.6); padding: 0.2rem 0; cursor: pointer; transition: color 0.15s; }
+    footer ul li:hover { color: #fff; }
   </style>
 </head>
 <body>
@@ -175,157 +445,135 @@
 <!-- ══ NAVIGATION ══════════════════════════════════════════════ -->
 <nav>
   <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
-    <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('home')">
-      <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" style="background:var(--green);color:var(--navy)">L</div>
-      <span class="text-white font-bold text-sm hidden sm:block">LATFS Lab</span>
+    <!-- Logo -->
+    <div class="flex items-center gap-2 cursor-pointer" onclick="showSection('home')">
+      <div class="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0" style="background:var(--gold);color:#fff">L</div>
+      <span class="text-white font-bold text-sm hidden sm:block tracking-tight">LATFS</span>
     </div>
     <!-- Desktop links -->
-    <div class="hidden md:flex items-center gap-1">
-      <span class="nav-link" onclick="showSection('home')">Home</span>
-      <span class="nav-link dropdown" tabindex="0">
-        People &#9662;
-        <div class="dropdown-menu">
-          <span class="dropdown-item" onclick="showSection('people','phd')">PhD Students</span>
-          <span class="dropdown-item" onclick="showSection('people','ms')">MS Students</span>
-          <span class="dropdown-item" onclick="showSection('people','postdoc')">Postdocs</span>
-          <span class="dropdown-item" onclick="showSection('people','ug')">Undergrads</span>
-          <span class="dropdown-item" onclick="showSection('people','faculty')">Faculty</span>
-          <span class="dropdown-item" onclick="showSection('people','alumni')">Alumni</span>
-        </div>
-      </span>
-      <span class="nav-link" onclick="showSection('research')">Research</span>
-      <span class="nav-link" onclick="showSection('publications')">Publications</span>
-      <span class="nav-link" onclick="showSection('students')">Students</span>
-      <span class="nav-link" onclick="showSection('facilities')">Facilities</span>
-      <span class="nav-link dropdown" tabindex="0">
-        More &#9662;
-        <div class="dropdown-menu">
-          <span class="dropdown-item" onclick="showSection('collaborators')">Collaborators</span>
-          <span class="dropdown-item" onclick="showSection('sponsors')">Sponsors</span>
-          <span class="dropdown-item" onclick="showSection('contact')">Contact</span>
-        </div>
-      </span>
+    <div class="hidden md:flex items-center gap-0.5">
+      <span class="nav-link active" id="nav-home" onclick="showSection('home')">Home</span>
+      <span class="nav-link" id="nav-research" onclick="showSection('research')">Research</span>
+      <span class="nav-link" id="nav-people" onclick="showSection('people')">People</span>
+      <span class="nav-link" id="nav-publications" onclick="showSection('publications')">Publications</span>
+      <span class="nav-link" id="nav-facilities" onclick="showSection('facilities')">Facilities</span>
+      <span class="nav-link" id="nav-news" onclick="showSection('news')">News</span>
+      <span class="nav-link" id="nav-join" onclick="showSection('join')">Join</span>
+      <span class="nav-link" id="nav-contact" onclick="showSection('contact')">Contact</span>
     </div>
     <!-- Mobile hamburger -->
-    <button class="md:hidden text-white text-xl px-2" onclick="toggleMobileMenu()" aria-label="Menu">&#9776;</button>
+    <button class="md:hidden text-white text-xl px-2" onclick="toggleMobileMenu()" aria-label="Open menu">&#9776;</button>
   </div>
   <!-- Mobile menu -->
-  <div id="mobileMenu" class="md:hidden px-4 pb-3">
+  <div id="mobileMenu" class="md:hidden px-4 pb-3 border-t" style="border-color:rgba(255,255,255,0.07)">
     <span class="block nav-link py-2" onclick="showSection('home');toggleMobileMenu()">Home</span>
-    <span class="block nav-link py-2" onclick="showSection('people');toggleMobileMenu()">People</span>
     <span class="block nav-link py-2" onclick="showSection('research');toggleMobileMenu()">Research</span>
+    <span class="block nav-link py-2" onclick="showSection('people');toggleMobileMenu()">People</span>
     <span class="block nav-link py-2" onclick="showSection('publications');toggleMobileMenu()">Publications</span>
-    <span class="block nav-link py-2" onclick="showSection('students');toggleMobileMenu()">Students</span>
     <span class="block nav-link py-2" onclick="showSection('facilities');toggleMobileMenu()">Facilities</span>
-    <span class="block nav-link py-2" onclick="showSection('collaborators');toggleMobileMenu()">Collaborators</span>
+    <span class="block nav-link py-2" onclick="showSection('news');toggleMobileMenu()">News</span>
+    <span class="block nav-link py-2" onclick="showSection('join');toggleMobileMenu()">Join</span>
+    <span class="block nav-link py-2" onclick="showSection('contact');toggleMobileMenu()">Contact</span>
     <span class="block nav-link py-2" onclick="showSection('sponsors');toggleMobileMenu()">Sponsors</span>
-    <span class="block nav-link py-2" onclick="showSection('contact');toggleMobileMenu()">Contact Us</span>
+    <span class="block nav-link py-2" onclick="showSection('collaborators');toggleMobileMenu()">Collaborators</span>
   </div>
 </nav>
 
 <!-- ══ HOME SECTION ════════════════════════════════════════════ -->
 <div id="sec-home">
 
-  <!-- Slideshow -->
-  <div class="slideshow" id="slideshow">
-    <div class="slide active" style="background-image:url('/images/top1a.png')">
-      <div class="slide-overlay"></div>
-      <div class="slide-caption"><h2>LATFS | Laboratory for Advanced Thermal and Fluid Systems</h2></div>
+  <!-- Hero -->
+  <section id="sec-home-hero" style="background: var(--navy-700);" class="text-white">
+    <div class="max-w-5xl mx-auto px-6 py-20">
+      <p style="color:rgba(255,255,255,0.55);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
+        Villanova University &middot; Mechanical Engineering
+      </p>
+      <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;max-width:620px">
+        Laboratory for Advanced<br>Thermal &amp; Fluid Systems
+      </h1>
+      <p style="font-size:1.1rem;color:rgba(255,255,255,0.7);line-height:1.6;max-width:540px;margin-bottom:2rem">
+        Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
+        <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
+      </div>
     </div>
-    <div class="slide" style="background-image:url('/images/top2a.png')">
-      <div class="slide-overlay"></div>
-      <div class="slide-caption"><h2>Thermal Management &amp; Heat Transfer</h2></div>
-    </div>
-    <div class="slide" style="background-image:url('/images/top3a.png')">
-      <div class="slide-overlay"></div>
-      <div class="slide-caption"><h2>NSF E3S Center Partner | Energy Efficient Electronic Systems</h2></div>
-    </div>
-    <div class="slide" style="background-image:url('/images/CSP123_20130911_0195-Edit.jpg')">
-      <div class="slide-overlay"></div>
-      <div class="slide-caption"><h2>State-of-the-Art Research Facilities</h2></div>
-    </div>
-    <div class="slide" style="background-image:url('/images/IMG_1526.JPG')">
-      <div class="slide-overlay"></div>
-      <div class="slide-caption"><h2>Graduate &amp; Undergraduate Research</h2></div>
-    </div>
-    <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous">&#8249;</button>
-    <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next">&#8250;</button>
-    <div id="slideDots"></div>
-  </div>
+  </section>
 
   <!-- News Ticker -->
   <div class="ticker-wrap">
-    <div class="ticker-label">NEWS</div>
+    <div class="ticker-label">News</div>
     <div class="ticker-inner">
       <div class="ticker-track" id="tickerTrack">
         <span class="ticker-item">Welcome to LATFS &#8212; Laboratory for Advanced Thermal and Fluid Systems at Villanova University</span>
-        <span class="ticker-item">&#8226;</span>
+        <span class="ticker-item">&bull;</span>
         <span class="ticker-item">NSF E3S Center Partner &#8212; Energy Efficient Electronic Systems</span>
-        <span class="ticker-item">&#8226;</span>
+        <span class="ticker-item">&bull;</span>
         <span class="ticker-item">Latest research in two-phase heat transfer, thermal management, and fluid systems</span>
-        <span class="ticker-item">&#8226;</span>
+        <span class="ticker-item">&bull;</span>
         <span class="ticker-item">Welcome to LATFS &#8212; Laboratory for Advanced Thermal and Fluid Systems at Villanova University</span>
-        <span class="ticker-item">&#8226;</span>
+        <span class="ticker-item">&bull;</span>
         <span class="ticker-item">NSF E3S Center Partner &#8212; Energy Efficient Electronic Systems</span>
-        <span class="ticker-item">&#8226;</span>
+        <span class="ticker-item">&bull;</span>
         <span class="ticker-item">Latest research in two-phase heat transfer, thermal management, and fluid systems</span>
-        <span class="ticker-item">&#8226;</span>
+        <span class="ticker-item">&bull;</span>
       </div>
     </div>
   </div>
 
-  <!-- Quick Access Grid -->
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="quick-grid">
-      <div class="quick-card" onclick="showSection('research')">
-        <div class="quick-icon">&#128300;</div>
-        <div class="quick-label">Research</div>
-      </div>
-      <div class="quick-card" onclick="showSection('publications')">
-        <div class="quick-icon">&#128196;</div>
-        <div class="quick-label">Publications</div>
-      </div>
-      <div class="quick-card" onclick="showSection('people')">
-        <div class="quick-icon">&#128101;</div>
-        <div class="quick-label">People</div>
-      </div>
-      <div class="quick-card" onclick="showSection('students')">
-        <div class="quick-icon">&#127891;</div>
-        <div class="quick-label">Students</div>
-      </div>
-      <div class="quick-card" onclick="showSection('facilities')">
-        <div class="quick-icon">&#127963;&#65039;</div>
-        <div class="quick-label">Facilities</div>
-      </div>
-      <div class="quick-card" onclick="showSection('contact')">
-        <div class="quick-icon">&#9993;&#65039;</div>
-        <div class="quick-label">Contact</div>
-      </div>
+  <!-- Research Pillars -->
+  <div class="max-w-7xl mx-auto px-4 pt-12 pb-4">
+    <div class="section-header">
+      <div class="section-header-bar"></div>
+      <h2 class="section-header-title">Research Areas</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="homeResearch">
+      <p class="text-gray-400 text-sm">Loading&#8230;</p>
+    </div>
+    <div class="mt-4">
+      <button onclick="showSection('research')" class="btn-ghost text-sm">All research areas &#8594;</button>
     </div>
   </div>
 
-  <!-- Stats Bar -->
-  <div class="stats-bar py-4 px-4">
-    <div class="stat-item"><div class="stat-num">6+</div><div class="stat-label">Research Areas</div></div>
-    <div class="stat-item"><div class="stat-num">30+</div><div class="stat-label">Publications</div></div>
-    <div class="stat-item"><div class="stat-num">20+</div><div class="stat-label">Alumni</div></div>
-    <div class="stat-item"><div class="stat-num">NSF</div><div class="stat-label">Partner</div></div>
-    <div class="stat-item"><div class="stat-num">E3S</div><div class="stat-label">Center Member</div></div>
-    <div class="stat-item"><div class="stat-num">VU</div><div class="stat-label">Villanova Univ.</div></div>
-  </div>
+  <!-- 2-col: News + Featured Pub -->
+  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-  <!-- Main 2-column layout -->
-  <div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left 2/3: Latest News + Social -->
+    <div class="lg:col-span-2 space-y-8">
+      <div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <h2 class="section-header-title">Latest News</h2>
+        </div>
+        <div id="homeFeed"><p class="text-gray-400 text-sm">Loading news&#8230;</p></div>
+        <button onclick="showSection('news')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">View all news &#8594;</button>
+      </div>
+    </div>
 
-    <!-- Left: News Feed + Social Media -->
-    <div class="lg:col-span-1">
-      <h2 class="text-xl font-bold mb-4" style="color:var(--navy)">Latest News</h2>
-      <div id="homeFeed"><p class="text-gray-400 text-sm">Loading news&#8230;</p></div>
-      <button onclick="showSection('news')" class="mt-2 text-sm font-semibold" style="color:var(--green)">View all &#8594;</button>
+    <!-- Right 1/3: Featured Pub + Social -->
+    <div class="space-y-6">
+      <div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <h2 class="section-header-title">Featured Publication</h2>
+        </div>
+        <div id="homePubs"><p class="text-gray-400 text-sm">Loading&#8230;</p></div>
+        <button onclick="showSection('publications')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">All publications &#8594;</button>
+      </div>
 
-      <!-- Social Media section -->
-      <div class="mt-6">
-        <h3 class="font-bold text-sm mb-3" style="color:var(--navy)">Social Media</h3>
+      <!-- Social Media -->
+      <div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <h2 class="section-header-title">Social Media</h2>
+        </div>
 
         <!-- Twitter / X -->
         <div class="social-widget">
@@ -354,49 +602,28 @@
           </a>
         </div>
       </div>
-      <!-- Twitter widget script -->
-      <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    </div>
-
-    <!-- Right: Research cards + publications -->
-    <div class="lg:col-span-2 space-y-8">
-      <div>
-        <h2 class="text-xl font-bold mb-4" style="color:var(--navy)">Research Highlights</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="homeResearch">
-          <p class="text-gray-400 text-sm">Loading&#8230;</p>
-        </div>
-        <button onclick="showSection('research')" class="mt-2 text-sm font-semibold" style="color:var(--green)">All research areas &#8594;</button>
-      </div>
-      <div>
-        <h2 class="text-xl font-bold mb-4" style="color:var(--navy)">Recent Publications</h2>
-        <div id="homePubs"><p class="text-gray-400 text-sm">Loading&#8230;</p></div>
-        <button onclick="showSection('publications')" class="mt-2 text-sm font-semibold" style="color:var(--green)">All publications &#8594;</button>
-      </div>
     </div>
   </div>
+  <!-- Twitter widget script -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-  <!-- Featured Video -->
-  <div class="max-w-4xl mx-auto px-4 py-6">
-    <h2 class="text-xl font-bold mb-4 text-center" style="color:var(--navy)">Featured Video</h2>
-    <div class="video-wrap">
-      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen title="LATFS Featured Video" loading="lazy"></iframe>
+  <!-- Partners & Sponsors Marquee -->
+  <div class="max-w-7xl mx-auto px-4 pb-12">
+    <div class="section-header">
+      <div class="section-header-bar"></div>
+      <h2 class="section-header-title">Partners &amp; Sponsors</h2>
     </div>
-  </div>
-
-  <!-- Partner Logos Marquee -->
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <h2 class="text-xl font-bold mb-4 text-center" style="color:var(--navy)">Partners &amp; Sponsors</h2>
     <div class="marquee-wrap py-4">
       <div class="marquee-track" id="sponsorsMarquee">
         <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div><span class="sponsor-name">NSF</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div><span class="sponsor-name">E3S Center</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--green)">V</div><span class="sponsor-name">Villanova University</span></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div><span class="sponsor-name">Villanova University</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div><span class="sponsor-name">DOE</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div><span class="sponsor-name">DARPA</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div><span class="sponsor-name">Intel</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div><span class="sponsor-name">NSF</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div><span class="sponsor-name">E3S Center</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--green)">V</div><span class="sponsor-name">Villanova University</span></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div><span class="sponsor-name">Villanova University</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div><span class="sponsor-name">DOE</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div><span class="sponsor-name">DARPA</span></div>
         <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div><span class="sponsor-name">Intel</span></div>
@@ -406,41 +633,41 @@
 
 </div><!-- /sec-home -->
 
+<!-- ══ RESEARCH SECTION ════════════════════════════════════════ -->
+<div id="sec-research" class="section-hidden max-w-7xl mx-auto px-4 py-10">
+  <h1 class="page-title">Research</h1>
+  <p class="page-subtitle">Exploring the frontiers of thermal and fluid systems.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="researchGrid">
+    <p class="text-gray-400">Loading&#8230;</p>
+  </div>
+</div>
+
 <!-- ══ PEOPLE SECTION ══════════════════════════════════════════ -->
 <div id="sec-people" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-2" style="color:var(--navy)">Our People</h1>
-  <p class="text-gray-500 mb-6">Meet the researchers and students of the LATFS laboratory.</p>
+  <h1 class="page-title">Our People</h1>
+  <p class="page-subtitle">Meet the researchers and students of the LATFS laboratory.</p>
   <!-- Filter tabs -->
   <div class="flex flex-wrap gap-2 mb-6" id="peopleFilters">
-    <button onclick="filterPeople('all')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-transparent" style="background:var(--navy);color:#fff" data-filter="all">All</button>
-    <button onclick="filterPeople('phd')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--navy);color:var(--navy)" data-filter="phd">PhD</button>
-    <button onclick="filterPeople('ms')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--navy);color:var(--navy)" data-filter="ms">MS</button>
-    <button onclick="filterPeople('postdoc')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--navy);color:var(--navy)" data-filter="postdoc">Postdoc</button>
-    <button onclick="filterPeople('ug')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--navy);color:var(--navy)" data-filter="ug">Undergrad</button>
-    <button onclick="filterPeople('faculty')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--navy);color:var(--navy)" data-filter="faculty">Faculty</button>
-    <button onclick="filterPeople('alumni')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--navy);color:var(--navy)" data-filter="alumni">Alumni</button>
+    <button onclick="filterPeople('all')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="background:var(--navy);color:#fff;border-color:var(--navy)" data-filter="all">All</button>
+    <button onclick="filterPeople('phd')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="phd">PhD</button>
+    <button onclick="filterPeople('ms')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ms">MS</button>
+    <button onclick="filterPeople('postdoc')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="postdoc">Postdoc</button>
+    <button onclick="filterPeople('ug')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ug">Undergrad</button>
+    <button onclick="filterPeople('faculty')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="faculty">Faculty</button>
+    <button onclick="filterPeople('alumni')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="alumni">Alumni</button>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="peopleGrid">
     <p class="text-gray-400">Loading&#8230;</p>
   </div>
 </div>
 
-<!-- ══ RESEARCH SECTION ════════════════════════════════════════ -->
-<div id="sec-research" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-2" style="color:var(--navy)">Research</h1>
-  <p class="text-gray-500 mb-8">Exploring the frontiers of thermal and fluid systems.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="researchGrid">
-    <p class="text-gray-400">Loading&#8230;</p>
-  </div>
-</div>
-
 <!-- ══ PUBLICATIONS SECTION ════════════════════════════════════ -->
 <div id="sec-publications" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-2" style="color:var(--navy)">Publications</h1>
+  <h1 class="page-title">Publications</h1>
   <div class="flex flex-wrap gap-3 mb-6 items-center">
     <input id="pubSearch" type="text" placeholder="Search publications&#8230;"
-      class="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-2"
-      style="--tw-ring-color:var(--green)" oninput="filterPublications()">
+      class="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] focus:outline-none"
+      oninput="filterPublications()">
     <select id="pubYear" onchange="filterPublications()"
       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
       <option value="">All Years</option>
@@ -449,35 +676,15 @@
   <div id="pubList"><p class="text-gray-400">Loading&#8230;</p></div>
 </div>
 
-<!-- ══ STUDENTS SECTION ════════════════════════════════════════ -->
-<div id="sec-students" class="section-hidden max-w-5xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-4" style="color:var(--navy)">Prospective Students</h1>
-  <div class="bg-white rounded-2xl shadow p-8 space-y-5 text-gray-700 leading-relaxed">
-    <p>The LATFS lab at Villanova University is seeking motivated graduate students interested in experimental and computational research in thermal management, two-phase flow, and energy systems.</p>
-    <h3 class="text-lg font-bold" style="color:var(--navy)">What We Offer</h3>
-    <ul class="list-disc list-inside space-y-1 text-sm">
-      <li>Fully-funded PhD and MS positions (tuition + stipend)</li>
-      <li>State-of-the-art research facilities</li>
-      <li>Collaboration with NSF E3S Center and industry partners</li>
-      <li>Strong publication record and conference travel support</li>
-      <li>Mentorship from experienced faculty and senior students</li>
-    </ul>
-    <h3 class="text-lg font-bold" style="color:var(--navy)">How to Apply</h3>
-    <p class="text-sm">Send your CV, transcripts, and a brief research statement to the lab director. Applications are reviewed on a rolling basis. Strong backgrounds in mechanical engineering, physics, or related fields are preferred.</p>
-    <button onclick="showSection('contact')" class="px-6 py-2 rounded-lg text-white font-semibold text-sm" style="background:var(--green)">Contact the Lab &#8594;</button>
-  </div>
-</div>
-
 <!-- ══ FACILITIES SECTION ══════════════════════════════════════ -->
 <div id="sec-facilities" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-2" style="color:var(--navy)">Facilities</h1>
-  <p class="text-gray-500 mb-8">State-of-the-art equipment supporting cutting-edge research.</p>
+  <h1 class="page-title">Facilities</h1>
+  <p class="page-subtitle">State-of-the-art equipment supporting cutting-edge research.</p>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
     <div class="facility-card">
       <div class="facility-icon">
         <div class="res-icon">
-          <!-- Droplet / two-phase flow icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/>
           </svg>
@@ -495,7 +702,6 @@
     <div class="facility-card">
       <div class="facility-icon">
         <div class="res-icon">
-          <!-- Thermometer icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
           </svg>
@@ -513,7 +719,6 @@
     <div class="facility-card">
       <div class="facility-icon">
         <div class="res-icon">
-          <!-- CPU / compute icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
             <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
@@ -535,7 +740,6 @@
     <div class="facility-card">
       <div class="facility-icon">
         <div class="res-icon">
-          <!-- Microscope icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M6 18h8"/><path d="M3 21h18"/>
             <path d="M14 21v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/>
@@ -556,7 +760,6 @@
     <div class="facility-card">
       <div class="facility-icon">
         <div class="res-icon">
-          <!-- Zap / lightning icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
@@ -574,7 +777,6 @@
     <div class="facility-card">
       <div class="facility-icon">
         <div class="res-icon">
-          <!-- Sun / solar icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -596,40 +798,125 @@
   </div>
 </div>
 
-<!-- ══ COLLABORATORS SECTION ══════════════════════════════════ -->
-<div id="sec-collaborators" class="section-hidden max-w-5xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-4" style="color:var(--navy)">Collaborators</h1>
-  <p class="text-gray-500 mb-8">We collaborate with leading universities, national labs, and industry partners worldwide.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-      <h3 class="font-bold text-base mb-1" style="color:var(--navy)">Academia</h3>
-      <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
-        <li>MIT &#8212; Micro/Nanoscale Thermophysics</li>
-        <li>Georgia Tech &#8212; Thermal Sciences</li>
-        <li>Purdue University &#8212; Boiling and Two-Phase Flow</li>
-        <li>University of Maryland &#8212; Thermal Engineering</li>
+<!-- ══ NEWS SECTION ════════════════════════════════════════════ -->
+<div id="sec-news" class="section-hidden">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="page-title">News</h1>
+    <p class="page-subtitle">Updates from the LATFS laboratory.</p>
+    <div id="newsList"><p class="text-gray-400">Loading&#8230;</p></div>
+  </div>
+</div>
+
+<!-- ══ JOIN SECTION ════════════════════════════════════════════ -->
+<div id="sec-join" class="section-hidden">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="page-title">Join Our Lab</h1>
+    <p class="page-subtitle">We are seeking talented graduate students and postdoctoral researchers.</p>
+
+    <!-- Openings -->
+    <div class="content-card mb-8">
+      <h2>Open Positions</h2>
+      <div class="opening-item">
+        <span class="badge-gold">PhD</span>
+        <div>
+          <strong>Graduate Research Assistant &mdash; Thermal Management</strong>
+          <p>Fully-funded PhD position in experimental two-phase heat transfer and thermal management of electronics. Start date: Fall 2025.</p>
+        </div>
+      </div>
+      <div class="opening-item">
+        <span class="badge-gold">MS</span>
+        <div>
+          <strong>Graduate Research Assistant &mdash; Energy Systems</strong>
+          <p>Funded MS position in computational modeling of heat exchangers and energy conversion systems.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- What we offer -->
+    <div class="content-card mb-8">
+      <h2>What We Offer</h2>
+      <ul class="offer-list">
+        <li>Fully-funded PhD and MS positions (tuition + competitive stipend)</li>
+        <li>State-of-the-art experimental and computational facilities</li>
+        <li>Collaboration with NSF E3S Center and industry partners</li>
+        <li>Strong publication record and conference travel support</li>
+        <li>Mentorship and professional development opportunities</li>
       </ul>
     </div>
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-      <h3 class="font-bold text-base mb-1" style="color:var(--navy)">National Laboratories</h3>
-      <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+
+    <!-- How to apply -->
+    <div class="content-card mb-8">
+      <h2>How to Apply</h2>
+      <p class="text-sm" style="color:var(--gray-700)">Send the following materials to the lab director at <a href="mailto:aortega@villanova.edu" style="color:var(--gold)">aortega@villanova.edu</a>:</p>
+      <ol class="apply-list">
+        <li>Your CV or resume</li>
+        <li>Unofficial transcripts</li>
+        <li>A brief (1&ndash;2 paragraph) research statement</li>
+        <li>Contact information for 2&ndash;3 references</li>
+      </ol>
+      <p class="text-sm mt-3" style="color:var(--gray-700)">Applications are reviewed on a rolling basis. Backgrounds in mechanical engineering, physics, or related fields are preferred.</p>
+      <button onclick="showSection('contact')" class="btn-primary mt-4">Contact the Lab &#8594;</button>
+    </div>
+
+    <!-- FAQ -->
+    <div class="content-card">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Are funding packages guaranteed?</summary>
+          <p>Yes. PhD and MS positions in our lab come with full tuition coverage and a monthly stipend for the duration of your appointment, subject to satisfactory academic progress.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What backgrounds are preferred?</summary>
+          <p>We welcome students with backgrounds in mechanical engineering, chemical engineering, physics, or applied mathematics. Strong fundamentals in heat transfer, fluid mechanics, or thermodynamics are a plus.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can international students apply?</summary>
+          <p>Absolutely. We have a diverse lab with students from around the world. Villanova University supports international students through the Office of International Students.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How competitive is the application process?</summary>
+          <p>We admit a small number of students each year to maintain a mentored environment. We prioritize research fit, academic preparation, and motivation.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COLLABORATORS SECTION ══════════════════════════════════ -->
+<div id="sec-collaborators" class="section-hidden max-w-5xl mx-auto px-4 py-10">
+  <h1 class="page-title">Collaborators</h1>
+  <p class="page-subtitle">We collaborate with leading universities, national labs, and industry partners worldwide.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="content-card">
+      <h2>Academia</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
+        <li>MIT &mdash; Micro/Nanoscale Thermophysics</li>
+        <li>Georgia Tech &mdash; Thermal Sciences</li>
+        <li>Purdue University &mdash; Boiling and Two-Phase Flow</li>
+        <li>University of Maryland &mdash; Thermal Engineering</li>
+      </ul>
+    </div>
+    <div class="content-card">
+      <h2>National Laboratories</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
         <li>Argonne National Laboratory</li>
         <li>Oak Ridge National Laboratory</li>
         <li>Lawrence Berkeley National Laboratory</li>
       </ul>
     </div>
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-      <h3 class="font-bold text-base mb-1" style="color:var(--navy)">Industry</h3>
-      <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+    <div class="content-card">
+      <h2>Industry</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
         <li>Intel Corporation</li>
         <li>IBM Research</li>
         <li>3M Electronic Markets</li>
         <li>Laird Thermal Systems</li>
       </ul>
     </div>
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-      <h3 class="font-bold text-base mb-1" style="color:var(--navy)">Centers &amp; Consortia</h3>
-      <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+    <div class="content-card">
+      <h2>Centers &amp; Consortia</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
         <li>NSF E3S (Energy Efficient Electronic Systems)</li>
         <li>ASME Heat Transfer Division</li>
         <li>IEEE CPMT Society</li>
@@ -640,8 +927,8 @@
 
 <!-- ══ SPONSORS SECTION ════════════════════════════════════════ -->
 <div id="sec-sponsors" class="section-hidden max-w-5xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-2" style="color:var(--navy)">Sponsors</h1>
-  <p class="text-gray-500 mb-8">Our research is generously supported by these organizations.</p>
+  <h1 class="page-title">Sponsors</h1>
+  <p class="page-subtitle">Our research is generously supported by these organizations.</p>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" id="sponsorsGrid">
     <p class="text-gray-400">Loading&#8230;</p>
   </div>
@@ -649,88 +936,77 @@
 
 <!-- ══ CONTACT SECTION ════════════════════════════════════════ -->
 <div id="sec-contact" class="section-hidden max-w-4xl mx-auto px-4 py-10">
-  <h1 class="text-3xl font-bold mb-2" style="color:var(--navy)">Contact Us</h1>
-  <p class="text-gray-500 mb-8">Get in touch with the LATFS laboratory.</p>
+  <h1 class="page-title">Contact Us</h1>
+  <p class="page-subtitle">Get in touch with the LATFS laboratory.</p>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <div class="bg-white rounded-2xl shadow p-6 space-y-4">
-      <h3 class="font-bold text-lg" style="color:var(--navy)">Lab Director</h3>
-      <p class="text-sm text-gray-600">Department of Mechanical Engineering<br>Villanova University<br>800 Lancaster Avenue<br>Villanova, PA 19085</p>
-      <p class="text-sm"><span class="font-semibold">Email:</span> <a href="mailto:latfs@villanova.edu" class="underline" style="color:var(--green)">latfs@villanova.edu</a></p>
+    <div class="content-card space-y-4">
+      <h2>Lab Director</h2>
+      <p class="text-sm" style="color:var(--gray-700)">Department of Mechanical Engineering<br>Villanova University<br>800 Lancaster Avenue<br>Villanova, PA 19085</p>
+      <p class="text-sm"><span class="font-semibold">Email:</span> <a href="mailto:latfs@villanova.edu" style="color:var(--gold)">latfs@villanova.edu</a></p>
       <p class="text-sm"><span class="font-semibold">Phone:</span> (610) 519-XXXX</p>
       <p class="text-sm"><span class="font-semibold">Office:</span> Tolentine Hall, Room XXX</p>
     </div>
-    <div class="bg-white rounded-2xl shadow p-6">
-      <h3 class="font-bold text-lg mb-4" style="color:var(--navy)">Send a Message</h3>
+    <div class="content-card">
+      <h2>Send a Message</h2>
       <form onsubmit="submitContact(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Your Name</label>
-          <input type="text" required placeholder="Full name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2" style="--tw-ring-color:var(--green)">
+          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Your Name</label>
+          <input type="text" required placeholder="Full name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Email</label>
           <input type="email" required placeholder="you@example.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Message</label>
+          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Message</label>
           <textarea required rows="4" placeholder="Your message&#8230;" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none"></textarea>
         </div>
-        <button type="submit" class="w-full py-2 rounded-lg text-white font-semibold text-sm" style="background:var(--green)">Send Message</button>
-        <div id="contactSuccess" class="hidden text-green-700 text-sm font-semibold text-center">&#10003; Message sent! We will get back to you soon.</div>
+        <button type="submit" class="btn-primary w-full justify-center">Send Message</button>
+        <div id="contactSuccess" class="hidden text-sm font-semibold text-center" style="color:#065f46">&#10003; Message sent! We will get back to you soon.</div>
       </form>
     </div>
   </div>
 </div>
 
 <!-- ══ FOOTER ══════════════════════════════════════════════════ -->
-<footer style="background:var(--navy)" class="text-white mt-16 py-10 px-4">
-  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+<footer style="background:var(--navy)" class="text-white mt-16 py-12 px-4">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
     <div>
-      <div class="font-black text-lg mb-2">LATFS Lab</div>
-      <p class="text-sm text-slate-300 leading-relaxed">Laboratory for Advanced Thermal and Fluid Systems<br>Villanova University, PA</p>
+      <div class="logo-mark">LATFS</div>
+      <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.5)">Laboratory for Advanced Thermal and Fluid Systems<br>Villanova University &middot; Department of Mechanical Engineering</p>
     </div>
     <div>
-      <div class="font-bold mb-2 text-slate-200">Quick Links</div>
-      <ul class="text-sm text-slate-300 space-y-1">
-        <li><span class="cursor-pointer hover:text-white" onclick="showSection('research')">Research</span></li>
-        <li><span class="cursor-pointer hover:text-white" onclick="showSection('publications')">Publications</span></li>
-        <li><span class="cursor-pointer hover:text-white" onclick="showSection('people')">People</span></li>
-        <li><span class="cursor-pointer hover:text-white" onclick="showSection('contact')">Contact</span></li>
+      <div class="footer-heading">Research</div>
+      <ul>
+        <li onclick="showSection('research')">Research Areas</li>
+        <li onclick="showSection('publications')">Publications</li>
+        <li onclick="showSection('facilities')">Facilities</li>
       </ul>
     </div>
     <div>
-      <div class="font-bold mb-2 text-slate-200">Affiliations</div>
-      <p class="text-sm text-slate-300">NSF E3S Center Partner<br>ASME Member<br>IEEE CPMT Society</p>
+      <div class="footer-heading">Lab</div>
+      <ul>
+        <li onclick="showSection('people')">People</li>
+        <li onclick="showSection('news')">News</li>
+        <li onclick="showSection('join')">Join</li>
+        <li onclick="showSection('contact')">Contact</li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Partners</div>
+      <ul>
+        <li onclick="showSection('sponsors')">Sponsors</li>
+        <li onclick="showSection('collaborators')">Collaborators</li>
+      </ul>
+      <p class="mt-3 text-sm" style="color:rgba(255,255,255,0.45)">NSF E3S Center Partner<br>ASME &middot; IEEE CPMT</p>
     </div>
   </div>
-  <div class="text-center text-xs text-slate-400 mt-8">&copy; 2024 LATFS &#8212; Villanova University. All rights reserved.</div>
+  <div class="max-w-7xl mx-auto border-t pt-6 text-center text-xs" style="border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)">&copy; 2024 LATFS &mdash; Villanova University. All rights reserved.</div>
 </footer>
 
 <script>
-  // ── Slideshow ────────────────────────────────────────────────
-  let slideIdx = 0;
-  const slides = document.querySelectorAll('.slide');
-  const dotsContainer = document.getElementById('slideDots');
-  slides.forEach((_, i) => {
-    const d = document.createElement('button');
-    d.className = 'dot' + (i === 0 ? ' active' : '');
-    d.setAttribute('aria-label', 'Slide ' + (i + 1));
-    d.onclick = () => goToSlide(i);
-    dotsContainer.appendChild(d);
-  });
-  function goToSlide(n) {
-    slides[slideIdx].classList.remove('active');
-    dotsContainer.children[slideIdx].classList.remove('active');
-    slideIdx = (n + slides.length) % slides.length;
-    slides[slideIdx].classList.add('active');
-    dotsContainer.children[slideIdx].classList.add('active');
-  }
-  function changeSlide(dir) { goToSlide(slideIdx + dir); }
-  let slideTimer = setInterval(() => changeSlide(1), 5000);
-  document.getElementById('slideshow').addEventListener('mouseenter', () => clearInterval(slideTimer));
-  document.getElementById('slideshow').addEventListener('mouseleave', () => { slideTimer = setInterval(() => changeSlide(1), 5000); });
-
   // ── Navigation ───────────────────────────────────────────────
-  const ALL_SECTIONS = ['home','people','research','publications','students','facilities','collaborators','sponsors','contact'];
+  const ALL_SECTIONS = ['home','research','people','publications','facilities','news','join','contact','sponsors','collaborators'];
   let _allPeople = [];
 
   function showSection(sec, sub) {
@@ -738,12 +1014,16 @@
       const el = document.getElementById('sec-' + s);
       if (el) el.classList.toggle('section-hidden', s !== sec);
     });
+    // Update nav active state
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    const navEl = document.getElementById('nav-' + sec);
+    if (navEl) navEl.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (sec === 'people') { loadPeople(sub); }
     else if (sec === 'research') { loadResearch(); }
     else if (sec === 'publications') { loadPublications(); }
     else if (sec === 'sponsors') { loadSponsorsPage(); }
+    else if (sec === 'news') { loadNewsPage(); }
   }
 
   function toggleMobileMenu() {
@@ -759,17 +1039,11 @@
 
   // ── SVG icons for research cards ─────────────────────────────
   const RES_ICONS = [
-    // Flame / heat transfer
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>',
-    // Droplet / fluid
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>',
-    // Zap / energy
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-    // Wind / flow
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>',
-    // CPU / electronics
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
-    // Sun / solar energy
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
   ];
 
@@ -790,7 +1064,7 @@
   function renderNewsFeed(items) {
     const el = document.getElementById('homeFeed');
     if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No news yet.</p>'; return; }
-    el.innerHTML = items.slice(0, 5).map(n => `
+    el.innerHTML = items.slice(0, 3).map(n => `
       <div class="news-card">
         <div class="news-date">${escHtml(n.date || '')}</div>
         <div class="news-title">${escHtml(n.title)}</div>
@@ -801,14 +1075,14 @@
   function renderTicker(news) {
     if (!news || !news.length) return;
     const track = document.getElementById('tickerTrack');
-    const items = news.map(n => `<span class="ticker-item">${escHtml(n.title)}</span><span class="ticker-item">&#8226;</span>`).join('');
+    const items = news.map(n => `<span class="ticker-item">${escHtml(n.title)}</span><span class="ticker-item">&bull;</span>`).join('');
     track.innerHTML = items + items;
   }
 
   function renderHomeResearch(items) {
     const el = document.getElementById('homeResearch');
     if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No research areas yet.</p>'; return; }
-    el.innerHTML = items.slice(0, 4).map((r, i) => `
+    el.innerHTML = items.slice(0, 6).map((r, i) => `
       <div class="res-card" onclick="showSection('research')">
         <div class="res-icon">${RES_ICONS[i % 6]}</div>
         <div class="res-card-title">${escHtml(r.title)}</div>
@@ -819,13 +1093,17 @@
   function renderHomePubs(items) {
     const el = document.getElementById('homePubs');
     if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No publications yet.</p>'; return; }
-    el.innerHTML = items.slice(0, 4).map(p => `
+    el.innerHTML = items.slice(0, 1).map(p => `
       <div class="pub-row">
         <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
         <div>
           <div class="pub-title">${escHtml(p.title)}</div>
           <div class="pub-authors">${escHtml(p.authors)}</div>
           <div class="pub-venue">${escHtml(p.venue)}</div>
+          <div class="flex gap-3 mt-1">
+            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">PDF &#8599;</a>`:''}
+            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Cite &#8599;</a>`:''}
+          </div>
         </div>
       </div>`).join('');
   }
@@ -833,7 +1111,7 @@
   function renderSponsorsMarquee(sponsors) {
     if (!sponsors || !sponsors.length) return;
     const track = document.getElementById('sponsorsMarquee');
-    const COLORS = ['#0b1f3a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c','#0369a1','#065f46'];
+    const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c','#0369a1','#065f46'];
     const chips = sponsors.map((s, i) => `
       <div class="sponsor-chip">
         ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:28px;width:auto;object-fit:contain">` :
@@ -841,6 +1119,23 @@
         <span class="sponsor-name">${escHtml(s.name)}</span>
       </div>`).join('');
     track.innerHTML = chips + chips;
+  }
+
+  // ── News page ─────────────────────────────────────────────────
+  async function loadNewsPage() {
+    const el = document.getElementById('newsList');
+    if (!el) return;
+    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
+    try {
+      const data = await fetch('/api/news').then(r => r.json());
+      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No news yet.</p>'; return; }
+      el.innerHTML = data.map(n => `
+        <div class="news-full-card">
+          <div class="news-date" style="margin-bottom:0.35rem">${escHtml(n.date||'')}</div>
+          <div class="news-title" style="font-size:1.05rem;margin-bottom:0.5rem">${escHtml(n.title)}</div>
+          <div class="news-body">${escHtml(n.content||'')}</div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load news.</p>'; }
   }
 
   // ── People ────────────────────────────────────────────────────
@@ -851,7 +1146,7 @@
       const data = await fetch('/api/people').then(r => r.json());
       _allPeople = data;
       filterPeople(cat || 'all');
-    } catch(e) { el.innerHTML = '<p class="text-red-400 text-sm">Failed to load people.</p>'; }
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load people.</p>'; }
   }
 
   function filterPeople(cat) {
@@ -859,6 +1154,7 @@
       const active = b.dataset.filter === cat;
       b.style.background = active ? 'var(--navy)' : '';
       b.style.color = active ? '#fff' : 'var(--navy)';
+      b.style.borderColor = active ? 'var(--navy)' : 'var(--gray-200)';
     });
     const filtered = cat === 'all' ? _allPeople : _allPeople.filter(p => (p.category||'').toLowerCase() === cat);
     renderPeople(filtered);
@@ -868,7 +1164,6 @@
     const el = document.getElementById('peopleGrid');
     if (!people || !people.length) { el.innerHTML = '<p class="text-gray-400 col-span-4">No people found.</p>'; return; }
     el.innerHTML = people.map((p) => {
-      const cat = (p.category||'other').toLowerCase();
       const initials = (p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
       return `<div class="person-card">
         <div class="person-avatar">
@@ -878,8 +1173,8 @@
           <div class="person-name">${escHtml(p.name)}</div>
           <div class="person-role">${escHtml(p.role||'')}</div>
           <span class="category-badge">${escHtml(p.category||'')}</span>
-          ${p.bio ? `<p class="text-xs text-gray-500 mt-2 leading-relaxed">${escHtml(p.bio.slice(0,100))}${p.bio.length>100?'&#8230;':''}</p>`:''  }
-          ${p.email ? `<a href="mailto:${escHtml(p.email)}" class="text-xs mt-1 block" style="color:var(--green)">${escHtml(p.email)}</a>`:''}
+          ${p.bio ? `<p class="text-xs mt-2 leading-relaxed" style="color:var(--gray-500)">${escHtml(p.bio.slice(0,100))}${p.bio.length>100?'&#8230;':''}</p>`:''}
+          ${p.email ? `<a href="mailto:${escHtml(p.email)}" class="text-xs mt-1 block" style="color:var(--gold)">${escHtml(p.email)}</a>`:''}
         </div>
       </div>`;
     }).join('');
@@ -898,7 +1193,7 @@
           <div class="res-card-title">${escHtml(r.title)}</div>
           <div class="res-card-desc">${escHtml(r.description||'')}</div>
         </div>`).join('');
-    } catch(e) { el.innerHTML = '<p class="text-red-400 text-sm">Failed to load research.</p>'; }
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load research.</p>'; }
   }
 
   // ── Publications ──────────────────────────────────────────────
@@ -912,7 +1207,7 @@
       const sel = document.getElementById('pubYear');
       sel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
       renderPublications(_allPubs);
-    } catch(e) { el.innerHTML = '<p class="text-red-400 text-sm">Failed to load publications.</p>'; }
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load publications.</p>'; }
   }
 
   function filterPublications() {
@@ -937,8 +1232,8 @@
           <div class="pub-authors">${escHtml(p.authors)}</div>
           <div class="pub-venue">${escHtml(p.venue)}</div>
           <div class="flex gap-3 mt-1">
-            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--green)">PDF &#8599;</a>`:''}
-            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--green)">Cite &#8599;</a>`:''}
+            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">PDF &#8599;</a>`:''}
+            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Cite &#8599;</a>`:''}
           </div>
         </div>
       </div>`).join('');
@@ -950,16 +1245,16 @@
     el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
     try {
       const data = await fetch('/api/sponsors').then(r => r.json());
-      const COLORS = ['#0b1f3a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c'];
+      const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c'];
       if (!data.length) { el.innerHTML = '<p class="text-gray-400">No sponsors yet.</p>'; return; }
       el.innerHTML = data.map((s, i) => `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center gap-3 text-center">
+        <div class="content-card flex flex-col items-center gap-3 text-center">
           ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" class="h-12 object-contain">` :
             `<div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
           <div class="font-bold text-sm" style="color:var(--navy)">${escHtml(s.name)}</div>
-          ${s.website_url ? `<a href="${escHtml(s.website_url)}" target="_blank" rel="noopener" class="text-xs" style="color:var(--green)">Visit &#8594;</a>`:''}
+          ${s.website_url ? `<a href="${escHtml(s.website_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Visit &#8594;</a>`:''}
         </div>`).join('');
-    } catch(e) { el.innerHTML = '<p class="text-red-400 text-sm">Failed to load sponsors.</p>'; }
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load sponsors.</p>'; }
   }
 
   // ── Contact ───────────────────────────────────────────────────
