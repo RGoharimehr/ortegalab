@@ -17,7 +17,8 @@ if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
 const photoStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, './uploads/'),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase().replace(/[^.a-z0-9]/g, '');
+    const rawExt = path.extname(file.originalname).toLowerCase();
+    const ext = /^\.[a-z0-9]+$/.test(rawExt) ? rawExt : '';
     cb(null, `photo_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
   }
 });
@@ -367,9 +368,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // PHOTO UPLOAD API
 const uploadRateLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
-app.post('/api/upload/photo', uploadRateLimiter, requireAuth, requireCsrf, photoUpload.single('photo'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No image file provided' });
-  res.json({ url: `/uploads/${req.file.filename}` });
+app.post('/api/upload/photo', uploadRateLimiter, requireAuth, requireCsrf, (req, res) => {
+  photoUpload.single('photo')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'Upload error' });
+    if (!req.file) return res.status(400).json({ error: 'No image file provided' });
+    res.json({ url: `/uploads/${req.file.filename}` });
+  });
 });
 
 // Serve the main app for all frontend routes
