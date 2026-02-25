@@ -3,6 +3,7 @@ const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
+const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
@@ -11,6 +12,23 @@ const PORT = process.env.PORT || 3000;
 
 // Ensure uploads directory exists
 if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
+
+// Photo upload storage: preserve extension, unique name
+const photoStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, './uploads/'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase().replace(/[^.a-z0-9]/g, '');
+    cb(null, `photo_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+  }
+});
+const photoUpload = multer({
+  storage: photoStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (/^image\/(jpeg|png|gif|webp)$/.test(file.mimetype)) cb(null, true);
+    else cb(new Error('Only JPEG, PNG, GIF, or WebP images are allowed'));
+  }
+});
 
 // Database setup
 const db = new Database('./latfs.db');
@@ -342,6 +360,16 @@ app.put('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, re
 app.delete('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM sponsors WHERE id=?').run(req.params.id);
   res.json({ success: true });
+});
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// PHOTO UPLOAD API
+const uploadRateLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
+app.post('/api/upload/photo', uploadRateLimiter, requireAuth, requireCsrf, photoUpload.single('photo'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No image file provided' });
+  res.json({ url: `/uploads/${req.file.filename}` });
 });
 
 // Serve the main app for all frontend routes
