@@ -62,6 +62,15 @@ db.exec(`
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS sponsors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    logo_url TEXT,
+    website_url TEXT,
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Seed admin user
@@ -119,6 +128,23 @@ if (researchCount.cnt === 0) {
   ];
   for (const r of areas) {
     db.prepare('INSERT INTO research (title, description, image_url, sort_order) VALUES (?, ?, ?, ?)').run(r.title, r.description, r.image_url, r.sort_order);
+  }
+}
+
+// Seed sponsors
+const sponsorCount = db.prepare('SELECT COUNT(*) as cnt FROM sponsors').get();
+if (sponsorCount.cnt === 0) {
+  const sponsors = [
+    { name: 'National Science Foundation', logo_url: 'images/sponnsf.gif', website_url: 'https://www.nsf.gov', sort_order: 1 },
+    { name: 'Villanova University', logo_url: 'images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 2 },
+    { name: 'E3S Center', logo_url: '', website_url: 'http://www1.villanova.edu/villanova/engineering/research/centers/ES2.html', sort_order: 3 },
+    { name: 'Intel Corporation', logo_url: '', website_url: 'https://www.intel.com', sort_order: 4 },
+    { name: 'IBM Research', logo_url: '', website_url: 'https://research.ibm.com', sort_order: 5 },
+    { name: 'Cisco Systems', logo_url: '', website_url: 'https://www.cisco.com', sort_order: 6 },
+    { name: 'Hewlett-Packard', logo_url: '', website_url: 'https://www.hp.com', sort_order: 7 },
+  ];
+  for (const s of sponsors) {
+    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(s.name, s.logo_url, s.website_url, s.sort_order);
   }
 }
 
@@ -269,6 +295,30 @@ app.put('/api/research/:id', requireAuth, (req, res) => {
 
 app.delete('/api/research/:id', requireAuth, (req, res) => {
   db.prepare('DELETE FROM research WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// SPONSORS API
+app.get('/api/sponsors', (req, res) => {
+  const sponsors = db.prepare('SELECT * FROM sponsors ORDER BY sort_order, id').all();
+  res.json(sponsors);
+});
+
+app.post('/api/sponsors', requireAuth, (req, res) => {
+  const { name, logo_url, website_url, sort_order } = req.body;
+  if (!name) return res.status(400).json({ error: 'Missing name' });
+  const result = db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(name, logo_url || '', website_url || '', sort_order || 0);
+  res.json({ id: result.lastInsertRowid });
+});
+
+app.put('/api/sponsors/:id', requireAuth, (req, res) => {
+  const { name, logo_url, website_url, sort_order } = req.body;
+  db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+
+app.delete('/api/sponsors/:id', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM sponsors WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
