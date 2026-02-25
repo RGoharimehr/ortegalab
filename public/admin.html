@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LATFS Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { primary: '#1e3a5f', secondary: '#2d6a9f', accent: '#e8a020' } } }
+    }
+  </script>
+  <style>
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .tab-active { background: #1e3a5f; color: white; }
+    .tab-inactive { background: white; color: #374151; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- Login Screen -->
+<div id="login-screen" class="min-h-screen flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-primary">LATFS Admin</h1>
+      <p class="text-gray-500 mt-1">Sign in to manage content</p>
+    </div>
+    <form id="login-form" onsubmit="doLogin(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+        <input type="text" id="login-user" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder="admin">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input type="password" id="login-pass" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+      </div>
+      <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">Invalid username or password.</div>
+      <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-secondary transition-colors font-medium text-lg">
+        Sign In
+      </button>
+    </form>
+    <p class="text-center text-gray-400 text-xs mt-4">Default: admin / admin123</p>
+  </div>
+</div>
+
+<!-- Admin Dashboard -->
+<div id="admin-dashboard" class="hidden">
+  <!-- Top bar -->
+  <nav class="bg-primary text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-primary text-sm">L</div>
+        <span class="font-bold text-lg">LATFS Admin</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="admin-username" class="text-blue-200 text-sm"></span>
+        <a href="/" class="text-sm text-blue-200 hover:text-white flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          View Site
+        </a>
+        <button onclick="doLogout()" class="text-sm bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-colors">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Stats cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">News Items</div>
+        <div id="stat-news" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">Publications</div>
+        <div id="stat-pubs" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">People</div>
+        <div id="stat-people" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">Research Areas</div>
+        <div id="stat-research" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <div class="flex border-b border-gray-200 overflow-x-auto">
+        <button onclick="switchTab('news')" id="tab-news" class="tab-active px-6 py-3 font-medium text-sm whitespace-nowrap">&#128240; News</button>
+        <button onclick="switchTab('publications')" id="tab-publications" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128218; Publications</button>
+        <button onclick="switchTab('people')" id="tab-people" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128101; People</button>
+        <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
+      </div>
+      
+      <!-- NEWS TAB -->
+      <div id="content-news" class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-primary">News Items</h2>
+          <button onclick="openModal('news')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add News</button>
+        </div>
+        <div id="news-table" class="space-y-2"></div>
+      </div>
+      
+      <!-- PUBLICATIONS TAB -->
+      <div id="content-publications" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-primary">Publications</h2>
+          <button onclick="openModal('publication')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Publication</button>
+        </div>
+        <div id="pub-table" class="space-y-2"></div>
+      </div>
+      
+      <!-- PEOPLE TAB -->
+      <div id="content-people" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-primary">People</h2>
+          <button onclick="openModal('person')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Person</button>
+        </div>
+        <div id="people-table" class="space-y-2"></div>
+      </div>
+      
+      <!-- RESEARCH TAB -->
+      <div id="content-research" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-primary">Research Areas</h2>
+          <button onclick="openModal('research')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Research Area</button>
+        </div>
+        <div id="research-table" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="hidden modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="modal-title" class="text-xl font-bold text-primary"></h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div id="delete-modal" class="hidden modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+    <h3 class="text-lg font-bold text-gray-800 mb-2">Confirm Delete</h3>
+    <p class="text-gray-600 mb-6">Are you sure you want to delete this item? This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+      <button id="delete-confirm-btn" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTab = 'news';
+let editingId = null;
+let editingType = null;
+let deleteCallback = null;
+
+// Auth
+async function checkAuth() {
+  const r = await fetch('/admin/check');
+  const data = await r.json();
+  if (data.loggedIn) {
+    showDashboard(data.username);
+  } else {
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('login-user').value;
+  const password = document.getElementById('login-pass').value;
+  const r = await fetch('/admin/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username, password}) });
+  if (r.ok) {
+    const data = await r.json();
+    showDashboard(data.username);
+  } else {
+    document.getElementById('login-error').classList.remove('hidden');
+  }
+}
+
+async function doLogout() {
+  await fetch('/admin/logout', { method: 'POST' });
+  location.reload();
+}
+
+function showDashboard(username) {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('admin-dashboard').classList.remove('hidden');
+  document.getElementById('admin-username').textContent = 'Logged in as: ' + username;
+  loadStats();
+  loadAllData();
+}
+
+// Tabs
+function switchTab(tab) {
+  currentTab = tab;
+  ['news','publications','people','research'].forEach(t => {
+    document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
+    const content = document.getElementById('content-' + t);
+    if (content) content.classList.toggle('hidden', t !== tab);
+  });
+}
+
+// Stats
+async function loadStats() {
+  try {
+    const [news, pubs, people, research] = await Promise.all([
+      fetch('/api/news').then(r => r.json()),
+      fetch('/api/publications').then(r => r.json()),
+      fetch('/api/people').then(r => r.json()),
+      fetch('/api/research').then(r => r.json()),
+    ]);
+    document.getElementById('stat-news').textContent = news.length;
+    document.getElementById('stat-pubs').textContent = pubs.length;
+    document.getElementById('stat-people').textContent = people.length;
+    document.getElementById('stat-research').textContent = research.length;
+  } catch(e) {}
+}
+
+// Load all data
+async function loadAllData() {
+  loadNewsData();
+  loadPubData();
+  loadPeopleData();
+  loadResearchData();
+}
+
+async function loadNewsData() {
+  const items = await fetch('/api/news').then(r => r.json());
+  const el = document.getElementById('news-table');
+  el.innerHTML = items.length ? items.map(n => `
+    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-gray-800 text-sm">${escHtml(n.title)}</div>
+        <div class="text-gray-500 text-xs mt-0.5">${n.date} &middot; ${escHtml(n.content.substring(0,80))}...</div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editItem('news',${n.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
+        <button onclick="confirmDelete('news',${n.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-gray-500 text-sm">No news items yet.</p>';
+}
+
+async function loadPubData() {
+  const items = await fetch('/api/publications').then(r => r.json());
+  const el = document.getElementById('pub-table');
+  el.innerHTML = items.length ? items.map(p => `
+    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-gray-800 text-sm">${escHtml(p.title.substring(0,80))}${p.title.length>80?'...':''}</div>
+        <div class="text-gray-500 text-xs mt-0.5">${p.year} &middot; ${escHtml(p.venue)} &middot; ${escHtml(p.authors.substring(0,50))}</div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editItem('publication',${p.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
+        <button onclick="confirmDelete('publication',${p.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-gray-500 text-sm">No publications yet.</p>';
+}
+
+async function loadPeopleData() {
+  const items = await fetch('/api/people').then(r => r.json());
+  const el = document.getElementById('people-table');
+  el.innerHTML = items.length ? items.map(p => `
+    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-gray-800 text-sm">${escHtml(p.name)}</div>
+        <div class="text-gray-500 text-xs mt-0.5">${escHtml(p.role)} &middot; <span class="capitalize">${escHtml(p.category)}</span> &middot; ${p.active ? '&#9989; Active' : '&#10060; Inactive'}</div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editItem('person',${p.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
+        <button onclick="confirmDelete('person',${p.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-gray-500 text-sm">No people yet.</p>';
+}
+
+async function loadResearchData() {
+  const items = await fetch('/api/research').then(r => r.json());
+  const el = document.getElementById('research-table');
+  el.innerHTML = items.length ? items.map(r => `
+    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-gray-800 text-sm">${escHtml(r.title)}</div>
+        <div class="text-gray-500 text-xs mt-0.5">${escHtml(r.description.substring(0,100))}...</div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editItem('research',${r.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
+        <button onclick="confirmDelete('research',${r.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-gray-500 text-sm">No research areas yet.</p>';
+}
+
+// Modal forms
+function openModal(type, data) {
+  editingId = data ? data.id : null;
+  editingType = type;
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modal-title');
+  const body = document.getElementById('modal-body');
+  
+  if (type === 'news') {
+    title.textContent = editingId ? 'Edit News' : 'Add News';
+    body.innerHTML = `
+      <form onsubmit="saveItem(event,'news')" class="space-y-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+          <input name="date" type="date" required value="${data ? data.date : new Date().toISOString().slice(0,10)}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Content *</label>
+          <textarea name="content" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.content) : ''}</textarea></div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
+        </div>
+      </form>`;
+  } else if (type === 'publication') {
+    title.textContent = editingId ? 'Edit Publication' : 'Add Publication';
+    body.innerHTML = `
+      <form onsubmit="saveItem(event,'publication')" class="space-y-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Authors *</label>
+          <input name="authors" required value="${data ? escHtml(data.authors) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
+            <input name="venue" required value="${data ? escHtml(data.venue) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Year *</label>
+            <input name="year" type="number" required value="${data ? data.year : new Date().getFullYear()}" min="1990" max="2030" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">PDF URL</label>
+          <input name="pdf_url" value="${data && data.pdf_url ? escHtml(data.pdf_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. /papers/paper.pdf"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Citation URL</label>
+          <input name="citation_url" value="${data && data.citation_url ? escHtml(data.citation_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. /papers/paper.ris"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
+        </div>
+      </form>`;
+  } else if (type === 'person') {
+    title.textContent = editingId ? 'Edit Person' : 'Add Person';
+    body.innerHTML = `
+      <form onsubmit="saveItem(event,'person')" class="space-y-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Role/Title *</label>
+          <input name="role" required value="${data ? escHtml(data.role) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. Ph.D. Candidate"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+          <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">
+            <option value="director" ${data && data.category==='director'?'selected':''}>Director</option>
+            <option value="postdoc" ${data && data.category==='postdoc'?'selected':''}>PostDoc Fellow</option>
+            <option value="phd" ${data && data.category==='phd'?'selected':''}>Ph.D. Candidate</option>
+            <option value="ms" ${data && data.category==='ms'?'selected':''}>M.S. Student</option>
+            <option value="ug" ${data && data.category==='ug'?'selected':''}>Undergrad Student</option>
+            <option value="former" ${data && data.category==='former'?'selected':''}>Former Member</option>
+          </select></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input name="email" type="email" value="${data && data.email ? escHtml(data.email) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+          <textarea name="bio" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data && data.bio ? escHtml(data.bio) : ''}</textarea></div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" name="active" id="active-check" ${!data || data.active ? 'checked' : ''} class="w-4 h-4">
+          <label for="active-check" class="text-sm font-medium text-gray-700">Currently Active Member</label>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
+        </div>
+      </form>`;
+  } else if (type === 'research') {
+    title.textContent = editingId ? 'Edit Research Area' : 'Add Research Area';
+    body.innerHTML = `
+      <form onsubmit="saveItem(event,'research')" class="space-y-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+          <textarea name="description" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.description) : ''}</textarea></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+          <input name="image_url" value="${data && data.image_url ? escHtml(data.image_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
+        </div>
+      </form>`;
+  }
+  
+  modal.classList.remove('hidden');
+}
+
+async function editItem(type, id) {
+  let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type;
+  const items = await fetch('/api/' + endpoint).then(r => r.json());
+  const item = items.find(i => i.id === id);
+  if (item) openModal(type, item);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  editingId = null;
+  editingType = null;
+}
+
+async function saveItem(e, type) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  let data = Object.fromEntries(fd.entries());
+  
+  if (type === 'person') data.active = form.querySelector('[name=active]').checked;
+  
+  let endpoint;
+  if (type === 'news') endpoint = 'news';
+  else if (type === 'publication') endpoint = 'publications';
+  else if (type === 'person') endpoint = 'people';
+  else if (type === 'research') endpoint = 'research';
+  
+  const method = editingId ? 'PUT' : 'POST';
+  const url = '/api/' + endpoint + (editingId ? '/' + editingId : '');
+  
+  const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  if (r.ok) {
+    closeModal();
+    loadAllData();
+    loadStats();
+  } else {
+    alert('Error saving item');
+  }
+}
+
+function confirmDelete(type, id) {
+  deleteCallback = async () => {
+    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type;
+    await fetch('/api/' + endpoint + '/' + id, { method: 'DELETE' });
+    closeDeleteModal();
+    loadAllData();
+    loadStats();
+  };
+  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.add('hidden');
+  deleteCallback = null;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Init
+checkAuth();
+</script>
+</body>
+</html>

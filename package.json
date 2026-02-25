@@ -1,13 +1,20 @@
 {
-  "name": "untitled",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "latfs-website",
+  "version": "2.0.0",
+  "description": "LATFS Lab Website - Laboratory for Advanced Thermal and Fluid Systems",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["LATFS", "Villanova", "heat transfer"],
+  "author": "LATFS Lab",
   "license": "ISC",
-  "type": "commonjs"
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^12.6.2",
+    "bcryptjs": "^2.4.3",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1"
+  }
 }
