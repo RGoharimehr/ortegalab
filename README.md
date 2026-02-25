@@ -18,6 +18,9 @@ Modern Node.js/Express web application for the LATFS research lab. Features a dy
 # Install dependencies
 npm install
 
+# Build the CSS (required before starting)
+npm run build:css
+
 # Start the server
 npm start
 ```
@@ -37,13 +40,25 @@ The site will be available at **http://localhost:3000**
 ```
 ├── server.js          # Express server + REST API + SQLite setup
 ├── package.json
+├── tailwind.config.js # Tailwind CSS configuration
+├── src/
+│   └── input.css      # Tailwind CSS source
 ├── public/
-│   ├── index.html     # Main SPA (Tailwind CSS, responsive)
-│   └── admin.html     # Admin dashboard
+│   ├── index.html     # Main SPA (responsive)
+│   ├── admin.html     # Admin dashboard
+│   └── tailwind.css   # Compiled Tailwind CSS (built via npm run build:css)
 ├── uploads/           # File uploads (auto-created)
 ├── latfs.db           # SQLite database (auto-created, gitignored)
 └── .gitignore
 ```
+
+## npm Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start the server |
+| `npm run build:css` | Compile Tailwind CSS (run after HTML changes) |
+| `npm run watch:css` | Watch and recompile CSS on HTML changes |
 
 ## API Endpoints
 

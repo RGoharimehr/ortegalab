@@ -4,14 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LATFS Admin Panel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: { extend: { colors: { primary: '#1e3a5f', secondary: '#2d6a9f', accent: '#e8a020' } } }
-    }
-  </script>
+  <link rel="stylesheet" href="/tailwind.css">
   <style>
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem; display: none; }
+    .modal-overlay.modal-open { display: flex; }
     .tab-active { background: #1e3a5f; color: white; }
     .tab-inactive { background: white; color: #374151; }
   </style>
@@ -138,7 +134,7 @@
 </div>
 
 <!-- Modal -->
-<div id="modal" class="hidden modal-overlay" onclick="if(event.target===this)closeModal()">
+<div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
     <div class="p-6">
       <div class="flex items-center justify-between mb-6">
@@ -153,7 +149,7 @@
 </div>
 
 <!-- Delete Confirm Modal -->
-<div id="delete-modal" class="hidden modal-overlay">
+<div id="delete-modal" class="modal-overlay">
   <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
     <h3 class="text-lg font-bold text-gray-800 mb-2">Confirm Delete</h3>
     <p class="text-gray-600 mb-6">Are you sure you want to delete this item? This action cannot be undone.</p>
@@ -404,7 +400,7 @@ function openModal(type, data) {
       </form>`;
   }
   
-  modal.classList.remove('hidden');
+  modal.classList.add('modal-open');
 }
 
 async function editItem(type, id) {
@@ -415,7 +411,7 @@ async function editItem(type, id) {
 }
 
 function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal').classList.remove('modal-open');
   editingId = null;
   editingType = null;
 }
@@ -456,11 +452,11 @@ function confirmDelete(type, id) {
     loadStats();
   };
   document.getElementById('delete-confirm-btn').onclick = deleteCallback;
-  document.getElementById('delete-modal').classList.remove('hidden');
+  document.getElementById('delete-modal').classList.add('modal-open');
 }
 
 function closeDeleteModal() {
-  document.getElementById('delete-modal').classList.add('hidden');
+  document.getElementById('delete-modal').classList.remove('modal-open');
   deleteCallback = null;
 }
 
