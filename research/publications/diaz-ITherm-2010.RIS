@@ -1,0 +1,31 @@
+TY  - CONF
+JO  - Thermal and Thermomechanical Phenomena in Electronic Systems (ITherm), 2010 12th IEEE Intersociety Conference on
+TI  - Numerical investigation of a liquid droplet transported by a gas stream impinging on a heated surface: single-phase regime
+T2  - Thermal and Thermomechanical Phenomena in Electronic Systems (ITherm), 2010 12th IEEE Intersociety Conference on
+IS  - 
+SN  - 1087-9870
+VO  - 
+SP  - 1
+EP  - 9
+AU  - Diaz, A.J.
+AU  - Ortega, A.
+Y1  - 2-5 June 2010
+PY  - 2010
+KW  - drops
+KW  - heat transfer
+KW  - numerical analysis
+KW  - sprays
+KW  - gas stream
+KW  - heat transfer
+KW  - heated surface
+KW  - liquid droplet
+KW  - liquid film
+KW  - single-phase regime
+KW  - sprays
+KW  - volume of fluid method
+VL  - 
+JA  - Thermal and Thermomechanical Phenomena in Electronic Systems (ITherm), 2010 12th IEEE Intersociety Conference on
+DOI  - 10.1109/ITHERM.2010.5501358
+AB  - Gas-assisted sprays, in which a gas stream propels droplets to a target surface, have been demonstrated to be more efficient in heat removal than sprays generated solely by liquid droplets. In this paper a numerical model, using the volume of fluid (VOF) method and an adaptive grid technique, is developed to investigate the droplet spreading dynamics and heat transfer due to a single drop that is transported by a gas stream onto a heated surface. The results show a significant deviation from the behavior of a free falling droplet that is generated at the same height due to the pronounced effects that the carrier gas stream has on the spreading rate, liquid film thickness and surface temperature distribution. The gas stream transports the liquid droplets to the surface imposing pressure and shear stress over its surface, which accelerates the droplet, increases the maximum spreading diameter, and decreases the liquid film thickness at the moment of maximum spreading. This contributes to an increase in the wetted area where heat transfer takes place. Furthermore, advection within the droplet during the early stage of impact deviates the temperature distribution inside the liquid droplet from a pure conduction problem. The numerical computations, which have been undertaken assuming laminar behavior, reveal that the gas flow in the vicinity of the droplet is quite complex. Surprisingly, the laminar computations agree well with experiments even when the impinging gas stream is known to be turbulent.
+ER  - 
+

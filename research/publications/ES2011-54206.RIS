@@ -1,0 +1,25 @@
+TY  - CONF
+JO  - International Conference on Energy Sustainability (ES), 2011 5th ASME 
+TI  - SIMULATION OF TWO-PHASE FLOW AND HEAT TRANSFER IN MINI- AND MICRO-CHANNELS FOR CONCENTRATING PHOTOVOLTAICS COOLING
+T2  - 
+IS  - 
+SN  - 
+VO  - 
+SP  - 1
+EP  - 9
+AU  - Pellicone, D.
+AU  - Ortega, A.
+AU  - del Valle, M.
+AU  - Schon, S.
+Y1  - 7-10 August 2011
+PY  - 2011
+KW  - TWO-PHASE FLOW
+KW  - concentrating photovoltaics
+KW  - micro-channel
+VL  - 
+JA  - International Conference on Energy Sustainability (ES), 2011 5th ASME
+DOI  - 
+AB  - Advances in concentrating photovoltaics technology have generated a need for more effective thermal management techniques. Research in photovoltaics has shown that there is a more than 50% decrease in PV cell efficiency when operating temperatures approach 60°C. It is estimated that a waste heat load in excess of 500 W/cm2 will need to be dissipated at a solar concentration of 10,000 suns. Mini- and micro-scale heat exchangers provide the means for large heat transfer coefficients with single phase flow due to the inverse proportionality of Nusselt number with respect to the hydraulic diameter. For very high heat flux situations, single phase forced convection in micro-channels may not be sufficient and hence convective flow boiling in small scale heat exchangers has gained wider scrutiny due to the much higher achievable heat transfer coefficients due to latent heat of vaporization and convective boiling.
+The purpose of this investigation is to explore a practical and accurate modeling approach for simulating multiphase flow and heat transfer in mini- and micro-channel heat exchangers. The work is specifically aimed at providing a modeling tool to assist in the design of a mini/micro-scale stacked heat exchanger to operate in the boiling regime. The flow side energy and momentum equations have been implemented using a one-dimensional homogeneous approach, with local heat transfer coefficients and friction factors supplied by literature correlations. The channel flow solver has been implemented in MATLABTM and embedded within the COMSOLTM FEM solver which is used to model the solid side conduction problem. The COMSOL environment allows for parameterization of design variables leading to a fully customizable model of a two-phase heat exchanger.
+ER  - 
+
