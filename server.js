@@ -98,12 +98,19 @@ db.exec(`
   );
 `);
 
-// Migrations: add new columns to existing databases
-try { db.exec('ALTER TABLE research ADD COLUMN content TEXT DEFAULT ""'); } catch(e) {}
-try { db.exec('ALTER TABLE research ADD COLUMN links TEXT DEFAULT "[]"'); } catch(e) {}
-try { db.exec('ALTER TABLE publications ADD COLUMN doi_url TEXT'); } catch(e) {}
-try { db.exec('ALTER TABLE people ADD COLUMN linkedin_url TEXT DEFAULT ""'); } catch(e) {}
-try { db.exec('ALTER TABLE people ADD COLUMN website_url TEXT DEFAULT ""'); } catch(e) {}
+// Migrations: add new columns to existing databases (errors for duplicate columns are expected and ignored)
+const migrations = [
+  'ALTER TABLE research ADD COLUMN content TEXT DEFAULT ""',
+  'ALTER TABLE research ADD COLUMN links TEXT DEFAULT "[]"',
+  'ALTER TABLE publications ADD COLUMN doi_url TEXT',
+  'ALTER TABLE people ADD COLUMN linkedin_url TEXT DEFAULT ""',
+  'ALTER TABLE people ADD COLUMN website_url TEXT DEFAULT ""',
+];
+for (const sql of migrations) {
+  try { db.exec(sql); } catch(e) {
+    if (!e.message.includes('duplicate column name')) console.error('Migration error:', e.message);
+  }
+}
 
 // Seed admin user
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
