@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LATFS - Laboratory for Advanced Thermal and Fluid Systems</title>
+  <meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tailwind.css">
+  <style>
+    :root {
+      --navy: #0f172a;
+      --navy-700: #1e3a5f;
+      --gold: #b8912a;
+      --gold-light: #fef7e4;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-700: #374151;
+      /* Legacy aliases */
+      --primary: #0f172a;
+      --secondary: #b8912a;
+      --accent: #b8912a;
+      --green: #b8912a;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    body {
+      background: var(--gray-50);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* ── Section visibility ────────────────────────────── */
+    .section-hidden { display: none !important; }
+
+    /* ── Navigation ────────────────────────────────────── */
+    nav {
+      background: var(--navy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      transition: color 0.2s;
+      font-size: 0.875rem;
+      font-weight: 500;
+      position: relative;
+      display: inline-block;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-link.active { color: #fff; }
+    .nav-link.active::after {
+      content: '';
+      display: block;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 1px;
+      position: absolute;
+      bottom: -2px;
+      left: 0.75rem;
+      right: 0.75rem;
+    }
+    /* ── Slideshow ──────────────────────────────────────── */
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .slide.active { opacity: 1; }
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(15,23,42,0.82) 0%, rgba(15,23,42,0.55) 65%, rgba(15,23,42,0.28) 100%);
+    }
+    .slide-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.2s;
+    }
+    .slide-arrow:hover { background: rgba(255,255,255,0.3); }
+    .slide-arrow.prev { left: 12px; }
+    .slide-arrow.next { right: 12px; }
+    #slideDots { position: absolute; bottom: 14px; right: 16px; display: flex; gap: 5px; z-index: 10; }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+    .dot.active { background: #fff; }
+    /* Mobile nav */
+    #mobileMenu { display: none; }
+    #mobileMenu.open { display: block; }
+
+    /* ── News Ticker ────────────────────────────────────── */
+    .ticker-wrap {
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      height: 36px;
+    }
+    .ticker-label {
+      background: var(--gold);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 0 14px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .ticker-inner { overflow: hidden; flex: 1; }
+    .ticker-track {
+      display: flex;
+      white-space: nowrap;
+      animation: tickerScroll 40s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+    @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .ticker-item {
+      padding: 0 28px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* ── Buttons ────────────────────────────────────────── */
+    .btn-primary {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .btn-primary:hover { background: var(--navy-700); }
+    .btn-ghost {
+      border: 1.5px solid var(--gray-200);
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: transparent;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--navy); }
+    .btn-primary-inv {
+      background: #fff;
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-primary-inv:hover { opacity: 0.9; }
+    .btn-ghost-inv {
+      border: 1.5px solid rgba(255,255,255,0.35);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: transparent;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .btn-ghost-inv:hover { border-color: rgba(255,255,255,0.7); }
+    *:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+    /* ── Hero stats ─────────────────────────────────────── */
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 1.5rem;
+    }
+    .hero-stat { display: flex; flex-direction: column; }
+    .hero-stat-num { font-size: 1.5rem; font-weight: 800; color: #fff; }
+    .hero-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
+
+    /* ── Page headings ──────────────────────────────────── */
+    .page-title {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .page-subtitle { font-size: 1rem; color: var(--gray-500); margin-bottom: 2rem; }
+
+    /* ── Section header with gold accent bar ────────────── */
+    .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .section-header-bar { width: 3px; height: 1.5rem; background: var(--gold); border-radius: 2px; flex-shrink: 0; }
+    .section-header-title { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+
+    /* ── Content card ───────────────────────────────────── */
+    .content-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+    }
+    .content-card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Badge ──────────────────────────────────────────── */
+    .badge-gold {
+      display: inline-flex;
+      align-items: center;
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    /* ── Opening items ──────────────────────────────────── */
+    .opening-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .opening-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .opening-item strong { display: block; font-size: 0.9rem; color: var(--navy); margin-bottom: 0.25rem; }
+    .opening-item p { font-size: 0.84rem; color: var(--gray-500); margin: 0; }
+
+    /* ── Lists ──────────────────────────────────────────── */
+    .offer-list { list-style: none; padding: 0; margin: 0; }
+    .offer-list li { font-size: 0.88rem; color: var(--gray-700); padding: 0.35rem 0; padding-left: 1.25rem; position: relative; }
+    .offer-list li::before { content: "✓"; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+    .apply-list { padding-left: 1.25rem; margin: 0.75rem 0; }
+    .apply-list li { font-size: 0.88rem; color: var(--gray-700); padding: 0.2rem 0; }
+
+    /* ── FAQ ────────────────────────────────────────────── */
+    .faq-list { margin: 0; }
+    .faq-item { border-bottom: 1px solid var(--gray-100); }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item summary {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--navy);
+      padding: 0.85rem 0;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "▾"; font-size: 0.85rem; color: var(--gray-400); }
+    .faq-item[open] summary::after { content: "▴"; }
+    .faq-item p { font-size: 0.85rem; color: var(--gray-500); padding: 0 0 1rem; line-height: 1.6; margin: 0; }
+
+    /* ── News cards ─────────────────────────────────────── */
+    .news-card {
+      background: #fff;
+      border-radius: 10px;
+      border-left: 3px solid var(--gold);
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.6rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .news-full-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: box-shadow 0.2s;
+    }
+    .news-full-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .news-date { font-size: 0.75rem; color: var(--gray-400); font-weight: 600; }
+    .news-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin: 0.2rem 0; }
+    .news-body { font-size: 0.85rem; color: #475569; line-height: 1.5; }
+
+    /* ── Research cards ─────────────────────────────────── */
+    .res-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+      border-left: 4px solid var(--gold);
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .res-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .res-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--navy);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      flex-shrink: 0;
+    }
+    .res-card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
+    .res-card-desc { font-size: 0.82rem; color: #475569; line-height: 1.5; }
+
+    /* ── People cards ───────────────────────────────────── */
+    .person-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .person-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .person-avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 1.25rem auto 0;
+      overflow: hidden;
+    }
+    .person-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .person-body { padding: 1rem; text-align: center; }
+    .person-name { font-weight: 700; color: var(--navy); font-size: 1rem; }
+    .person-role { font-size: 0.82rem; color: #64748b; margin: 0.15rem 0; }
+    .category-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      background: var(--gold-light);
+      color: var(--gold);
+    }
+
+    /* ── Publications ───────────────────────────────────── */
+    .pub-row {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 0.6rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .pub-year-badge {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pub-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); }
+    .pub-authors { font-size: 0.8rem; color: #64748b; }
+    .pub-venue { font-size: 0.78rem; color: var(--gray-400); font-style: italic; }
+
+    /* ── Facility cards ─────────────────────────────────── */
+    .facility-card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+      border-top: 3px solid var(--gold);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .facility-icon { padding: 1.25rem 1.25rem 0; }
+    .facility-body { padding: 1.25rem; }
+    .facility-body h3 { font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+
+    /* ── Sponsors marquee ───────────────────────────────── */
+    .marquee-wrap { overflow: hidden; background: var(--gray-50); border-radius: 12px; }
+    .marquee-track { display: flex; animation: marqueeScroll 30s linear infinite; }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .sponsor-chip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      margin: 0 0.5rem;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      min-width: 80px;
+    }
+    .sponsor-init {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .sponsor-name { font-size: 0.82rem; font-weight: 600; color: #334155; }
+
+    /* ── Video ──────────────────────────────────────────── */
+    .video-wrap { border-radius: 14px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+    .video-wrap iframe { display: block; width: 100%; aspect-ratio: 16/9; border: none; }
+
+    /* ── Social media ───────────────────────────────────── */
+    .social-widget {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .social-widget-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .footer-heading { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 0.75rem; }
+    .logo-mark { font-weight: 900; font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    footer ul { list-style: none; padding: 0; margin: 0; }
+    footer ul li { font-size: 0.85rem; color: rgba(255,255,255,0.6); padding: 0.2rem 0; cursor: pointer; transition: color 0.15s; }
+    footer ul li:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVIGATION ══════════════════════════════════════════════ -->
+<nav>
+  <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
+    <!-- Logo -->
+    <div class="flex items-center gap-2 cursor-pointer" onclick="showSection('home')">
+      <div class="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0" style="background:var(--gold);color:#fff">L</div>
+      <span class="text-white font-bold text-sm hidden sm:block tracking-tight">LATFS</span>
+    </div>
+    <!-- Desktop links -->
+    <div class="hidden md:flex items-center gap-0.5">
+      <span class="nav-link active" id="nav-home" onclick="showSection('home')">Home</span>
+      <span class="nav-link" id="nav-research" onclick="showSection('research')">Research</span>
+      <span class="nav-link" id="nav-people" onclick="showSection('people')">People</span>
+      <span class="nav-link" id="nav-publications" onclick="showSection('publications')">Publications</span>
+      <span class="nav-link" id="nav-facilities" onclick="showSection('facilities')">Facilities</span>
+      <span class="nav-link" id="nav-news" onclick="showSection('news')">News</span>
+      <span class="nav-link" id="nav-sponsors" onclick="showSection('sponsors')">Sponsors</span>
+      <span class="nav-link" id="nav-collaborators" onclick="showSection('collaborators')">Collaborators</span>
+      <span class="nav-link" id="nav-join" onclick="showSection('join')">Join</span>
+      <span class="nav-link" id="nav-contact" onclick="showSection('contact')">Contact</span>
+    </div>
+    <!-- Mobile hamburger -->
+    <button id="mobileMenuBtn" class="md:hidden text-white text-xl px-2" onclick="toggleMobileMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">&#9776;</button>
+  </div>
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="md:hidden px-4 pb-3 border-t" style="border-color:rgba(255,255,255,0.07)">
+    <span class="block nav-link py-2" onclick="showSection('home');toggleMobileMenu()">Home</span>
+    <span class="block nav-link py-2" onclick="showSection('research');toggleMobileMenu()">Research</span>
+    <span class="block nav-link py-2" onclick="showSection('people');toggleMobileMenu()">People</span>
+    <span class="block nav-link py-2" onclick="showSection('publications');toggleMobileMenu()">Publications</span>
+    <span class="block nav-link py-2" onclick="showSection('facilities');toggleMobileMenu()">Facilities</span>
+    <span class="block nav-link py-2" onclick="showSection('news');toggleMobileMenu()">News</span>
+    <span class="block nav-link py-2" onclick="showSection('join');toggleMobileMenu()">Join</span>
+    <span class="block nav-link py-2" onclick="showSection('contact');toggleMobileMenu()">Contact</span>
+    <span class="block nav-link py-2" onclick="showSection('sponsors');toggleMobileMenu()">Sponsors</span>
+    <span class="block nav-link py-2" onclick="showSection('collaborators');toggleMobileMenu()">Collaborators</span>
+  </div>
+</nav>
+
+<!-- ══ HOME SECTION ════════════════════════════════════════════ -->
+<div id="sec-home">
+
+  <!-- Hero: full-width slideshow background -->
+  <section id="sec-home-hero" class="relative text-white overflow-hidden" style="min-height:520px;background:var(--navy-700)">
+    <!-- Slideshow as full-width background (slides injected by JS from /api/gallery) -->
+    <div id="slideshow" class="absolute inset-0" style="background:var(--navy-700)">
+      <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
+      <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
+      <div id="slideDots"></div>
+    </div>
+    <!-- Text content overlay -->
+    <div class="relative z-10 max-w-7xl mx-auto px-8 flex flex-col justify-center" style="min-height:520px;padding-top:5rem;padding-bottom:5rem">
+      <p style="color:rgba(255,255,255,0.75);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
+        Villanova University &middot; Mechanical Engineering
+      </p>
+      <h1 style="font-size:clamp(1.75rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;max-width:620px">
+        Laboratory for Advanced Thermal &amp; Fluid Systems
+      </h1>
+      <p style="font-size:1rem;color:rgba(255,255,255,0.82);line-height:1.6;margin-bottom:2rem;max-width:560px">
+        Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
+        <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- News Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker-label">News</div>
+    <div class="ticker-inner">
+      <div class="ticker-track" id="tickerTrack">
+        <span class="ticker-item">Welcome to LATFS &#8212; Laboratory for Advanced Thermal and Fluid Systems at Villanova University</span>
+        <span class="ticker-item">&bull;</span>
+        <span class="ticker-item">NSF E3S Center Partner &#8212; Energy Efficient Electronic Systems</span>
+        <span class="ticker-item">&bull;</span>
+        <span class="ticker-item">Latest research in two-phase heat transfer, thermal management, and fluid systems</span>
+        <span class="ticker-item">&bull;</span>
+        <span class="ticker-item">Welcome to LATFS &#8212; Laboratory for Advanced Thermal and Fluid Systems at Villanova University</span>
+        <span class="ticker-item">&bull;</span>
+        <span class="ticker-item">NSF E3S Center Partner &#8212; Energy Efficient Electronic Systems</span>
+        <span class="ticker-item">&bull;</span>
+        <span class="ticker-item">Latest research in two-phase heat transfer, thermal management, and fluid systems</span>
+        <span class="ticker-item">&bull;</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Research Pillars -->
+  <div class="max-w-7xl mx-auto px-4 pt-12 pb-4">
+    <div class="section-header">
+      <div class="section-header-bar"></div>
+      <h2 class="section-header-title">Research Areas</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="homeResearch">
+      <p class="text-gray-400 text-sm">Loading&#8230;</p>
+    </div>
+    <div class="mt-4">
+      <button onclick="showSection('research')" class="btn-ghost text-sm">All research areas &#8594;</button>
+    </div>
+  </div>
+
+  <!-- 2-col: News + Featured Pub -->
+  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Left 2/3: Latest News + Social -->
+    <div class="lg:col-span-2 space-y-8">
+      <div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <h2 class="section-header-title">Latest News</h2>
+        </div>
+        <div id="homeFeed"><p class="text-gray-400 text-sm">Loading news&#8230;</p></div>
+        <button onclick="showSection('news')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">View all news &#8594;</button>
+      </div>
+    </div>
+
+    <!-- Right 1/3: Featured Pub + Social -->
+    <div class="space-y-6">
+      <div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <h2 class="section-header-title">Featured Publication</h2>
+        </div>
+        <div id="homePubs"><p class="text-gray-400 text-sm">Loading&#8230;</p></div>
+        <button onclick="showSection('publications')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">All publications &#8594;</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Partners & Sponsors Marquee -->
+  <div class="max-w-7xl mx-auto px-4 pb-12">
+    <div class="section-header">
+      <div class="section-header-bar"></div>
+      <h2 class="section-header-title">Partners &amp; Sponsors</h2>
+    </div>
+    <div class="marquee-wrap py-4">
+      <div class="marquee-track" id="sponsorsMarquee">
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sec-home -->
+
+<!-- ══ RESEARCH SECTION ════════════════════════════════════════ -->
+<div id="sec-research" class="section-hidden max-w-7xl mx-auto px-4 py-10">
+  <h1 class="page-title">Research</h1>
+  <p class="page-subtitle">Exploring the frontiers of thermal and fluid systems. Click any area for details.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="researchGrid">
+    <p class="text-gray-400">Loading&#8230;</p>
+  </div>
+</div>
+
+<!-- ══ RESEARCH DETAIL SECTION ════════════════════════════════ -->
+<div id="sec-research-detail" class="section-hidden max-w-5xl mx-auto px-4 py-10">
+  <button onclick="showSection('research')" class="inline-flex items-center gap-1.5 text-sm font-semibold mb-8 hover:underline" style="color:var(--gold)">
+    &#8592; Back to Research Areas
+  </button>
+  <div id="researchDetailContent"></div>
+</div>
+
+<!-- ══ PEOPLE SECTION ══════════════════════════════════════════ -->
+<div id="sec-people" class="section-hidden max-w-7xl mx-auto px-4 py-10">
+  <h1 class="page-title">Our People</h1>
+  <p class="page-subtitle">Meet the researchers and students of the LATFS laboratory.</p>
+  <!-- Filter tabs -->
+  <div class="flex flex-wrap gap-2 mb-6" id="peopleFilters">
+    <button onclick="filterPeople('all')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="background:var(--navy);color:#fff;border-color:var(--navy)" data-filter="all">All</button>
+    <button onclick="filterPeople('phd')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="phd">PhD</button>
+    <button onclick="filterPeople('ms')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ms">MS</button>
+    <button onclick="filterPeople('postdoc')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="postdoc">Postdoc</button>
+    <button onclick="filterPeople('ug')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ug">Undergrad</button>
+    <button onclick="filterPeople('faculty')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="faculty">Faculty</button>
+    <button onclick="filterPeople('former')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="former">Alumni</button>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="peopleGrid">
+    <p class="text-gray-400">Loading&#8230;</p>
+  </div>
+</div>
+
+<!-- ══ PUBLICATIONS SECTION ════════════════════════════════════ -->
+<div id="sec-publications" class="section-hidden max-w-7xl mx-auto px-4 py-10">
+  <h1 class="page-title">Publications</h1>
+  <div class="flex flex-wrap gap-3 mb-6 items-center">
+    <input id="pubSearch" type="text" placeholder="Search publications&#8230;"
+      class="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] focus:outline-none"
+      oninput="filterPublications()">
+    <select id="pubYear" onchange="filterPublications()"
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+      <option value="">All Years</option>
+    </select>
+  </div>
+  <div id="pubList"><p class="text-gray-400">Loading&#8230;</p></div>
+</div>
+
+<!-- ══ FACILITIES SECTION ══════════════════════════════════════ -->
+<div id="sec-facilities" class="section-hidden max-w-7xl mx-auto px-4 py-10">
+  <h1 class="page-title">Facilities</h1>
+  <p class="page-subtitle">State-of-the-art equipment supporting cutting-edge research.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <div class="facility-card">
+      <div class="facility-icon">
+        <div class="res-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="facility-body text-sm text-gray-600 space-y-2">
+        <h3>Two-Phase Flow &amp; Boiling Lab</h3>
+        <p>High-speed imaging systems, precision flow meters, and custom test sections for boiling and two-phase flow experiments.</p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          <li>Photron high-speed camera</li><li>Omega precision instruments</li><li>Custom heater assemblies</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="facility-card">
+      <div class="facility-icon">
+        <div class="res-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="facility-body text-sm text-gray-600 space-y-2">
+        <h3>Thermal Characterization Suite</h3>
+        <p>Advanced tools for measuring thermal resistance, conductivity, and transient thermal response of materials and systems.</p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          <li>IR thermography system</li><li>Laser flash diffusivity</li><li>Precision calorimetry</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="facility-card">
+      <div class="facility-icon">
+        <div class="res-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+            <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
+            <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
+            <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
+            <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
+          </svg>
+        </div>
+      </div>
+      <div class="facility-body text-sm text-gray-600 space-y-2">
+        <h3>Computational Resources</h3>
+        <p>High-performance computing cluster and licensed CFD software for large-scale simulations.</p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          <li>ANSYS Fluent &amp; CFX</li><li>OpenFOAM cluster</li><li>MATLAB / Python toolchains</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="facility-card">
+      <div class="facility-icon">
+        <div class="res-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 18h8"/><path d="M3 21h18"/>
+            <path d="M14 21v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/>
+            <path d="M14 7l-2-5-3 1 2 5"/>
+            <circle cx="14" cy="10" r="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="facility-body text-sm text-gray-600 space-y-2">
+        <h3>Microfluidics Lab</h3>
+        <p>Cleanroom-class fabrication and testing of microchannels and heat spreaders for electronics cooling.</p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          <li>Soft lithography tools</li><li>Microscopy station</li><li>Micro-PIV system</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="facility-card">
+      <div class="facility-icon">
+        <div class="res-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+      </div>
+      <div class="facility-body text-sm text-gray-600 space-y-2">
+        <h3>Electronics Cooling Testbed</h3>
+        <p>Dedicated infrastructure for testing advanced cooling solutions for high-power electronics.</p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          <li>Power electronics test boards</li><li>Junction temperature monitors</li><li>Custom cold plates</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="facility-card">
+      <div class="facility-icon">
+        <div class="res-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </div>
+      </div>
+      <div class="facility-body text-sm text-gray-600 space-y-2">
+        <h3>Energy Systems Lab</h3>
+        <p>Research into sustainable energy conversion, heat exchangers, and thermal energy storage systems.</p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          <li>Heat exchanger test rigs</li><li>PCM storage modules</li><li>Solar thermal collectors</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ NEWS SECTION ════════════════════════════════════════════ -->
+<div id="sec-news" class="section-hidden">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="page-title">News</h1>
+    <p class="page-subtitle">Updates from the LATFS laboratory.</p>
+    <div id="newsList"><p class="text-gray-400">Loading&#8230;</p></div>
+  </div>
+</div>
+
+<!-- ══ JOIN SECTION ════════════════════════════════════════════ -->
+<div id="sec-join" class="section-hidden">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="page-title">Join Our Lab</h1>
+    <p class="page-subtitle">We are seeking talented graduate students and postdoctoral researchers.</p>
+
+    <!-- Openings -->
+    <div class="content-card mb-8">
+      <h2>Open Positions</h2>
+      <div class="opening-item">
+        <span class="badge-gold">PhD</span>
+        <div>
+          <strong>Graduate Research Assistant &mdash; Thermal Management</strong>
+          <p>Fully-funded PhD position in experimental two-phase heat transfer and thermal management of electronics. Start date: Fall 2025.</p>
+        </div>
+      </div>
+      <div class="opening-item">
+        <span class="badge-gold">MS</span>
+        <div>
+          <strong>Graduate Research Assistant &mdash; Energy Systems</strong>
+          <p>Funded MS position in computational modeling of heat exchangers and energy conversion systems.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- What we offer -->
+    <div class="content-card mb-8">
+      <h2>What We Offer</h2>
+      <ul class="offer-list">
+        <li>Fully-funded PhD and MS positions (tuition + competitive stipend)</li>
+        <li>State-of-the-art experimental and computational facilities</li>
+        <li>Collaboration with NSF E3S Center and industry partners</li>
+        <li>Strong publication record and conference travel support</li>
+        <li>Mentorship and professional development opportunities</li>
+      </ul>
+    </div>
+
+    <!-- How to apply -->
+    <div class="content-card mb-8">
+      <h2>How to Apply</h2>
+      <p class="text-sm" style="color:var(--gray-700)">Send the following materials to the lab director at <a href="mailto:aortega@villanova.edu" style="color:var(--gold)">aortega@villanova.edu</a>:</p>
+      <ol class="apply-list">
+        <li>Your CV or resume</li>
+        <li>Unofficial transcripts</li>
+        <li>A brief (1&ndash;2 paragraph) research statement</li>
+        <li>Contact information for 2&ndash;3 references</li>
+      </ol>
+      <p class="text-sm mt-3" style="color:var(--gray-700)">Applications are reviewed on a rolling basis. Backgrounds in mechanical engineering, physics, or related fields are preferred.</p>
+      <button onclick="showSection('contact')" class="btn-primary mt-4">Contact the Lab &#8594;</button>
+    </div>
+
+    <!-- FAQ -->
+    <div class="content-card">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Are funding packages guaranteed?</summary>
+          <p>Yes. PhD and MS positions in our lab come with full tuition coverage and a monthly stipend for the duration of your appointment, subject to satisfactory academic progress.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What backgrounds are preferred?</summary>
+          <p>We welcome students with backgrounds in mechanical engineering, chemical engineering, physics, or applied mathematics. Strong fundamentals in heat transfer, fluid mechanics, or thermodynamics are a plus.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can international students apply?</summary>
+          <p>Absolutely. We have a diverse lab with students from around the world. Villanova University supports international students through the Office of International Students.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How competitive is the application process?</summary>
+          <p>We admit a small number of students each year to maintain a mentored environment. We prioritize research fit, academic preparation, and motivation.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COLLABORATORS SECTION ══════════════════════════════════ -->
+<div id="sec-collaborators" class="section-hidden max-w-5xl mx-auto px-4 py-10">
+  <h1 class="page-title">Collaborators</h1>
+  <p class="page-subtitle">We collaborate with leading universities, national labs, and industry partners worldwide.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="content-card">
+      <h2>Academia</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
+        <li>MIT &mdash; Micro/Nanoscale Thermophysics</li>
+        <li>Georgia Tech &mdash; Thermal Sciences</li>
+        <li>Purdue University &mdash; Boiling and Two-Phase Flow</li>
+        <li>University of Maryland &mdash; Thermal Engineering</li>
+      </ul>
+    </div>
+    <div class="content-card">
+      <h2>National Laboratories</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
+        <li>Argonne National Laboratory</li>
+        <li>Oak Ridge National Laboratory</li>
+        <li>Lawrence Berkeley National Laboratory</li>
+      </ul>
+    </div>
+    <div class="content-card">
+      <h2>Industry</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
+        <li>Intel Corporation</li>
+        <li>IBM Research</li>
+        <li>3M Electronic Markets</li>
+        <li>Laird Thermal Systems</li>
+      </ul>
+    </div>
+    <div class="content-card">
+      <h2>Centers &amp; Consortia</h2>
+      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
+        <li>NSF E3S (Energy Efficient Electronic Systems)</li>
+        <li>ASME Heat Transfer Division</li>
+        <li>IEEE CPMT Society</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SPONSORS SECTION ════════════════════════════════════════ -->
+<div id="sec-sponsors" class="section-hidden max-w-5xl mx-auto px-4 py-10">
+  <h1 class="page-title">Sponsors</h1>
+  <p class="page-subtitle">Our research is generously supported by these organizations.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" id="sponsorsGrid">
+    <p class="text-gray-400">Loading&#8230;</p>
+  </div>
+</div>
+
+<!-- ══ CONTACT SECTION ════════════════════════════════════════ -->
+<div id="sec-contact" class="section-hidden max-w-4xl mx-auto px-4 py-10">
+  <h1 class="page-title">Contact Us</h1>
+  <p class="page-subtitle">Get in touch with the LATFS laboratory.</p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="content-card space-y-4">
+      <h2>Lab Director</h2>
+      <p class="text-sm" style="color:var(--gray-700)">Department of Mechanical Engineering<br>Villanova University<br>800 Lancaster Avenue<br>Villanova, PA 19085</p>
+      <p class="text-sm"><span class="font-semibold">Email:</span> <a href="mailto:latfs@villanova.edu" style="color:var(--gold)">latfs@villanova.edu</a></p>
+      <p class="text-sm"><span class="font-semibold">Phone:</span> (610) 519-XXXX</p>
+      <p class="text-sm"><span class="font-semibold">Office:</span> Tolentine Hall, Room XXX</p>
+    </div>
+    <div class="content-card">
+      <h2>Send a Message</h2>
+      <form onsubmit="submitContact(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Your Name</label>
+          <input type="text" required placeholder="Full name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Email</label>
+          <input type="email" required placeholder="you@example.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Message</label>
+          <textarea required rows="4" placeholder="Your message&#8230;" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none"></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full justify-center">Send Message</button>
+        <div id="contactSuccess" class="hidden text-sm font-semibold text-center" style="color:#065f46">&#10003; Message sent! We will get back to you soon.</div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
+<footer style="background:var(--navy)" class="text-white mt-16 py-12 px-4">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+    <div>
+      <div class="logo-mark">LATFS</div>
+      <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.5)">Laboratory for Advanced Thermal and Fluid Systems<br>Villanova University &middot; Department of Mechanical Engineering</p>
+    </div>
+    <div>
+      <div class="footer-heading">Research</div>
+      <ul>
+        <li onclick="showSection('research')">Research Areas</li>
+        <li onclick="showSection('publications')">Publications</li>
+        <li onclick="showSection('facilities')">Facilities</li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Lab</div>
+      <ul>
+        <li onclick="showSection('people')">People</li>
+        <li onclick="showSection('news')">News</li>
+        <li onclick="showSection('join')">Join</li>
+        <li onclick="showSection('contact')">Contact</li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Partners</div>
+      <ul>
+        <li onclick="showSection('sponsors')">Sponsors</li>
+        <li onclick="showSection('collaborators')">Collaborators</li>
+      </ul>
+      <p class="mt-3 text-sm" style="color:rgba(255,255,255,0.45)">NSF E3S Center Partner<br>ASME &middot; IEEE CPMT</p>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto border-t py-8" style="border-color:rgba(255,255,255,0.08)">
+    <div class="footer-heading text-center mb-5">Partner Institutions</div>
+    <div class="flex flex-wrap justify-center items-center gap-6" id="footerLogos">
+      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
+        <img src="/images/templatemo_logo_villanova.png" alt="Villanova University" style="height:52px;object-fit:contain;opacity:0.9">
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
+        <img src="/images/sponnsf.gif" alt="NSF" style="height:52px;object-fit:contain;opacity:0.9">
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto border-t pt-6 text-center text-xs" style="border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)">&copy; 2024 LATFS &mdash; Villanova University. All rights reserved.</div>
+</footer>
+
+<script>
+  // ── Navigation ───────────────────────────────────────────────
+  const ALL_SECTIONS = ['home','research','research-detail','people','publications','facilities','news','join','contact','sponsors','collaborators'];
+  let _allPeople = [];
+  let _allResearch = [];
+
+  function openResearchDetail(id) {
+    const item = _allResearch.find(r => r.id === id);
+    if (!item) return;
+    renderResearchDetail(item);
+    showSection('research-detail');
+  }
+
+  function resCardKeydown(event, id) {
+    if (event.key === 'Enter' || event.key === ' ') openResearchDetail(id);
+  }
+
+  function renderResearchDetail(item) {
+    let links = [];
+    try { links = JSON.parse(item.links || '[]'); } catch(e) {}
+    const bodyText = item.content || item.description || '';
+    document.getElementById('researchDetailContent').innerHTML = `
+      <h1 class="page-title" style="margin-bottom:1.25rem">${escHtml(item.title)}</h1>
+      ${item.image_url ? `<img src="${escHtml(item.image_url)}" alt="${escHtml(item.title)}" style="width:100%;max-height:380px;object-fit:cover;border-radius:12px;margin-bottom:1.75rem;display:block">` : ''}
+      <div class="content-card" style="margin-bottom:1.5rem">
+        <p style="color:var(--gray-700);line-height:1.8;font-size:0.9375rem;white-space:pre-wrap;margin:0">${escHtml(bodyText)}</p>
+      </div>
+      ${links.length > 0 ? `
+      <div class="content-card">
+        <h2>Links &amp; Resources</h2>
+        <ul style="list-style:none;padding:0;margin:0">
+          ${links.map(l => `
+          <li style="padding:0.5rem 0;border-bottom:1px solid var(--gray-100)">
+            <a href="${escHtml(l.url)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;font-size:0.875rem">
+              ${escHtml(l.label || l.url)} &#8599;
+            </a>
+          </li>`).join('')}
+        </ul>
+      </div>` : ''}
+    `;
+  }
+
+  function _applySection(sec, sub) {
+    ALL_SECTIONS.forEach(s => {
+      const el = document.getElementById('sec-' + s);
+      if (el) el.classList.toggle('section-hidden', s !== sec);
+    });
+    // Update nav active state
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    const navEl = document.getElementById('nav-' + sec);
+    if (navEl) navEl.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (sec === 'people') { loadPeople(sub); }
+    else if (sec === 'research') { loadResearch(); }
+    else if (sec === 'publications') { loadPublications(); }
+    else if (sec === 'sponsors') { loadSponsorsPage(); }
+    else if (sec === 'news') { loadNewsPage(); }
+  }
+
+  function showSection(sec, sub) {
+    _applySection(sec, sub);
+    if (!history.state || history.state.section !== sec) {
+      history.pushState({ section: sec }, '', '#' + sec);
+    }
+  }
+
+  // Handle browser back/forward button (and Backspace-as-back in some browsers)
+  window.addEventListener('popstate', function(e) {
+    _applySection((e.state && e.state.section) || 'home');
+  });
+
+  // Prevent Backspace from triggering browser back when not in a text field
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace') {
+      const activeEl = document.activeElement;
+      const tag = activeEl ? activeEl.tagName : '';
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !(activeEl && activeEl.isContentEditable)) {
+        e.preventDefault();
+      }
+    }
+  });
+
+  // Set initial history state
+  history.replaceState({ section: 'home' }, '', location.href);
+
+  function toggleMobileMenu() {
+    const m = document.getElementById('mobileMenu');
+    const btn = document.getElementById('mobileMenuBtn');
+    const isOpen = m.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    btn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+  }
+
+  // ── XSS prevention ───────────────────────────────────────────
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── SVG icons for research cards ─────────────────────────────
+  const RES_ICONS = [
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+  ];
+
+  // ── Home data ─────────────────────────────────────────────────
+  async function loadHomeData() {
+    const [newsRes, resRes, pubRes, spRes, galRes] = await Promise.allSettled([
+      fetch('/api/news').then(r => r.json()),
+      fetch('/api/research').then(r => r.json()),
+      fetch('/api/publications').then(r => r.json()),
+      fetch('/api/sponsors').then(r => r.json()),
+      fetch('/api/gallery').then(r => r.json())
+    ]);
+    if (newsRes.status === 'fulfilled') { renderNewsFeed(newsRes.value); renderTicker(newsRes.value); }
+    if (resRes.status === 'fulfilled') renderHomeResearch(resRes.value);
+    if (pubRes.status === 'fulfilled') renderHomePubs(pubRes.value);
+    if (spRes.status === 'fulfilled') { renderSponsorsMarquee(spRes.value); renderFooterLogos(spRes.value); }
+    const galleryPhotos = galRes.status === 'fulfilled' && galRes.value.length ? galRes.value : null;
+    initSlideshow(galleryPhotos);
+  }
+
+  function renderNewsFeed(items) {
+    const el = document.getElementById('homeFeed');
+    if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No news yet.</p>'; return; }
+    el.innerHTML = items.slice(0, 3).map(n => `
+      <div class="news-card">
+        <div class="news-date">${escHtml(n.date || '')}</div>
+        <div class="news-title">${escHtml(n.title)}</div>
+        <div class="news-body">${escHtml((n.content || '').slice(0, 120))}${(n.content||'').length>120?'&#8230;':''}</div>
+      </div>`).join('');
+  }
+
+  function renderTicker(news) {
+    if (!news || !news.length) return;
+    const track = document.getElementById('tickerTrack');
+    const items = news.map(n => `<span class="ticker-item">${escHtml(n.title)}</span><span class="ticker-item">&bull;</span>`).join('');
+    track.innerHTML = items + items;
+  }
+
+  function renderHomeResearch(items) {
+    const el = document.getElementById('homeResearch');
+    if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No research areas yet.</p>'; return; }
+    _allResearch = items;
+    el.innerHTML = items.slice(0, 6).map((r, i) => `
+      <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="resCardKeydown(event,${r.id})">
+        <div class="res-icon">${RES_ICONS[i % 6]}</div>
+        <div class="res-card-title">${escHtml(r.title)}</div>
+        <div class="res-card-desc">${escHtml((r.description||'').slice(0,100))}${(r.description||'').length>100?'&#8230;':''}</div>
+      </div>`).join('');
+  }
+
+  function renderHomePubs(items) {
+    const el = document.getElementById('homePubs');
+    if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No publications yet.</p>'; return; }
+    el.innerHTML = items.slice(0, 1).map(p => `
+      <div class="pub-row">
+        <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
+        <div>
+          <div class="pub-title">
+            ${p.doi_url ? `<a href="${escHtml(p.doi_url)}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold)">${escHtml(p.title)}</a>` : escHtml(p.title)}
+          </div>
+          <div class="pub-authors">${escHtml(p.authors)}</div>
+          <div class="pub-venue">${escHtml(p.venue)}</div>
+          <div class="flex gap-3 mt-1">
+            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">PDF &#8599;</a>`:''}
+            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Cite &#8599;</a>`:''}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderSponsorsMarquee(sponsors) {
+    if (!sponsors || !sponsors.length) return;
+    const track = document.getElementById('sponsorsMarquee');
+    const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c','#0369a1','#065f46'];
+    const chips = sponsors.map((s, i) => `
+      <div class="sponsor-chip">
+        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;width:auto;object-fit:contain">` :
+          `<div class="sponsor-init" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
+      </div>`).join('');
+    track.innerHTML = chips + chips;
+  }
+
+  function renderFooterLogos(sponsors) {
+    if (!sponsors || !sponsors.length) return;
+    const el = document.getElementById('footerLogos');
+    if (!el) return;
+    const withLogos = sponsors.filter(s => s.logo_url);
+    if (!withLogos.length) return;
+    el.innerHTML = withLogos.map(s => `
+      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
+        <img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;object-fit:contain;opacity:0.9">
+      </div>`).join('');
+  }
+
+  // ── News page ─────────────────────────────────────────────────
+  async function loadNewsPage() {
+    const el = document.getElementById('newsList');
+    if (!el) return;
+    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
+    try {
+      const data = await fetch('/api/news').then(r => r.json());
+      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No news yet.</p>'; return; }
+      el.innerHTML = data.map(n => `
+        <div class="news-full-card">
+          <div class="news-date" style="margin-bottom:0.35rem">${escHtml(n.date||'')}</div>
+          <div class="news-title" style="font-size:1.05rem;margin-bottom:0.5rem">${escHtml(n.title)}</div>
+          <div class="news-body">${escHtml(n.content||'')}</div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load news.</p>'; }
+  }
+
+  // ── People ────────────────────────────────────────────────────
+  async function loadPeople(cat) {
+    const el = document.getElementById('peopleGrid');
+    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
+    try {
+      const data = await fetch('/api/people').then(r => r.json());
+      _allPeople = data;
+      filterPeople(cat || 'all');
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load people.</p>'; }
+  }
+
+  function filterPeople(cat) {
+    document.querySelectorAll('#peopleFilters button').forEach(b => {
+      const active = b.dataset.filter === cat;
+      b.style.background = active ? 'var(--navy)' : '';
+      b.style.color = active ? '#fff' : 'var(--navy)';
+      b.style.borderColor = active ? 'var(--navy)' : 'var(--gray-200)';
+    });
+    const filtered = cat === 'all' ? _allPeople : _allPeople.filter(p => (p.category||'').toLowerCase() === cat);
+    renderPeople(filtered);
+  }
+
+  function categoryLabel(cat) {
+    const map = { director:'Director', faculty:'Faculty', postdoc:'PostDoc', phd:'PhD Student', ms:'MS Student', ug:'Undergrad', former:'Alumni' };
+    return map[(cat||'').toLowerCase()] || cat;
+  }
+  function categoryBadgeStyle(cat) {
+    const map = { director:'background:#e0f2fe;color:#0369a1', faculty:'background:#e0f2fe;color:#0369a1',
+      postdoc:'background:#ede9fe;color:#7c3aed', phd:'background:#dcfce7;color:#166534',
+      ms:'background:#fef3c7;color:#92400e', ug:'background:#fce7f3;color:#9d174d',
+      former:'background:#f1f5f9;color:#64748b' };
+    return map[(cat||'').toLowerCase()] || '';
+  }
+
+  function renderPeople(people) {
+    const el = document.getElementById('peopleGrid');
+    if (!people || !people.length) { el.innerHTML = '<p class="text-gray-400 col-span-4">No people found.</p>'; return; }
+    el.innerHTML = people.map((p) => {
+      const initials = (p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const badgeStyle = categoryBadgeStyle(p.category);
+      return `<div class="person-card">
+        <div class="person-avatar">
+          ${p.photo_url ? `<img src="${escHtml(p.photo_url)}" alt="${escHtml(p.name)}" loading="lazy">` : `<span>${escHtml(initials)}</span>`}
+        </div>
+        <div class="person-body">
+          <div class="person-name">${escHtml(p.name)}</div>
+          <div class="person-role">${escHtml(p.role||'')}</div>
+          <span class="category-badge"${badgeStyle ? ` style="${badgeStyle}"` : ''}>${escHtml(categoryLabel(p.category))}</span>
+          ${p.bio ? `<p class="text-xs mt-2 leading-relaxed" style="color:var(--gray-500)">${escHtml(p.bio.slice(0,100))}${p.bio.length>100?'&#8230;':''}</p>`:''}
+          ${p.email ? `<a href="mailto:${escHtml(p.email)}" class="text-xs mt-1 block" style="color:var(--gold)">${escHtml(p.email)}</a>`:''}
+          <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:0.5rem">
+            ${p.linkedin_url ? `<a href="${escHtml(p.linkedin_url)}" target="_blank" rel="noopener" title="LinkedIn" style="color:#0077b5;display:inline-flex;align-items:center" aria-label="${escHtml(p.name)} LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>` : ''}
+            ${p.website_url ? `<a href="${escHtml(p.website_url)}" target="_blank" rel="noopener" title="Personal Website" style="color:var(--navy);display:inline-flex;align-items:center" aria-label="${escHtml(p.name)} website">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </a>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Research ──────────────────────────────────────────────────
+  async function loadResearch() {
+    const el = document.getElementById('researchGrid');
+    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
+    try {
+      const data = await fetch('/api/research').then(r => r.json());
+      _allResearch = data;
+      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No research areas yet.</p>'; return; }
+      el.innerHTML = data.map((r, i) => `
+        <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="resCardKeydown(event,${r.id})">
+          <div class="res-icon">${RES_ICONS[i % 6]}</div>
+          <div class="res-card-title">${escHtml(r.title)}</div>
+          <div class="res-card-desc">${escHtml(r.description||'')}</div>
+          <div style="margin-top:0.75rem;font-size:0.78rem;font-weight:600;color:var(--gold)">View details &#8594;</div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load research.</p>'; }
+  }
+
+  // ── Publications ──────────────────────────────────────────────
+  let _allPubs = [];
+  async function loadPublications() {
+    const el = document.getElementById('pubList');
+    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
+    try {
+      _allPubs = await fetch('/api/publications').then(r => r.json());
+      const years = [...new Set(_allPubs.map(p => p.year))].sort((a,b) => b-a);
+      const sel = document.getElementById('pubYear');
+      sel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+      renderPublications(_allPubs);
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load publications.</p>'; }
+  }
+
+  function filterPublications() {
+    const q = (document.getElementById('pubSearch').value||'').toLowerCase();
+    const yr = document.getElementById('pubYear').value;
+    const filtered = _allPubs.filter(p => {
+      const matchQ = !q || (p.title||'').toLowerCase().includes(q) || (p.authors||'').toLowerCase().includes(q) || (p.venue||'').toLowerCase().includes(q);
+      const matchY = !yr || String(p.year) === yr;
+      return matchQ && matchY;
+    });
+    renderPublications(filtered);
+  }
+
+  function renderPublications(pubs) {
+    const el = document.getElementById('pubList');
+    if (!pubs.length) { el.innerHTML = '<p class="text-gray-400">No publications found.</p>'; return; }
+    el.innerHTML = pubs.map(p => `
+      <div class="pub-row">
+        <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
+        <div class="flex-1">
+          <div class="pub-title">
+            ${p.doi_url ? `<a href="${escHtml(p.doi_url)}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold)">${escHtml(p.title)}</a>` : escHtml(p.title)}
+          </div>
+          <div class="pub-authors">${escHtml(p.authors)}</div>
+          <div class="pub-venue">${escHtml(p.venue)}</div>
+          <div class="flex gap-3 mt-1">
+            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">PDF &#8599;</a>`:''}
+            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Cite &#8599;</a>`:''}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Sponsors page ─────────────────────────────────────────────
+  async function loadSponsorsPage() {
+    const el = document.getElementById('sponsorsGrid');
+    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
+    try {
+      const data = await fetch('/api/sponsors').then(r => r.json());
+      const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c'];
+      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No sponsors yet.</p>'; return; }
+      el.innerHTML = data.map((s, i) => `
+        <div class="content-card flex flex-col items-center gap-3 text-center">
+          ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" class="h-20 object-contain">` :
+            `<div class="w-20 h-20 rounded-xl flex items-center justify-center font-black text-2xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
+          <div class="font-bold text-sm" style="color:var(--navy)">${escHtml(s.name)}</div>
+          ${s.website_url ? `<a href="${escHtml(s.website_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Visit &#8594;</a>`:''}
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load sponsors.</p>'; }
+  }
+
+  // ── Contact ───────────────────────────────────────────────────
+  function submitContact(e) {
+    e.preventDefault();
+    document.getElementById('contactSuccess').classList.remove('hidden');
+    e.target.reset();
+    setTimeout(() => document.getElementById('contactSuccess').classList.add('hidden'), 5000);
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  loadHomeData();
+
+  // ── Slideshow ─────────────────────────────────────────────────
+  // Fallback images used when the gallery API returns nothing
+  const FALLBACK_SLIDES = [
+    'images/top1a.png', 'images/top2a.png', 'images/top3a.png',
+    'images/CSP123_20130911_0195-Edit.jpg', 'images/IMG_1526.JPG'
+  ];
+
+  function initSlideshow(galleryPhotos) {
+    const ss = document.getElementById('slideshow');
+    const dotsContainer = document.getElementById('slideDots');
+    if (!ss || !dotsContainer) return;
+
+    // Build slides
+    const urls = galleryPhotos
+      ? galleryPhotos.map(g => g.image_url)
+      : FALLBACK_SLIDES;
+
+    // Remove any existing slide divs (re-init safe)
+    ss.querySelectorAll('.slide').forEach(el => el.remove());
+    dotsContainer.innerHTML = '';
+
+    urls.forEach((url, i) => {
+      const div = document.createElement('div');
+      div.className = 'slide' + (i === 0 ? ' active' : '');
+      div.style.backgroundImage = `url(${JSON.stringify(url)})`;
+      div.innerHTML = '<div class="slide-overlay"></div>';
+      // Insert before the first arrow button
+      ss.insertBefore(div, ss.querySelector('.slide-arrow'));
+    });
+
+    const slides = ss.querySelectorAll('.slide');
+    const INTERVAL_MS = 5000;
+    let slideIdx = 0;
+
+    slides.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.setAttribute('aria-label', 'Slide ' + (i + 1));
+      d.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(d);
+    });
+
+    function goToSlide(n) {
+      slides[slideIdx].classList.remove('active');
+      dotsContainer.children[slideIdx].classList.remove('active');
+      slideIdx = (n + slides.length) % slides.length;
+      slides[slideIdx].classList.add('active');
+      dotsContainer.children[slideIdx].classList.add('active');
+    }
+
+    window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
+    let timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
+    ss.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; });
+    ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); });
+  }
+</script>
+</body>
+</html>
