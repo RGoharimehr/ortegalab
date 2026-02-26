@@ -96,6 +96,14 @@ db.exec(`
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS gallery (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    image_url TEXT NOT NULL,
+    caption TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Migrations: add new columns to existing databases (errors for duplicate columns are expected and ignored)
@@ -187,6 +195,21 @@ if (sponsorCount.cnt === 0) {
   ];
   for (const s of sponsors) {
     db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(s.name, s.logo_url, s.website_url, s.sort_order);
+  }
+}
+
+// Seed gallery
+const galleryCount = db.prepare('SELECT COUNT(*) as cnt FROM gallery').get();
+if (galleryCount.cnt === 0) {
+  const galleryPhotos = [
+    { image_url: 'images/top1a.png', caption: 'Lab Overview', sort_order: 1 },
+    { image_url: 'images/top2a.png', caption: 'Research Equipment', sort_order: 2 },
+    { image_url: 'images/top3a.png', caption: 'Experiments', sort_order: 3 },
+    { image_url: 'images/CSP123_20130911_0195-Edit.jpg', caption: 'Lab Members', sort_order: 4 },
+    { image_url: 'images/IMG_1526.JPG', caption: 'Thermal Systems', sort_order: 5 },
+  ];
+  for (const g of galleryPhotos) {
+    db.prepare('INSERT INTO gallery (image_url, caption, sort_order) VALUES (?, ?, ?)').run(g.image_url, g.caption, g.sort_order);
   }
 }
 
@@ -393,6 +416,36 @@ app.post('/api/upload/photo', uploadRateLimiter, requireAuth, requireCsrf, (req,
     if (!req.file) return res.status(400).json({ error: 'No image file provided' });
     res.json({ url: `/uploads/${req.file.filename}` });
   });
+});
+
+// GALLERY API
+app.get('/api/gallery', apiReadLimiter, (req, res) => {
+  const photos = db.prepare('SELECT * FROM gallery ORDER BY sort_order, id').all();
+  res.json(photos);
+});
+
+app.post('/api/gallery', uploadRateLimiter, requireAuth, requireCsrf, (req, res) => {
+  photoUpload.single('photo')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'Upload error' });
+    if (!req.file) return res.status(400).json({ error: 'No image file provided' });
+    const image_url = `/uploads/${req.file.filename}`;
+    const caption = (req.body.caption || '').slice(0, 200);
+    const sort_order = parseInt(req.body.sort_order, 10) || 0;
+    const result = db.prepare('INSERT INTO gallery (image_url, caption, sort_order) VALUES (?, ?, ?)').run(image_url, caption, sort_order);
+    res.json({ id: result.lastInsertRowid, image_url, caption, sort_order });
+  });
+});
+
+app.delete('/api/gallery/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const photo = db.prepare('SELECT * FROM gallery WHERE id=?').get(req.params.id);
+  if (!photo) return res.status(404).json({ error: 'Not found' });
+  db.prepare('DELETE FROM gallery WHERE id=?').run(req.params.id);
+  // Delete uploaded file from disk if it lives in /uploads/
+  if (photo.image_url && photo.image_url.startsWith('/uploads/')) {
+    const filePath = path.join(__dirname, photo.image_url);
+    fs.unlink(filePath, (err) => { if (err) console.error('Failed to delete gallery file:', filePath, err.message); });
+  }
+  res.json({ success: true });
 });
 
 // Serve the main app for all frontend routes

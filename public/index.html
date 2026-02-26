@@ -531,24 +531,9 @@
 <div id="sec-home">
 
   <!-- Hero: full-width slideshow background -->
-  <section id="sec-home-hero" class="relative text-white overflow-hidden" style="min-height:520px">
-    <!-- Slideshow as full-width background -->
-    <div id="slideshow" class="absolute inset-0">
-      <div class="slide active" style="background-image:url('/images/top1a.png')">
-        <div class="slide-overlay"></div>
-      </div>
-      <div class="slide" style="background-image:url('/images/top2a.png')">
-        <div class="slide-overlay"></div>
-      </div>
-      <div class="slide" style="background-image:url('/images/top3a.png')">
-        <div class="slide-overlay"></div>
-      </div>
-      <div class="slide" style="background-image:url('/images/CSP123_20130911_0195-Edit.jpg')">
-        <div class="slide-overlay"></div>
-      </div>
-      <div class="slide" style="background-image:url('/images/IMG_1526.JPG')">
-        <div class="slide-overlay"></div>
-      </div>
+  <section id="sec-home-hero" class="relative text-white overflow-hidden" style="min-height:520px;background:var(--navy-700)">
+    <!-- Slideshow as full-width background (slides injected by JS from /api/gallery) -->
+    <div id="slideshow" class="absolute inset-0" style="background:var(--navy-700)">
       <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
       <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
       <div id="slideDots"></div>
@@ -1168,16 +1153,19 @@
 
   // ── Home data ─────────────────────────────────────────────────
   async function loadHomeData() {
-    const [newsRes, resRes, pubRes, spRes] = await Promise.allSettled([
+    const [newsRes, resRes, pubRes, spRes, galRes] = await Promise.allSettled([
       fetch('/api/news').then(r => r.json()),
       fetch('/api/research').then(r => r.json()),
       fetch('/api/publications').then(r => r.json()),
-      fetch('/api/sponsors').then(r => r.json())
+      fetch('/api/sponsors').then(r => r.json()),
+      fetch('/api/gallery').then(r => r.json())
     ]);
     if (newsRes.status === 'fulfilled') { renderNewsFeed(newsRes.value); renderTicker(newsRes.value); }
     if (resRes.status === 'fulfilled') renderHomeResearch(resRes.value);
     if (pubRes.status === 'fulfilled') renderHomePubs(pubRes.value);
     if (spRes.status === 'fulfilled') { renderSponsorsMarquee(spRes.value); renderFooterLogos(spRes.value); }
+    const galleryPhotos = galRes.status === 'fulfilled' && galRes.value.length ? galRes.value : null;
+    initSlideshow(galleryPhotos);
   }
 
   function renderNewsFeed(items) {
@@ -1427,12 +1415,39 @@
   loadHomeData();
 
   // ── Slideshow ─────────────────────────────────────────────────
-  (function() {
-    const slides = document.querySelectorAll('.slide');
-    if (!slides.length) return;
+  // Fallback images used when the gallery API returns nothing
+  const FALLBACK_SLIDES = [
+    'images/top1a.png', 'images/top2a.png', 'images/top3a.png',
+    'images/CSP123_20130911_0195-Edit.jpg', 'images/IMG_1526.JPG'
+  ];
+
+  function initSlideshow(galleryPhotos) {
+    const ss = document.getElementById('slideshow');
     const dotsContainer = document.getElementById('slideDots');
+    if (!ss || !dotsContainer) return;
+
+    // Build slides
+    const urls = galleryPhotos
+      ? galleryPhotos.map(g => g.image_url)
+      : FALLBACK_SLIDES;
+
+    // Remove any existing slide divs (re-init safe)
+    ss.querySelectorAll('.slide').forEach(el => el.remove());
+    dotsContainer.innerHTML = '';
+
+    urls.forEach((url, i) => {
+      const div = document.createElement('div');
+      div.className = 'slide' + (i === 0 ? ' active' : '');
+      div.style.backgroundImage = `url(${JSON.stringify(url)})`;
+      div.innerHTML = '<div class="slide-overlay"></div>';
+      // Insert before the first arrow button
+      ss.insertBefore(div, ss.querySelector('.slide-arrow'));
+    });
+
+    const slides = ss.querySelectorAll('.slide');
     const INTERVAL_MS = 5000;
     let slideIdx = 0;
+
     slides.forEach((_, i) => {
       const d = document.createElement('button');
       d.className = 'dot' + (i === 0 ? ' active' : '');
@@ -1440,6 +1455,7 @@
       d.onclick = () => goToSlide(i);
       dotsContainer.appendChild(d);
     });
+
     function goToSlide(n) {
       slides[slideIdx].classList.remove('active');
       dotsContainer.children[slideIdx].classList.remove('active');
@@ -1447,14 +1463,12 @@
       slides[slideIdx].classList.add('active');
       dotsContainer.children[slideIdx].classList.add('active');
     }
+
     window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
     let timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
-    const ss = document.getElementById('slideshow');
-    if (ss) {
-      ss.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; });
-      ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); });
-    }
-  })();
+    ss.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; });
+    ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); });
+  }
 </script>
 </body>
 </html>

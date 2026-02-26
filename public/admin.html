@@ -87,6 +87,10 @@
         <div class="text-gray-500 text-sm">Sponsors</div>
         <div id="stat-sponsors" class="text-3xl font-bold text-primary mt-1">-</div>
       </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">Gallery Photos</div>
+        <div id="stat-gallery" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -97,6 +101,7 @@
         <button onclick="switchTab('people')" id="tab-people" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128101; People</button>
         <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
         <button onclick="switchTab('sponsors')" id="tab-sponsors" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127970; Sponsors</button>
+        <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128248; Gallery</button>
       </div>
       
       <!-- NEWS TAB -->
@@ -142,6 +147,32 @@
           <button onclick="openModal('sponsor')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Sponsor</button>
         </div>
         <div id="sponsors-table" class="space-y-2"></div>
+      </div>
+
+      <!-- GALLERY TAB -->
+      <div id="content-gallery" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-primary">Hero Slideshow Gallery</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Photos appear in the hero slideshow on the home page. Drag &amp; drop or click to upload.</p>
+          </div>
+        </div>
+        <!-- Upload area -->
+        <div id="gallery-upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 mb-6 text-center cursor-pointer hover:border-secondary transition-colors"
+             onclick="document.getElementById('gallery-file-input').click()"
+             ondragover="event.preventDefault();this.classList.add('border-secondary')"
+             ondragleave="this.classList.remove('border-secondary')"
+             ondrop="handleGalleryDrop(event)">
+          <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <p class="text-gray-600 font-medium text-sm">Click or drag photos here to upload</p>
+          <p class="text-gray-400 text-xs mt-1">JPEG, PNG, GIF or WebP &bull; max 5 MB each</p>
+          <div id="gallery-upload-status" class="mt-2 text-sm font-medium text-gray-500"></div>
+        </div>
+        <input type="file" id="gallery-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" multiple onchange="handleGalleryFileSelect(event)">
+        <!-- Photo grid -->
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
       </div>
   </div>
 </div>
@@ -222,28 +253,31 @@ function showDashboard(username) {
 // Tabs
 function switchTab(tab) {
   currentTab = tab;
-  ['news','publications','people','research','sponsors'].forEach(t => {
+  ['news','publications','people','research','sponsors','gallery'].forEach(t => {
     document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
     const content = document.getElementById('content-' + t);
     if (content) content.classList.toggle('hidden', t !== tab);
   });
+  if (tab === 'gallery') loadGalleryData();
 }
 
 // Stats
 async function loadStats() {
   try {
-    const [news, pubs, people, research, sponsors] = await Promise.all([
+    const [news, pubs, people, research, sponsors, gallery] = await Promise.all([
       fetch('/api/news').then(r => r.json()),
       fetch('/api/publications').then(r => r.json()),
       fetch('/api/people').then(r => r.json()),
       fetch('/api/research').then(r => r.json()),
       fetch('/api/sponsors').then(r => r.json()),
+      fetch('/api/gallery').then(r => r.json()),
     ]);
     document.getElementById('stat-news').textContent = news.length;
     document.getElementById('stat-pubs').textContent = pubs.length;
     document.getElementById('stat-people').textContent = people.length;
     document.getElementById('stat-research').textContent = research.length;
     document.getElementById('stat-sponsors').textContent = sponsors.length;
+    document.getElementById('stat-gallery').textContent = gallery.length;
   } catch(e) {}
 }
 
@@ -632,6 +666,73 @@ async function saveResearch(e) {
   const r = await fetch(url, { method, headers: {'Content-Type':'application/json','x-csrf-token':csrfToken}, body: JSON.stringify(data) });
   if (r.ok) { closeModal(); loadAllData(); loadStats(); }
   else alert('Error saving research area');
+}
+
+// ── Gallery ─────────────────────────────────────────────────
+async function loadGalleryData() {
+  const items = await fetch('/api/gallery').then(r => r.json());
+  const el = document.getElementById('gallery-grid');
+  if (!items.length) {
+    el.innerHTML = '<p class="text-gray-500 text-sm col-span-4">No photos yet. Upload one above.</p>';
+    return;
+  }
+  el.innerHTML = items.map(g => `
+    <div class="relative group rounded-xl overflow-hidden bg-gray-100 aspect-video shadow">
+      <img src="${escHtml(g.image_url)}" alt="${escHtml(g.caption||'Gallery photo')}" class="w-full h-full object-cover">
+      ${g.caption ? `<div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-2 py-1 truncate">${escHtml(g.caption)}</div>` : ''}
+      <button onclick="deleteGalleryPhoto(${g.id})"
+        class="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+        title="Delete photo" aria-label="Delete photo">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function deleteGalleryPhoto(id) {
+  deleteCallback = async () => {
+    await fetch('/api/gallery/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
+    closeDeleteModal();
+    loadGalleryData();
+    loadStats();
+  };
+  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
+  document.getElementById('delete-modal').classList.add('modal-open');
+}
+
+async function uploadGalleryFiles(files) {
+  const statusEl = document.getElementById('gallery-upload-status');
+  if (!files || !files.length) return;
+  const fileArr = Array.from(files);
+  statusEl.textContent = `Uploading ${fileArr.length} photo${fileArr.length > 1 ? 's' : ''}…`;
+  statusEl.className = 'mt-2 text-sm font-medium text-blue-600';
+  let succeeded = 0;
+  for (const file of fileArr) {
+    try {
+      const fd = new FormData();
+      fd.append('photo', file);
+      const r = await fetch('/api/gallery', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
+      if (r.ok) succeeded++;
+    } catch(e) {}
+  }
+  statusEl.textContent = succeeded === fileArr.length
+    ? `✓ ${succeeded} photo${succeeded > 1 ? 's' : ''} uploaded`
+    : `⚠ ${succeeded}/${fileArr.length} uploaded`;
+  statusEl.className = 'mt-2 text-sm font-medium ' + (succeeded === fileArr.length ? 'text-green-600' : 'text-yellow-600');
+  loadGalleryData();
+  loadStats();
+  setTimeout(() => { statusEl.textContent = ''; }, 4000);
+}
+
+function handleGalleryFileSelect(event) {
+  uploadGalleryFiles(event.target.files);
+  event.target.value = '';
+}
+
+function handleGalleryDrop(event) {
+  event.preventDefault();
+  document.getElementById('gallery-upload-zone').classList.remove('border-secondary');
+  uploadGalleryFiles(event.dataTransfer.files);
 }
 
 // Init
