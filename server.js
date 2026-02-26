@@ -122,18 +122,14 @@ for (const sql of migrations) {
   }
 }
 
-// Data migrations: ensure key sponsors are properly configured
+// Data migrations: fix existing data (path prefixes, footer flags) — runs before seeding
 try {
   // Mark Villanova and NSF as footer logos if not already set
   db.prepare("UPDATE sponsors SET show_in_footer=1 WHERE name LIKE '%Villanova%' AND show_in_footer=0").run();
   db.prepare("UPDATE sponsors SET show_in_footer=1 WHERE name LIKE '%National Science Foundation%' AND show_in_footer=0").run();
-  // Add ES2 sponsor if it doesn't exist
-  const es2Exists = db.prepare("SELECT id, show_in_footer FROM sponsors WHERE name LIKE '%ES2%' OR name LIKE '%E3S%' OR name LIKE '%Energy Efficient Electronic%'").get();
-  if (!es2Exists) {
-    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run('ES2 - Energy Efficient Electronic Systems', 'images/sponses2.svg', 'https://www.e3s-center.org', 11, 1);
-  } else if (!es2Exists.show_in_footer) {
-    db.prepare('UPDATE sponsors SET show_in_footer=1 WHERE id=?').run(es2Exists.id);
-  }
+  // Fix relative image paths to absolute (add leading slash) for existing data
+  db.prepare("UPDATE gallery SET image_url = '/' || image_url WHERE image_url NOT LIKE '/%' AND image_url NOT LIKE 'http%'").run();
+  db.prepare("UPDATE sponsors SET logo_url = '/' || logo_url WHERE logo_url != '' AND logo_url NOT LIKE '/%' AND logo_url NOT LIKE 'http%'").run();
 } catch(e) { console.error('Data migration error:', e.message); }
 
 // Seed admin user
@@ -198,17 +194,17 @@ if (researchCount.cnt === 0) {
 const sponsorCount = db.prepare('SELECT COUNT(*) as cnt FROM sponsors').get();
 if (sponsorCount.cnt === 0) {
   const sponsors = [
-    { name: 'National Science Foundation', logo_url: 'images/sponnsf.gif', website_url: 'https://www.nsf.gov', sort_order: 1, show_in_footer: 1 },
-    { name: 'Intel Corporation', logo_url: 'images/sponintel.gif', website_url: 'https://www.intel.com', sort_order: 2, show_in_footer: 0 },
-    { name: 'AMD', logo_url: 'images/sponamd.gif', website_url: 'https://www.amd.com', sort_order: 3, show_in_footer: 0 },
-    { name: 'Cisco Systems', logo_url: 'images/sponcis.gif', website_url: 'https://www.cisco.com', sort_order: 4, show_in_footer: 0 },
-    { name: 'Honeywell', logo_url: 'images/sponhon.gif', website_url: 'https://www.honeywell.com', sort_order: 5, show_in_footer: 0 },
-    { name: 'Raytheon', logo_url: 'images/sponray.gif', website_url: 'https://www.rtx.com', sort_order: 6, show_in_footer: 0 },
-    { name: 'Texas Instruments', logo_url: 'images/sponti.gif', website_url: 'https://www.ti.com', sort_order: 7, show_in_footer: 0 },
-    { name: 'SRC', logo_url: 'images/sponsrc.gif', website_url: 'https://www.src.org', sort_order: 8, show_in_footer: 0 },
-    { name: 'Delphi Technologies', logo_url: 'images/sponde.gif', website_url: 'https://www.delphi.com', sort_order: 9, show_in_footer: 0 },
-    { name: 'Villanova University', logo_url: 'images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 10, show_in_footer: 1 },
-    { name: 'ES2 - Energy Efficient Electronic Systems', logo_url: 'images/sponses2.svg', website_url: 'https://www.e3s-center.org', sort_order: 11, show_in_footer: 1 },
+    { name: 'National Science Foundation', logo_url: '/images/sponnsf.gif', website_url: 'https://www.nsf.gov', sort_order: 1, show_in_footer: 1 },
+    { name: 'Intel Corporation', logo_url: '/images/sponintel.gif', website_url: 'https://www.intel.com', sort_order: 2, show_in_footer: 0 },
+    { name: 'AMD', logo_url: '/images/sponamd.gif', website_url: 'https://www.amd.com', sort_order: 3, show_in_footer: 0 },
+    { name: 'Cisco Systems', logo_url: '/images/sponcis.gif', website_url: 'https://www.cisco.com', sort_order: 4, show_in_footer: 0 },
+    { name: 'Honeywell', logo_url: '/images/sponhon.gif', website_url: 'https://www.honeywell.com', sort_order: 5, show_in_footer: 0 },
+    { name: 'Raytheon', logo_url: '/images/sponray.gif', website_url: 'https://www.rtx.com', sort_order: 6, show_in_footer: 0 },
+    { name: 'Texas Instruments', logo_url: '/images/sponti.gif', website_url: 'https://www.ti.com', sort_order: 7, show_in_footer: 0 },
+    { name: 'SRC', logo_url: '/images/sponsrc.gif', website_url: 'https://www.src.org', sort_order: 8, show_in_footer: 0 },
+    { name: 'Delphi Technologies', logo_url: '/images/sponde.gif', website_url: 'https://www.delphi.com', sort_order: 9, show_in_footer: 0 },
+    { name: 'Villanova University', logo_url: '/images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 10, show_in_footer: 1 },
+    { name: 'ES2 - Energy Efficient Electronic Systems', logo_url: '/images/sponses2.svg', website_url: 'https://www.e3s-center.org', sort_order: 11, show_in_footer: 1 },
   ];
   for (const s of sponsors) {
     db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run(s.name, s.logo_url, s.website_url, s.sort_order, s.show_in_footer);
@@ -219,16 +215,26 @@ if (sponsorCount.cnt === 0) {
 const galleryCount = db.prepare('SELECT COUNT(*) as cnt FROM gallery').get();
 if (galleryCount.cnt === 0) {
   const galleryPhotos = [
-    { image_url: 'images/top1a.png', caption: 'Lab Overview', sort_order: 1 },
-    { image_url: 'images/top2a.png', caption: 'Research Equipment', sort_order: 2 },
-    { image_url: 'images/top3a.png', caption: 'Experiments', sort_order: 3 },
-    { image_url: 'images/CSP123_20130911_0195-Edit.jpg', caption: 'Lab Members', sort_order: 4 },
-    { image_url: 'images/IMG_1526.JPG', caption: 'Thermal Systems', sort_order: 5 },
+    { image_url: '/images/top1a.png', caption: 'Lab Overview', sort_order: 1 },
+    { image_url: '/images/top2a.png', caption: 'Research Equipment', sort_order: 2 },
+    { image_url: '/images/top3a.png', caption: 'Experiments', sort_order: 3 },
+    { image_url: '/images/CSP123_20130911_0195-Edit.jpg', caption: 'Lab Members', sort_order: 4 },
+    { image_url: '/images/IMG_1526.JPG', caption: 'Thermal Systems', sort_order: 5 },
   ];
   for (const g of galleryPhotos) {
     db.prepare('INSERT INTO gallery (image_url, caption, sort_order) VALUES (?, ?, ?)').run(g.image_url, g.caption, g.sort_order);
   }
 }
+
+// Post-seed data migration: add ES2 sponsor if it doesn't exist in an existing DB
+try {
+  const es2Exists = db.prepare("SELECT id, show_in_footer FROM sponsors WHERE name LIKE '%ES2%' OR name LIKE '%E3S%' OR name LIKE '%Energy Efficient Electronic%'").get();
+  if (!es2Exists) {
+    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run('ES2 - Energy Efficient Electronic Systems', '/images/sponses2.svg', 'https://www.e3s-center.org', 11, 1);
+  } else if (!es2Exists.show_in_footer) {
+    db.prepare('UPDATE sponsors SET show_in_footer=1 WHERE id=?').run(es2Exists.id);
+  }
+} catch(e) { console.error('ES2 migration error:', e.message); }
 
 // Middleware
 app.use(express.json());
