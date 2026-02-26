@@ -81,7 +81,7 @@
     .slide-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to right, rgba(30,58,95,0.6) 0%, rgba(0,0,0,0.1) 100%);
+      background: linear-gradient(135deg, rgba(15,23,42,0.82) 0%, rgba(15,23,42,0.55) 65%, rgba(15,23,42,0.28) 100%);
     }
     .slide-arrow {
       position: absolute;
@@ -364,14 +364,14 @@
     }
     .person-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
     .person-avatar {
-      width: 80px;
-      height: 80px;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
       background: var(--navy);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 2rem;
       font-weight: 700;
       color: #fff;
       margin: 1.25rem auto 0;
@@ -439,24 +439,25 @@
     .sponsor-chip {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: center;
       background: #fff;
       border: 1px solid var(--gray-200);
-      border-radius: 8px;
-      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
       margin: 0 0.5rem;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      min-width: 80px;
     }
     .sponsor-init {
-      width: 36px;
-      height: 36px;
-      border-radius: 6px;
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       color: #fff;
       flex-shrink: 0;
     }
@@ -503,6 +504,8 @@
       <span class="nav-link" id="nav-publications" onclick="showSection('publications')">Publications</span>
       <span class="nav-link" id="nav-facilities" onclick="showSection('facilities')">Facilities</span>
       <span class="nav-link" id="nav-news" onclick="showSection('news')">News</span>
+      <span class="nav-link" id="nav-sponsors" onclick="showSection('sponsors')">Sponsors</span>
+      <span class="nav-link" id="nav-collaborators" onclick="showSection('collaborators')">Collaborators</span>
       <span class="nav-link" id="nav-join" onclick="showSection('join')">Join</span>
       <span class="nav-link" id="nav-contact" onclick="showSection('contact')">Contact</span>
     </div>
@@ -527,51 +530,49 @@
 <!-- ══ HOME SECTION ════════════════════════════════════════════ -->
 <div id="sec-home">
 
-  <!-- Hero: 2-col split -->
-  <section id="sec-home-hero" style="background: var(--navy-700);" class="text-white overflow-hidden">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 min-h-[480px]">
-      <!-- Left: text content -->
-      <div class="px-8 py-14 flex flex-col justify-center lg:py-20 lg:pr-12">
-        <p style="color:rgba(255,255,255,0.55);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
-          Villanova University &middot; Mechanical Engineering
-        </p>
-        <h1 style="font-size:clamp(1.75rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem">
-          Laboratory for Advanced Thermal &amp; Fluid Systems
-        </h1>
-        <p style="font-size:1rem;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:2rem">
-          Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
-        </p>
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-          <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
-          <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
-          <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
-          <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
-          <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
-        </div>
+  <!-- Hero: full-width slideshow background -->
+  <section id="sec-home-hero" class="relative text-white overflow-hidden" style="min-height:520px">
+    <!-- Slideshow as full-width background -->
+    <div id="slideshow" class="absolute inset-0">
+      <div class="slide active" style="background-image:url('/images/top1a.png')">
+        <div class="slide-overlay"></div>
       </div>
-      <!-- Right: slideshow -->
-      <div class="relative hidden lg:block" id="slideshow" style="min-height:400px">
-        <div class="slide active" style="background-image:url('/images/top1a.png')">
-          <div class="slide-overlay"></div>
-        </div>
-        <div class="slide" style="background-image:url('/images/top2a.png')">
-          <div class="slide-overlay"></div>
-        </div>
-        <div class="slide" style="background-image:url('/images/top3a.png')">
-          <div class="slide-overlay"></div>
-        </div>
-        <div class="slide" style="background-image:url('/images/CSP123_20130911_0195-Edit.jpg')">
-          <div class="slide-overlay"></div>
-        </div>
-        <div class="slide" style="background-image:url('/images/IMG_1526.JPG')">
-          <div class="slide-overlay"></div>
-        </div>
-        <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
-        <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
-        <div id="slideDots"></div>
+      <div class="slide" style="background-image:url('/images/top2a.png')">
+        <div class="slide-overlay"></div>
+      </div>
+      <div class="slide" style="background-image:url('/images/top3a.png')">
+        <div class="slide-overlay"></div>
+      </div>
+      <div class="slide" style="background-image:url('/images/CSP123_20130911_0195-Edit.jpg')">
+        <div class="slide-overlay"></div>
+      </div>
+      <div class="slide" style="background-image:url('/images/IMG_1526.JPG')">
+        <div class="slide-overlay"></div>
+      </div>
+      <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
+      <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
+      <div id="slideDots"></div>
+    </div>
+    <!-- Text content overlay -->
+    <div class="relative z-10 max-w-7xl mx-auto px-8 flex flex-col justify-center" style="min-height:520px;padding-top:5rem;padding-bottom:5rem">
+      <p style="color:rgba(255,255,255,0.75);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
+        Villanova University &middot; Mechanical Engineering
+      </p>
+      <h1 style="font-size:clamp(1.75rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;max-width:620px">
+        Laboratory for Advanced Thermal &amp; Fluid Systems
+      </h1>
+      <p style="font-size:1rem;color:rgba(255,255,255,0.82);line-height:1.6;margin-bottom:2rem;max-width:560px">
+        Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
+        <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
+        <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
       </div>
     </div>
   </section>
@@ -648,18 +649,18 @@
     </div>
     <div class="marquee-wrap py-4">
       <div class="marquee-track" id="sponsorsMarquee">
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div><span class="sponsor-name">NSF</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div><span class="sponsor-name">E3S Center</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div><span class="sponsor-name">Villanova University</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div><span class="sponsor-name">DOE</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div><span class="sponsor-name">DARPA</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div><span class="sponsor-name">Intel</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div><span class="sponsor-name">NSF</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div><span class="sponsor-name">E3S Center</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div><span class="sponsor-name">Villanova University</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div><span class="sponsor-name">DOE</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div><span class="sponsor-name">DARPA</span></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div><span class="sponsor-name">Intel</span></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div></div>
+        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div></div>
       </div>
     </div>
   </div>
@@ -695,7 +696,7 @@
     <button onclick="filterPeople('postdoc')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="postdoc">Postdoc</button>
     <button onclick="filterPeople('ug')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ug">Undergrad</button>
     <button onclick="filterPeople('faculty')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="faculty">Faculty</button>
-    <button onclick="filterPeople('alumni')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="alumni">Alumni</button>
+    <button onclick="filterPeople('former')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="former">Alumni</button>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="peopleGrid">
     <p class="text-gray-400">Loading&#8230;</p>
@@ -1042,6 +1043,17 @@
       <p class="mt-3 text-sm" style="color:rgba(255,255,255,0.45)">NSF E3S Center Partner<br>ASME &middot; IEEE CPMT</p>
     </div>
   </div>
+  <div class="max-w-7xl mx-auto border-t py-8" style="border-color:rgba(255,255,255,0.08)">
+    <div class="footer-heading text-center mb-5">Partner Institutions</div>
+    <div class="flex flex-wrap justify-center items-center gap-6" id="footerLogos">
+      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
+        <img src="/images/templatemo_logo_villanova.png" alt="Villanova University" style="height:52px;object-fit:contain;opacity:0.9">
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
+        <img src="/images/sponnsf.gif" alt="NSF" style="height:52px;object-fit:contain;opacity:0.9">
+      </div>
+    </div>
+  </div>
   <div class="max-w-7xl mx-auto border-t pt-6 text-center text-xs" style="border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)">&copy; 2024 LATFS &mdash; Villanova University. All rights reserved.</div>
 </footer>
 
@@ -1087,7 +1099,7 @@
     `;
   }
 
-  function showSection(sec, sub) {
+  function _applySection(sec, sub) {
     ALL_SECTIONS.forEach(s => {
       const el = document.getElementById('sec-' + s);
       if (el) el.classList.toggle('section-hidden', s !== sec);
@@ -1103,6 +1115,32 @@
     else if (sec === 'sponsors') { loadSponsorsPage(); }
     else if (sec === 'news') { loadNewsPage(); }
   }
+
+  function showSection(sec, sub) {
+    _applySection(sec, sub);
+    if (!history.state || history.state.section !== sec) {
+      history.pushState({ section: sec }, '', '#' + sec);
+    }
+  }
+
+  // Handle browser back/forward button (and Backspace-as-back in some browsers)
+  window.addEventListener('popstate', function(e) {
+    _applySection((e.state && e.state.section) || 'home');
+  });
+
+  // Prevent Backspace from triggering browser back when not in a text field
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace') {
+      const activeEl = document.activeElement;
+      const tag = activeEl ? activeEl.tagName : '';
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !(activeEl && activeEl.isContentEditable)) {
+        e.preventDefault();
+      }
+    }
+  });
+
+  // Set initial history state
+  history.replaceState({ section: 'home' }, '', location.href);
 
   function toggleMobileMenu() {
     const m = document.getElementById('mobileMenu');
@@ -1139,7 +1177,7 @@
     if (newsRes.status === 'fulfilled') { renderNewsFeed(newsRes.value); renderTicker(newsRes.value); }
     if (resRes.status === 'fulfilled') renderHomeResearch(resRes.value);
     if (pubRes.status === 'fulfilled') renderHomePubs(pubRes.value);
-    if (spRes.status === 'fulfilled') renderSponsorsMarquee(spRes.value);
+    if (spRes.status === 'fulfilled') { renderSponsorsMarquee(spRes.value); renderFooterLogos(spRes.value); }
   }
 
   function renderNewsFeed(items) {
@@ -1198,11 +1236,22 @@
     const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c','#0369a1','#065f46'];
     const chips = sponsors.map((s, i) => `
       <div class="sponsor-chip">
-        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:28px;width:auto;object-fit:contain">` :
+        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;width:auto;object-fit:contain">` :
           `<div class="sponsor-init" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
-        <span class="sponsor-name">${escHtml(s.name)}</span>
       </div>`).join('');
     track.innerHTML = chips + chips;
+  }
+
+  function renderFooterLogos(sponsors) {
+    if (!sponsors || !sponsors.length) return;
+    const el = document.getElementById('footerLogos');
+    if (!el) return;
+    const withLogos = sponsors.filter(s => s.logo_url);
+    if (!withLogos.length) return;
+    el.innerHTML = withLogos.map(s => `
+      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
+        <img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;object-fit:contain;opacity:0.9">
+      </div>`).join('');
   }
 
   // ── News page ─────────────────────────────────────────────────
@@ -1244,11 +1293,24 @@
     renderPeople(filtered);
   }
 
+  function categoryLabel(cat) {
+    const map = { director:'Director', faculty:'Faculty', postdoc:'PostDoc', phd:'PhD Student', ms:'MS Student', ug:'Undergrad', former:'Alumni' };
+    return map[(cat||'').toLowerCase()] || cat;
+  }
+  function categoryBadgeStyle(cat) {
+    const map = { director:'background:#e0f2fe;color:#0369a1', faculty:'background:#e0f2fe;color:#0369a1',
+      postdoc:'background:#ede9fe;color:#7c3aed', phd:'background:#dcfce7;color:#166534',
+      ms:'background:#fef3c7;color:#92400e', ug:'background:#fce7f3;color:#9d174d',
+      former:'background:#f1f5f9;color:#64748b' };
+    return map[(cat||'').toLowerCase()] || '';
+  }
+
   function renderPeople(people) {
     const el = document.getElementById('peopleGrid');
     if (!people || !people.length) { el.innerHTML = '<p class="text-gray-400 col-span-4">No people found.</p>'; return; }
     el.innerHTML = people.map((p) => {
       const initials = (p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const badgeStyle = categoryBadgeStyle(p.category);
       return `<div class="person-card">
         <div class="person-avatar">
           ${p.photo_url ? `<img src="${escHtml(p.photo_url)}" alt="${escHtml(p.name)}" loading="lazy">` : `<span>${escHtml(initials)}</span>`}
@@ -1256,7 +1318,7 @@
         <div class="person-body">
           <div class="person-name">${escHtml(p.name)}</div>
           <div class="person-role">${escHtml(p.role||'')}</div>
-          <span class="category-badge">${escHtml(p.category||'')}</span>
+          <span class="category-badge"${badgeStyle ? ` style="${badgeStyle}"` : ''}>${escHtml(categoryLabel(p.category))}</span>
           ${p.bio ? `<p class="text-xs mt-2 leading-relaxed" style="color:var(--gray-500)">${escHtml(p.bio.slice(0,100))}${p.bio.length>100?'&#8230;':''}</p>`:''}
           ${p.email ? `<a href="mailto:${escHtml(p.email)}" class="text-xs mt-1 block" style="color:var(--gold)">${escHtml(p.email)}</a>`:''}
           <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:0.5rem">
@@ -1345,8 +1407,8 @@
       if (!data.length) { el.innerHTML = '<p class="text-gray-400">No sponsors yet.</p>'; return; }
       el.innerHTML = data.map((s, i) => `
         <div class="content-card flex flex-col items-center gap-3 text-center">
-          ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" class="h-12 object-contain">` :
-            `<div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
+          ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" class="h-20 object-contain">` :
+            `<div class="w-20 h-20 rounded-xl flex items-center justify-center font-black text-2xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
           <div class="font-bold text-sm" style="color:var(--navy)">${escHtml(s.name)}</div>
           ${s.website_url ? `<a href="${escHtml(s.website_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Visit &#8594;</a>`:''}
         </div>`).join('');
