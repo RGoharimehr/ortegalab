@@ -94,6 +94,7 @@ db.exec(`
     logo_url TEXT,
     website_url TEXT,
     sort_order INTEGER DEFAULT 0,
+    show_in_footer INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -113,12 +114,27 @@ const migrations = [
   'ALTER TABLE publications ADD COLUMN doi_url TEXT',
   'ALTER TABLE people ADD COLUMN linkedin_url TEXT DEFAULT ""',
   'ALTER TABLE people ADD COLUMN website_url TEXT DEFAULT ""',
+  'ALTER TABLE sponsors ADD COLUMN show_in_footer INTEGER DEFAULT 0',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch(e) {
     if (!e.message.includes('duplicate column name')) console.error('Migration error:', e.message);
   }
 }
+
+// Data migrations: ensure key sponsors are properly configured
+try {
+  // Mark Villanova and NSF as footer logos if not already set
+  db.prepare("UPDATE sponsors SET show_in_footer=1 WHERE name LIKE '%Villanova%' AND show_in_footer=0").run();
+  db.prepare("UPDATE sponsors SET show_in_footer=1 WHERE name LIKE '%National Science Foundation%' AND show_in_footer=0").run();
+  // Add ES2 sponsor if it doesn't exist
+  const es2Exists = db.prepare("SELECT id, show_in_footer FROM sponsors WHERE name LIKE '%ES2%' OR name LIKE '%E3S%' OR name LIKE '%Energy Efficient Electronic%'").get();
+  if (!es2Exists) {
+    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run('ES2 - Energy Efficient Electronic Systems', 'images/sponses2.svg', 'https://www.e3s-center.org', 11, 1);
+  } else if (!es2Exists.show_in_footer) {
+    db.prepare('UPDATE sponsors SET show_in_footer=1 WHERE id=?').run(es2Exists.id);
+  }
+} catch(e) { console.error('Data migration error:', e.message); }
 
 // Seed admin user
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
@@ -182,19 +198,20 @@ if (researchCount.cnt === 0) {
 const sponsorCount = db.prepare('SELECT COUNT(*) as cnt FROM sponsors').get();
 if (sponsorCount.cnt === 0) {
   const sponsors = [
-    { name: 'National Science Foundation', logo_url: 'images/sponnsf.gif', website_url: 'https://www.nsf.gov', sort_order: 1 },
-    { name: 'Intel Corporation', logo_url: 'images/sponintel.gif', website_url: 'https://www.intel.com', sort_order: 2 },
-    { name: 'AMD', logo_url: 'images/sponamd.gif', website_url: 'https://www.amd.com', sort_order: 3 },
-    { name: 'Cisco Systems', logo_url: 'images/sponcis.gif', website_url: 'https://www.cisco.com', sort_order: 4 },
-    { name: 'Honeywell', logo_url: 'images/sponhon.gif', website_url: 'https://www.honeywell.com', sort_order: 5 },
-    { name: 'Raytheon', logo_url: 'images/sponray.gif', website_url: 'https://www.rtx.com', sort_order: 6 },
-    { name: 'Texas Instruments', logo_url: 'images/sponti.gif', website_url: 'https://www.ti.com', sort_order: 7 },
-    { name: 'SRC', logo_url: 'images/sponsrc.gif', website_url: 'https://www.src.org', sort_order: 8 },
-    { name: 'Delphi Technologies', logo_url: 'images/sponde.gif', website_url: 'https://www.delphi.com', sort_order: 9 },
-    { name: 'Villanova University', logo_url: 'images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 10 },
+    { name: 'National Science Foundation', logo_url: 'images/sponnsf.gif', website_url: 'https://www.nsf.gov', sort_order: 1, show_in_footer: 1 },
+    { name: 'Intel Corporation', logo_url: 'images/sponintel.gif', website_url: 'https://www.intel.com', sort_order: 2, show_in_footer: 0 },
+    { name: 'AMD', logo_url: 'images/sponamd.gif', website_url: 'https://www.amd.com', sort_order: 3, show_in_footer: 0 },
+    { name: 'Cisco Systems', logo_url: 'images/sponcis.gif', website_url: 'https://www.cisco.com', sort_order: 4, show_in_footer: 0 },
+    { name: 'Honeywell', logo_url: 'images/sponhon.gif', website_url: 'https://www.honeywell.com', sort_order: 5, show_in_footer: 0 },
+    { name: 'Raytheon', logo_url: 'images/sponray.gif', website_url: 'https://www.rtx.com', sort_order: 6, show_in_footer: 0 },
+    { name: 'Texas Instruments', logo_url: 'images/sponti.gif', website_url: 'https://www.ti.com', sort_order: 7, show_in_footer: 0 },
+    { name: 'SRC', logo_url: 'images/sponsrc.gif', website_url: 'https://www.src.org', sort_order: 8, show_in_footer: 0 },
+    { name: 'Delphi Technologies', logo_url: 'images/sponde.gif', website_url: 'https://www.delphi.com', sort_order: 9, show_in_footer: 0 },
+    { name: 'Villanova University', logo_url: 'images/templatemo_logo_villanova.png', website_url: 'https://www.villanova.edu', sort_order: 10, show_in_footer: 1 },
+    { name: 'ES2 - Energy Efficient Electronic Systems', logo_url: 'images/sponses2.svg', website_url: 'https://www.e3s-center.org', sort_order: 11, show_in_footer: 1 },
   ];
   for (const s of sponsors) {
-    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(s.name, s.logo_url, s.website_url, s.sort_order);
+    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run(s.name, s.logo_url, s.website_url, s.sort_order, s.show_in_footer);
   }
 }
 
@@ -388,15 +405,15 @@ app.get('/api/sponsors', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/sponsors', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { name, logo_url, website_url, sort_order } = req.body;
+  const { name, logo_url, website_url, sort_order, show_in_footer } = req.body;
   if (!name) return res.status(400).json({ error: 'Missing name' });
-  const result = db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order) VALUES (?, ?, ?, ?)').run(name, logo_url || '', website_url || '', sort_order || 0);
+  const result = db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run(name, logo_url || '', website_url || '', sort_order || 0, show_in_footer ? 1 : 0);
   res.json({ id: result.lastInsertRowid });
 });
 
 app.put('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { name, logo_url, website_url, sort_order } = req.body;
-  db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, req.params.id);
+  const { name, logo_url, website_url, sort_order, show_in_footer } = req.body;
+  db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=?, show_in_footer=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, show_in_footer ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 

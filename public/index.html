@@ -443,15 +443,15 @@
       background: #fff;
       border: 1px solid var(--gray-200);
       border-radius: 10px;
-      padding: 0.75rem 1.25rem;
+      padding: 0.75rem 1.5rem;
       margin: 0 0.5rem;
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      min-width: 80px;
+      min-width: 100px;
     }
     .sponsor-init {
-      width: 52px;
-      height: 52px;
+      width: 64px;
+      height: 64px;
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -1031,12 +1031,15 @@
   <div class="max-w-7xl mx-auto border-t py-8" style="border-color:rgba(255,255,255,0.08)">
     <div class="footer-heading text-center mb-5">Partner Institutions</div>
     <div class="flex flex-wrap justify-center items-center gap-6" id="footerLogos">
-      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
-        <img src="/images/templatemo_logo_villanova.png" alt="Villanova University" style="height:52px;object-fit:contain;opacity:0.9">
-      </div>
-      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
-        <img src="/images/sponnsf.gif" alt="NSF" style="height:52px;object-fit:contain;opacity:0.9">
-      </div>
+      <a href="https://www.villanova.edu" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.1);border-radius:8px;padding:1rem 2rem;display:inline-block">
+        <img src="/images/templatemo_logo_villanova.png" alt="Villanova University" style="height:70px;object-fit:contain;opacity:0.9">
+      </a>
+      <a href="https://www.e3s-center.org" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.1);border-radius:8px;padding:1rem 2rem;display:inline-block">
+        <img src="/images/sponses2.svg" alt="ES2 - Energy Efficient Electronic Systems" style="height:70px;object-fit:contain;opacity:0.9">
+      </a>
+      <a href="https://www.nsf.gov" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.1);border-radius:8px;padding:1rem 2rem;display:inline-block">
+        <img src="/images/sponnsf.gif" alt="NSF" style="height:70px;object-fit:contain;opacity:0.9">
+      </a>
     </div>
   </div>
   <div class="max-w-7xl mx-auto border-t pt-6 text-center text-xs" style="border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)">&copy; 2024 LATFS &mdash; Villanova University. All rights reserved.</div>
@@ -1224,7 +1227,7 @@
     const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c','#0369a1','#065f46'];
     const chips = sponsors.map((s, i) => `
       <div class="sponsor-chip">
-        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;width:auto;object-fit:contain">` :
+        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:64px;width:auto;object-fit:contain">` :
           `<div class="sponsor-init" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
       </div>`).join('');
     track.innerHTML = chips + chips;
@@ -1234,12 +1237,12 @@
     if (!sponsors || !sponsors.length) return;
     const el = document.getElementById('footerLogos');
     if (!el) return;
-    const withLogos = sponsors.filter(s => s.logo_url);
-    if (!withLogos.length) return;
-    el.innerHTML = withLogos.map(s => `
-      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
-        <img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;object-fit:contain;opacity:0.9">
-      </div>`).join('');
+    const footerSponsors = sponsors.filter(s => s.show_in_footer && s.logo_url);
+    if (!footerSponsors.length) return;
+    el.innerHTML = footerSponsors.map(s => `
+      <a href="${escHtml(s.website_url || '#')}" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.1);border-radius:8px;padding:1rem 2rem;display:inline-block">
+        <img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:70px;object-fit:contain;opacity:0.9">
+      </a>`).join('');
   }
 
   // ── News page ─────────────────────────────────────────────────
@@ -1395,8 +1398,8 @@
       if (!data.length) { el.innerHTML = '<p class="text-gray-400">No sponsors yet.</p>'; return; }
       el.innerHTML = data.map((s, i) => `
         <div class="content-card flex flex-col items-center gap-3 text-center">
-          ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" class="h-20 object-contain">` :
-            `<div class="w-20 h-20 rounded-xl flex items-center justify-center font-black text-2xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
+          ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:96px;object-fit:contain">` :
+            `<div class="w-24 h-24 rounded-xl flex items-center justify-center font-black text-2xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
           <div class="font-bold text-sm" style="color:var(--navy)">${escHtml(s.name)}</div>
           ${s.website_url ? `<a href="${escHtml(s.website_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Visit &#8594;</a>`:''}
         </div>`).join('');
@@ -1412,14 +1415,17 @@
   }
 
   // ── Init ──────────────────────────────────────────────────────
-  loadHomeData();
-
   // ── Slideshow ─────────────────────────────────────────────────
   // Fallback images used when the gallery API returns nothing
   const FALLBACK_SLIDES = [
     'images/top1a.png', 'images/top2a.png', 'images/top3a.png',
     'images/CSP123_20130911_0195-Edit.jpg', 'images/IMG_1526.JPG'
   ];
+
+  // Initialize slideshow immediately with fallback slides so it shows right away
+  initSlideshow(null);
+
+  loadHomeData();
 
   function initSlideshow(galleryPhotos) {
     const ss = document.getElementById('slideshow');

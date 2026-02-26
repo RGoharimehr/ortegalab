@@ -143,8 +143,15 @@
       <!-- SPONSORS TAB -->
       <div id="content-sponsors" class="p-6 hidden">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">Sponsors &amp; Partners</h2>
+          <div>
+            <h2 class="text-lg font-bold text-primary">Sponsors &amp; Partners</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Use the <strong>"Show in footer"</strong> checkbox to control which logos appear in the Partner Institutions section at the bottom of the main page.</p>
+          </div>
           <button onclick="openModal('sponsor')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Sponsor</button>
+        </div>
+        <div id="sponsors-footer-preview" class="mb-4 p-4 bg-navy rounded-xl" style="background:#0f172a">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Footer Preview — Partner Institutions</p>
+          <div id="sponsors-footer-logos" class="flex flex-wrap gap-4 items-center"></div>
         </div>
         <div id="sponsors-table" class="space-y-2"></div>
       </div>
@@ -259,6 +266,7 @@ function switchTab(tab) {
     if (content) content.classList.toggle('hidden', t !== tab);
   });
   if (tab === 'gallery') loadGalleryData();
+  if (tab === 'sponsors') loadSponsorsData();
 }
 
 // Stats
@@ -364,10 +372,11 @@ async function loadSponsorsData() {
   el.innerHTML = items.length ? items.map(s => `
     <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
       <div class="flex-1 min-w-0 flex items-center gap-3">
-        ${s.logo_url ? `<img src="${s.logo_url}" alt="${escHtml(s.name)}" class="h-8 object-contain flex-shrink-0">` : `<div class="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center bg-primary text-white text-xs font-bold">${s.name.charAt(0)}</div>`}
+        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:48px;width:auto;object-fit:contain" class="flex-shrink-0">` : `<div class="w-12 h-12 rounded flex-shrink-0 flex items-center justify-center bg-primary text-white text-sm font-bold">${escHtml(s.name.charAt(0))}</div>`}
         <div>
           <div class="font-medium text-gray-800 text-sm">${escHtml(s.name)}</div>
           <div class="text-gray-400 text-xs">${escHtml(s.website_url || '—')}</div>
+          ${s.show_in_footer ? '<span class="inline-block mt-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">&#10003; Shows in footer</span>' : ''}
         </div>
       </div>
       <div class="flex gap-2 flex-shrink-0">
@@ -376,6 +385,15 @@ async function loadSponsorsData() {
       </div>
     </div>
   `).join('') : '<p class="text-gray-500 text-sm">No sponsors yet.</p>';
+
+  // Render footer preview
+  const previewEl = document.getElementById('sponsors-footer-logos');
+  if (previewEl) {
+    const footerItems = items.filter(s => s.show_in_footer && s.logo_url);
+    previewEl.innerHTML = footerItems.length
+      ? footerItems.map(s => `<div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.25rem"><img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:56px;object-fit:contain;opacity:0.9"></div>`).join('')
+      : '<p class="text-xs text-gray-400">No logos marked for footer yet. Edit a sponsor and check "Show in footer".</p>';
+  }
 }
 
 // Modal forms
@@ -514,17 +532,30 @@ function openModal(type, data) {
       <form onsubmit="saveItem(event,'sponsor')" class="space-y-4">
         <div><label class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
           <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-          <input name="logo_url" value="${data && data.logo_url ? escHtml(data.logo_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. images/nsf-logo.png"></div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+          ${data && data.logo_url ? `<div class="mb-2"><img src="${escHtml(data.logo_url)}" alt="Current logo" style="height:56px;object-fit:contain"></div>` : ''}
+          <div class="flex gap-2 items-center">
+            <input name="logo_url" id="sponsor-logo-url" value="${data && data.logo_url ? escHtml(data.logo_url) : ''}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none text-sm" placeholder="e.g. images/nsf-logo.png">
+            <button type="button" onclick="document.getElementById('sponsor-logo-file').click()" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200">Upload</button>
+          </div>
+          <input type="file" id="sponsor-logo-file" accept="image/*" class="hidden" onchange="uploadSponsorLogo(event)">
+          <div id="sponsor-logo-upload-status" class="text-xs mt-1 text-gray-500"></div>
+        </div>
         <div><label class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
           <input name="website_url" type="url" value="${data && data.website_url ? escHtml(data.website_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://..."></div>
         <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
           <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+          <input type="checkbox" name="show_in_footer" id="show_in_footer" value="1" ${data && data.show_in_footer ? 'checked' : ''} class="w-4 h-4 rounded">
+          <label for="show_in_footer" class="text-sm font-medium text-gray-700">Show in footer (Partner Institutions)</label>
+        </div>
         <div class="flex gap-3 pt-2">
           <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
           <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
         </div>
       </form>`;
+  }
   }
   
   modal.classList.add('modal-open');
@@ -581,6 +612,7 @@ async function saveItem(e, type) {
   let data = Object.fromEntries(fd.entries());
   
   if (type === 'person') data.active = form.querySelector('[name=active]').checked;
+  if (type === 'sponsor') data.show_in_footer = form.querySelector('[name=show_in_footer]') ? (form.querySelector('[name=show_in_footer]').checked ? 1 : 0) : 0;
   
   let endpoint;
   if (type === 'news') endpoint = 'news';
@@ -733,6 +765,32 @@ function handleGalleryDrop(event) {
   event.preventDefault();
   document.getElementById('gallery-upload-zone').classList.remove('border-secondary');
   uploadGalleryFiles(event.dataTransfer.files);
+}
+
+async function uploadSponsorLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('sponsor-logo-upload-status');
+  statusEl.textContent = 'Uploading…';
+  statusEl.className = 'text-xs mt-1 text-blue-600';
+  try {
+    const fd = new FormData();
+    fd.append('photo', file);
+    const r = await fetch('/api/upload/photo', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
+    if (r.ok) {
+      const result = await r.json();
+      document.getElementById('sponsor-logo-url').value = result.url;
+      statusEl.textContent = '✓ Logo uploaded';
+      statusEl.className = 'text-xs mt-1 text-green-600';
+    } else {
+      statusEl.textContent = '⚠ Upload failed';
+      statusEl.className = 'text-xs mt-1 text-red-600';
+    }
+  } catch(e) {
+    statusEl.textContent = '⚠ Upload error';
+    statusEl.className = 'text-xs mt-1 text-red-600';
+  }
+  event.target.value = '';
 }
 
 // Init
