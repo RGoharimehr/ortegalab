@@ -31,6 +31,25 @@ const photoUpload = multer({
   }
 });
 
+// Document upload storage: PDFs and common document types, up to 20 MB
+const docStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, './uploads/'),
+  filename: (req, file, cb) => {
+    const rawExt = path.extname(file.originalname).toLowerCase();
+    const ext = /^\.[a-z0-9]+$/.test(rawExt) ? rawExt : '';
+    cb(null, `doc_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+  }
+});
+const docUpload = multer({
+  storage: docStorage,
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Only PDF, DOC, DOCX, or TXT files are allowed'));
+  }
+});
+
 // Database setup
 const db = new Database('./latfs.db');
 
@@ -102,6 +121,18 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     image_url TEXT NOT NULL,
     caption TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS facilities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    photo_url TEXT DEFAULT '',
+    doc_url TEXT DEFAULT '',
+    doc_name TEXT DEFAULT '',
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -223,6 +254,22 @@ if (galleryCount.cnt === 0) {
   ];
   for (const g of galleryPhotos) {
     db.prepare('INSERT INTO gallery (image_url, caption, sort_order) VALUES (?, ?, ?)').run(g.image_url, g.caption, g.sort_order);
+  }
+}
+
+// Seed facilities
+const facilityCount = db.prepare('SELECT COUNT(*) as cnt FROM facilities').get();
+if (facilityCount.cnt === 0) {
+  const facilities = [
+    { name: 'Two-Phase Flow & Boiling Lab', description: 'High-speed imaging systems, precision flow meters, and custom test sections for boiling and two-phase flow experiments.', content: 'The Two-Phase Flow & Boiling Lab is equipped with state-of-the-art instrumentation for studying boiling heat transfer and two-phase flow phenomena. Key capabilities include high-speed visualization, precision calorimetry, and custom-fabricated test sections that allow researchers to study nucleate boiling, flow boiling in microchannels, and spray cooling under controlled conditions.', photo_url: '/images/facilities_1a.png', doc_url: '', doc_name: '', sort_order: 1 },
+    { name: 'Thermal Characterization Suite', description: 'Advanced tools for measuring thermal resistance, conductivity, and transient thermal response of materials and systems.', content: 'Our Thermal Characterization Suite provides comprehensive capabilities for thermal property measurement and system-level thermal performance evaluation. The suite includes IR thermography for non-contact full-field temperature measurement, laser flash diffusivity for precise thermal conductivity determination, and precision calorimetry for heat capacity measurements across a wide temperature range.', photo_url: '/images/facilities_2a.png', doc_url: '', doc_name: '', sort_order: 2 },
+    { name: 'Computational Resources', description: 'High-performance computing cluster and licensed CFD software for large-scale simulations.', content: 'LATFS maintains a dedicated high-performance computing cluster for numerical simulation of thermal and fluid systems. The cluster supports parallel CFD computations using ANSYS Fluent, ANSYS CFX, and OpenFOAM. Researchers have access to MATLAB, Python (with NumPy/SciPy), and in-house codes for data analysis and reduced-order modeling.', photo_url: '/images/facilities_3a.png', doc_url: '', doc_name: '', sort_order: 3 },
+    { name: 'Microfluidics Lab', description: 'Cleanroom-class fabrication and testing of microchannels and heat spreaders for electronics cooling.', content: 'The Microfluidics Lab supports design, fabrication, and testing of microfluidic systems for thermal management. Facilities include soft lithography tools for PDMS device fabrication, an inverted optical microscope with μPIV capability for flow visualization, and a precision pressure and flow measurement system for microchannel characterization.', photo_url: '/images/facilities_4a.png', doc_url: '', doc_name: '', sort_order: 4 },
+    { name: 'Electronics Cooling Testbed', description: 'Dedicated infrastructure for testing advanced cooling solutions for high-power electronics.', content: 'The Electronics Cooling Testbed provides a realistic environment for evaluating thermal management solutions for high-power electronic assemblies. The facility includes programmable DC power supplies, precision junction temperature measurement instrumentation, custom cold plates and heat sink test fixtures, and data acquisition systems capable of high-speed multi-channel temperature logging.', photo_url: '/images/facilities_5a.png', doc_url: '', doc_name: '', sort_order: 5 },
+    { name: 'Energy Systems Lab', description: 'Research into sustainable energy conversion, heat exchangers, and thermal energy storage systems.', content: 'The Energy Systems Lab supports research in ground-source heat pump modeling, concentrated photovoltaic cooling, and thermal energy storage. Facilities include heat exchanger test rigs for single and two-phase flow, phase-change material (PCM) storage modules, flat-plate and evacuated-tube solar thermal collectors, and a data-logging infrastructure for long-term experimental campaigns.', photo_url: '/images/facil01.png', doc_url: '', doc_name: '', sort_order: 6 },
+  ];
+  for (const f of facilities) {
+    db.prepare('INSERT INTO facilities (name, description, content, photo_url, doc_url, doc_name, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)').run(f.name, f.description, f.content, f.photo_url, f.doc_url, f.doc_name, f.sort_order);
   }
 }
 
@@ -441,6 +488,15 @@ app.post('/api/upload/photo', uploadRateLimiter, requireAuth, requireCsrf, (req,
   });
 });
 
+// DOCUMENT UPLOAD API
+app.post('/api/upload/document', uploadRateLimiter, requireAuth, requireCsrf, (req, res) => {
+  docUpload.single('document')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'Upload error' });
+    if (!req.file) return res.status(400).json({ error: 'No document file provided' });
+    res.json({ url: `/uploads/${req.file.filename}`, name: req.file.originalname });
+  });
+});
+
 // GALLERY API
 app.get('/api/gallery', apiReadLimiter, (req, res) => {
   const photos = db.prepare('SELECT * FROM gallery ORDER BY sort_order, id').all();
@@ -467,6 +523,39 @@ app.delete('/api/gallery/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, 
   if (photo.image_url && photo.image_url.startsWith('/uploads/')) {
     const filePath = path.join(__dirname, photo.image_url);
     fs.unlink(filePath, (err) => { if (err) console.error('Failed to delete gallery file:', filePath, err.message); });
+  }
+  res.json({ success: true });
+});
+
+// FACILITIES API
+app.get('/api/facilities', apiReadLimiter, (req, res) => {
+  const items = db.prepare('SELECT * FROM facilities ORDER BY sort_order, id').all();
+  res.json(items);
+});
+
+app.post('/api/facilities', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { name, description, content, photo_url, doc_url, doc_name, sort_order } = req.body;
+  if (!name || !description) return res.status(400).json({ error: 'Missing required fields' });
+  const result = db.prepare('INSERT INTO facilities (name, description, content, photo_url, doc_url, doc_name, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)').run(name, description, content || '', photo_url || '', doc_url || '', doc_name || '', sort_order || 0);
+  res.json({ id: result.lastInsertRowid });
+});
+
+app.put('/api/facilities/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { name, description, content, photo_url, doc_url, doc_name, sort_order } = req.body;
+  db.prepare('UPDATE facilities SET name=?, description=?, content=?, photo_url=?, doc_url=?, doc_name=?, sort_order=? WHERE id=?').run(name, description, content || '', photo_url || '', doc_url || '', doc_name || '', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+
+app.delete('/api/facilities/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const item = db.prepare('SELECT * FROM facilities WHERE id=?').get(req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  db.prepare('DELETE FROM facilities WHERE id=?').run(req.params.id);
+  // Clean up uploaded files from disk
+  for (const urlField of [item.photo_url, item.doc_url]) {
+    if (urlField && urlField.startsWith('/uploads/')) {
+      const filePath = path.join(__dirname, urlField);
+      fs.unlink(filePath, (err) => { if (err) console.error('Failed to delete file:', filePath, err.message); });
+    }
   }
   res.json({ success: true });
 });

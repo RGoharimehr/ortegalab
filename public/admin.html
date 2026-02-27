@@ -91,6 +91,10 @@
         <div class="text-gray-500 text-sm">Gallery Photos</div>
         <div id="stat-gallery" class="text-3xl font-bold text-primary mt-1">-</div>
       </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">Facilities</div>
+        <div id="stat-facilities" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -100,6 +104,7 @@
         <button onclick="switchTab('publications')" id="tab-publications" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128218; Publications</button>
         <button onclick="switchTab('people')" id="tab-people" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128101; People</button>
         <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
+        <button onclick="switchTab('facilities')" id="tab-facilities" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127981; Facilities</button>
         <button onclick="switchTab('sponsors')" id="tab-sponsors" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127970; Sponsors</button>
         <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128248; Gallery</button>
       </div>
@@ -161,7 +166,7 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-lg font-bold text-primary">Hero Slideshow Gallery</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Photos appear in the hero slideshow on the home page. Drag &amp; drop or click to upload.</p>
+            <p class="text-xs text-gray-500 mt-0.5">Photos appear in the hero slideshow on the home page and Gallery page. Drag &amp; drop or click to upload.</p>
           </div>
         </div>
         <!-- Upload area -->
@@ -180,6 +185,18 @@
         <input type="file" id="gallery-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" multiple onchange="handleGalleryFileSelect(event)">
         <!-- Photo grid -->
         <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+      </div>
+
+      <!-- FACILITIES TAB -->
+      <div id="content-facilities" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-primary">Facilities</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Manage lab facilities. Each can have a photo, detailed description, and a downloadable document.</p>
+          </div>
+          <button onclick="openModal('facility')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Facility</button>
+        </div>
+        <div id="facilities-table" class="space-y-2"></div>
       </div>
   </div>
 </div>
@@ -260,25 +277,27 @@ function showDashboard(username) {
 // Tabs
 function switchTab(tab) {
   currentTab = tab;
-  ['news','publications','people','research','sponsors','gallery'].forEach(t => {
+  ['news','publications','people','research','facilities','sponsors','gallery'].forEach(t => {
     document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
     const content = document.getElementById('content-' + t);
     if (content) content.classList.toggle('hidden', t !== tab);
   });
   if (tab === 'gallery') loadGalleryData();
   if (tab === 'sponsors') loadSponsorsData();
+  if (tab === 'facilities') loadFacilitiesData();
 }
 
 // Stats
 async function loadStats() {
   try {
-    const [news, pubs, people, research, sponsors, gallery] = await Promise.all([
+    const [news, pubs, people, research, sponsors, gallery, facilities] = await Promise.all([
       fetch('/api/news').then(r => r.json()),
       fetch('/api/publications').then(r => r.json()),
       fetch('/api/people').then(r => r.json()),
       fetch('/api/research').then(r => r.json()),
       fetch('/api/sponsors').then(r => r.json()),
       fetch('/api/gallery').then(r => r.json()),
+      fetch('/api/facilities').then(r => r.json()),
     ]);
     document.getElementById('stat-news').textContent = news.length;
     document.getElementById('stat-pubs').textContent = pubs.length;
@@ -286,6 +305,7 @@ async function loadStats() {
     document.getElementById('stat-research').textContent = research.length;
     document.getElementById('stat-sponsors').textContent = sponsors.length;
     document.getElementById('stat-gallery').textContent = gallery.length;
+    document.getElementById('stat-facilities').textContent = facilities.length;
   } catch(e) {}
 }
 
@@ -296,6 +316,7 @@ async function loadAllData() {
   loadPeopleData();
   loadResearchData();
   loadSponsorsData();
+  loadFacilitiesData();
 }
 
 async function loadNewsData() {
@@ -555,13 +576,54 @@ function openModal(type, data) {
           <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
         </div>
       </form>`;
+  } else if (type === 'facility') {
+    title.textContent = editingId ? 'Edit Facility' : 'Add Facility';
+    const photoVal = data && data.photo_url ? escHtml(data.photo_url) : '';
+    const docVal = data && data.doc_url ? escHtml(data.doc_url) : '';
+    const docNameVal = data && data.doc_name ? escHtml(data.doc_name) : '';
+    body.innerHTML = `
+      <form onsubmit="saveFacility(event)" class="space-y-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Short Description * <span class="text-xs text-gray-400">(shown on card)</span></label>
+          <textarea name="description" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.description) : ''}</textarea></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Content <span class="text-xs text-gray-400">(shown on detail page)</span></label>
+          <textarea name="content" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="Detailed description of the facility...">${data && data.content ? escHtml(data.content) : ''}</textarea></div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Photo</label>
+          ${photoVal ? `<div class="mb-2"><img src="${photoVal}" alt="Current photo" style="height:80px;object-fit:cover;border-radius:6px"></div>` : ''}
+          <div class="flex gap-2 items-center">
+            <input name="photo_url" id="facility-photo-url" value="${photoVal}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none text-sm" placeholder="/images/facility.png">
+            <button type="button" onclick="document.getElementById('facility-photo-file').click()" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200">Upload</button>
+          </div>
+          <input type="file" id="facility-photo-file" accept="image/*" class="hidden" onchange="uploadFacilityPhoto(event)">
+          <div id="facility-photo-status" class="text-xs mt-1 text-gray-500"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Documentation <span class="text-xs text-gray-400">(PDF, DOC, TXT — max 20 MB)</span></label>
+          ${docNameVal ? `<div class="mb-2 text-xs text-green-700 bg-green-50 px-3 py-1.5 rounded flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> ${docNameVal}</div>` : ''}
+          <div class="flex gap-2 items-center">
+            <input name="doc_url" id="facility-doc-url" value="${docVal}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none text-sm" placeholder="URL or upload below">
+            <button type="button" onclick="document.getElementById('facility-doc-file').click()" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200">Upload</button>
+          </div>
+          <input type="file" id="facility-doc-file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" class="hidden" onchange="uploadFacilityDoc(event)">
+          <input type="hidden" name="doc_name" id="facility-doc-name" value="${docNameVal}">
+          <div id="facility-doc-status" class="text-xs mt-1 text-gray-500"></div>
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
+        </div>
+      </form>`;
   }
   
   modal.classList.add('modal-open');
 }
 
 async function editItem(type, id) {
-  const endpointMap = { news:'news', publication:'publications', person:'people', research:'research', sponsor:'sponsors' };
+  const endpointMap = { news:'news', publication:'publications', person:'people', research:'research', sponsor:'sponsors', facility:'facilities' };
   const endpoint = endpointMap[type] || type;
   const items = await fetch('/api/' + endpoint).then(r => r.json());
   const item = items.find(i => i.id === id);
@@ -635,7 +697,7 @@ async function saveItem(e, type) {
 
 function confirmDelete(type, id) {
   deleteCallback = async () => {
-    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type === 'sponsor' ? 'sponsors' : type;
+    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type === 'sponsor' ? 'sponsors' : type === 'facility' ? 'facilities' : type;
     await fetch('/api/' + endpoint + '/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
     closeDeleteModal();
     loadAllData();
@@ -794,6 +856,94 @@ async function uploadSponsorLogo(event) {
 
 // Init
 checkAuth();
+
+// ── Facilities ────────────────────────────────────────────────
+async function loadFacilitiesData() {
+  const items = await fetch('/api/facilities').then(r => r.json());
+  const el = document.getElementById('facilities-table');
+  if (!el) return;
+  el.innerHTML = items.length ? items.map(f => `
+    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
+      <div class="flex items-start gap-3 flex-1 min-w-0">
+        ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="${escHtml(f.name)}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0">` : '<div class="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>'}
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-gray-800 text-sm">${escHtml(f.name)}</div>
+          <div class="text-gray-500 text-xs mt-0.5">${escHtml((f.description||'').slice(0,100))}${(f.description||'').length>100?'…':''}</div>
+          ${f.doc_url ? `<div class="text-xs text-green-700 mt-1 flex items-center gap-1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>${escHtml(f.doc_name||'Document')}</div>` : ''}
+        </div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editItem('facility',${f.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
+        <button onclick="confirmDelete('facility',${f.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-gray-500 text-sm">No facilities yet.</p>';
+}
+
+async function saveFacility(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const data = Object.fromEntries(fd.entries());
+  const method = editingId ? 'PUT' : 'POST';
+  const url = '/api/facilities' + (editingId ? '/' + editingId : '');
+  const r = await fetch(url, { method, headers: {'Content-Type':'application/json', 'x-csrf-token': csrfToken}, body: JSON.stringify(data) });
+  if (r.ok) { closeModal(); loadFacilitiesData(); loadStats(); }
+  else alert('Error saving facility');
+}
+
+async function uploadFacilityPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('facility-photo-status');
+  statusEl.textContent = 'Uploading…';
+  statusEl.className = 'text-xs mt-1 text-blue-600';
+  try {
+    const fd = new FormData();
+    fd.append('photo', file);
+    const r = await fetch('/api/upload/photo', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
+    if (r.ok) {
+      const result = await r.json();
+      document.getElementById('facility-photo-url').value = result.url;
+      statusEl.textContent = '✓ Photo uploaded';
+      statusEl.className = 'text-xs mt-1 text-green-600';
+    } else {
+      statusEl.textContent = '⚠ Upload failed';
+      statusEl.className = 'text-xs mt-1 text-red-600';
+    }
+  } catch(err) {
+    statusEl.textContent = '⚠ Upload error';
+    statusEl.className = 'text-xs mt-1 text-red-600';
+  }
+  event.target.value = '';
+}
+
+async function uploadFacilityDoc(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('facility-doc-status');
+  statusEl.textContent = 'Uploading…';
+  statusEl.className = 'text-xs mt-1 text-blue-600';
+  try {
+    const fd = new FormData();
+    fd.append('document', file);
+    const r = await fetch('/api/upload/document', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
+    if (r.ok) {
+      const result = await r.json();
+      document.getElementById('facility-doc-url').value = result.url;
+      document.getElementById('facility-doc-name').value = result.name;
+      statusEl.textContent = '✓ ' + result.name + ' uploaded';
+      statusEl.className = 'text-xs mt-1 text-green-600';
+    } else {
+      statusEl.textContent = '⚠ Upload failed';
+      statusEl.className = 'text-xs mt-1 text-red-600';
+    }
+  } catch(err) {
+    statusEl.textContent = '⚠ Upload error';
+    statusEl.className = 'text-xs mt-1 text-red-600';
+  }
+  event.target.value = '';
+}
 </script>
 </body>
 </html>

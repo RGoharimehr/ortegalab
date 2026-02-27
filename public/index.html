@@ -503,6 +503,7 @@
       <span class="nav-link" id="nav-people" onclick="showSection('people')">People</span>
       <span class="nav-link" id="nav-publications" onclick="showSection('publications')">Publications</span>
       <span class="nav-link" id="nav-facilities" onclick="showSection('facilities')">Facilities</span>
+      <span class="nav-link" id="nav-gallery" onclick="showSection('gallery')">Gallery</span>
       <span class="nav-link" id="nav-news" onclick="showSection('news')">News</span>
       <span class="nav-link" id="nav-sponsors" onclick="showSection('sponsors')">Sponsors</span>
       <span class="nav-link" id="nav-collaborators" onclick="showSection('collaborators')">Collaborators</span>
@@ -519,6 +520,7 @@
     <span class="block nav-link py-2" onclick="showSection('people');toggleMobileMenu()">People</span>
     <span class="block nav-link py-2" onclick="showSection('publications');toggleMobileMenu()">Publications</span>
     <span class="block nav-link py-2" onclick="showSection('facilities');toggleMobileMenu()">Facilities</span>
+    <span class="block nav-link py-2" onclick="showSection('gallery');toggleMobileMenu()">Gallery</span>
     <span class="block nav-link py-2" onclick="showSection('news');toggleMobileMenu()">News</span>
     <span class="block nav-link py-2" onclick="showSection('join');toggleMobileMenu()">Join</span>
     <span class="block nav-link py-2" onclick="showSection('contact');toggleMobileMenu()">Contact</span>
@@ -707,121 +709,26 @@
 <div id="sec-facilities" class="section-hidden max-w-7xl mx-auto px-4 py-10">
   <h1 class="page-title">Facilities</h1>
   <p class="page-subtitle">State-of-the-art equipment supporting cutting-edge research.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div id="facilitiesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <p class="text-gray-400 col-span-3">Loading&#8230;</p>
+  </div>
+</div>
 
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Two-Phase Flow &amp; Boiling Lab</h3>
-        <p>High-speed imaging systems, precision flow meters, and custom test sections for boiling and two-phase flow experiments.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Photron high-speed camera</li><li>Omega precision instruments</li><li>Custom heater assemblies</li>
-        </ul>
-      </div>
-    </div>
+<!-- ══ FACILITIES DETAIL SECTION ════════════════════════════════ -->
+<div id="sec-facilities-detail" class="section-hidden max-w-4xl mx-auto px-4 py-10">
+  <button onclick="showSection('facilities')" class="mb-6 flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to Facilities
+  </button>
+  <div id="facilityDetailContent"></div>
+</div>
 
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Thermal Characterization Suite</h3>
-        <p>Advanced tools for measuring thermal resistance, conductivity, and transient thermal response of materials and systems.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>IR thermography system</li><li>Laser flash diffusivity</li><li>Precision calorimetry</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
-            <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
-            <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
-            <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
-            <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Computational Resources</h3>
-        <p>High-performance computing cluster and licensed CFD software for large-scale simulations.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>ANSYS Fluent &amp; CFX</li><li>OpenFOAM cluster</li><li>MATLAB / Python toolchains</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 18h8"/><path d="M3 21h18"/>
-            <path d="M14 21v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/>
-            <path d="M14 7l-2-5-3 1 2 5"/>
-            <circle cx="14" cy="10" r="3"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Microfluidics Lab</h3>
-        <p>Cleanroom-class fabrication and testing of microchannels and heat spreaders for electronics cooling.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Soft lithography tools</li><li>Microscopy station</li><li>Micro-PIV system</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Electronics Cooling Testbed</h3>
-        <p>Dedicated infrastructure for testing advanced cooling solutions for high-power electronics.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Power electronics test boards</li><li>Junction temperature monitors</li><li>Custom cold plates</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Energy Systems Lab</h3>
-        <p>Research into sustainable energy conversion, heat exchangers, and thermal energy storage systems.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Heat exchanger test rigs</li><li>PCM storage modules</li><li>Solar thermal collectors</li>
-        </ul>
-      </div>
-    </div>
-
+<!-- ══ GALLERY SECTION ════════════════════════════════════════════ -->
+<div id="sec-gallery" class="section-hidden max-w-7xl mx-auto px-4 py-10">
+  <h1 class="page-title">Photo Gallery</h1>
+  <p class="page-subtitle">Images from LATFS research, events, and lab life.</p>
+  <div id="galleryPageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <p class="text-gray-400 col-span-4">Loading&#8230;</p>
   </div>
 </div>
 
@@ -1047,7 +954,7 @@
 
 <script>
   // ── Navigation ───────────────────────────────────────────────
-  const ALL_SECTIONS = ['home','research','research-detail','people','publications','facilities','news','join','contact','sponsors','collaborators'];
+  const ALL_SECTIONS = ['home','research','research-detail','people','publications','facilities','facilities-detail','gallery','news','join','contact','sponsors','collaborators'];
   let _allPeople = [];
   let _allResearch = [];
 
@@ -1092,9 +999,10 @@
       const el = document.getElementById('sec-' + s);
       if (el) el.classList.toggle('section-hidden', s !== sec);
     });
-    // Update nav active state
+    // Update nav active state (facilities-detail highlights facilities nav)
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    const navEl = document.getElementById('nav-' + sec);
+    const navKey = sec === 'facilities-detail' ? 'facilities' : sec;
+    const navEl = document.getElementById('nav-' + navKey);
     if (navEl) navEl.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (sec === 'people') { loadPeople(sub); }
@@ -1102,6 +1010,8 @@
     else if (sec === 'publications') { loadPublications(); }
     else if (sec === 'sponsors') { loadSponsorsPage(); }
     else if (sec === 'news') { loadNewsPage(); }
+    else if (sec === 'facilities') { loadFacilities(); }
+    else if (sec === 'gallery') { loadGalleryPage(); }
   }
 
   function showSection(sec, sub) {
@@ -1422,12 +1332,18 @@
     '/images/CSP123_20130911_0195-Edit.jpg', '/images/IMG_1526.JPG'
   ];
 
+  // Module-level timer so reinit always clears the previous interval
+  let _slideshowTimer = null;
+
   // Initialize slideshow immediately with fallback slides so it shows right away
   initSlideshow(null);
 
   loadHomeData();
 
   function initSlideshow(galleryPhotos) {
+    // Clear any running timer before rebuilding slides
+    if (_slideshowTimer) { clearInterval(_slideshowTimer); _slideshowTimer = null; }
+
     const ss = document.getElementById('slideshow');
     const dotsContainer = document.getElementById('slideDots');
     if (!ss || !dotsContainer) return;
@@ -1471,9 +1387,94 @@
     }
 
     window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
-    let timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
-    ss.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; });
-    ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); });
+    _slideshowTimer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
+    // Use onmouseenter/onmouseleave (overwrites any previous handler — no stacking)
+    ss.onmouseenter = () => { clearInterval(_slideshowTimer); _slideshowTimer = null; };
+    ss.onmouseleave = () => { _slideshowTimer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); };
+  }
+
+  // ── Facilities ────────────────────────────────────────────────
+  let _allFacilities = [];
+  async function loadFacilities() {
+    try {
+      const items = await fetch('/api/facilities').then(r => r.json());
+      _allFacilities = items;
+      const grid = document.getElementById('facilitiesGrid');
+      if (!grid) return;
+      if (!items.length) { grid.innerHTML = '<p class="text-gray-400 col-span-3">No facilities listed yet.</p>'; return; }
+      grid.innerHTML = items.map(f => `
+        <div class="facility-card cursor-pointer hover:shadow-lg transition-shadow" onclick="openFacilityDetail(${f.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openFacilityDetail(${f.id})}">
+          ${f.photo_url ? `<div class="w-full h-40 overflow-hidden rounded-t-xl"><img src="${escHtml(f.photo_url)}" alt="${escHtml(f.name)}" class="w-full h-full object-cover" loading="lazy"></div>` : '<div class="facility-icon"><div class="res-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div></div>'}
+          <div class="facility-body text-sm text-gray-600 space-y-2">
+            <h3>${escHtml(f.name)}</h3>
+            <p>${escHtml((f.description||'').slice(0,120))}${(f.description||'').length>120?'&#8230;':''}</p>
+            <span class="inline-flex items-center gap-1 text-xs text-secondary font-medium mt-1">View details &#8250;</span>
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      const grid = document.getElementById('facilitiesGrid');
+      if (grid) grid.innerHTML = '<p class="text-red-400 col-span-3">Failed to load facilities.</p>';
+    }
+  }
+
+  function openFacilityDetail(id) {
+    const f = _allFacilities.find(x => x.id === id);
+    if (!f) return;
+    const el = document.getElementById('facilityDetailContent');
+    if (!el) return;
+    el.innerHTML = `
+      <h1 class="page-title">${escHtml(f.name)}</h1>
+      ${f.photo_url ? `<div class="w-full max-h-80 overflow-hidden rounded-xl mb-6 shadow"><img src="${escHtml(f.photo_url)}" alt="${escHtml(f.name)}" class="w-full h-full object-cover"></div>` : ''}
+      <div class="prose max-w-none text-gray-700 leading-relaxed mb-6">
+        <p>${escHtml(f.description)}</p>
+        ${f.content ? `<div class="mt-4 space-y-3">${escHtml(f.content).split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}</div>` : ''}
+      </div>
+      ${f.doc_url ? `
+        <a href="${escHtml(f.doc_url)}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white mt-2"
+           style="background:var(--navy)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Download: ${escHtml(f.doc_name || 'Documentation')}
+        </a>` : ''}
+    `;
+    showSection('facilities-detail');
+  }
+
+  // ── Gallery Page ──────────────────────────────────────────────
+  async function loadGalleryPage() {
+    try {
+      const items = await fetch('/api/gallery').then(r => r.json());
+      const grid = document.getElementById('galleryPageGrid');
+      if (!grid) return;
+      if (!items.length) { grid.innerHTML = '<p class="text-gray-400 col-span-4">No photos yet.</p>'; return; }
+      grid.innerHTML = items.map(g => `
+        <div class="relative group rounded-xl overflow-hidden bg-gray-100 aspect-video shadow cursor-pointer"
+             onclick="openLightbox('${escHtml(g.image_url)}','${escHtml(g.caption||'')}')"
+             role="button" tabindex="0"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox('${escHtml(g.image_url)}','${escHtml(g.caption||'')}')}">
+          <img src="${escHtml(g.image_url)}" alt="${escHtml(g.caption||'Gallery photo')}" class="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy">
+          ${g.caption ? `<div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-2 py-1 truncate">${escHtml(g.caption)}</div>` : ''}
+        </div>`).join('');
+    } catch(e) {
+      const grid = document.getElementById('galleryPageGrid');
+      if (grid) grid.innerHTML = '<p class="text-red-400 col-span-4">Failed to load gallery.</p>';
+    }
+  }
+
+  // Simple lightbox for gallery
+  function openLightbox(url, caption) {
+    let lb = document.getElementById('_lightbox');
+    if (!lb) {
+      lb = document.createElement('div');
+      lb.id = '_lightbox';
+      lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out';
+      lb.onclick = () => lb.remove();
+      document.addEventListener('keydown', function escClose(e) { if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', escClose); } });
+      lb.innerHTML = '<img id="_lbImg" style="max-width:90vw;max-height:80vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,0.5)" alt=""><p id="_lbCap" style="color:rgba(255,255,255,0.85);margin-top:12px;font-size:0.9rem;text-align:center;max-width:600px"></p>';
+      document.body.appendChild(lb);
+    }
+    document.getElementById('_lbImg').src = url;
+    document.getElementById('_lbCap').textContent = caption;
   }
 </script>
 </body>
