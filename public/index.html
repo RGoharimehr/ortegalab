@@ -83,6 +83,31 @@
       inset: 0;
       background: linear-gradient(135deg, rgba(15,23,42,0.82) 0%, rgba(15,23,42,0.55) 65%, rgba(15,23,42,0.28) 100%);
     }
+    /* Caption bar shown at bottom of each slide */
+    .slide-caption-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 64px 10px 20px;
+      background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0) 100%);
+      z-index: 5;
+      pointer-events: none;
+    }
+    .slide-caption-title {
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      margin-bottom: 2px;
+    }
+    .slide-caption-text {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
     .slide-arrow {
       position: absolute;
       top: 50%;
@@ -1066,19 +1091,19 @@
 
   // ── Home data ─────────────────────────────────────────────────
   async function loadHomeData() {
-    const [newsRes, resRes, pubRes, spRes, galRes] = await Promise.allSettled([
+    const [newsRes, resRes, pubRes, spRes, heroRes] = await Promise.allSettled([
       fetch('/api/news').then(r => r.json()),
       fetch('/api/research').then(r => r.json()),
       fetch('/api/publications').then(r => r.json()),
       fetch('/api/sponsors').then(r => r.json()),
-      fetch('/api/gallery').then(r => r.json())
+      fetch('/api/hero-slides').then(r => r.json())
     ]);
     if (newsRes.status === 'fulfilled') { renderNewsFeed(newsRes.value); renderTicker(newsRes.value); }
     if (resRes.status === 'fulfilled') renderHomeResearch(resRes.value);
     if (pubRes.status === 'fulfilled') renderHomePubs(pubRes.value);
     if (spRes.status === 'fulfilled') { renderSponsorsMarquee(spRes.value); renderFooterLogos(spRes.value); }
-    const galleryPhotos = galRes.status === 'fulfilled' && galRes.value.length ? galRes.value : null;
-    initSlideshow(galleryPhotos);
+    const heroSlides = heroRes.status === 'fulfilled' && heroRes.value.length ? heroRes.value : null;
+    initSlideshow(heroSlides);
   }
 
   function renderNewsFeed(items) {
@@ -1326,47 +1351,49 @@
 
   // ── Init ──────────────────────────────────────────────────────
   // ── Slideshow ─────────────────────────────────────────────────
-  // Fallback images used when the gallery API returns nothing
+  // Fallback slides used before /api/hero-slides responds
   const FALLBACK_SLIDES = [
-    '/images/top1a.png', '/images/top2a.png', '/images/top3a.png',
-    '/images/CSP123_20130911_0195-Edit.jpg', '/images/IMG_1526.JPG'
+    { image_url: '/images/top1a.png', title: 'Lab Overview', caption: 'State-of-the-art facilities for thermal and fluid research at Villanova University.' },
+    { image_url: '/images/top2a.png', title: 'Research Equipment', caption: 'High-speed imaging and precision instrumentation for boiling and two-phase flow experiments.' },
+    { image_url: '/images/top3a.png', title: 'Active Experiments', caption: 'Ongoing research into two-phase flow, spray cooling, and thermal energy storage.' },
+    { image_url: '/images/CSP123_20130911_0195-Edit.jpg', title: 'Our Team', caption: 'Graduate students, postdocs, and faculty working on cutting-edge engineering challenges.' },
+    { image_url: '/images/IMG_1526.JPG', title: 'Thermal Systems', caption: 'Advanced thermal management solutions for electronics, energy, and industrial applications.' },
   ];
 
   // Module-level timer so reinit always clears the previous interval
   let _slideshowTimer = null;
 
-  // Initialize slideshow immediately with fallback slides so it shows right away
+  // Show fallback slides immediately so the hero is never empty
   initSlideshow(null);
 
   loadHomeData();
 
-  function initSlideshow(galleryPhotos) {
-    // Clear any running timer before rebuilding slides
+  function initSlideshow(heroSlides) {
+    // Always clear any running timer before rebuilding
     if (_slideshowTimer) { clearInterval(_slideshowTimer); _slideshowTimer = null; }
 
     const ss = document.getElementById('slideshow');
     const dotsContainer = document.getElementById('slideDots');
     if (!ss || !dotsContainer) return;
 
-    // Build slides
-    const urls = galleryPhotos
-      ? galleryPhotos.map(g => g.image_url)
-      : FALLBACK_SLIDES;
+    const slides_data = heroSlides && heroSlides.length ? heroSlides : FALLBACK_SLIDES;
 
-    // Remove any existing slide divs (re-init safe)
+    // Remove old slide divs (safe for re-init)
     ss.querySelectorAll('.slide').forEach(el => el.remove());
     dotsContainer.innerHTML = '';
 
-    urls.forEach((url, i) => {
+    slides_data.forEach((s, i) => {
       const div = document.createElement('div');
       div.className = 'slide' + (i === 0 ? ' active' : '');
-      div.style.backgroundImage = `url(${JSON.stringify(url)})`;
-      div.innerHTML = '<div class="slide-overlay"></div>';
-      // Insert before the first arrow button
+      div.style.backgroundImage = `url(${JSON.stringify(s.image_url)})`;
+      // Dark gradient overlay + caption bar at bottom of slide
+      const titleHtml = s.title ? `<div class="slide-caption-title">${s.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : '';
+      const captionHtml = s.caption ? `<div class="slide-caption-text">${s.caption.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : '';
+      div.innerHTML = `<div class="slide-overlay"></div>${(titleHtml || captionHtml) ? `<div class="slide-caption-bar">${titleHtml}${captionHtml}</div>` : ''}`;
       ss.insertBefore(div, ss.querySelector('.slide-arrow'));
     });
 
-    const slides = ss.querySelectorAll('.slide');
+    const slides = Array.from(ss.querySelectorAll('.slide'));
     const INTERVAL_MS = 5000;
     let slideIdx = 0;
 
@@ -1388,7 +1415,6 @@
 
     window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
     _slideshowTimer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
-    // Use onmouseenter/onmouseleave (overwrites any previous handler — no stacking)
     ss.onmouseenter = () => { clearInterval(_slideshowTimer); _slideshowTimer = null; };
     ss.onmouseleave = () => { _slideshowTimer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); };
   }

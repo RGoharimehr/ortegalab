@@ -125,6 +125,15 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS hero_slides (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    image_url TEXT NOT NULL,
+    title TEXT DEFAULT '',
+    caption TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS facilities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -254,6 +263,21 @@ if (galleryCount.cnt === 0) {
   ];
   for (const g of galleryPhotos) {
     db.prepare('INSERT INTO gallery (image_url, caption, sort_order) VALUES (?, ?, ?)').run(g.image_url, g.caption, g.sort_order);
+  }
+}
+
+// Seed hero slides (separate from photo gallery)
+const heroSlideCount = db.prepare('SELECT COUNT(*) as cnt FROM hero_slides').get();
+if (heroSlideCount.cnt === 0) {
+  const heroSlides = [
+    { image_url: '/images/top1a.png', title: 'Lab Overview', caption: 'State-of-the-art facilities for thermal and fluid research at Villanova University.', sort_order: 1 },
+    { image_url: '/images/top2a.png', title: 'Research Equipment', caption: 'High-speed imaging, precision flow meters, and custom test sections for boiling experiments.', sort_order: 2 },
+    { image_url: '/images/top3a.png', title: 'Active Experiments', caption: 'Ongoing research into two-phase flow, spray cooling, and thermal energy storage.', sort_order: 3 },
+    { image_url: '/images/CSP123_20130911_0195-Edit.jpg', title: 'Our Team', caption: 'Graduate students, postdocs, and faculty collaborating on cutting-edge engineering challenges.', sort_order: 4 },
+    { image_url: '/images/IMG_1526.JPG', title: 'Thermal Systems', caption: 'Advanced thermal management solutions for electronics, energy, and industrial applications.', sort_order: 5 },
+  ];
+  for (const s of heroSlides) {
+    db.prepare('INSERT INTO hero_slides (image_url, title, caption, sort_order) VALUES (?, ?, ?, ?)').run(s.image_url, s.title, s.caption, s.sort_order);
   }
 }
 
@@ -523,6 +547,42 @@ app.delete('/api/gallery/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, 
   if (photo.image_url && photo.image_url.startsWith('/uploads/')) {
     const filePath = path.join(__dirname, photo.image_url);
     fs.unlink(filePath, (err) => { if (err) console.error('Failed to delete gallery file:', filePath, err.message); });
+  }
+  res.json({ success: true });
+});
+
+// HERO SLIDES API (separate from photo gallery)
+app.get('/api/hero-slides', apiReadLimiter, (req, res) => {
+  const slides = db.prepare('SELECT * FROM hero_slides ORDER BY sort_order, id').all();
+  res.json(slides);
+});
+
+app.post('/api/hero-slides', uploadRateLimiter, requireAuth, requireCsrf, (req, res) => {
+  photoUpload.single('photo')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'Upload error' });
+    if (!req.file) return res.status(400).json({ error: 'No image file provided' });
+    const image_url = `/uploads/${req.file.filename}`;
+    const title = (req.body.title || '').slice(0, 200);
+    const caption = (req.body.caption || '').slice(0, 400);
+    const sort_order = parseInt(req.body.sort_order, 10) || 0;
+    const result = db.prepare('INSERT INTO hero_slides (image_url, title, caption, sort_order) VALUES (?, ?, ?, ?)').run(image_url, title, caption, sort_order);
+    res.json({ id: result.lastInsertRowid, image_url, title, caption, sort_order });
+  });
+});
+
+app.put('/api/hero-slides/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, caption, sort_order } = req.body;
+  db.prepare('UPDATE hero_slides SET title=?, caption=?, sort_order=? WHERE id=?').run(title || '', caption || '', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+
+app.delete('/api/hero-slides/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const slide = db.prepare('SELECT * FROM hero_slides WHERE id=?').get(req.params.id);
+  if (!slide) return res.status(404).json({ error: 'Not found' });
+  db.prepare('DELETE FROM hero_slides WHERE id=?').run(req.params.id);
+  if (slide.image_url && slide.image_url.startsWith('/uploads/')) {
+    const filePath = path.join(__dirname, slide.image_url);
+    fs.unlink(filePath, (err) => { if (err) console.error('Failed to delete hero slide file:', filePath, err.message); });
   }
   res.json({ success: true });
 });

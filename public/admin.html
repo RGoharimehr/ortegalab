@@ -88,6 +88,10 @@
         <div id="stat-sponsors" class="text-3xl font-bold text-primary mt-1">-</div>
       </div>
       <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-gray-500 text-sm">Hero Slides</div>
+        <div id="stat-hero-slides" class="text-3xl font-bold text-primary mt-1">-</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4">
         <div class="text-gray-500 text-sm">Gallery Photos</div>
         <div id="stat-gallery" class="text-3xl font-bold text-primary mt-1">-</div>
       </div>
@@ -106,7 +110,8 @@
         <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
         <button onclick="switchTab('facilities')" id="tab-facilities" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127981; Facilities</button>
         <button onclick="switchTab('sponsors')" id="tab-sponsors" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127970; Sponsors</button>
-        <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128248; Gallery</button>
+        <button onclick="switchTab('hero-slides')" id="tab-hero-slides" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127775; Hero Slideshow</button>
+        <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128248; Photo Gallery</button>
       </div>
       
       <!-- NEWS TAB -->
@@ -161,12 +166,58 @@
         <div id="sponsors-table" class="space-y-2"></div>
       </div>
 
+      <!-- HERO SLIDES TAB -->
+      <div id="content-hero-slides" class="p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-primary">Hero Slideshow</h2>
+            <p class="text-xs text-gray-500 mt-0.5">These photos appear in the full-width hero slideshow on the home page. Each slide shows its title and caption text over the image.</p>
+          </div>
+        </div>
+        <!-- Upload form for a new hero slide -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Add New Slide</h3>
+          <form id="hero-slide-form" onsubmit="submitHeroSlide(event)" class="space-y-3">
+            <div class="flex gap-3 items-start">
+              <div class="flex-1">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Image *</label>
+                <div class="flex gap-2 items-center">
+                  <input type="text" id="hero-slide-img-url" name="image_url" readonly placeholder="Upload an image →" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <button type="button" onclick="document.getElementById('hero-slide-file').click()" class="px-3 py-2 bg-primary text-white rounded-lg text-xs font-medium hover:bg-secondary">Upload</button>
+                </div>
+                <input type="file" id="hero-slide-file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadHeroSlideImage(event)">
+                <div id="hero-slide-upload-status" class="text-xs mt-1 text-gray-500"></div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Slide Title</label>
+              <input type="text" name="title" maxlength="200" placeholder="e.g. Two-Phase Flow Lab" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-secondary focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Caption / Description</label>
+              <textarea name="caption" rows="2" maxlength="400" placeholder="e.g. High-speed imaging and precision instrumentation for boiling experiments." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-secondary focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="flex gap-3 items-center">
+              <div class="flex-1">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Sort Order</label>
+                <input type="number" name="sort_order" value="0" class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div class="pt-4">
+                <button type="submit" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-secondary">Add Slide</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <!-- Current slides grid -->
+        <div id="hero-slides-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+      </div>
+
       <!-- GALLERY TAB -->
       <div id="content-gallery" class="p-6 hidden">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="text-lg font-bold text-primary">Hero Slideshow Gallery</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Photos appear in the hero slideshow on the home page and Gallery page. Drag &amp; drop or click to upload.</p>
+            <h2 class="text-lg font-bold text-primary">Photo Gallery</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Photos shown on the public Gallery page. Separate from the hero slideshow. Drag &amp; drop or click to upload.</p>
           </div>
         </div>
         <!-- Upload area -->
@@ -277,7 +328,7 @@ function showDashboard(username) {
 // Tabs
 function switchTab(tab) {
   currentTab = tab;
-  ['news','publications','people','research','facilities','sponsors','gallery'].forEach(t => {
+  ['news','publications','people','research','facilities','sponsors','hero-slides','gallery'].forEach(t => {
     document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
     const content = document.getElementById('content-' + t);
     if (content) content.classList.toggle('hidden', t !== tab);
@@ -285,12 +336,13 @@ function switchTab(tab) {
   if (tab === 'gallery') loadGalleryData();
   if (tab === 'sponsors') loadSponsorsData();
   if (tab === 'facilities') loadFacilitiesData();
+  if (tab === 'hero-slides') loadHeroSlidesData();
 }
 
 // Stats
 async function loadStats() {
   try {
-    const [news, pubs, people, research, sponsors, gallery, facilities] = await Promise.all([
+    const [news, pubs, people, research, sponsors, gallery, facilities, heroSlides] = await Promise.all([
       fetch('/api/news').then(r => r.json()),
       fetch('/api/publications').then(r => r.json()),
       fetch('/api/people').then(r => r.json()),
@@ -298,6 +350,7 @@ async function loadStats() {
       fetch('/api/sponsors').then(r => r.json()),
       fetch('/api/gallery').then(r => r.json()),
       fetch('/api/facilities').then(r => r.json()),
+      fetch('/api/hero-slides').then(r => r.json()),
     ]);
     document.getElementById('stat-news').textContent = news.length;
     document.getElementById('stat-pubs').textContent = pubs.length;
@@ -306,6 +359,7 @@ async function loadStats() {
     document.getElementById('stat-sponsors').textContent = sponsors.length;
     document.getElementById('stat-gallery').textContent = gallery.length;
     document.getElementById('stat-facilities').textContent = facilities.length;
+    document.getElementById('stat-hero-slides').textContent = heroSlides.length;
   } catch(e) {}
 }
 
@@ -770,14 +824,18 @@ async function loadGalleryData() {
     return;
   }
   el.innerHTML = items.map(g => `
-    <div class="relative group rounded-xl overflow-hidden bg-gray-100 aspect-video shadow">
-      <img src="${escHtml(g.image_url)}" alt="${escHtml(g.caption||'Gallery photo')}" class="w-full h-full object-cover">
-      ${g.caption ? `<div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-2 py-1 truncate">${escHtml(g.caption)}</div>` : ''}
-      <button onclick="deleteGalleryPhoto(${g.id})"
-        class="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-        title="Delete photo" aria-label="Delete photo">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
+    <div class="rounded-xl overflow-hidden bg-gray-100 shadow">
+      <div class="relative aspect-video">
+        <img src="${escHtml(g.image_url)}" alt="${escHtml(g.caption||'Gallery photo')}" class="w-full h-full object-cover">
+      </div>
+      <div class="flex items-center justify-between px-3 py-2 bg-white gap-2">
+        <span class="text-xs text-gray-500 truncate flex-1">${escHtml(g.caption||'No caption')}</span>
+        <button onclick="deleteGalleryPhoto(${g.id})"
+          class="flex-shrink-0 w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors"
+          title="Delete photo" aria-label="Delete photo">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
     </div>
   `).join('');
 }
@@ -826,6 +884,133 @@ function handleGalleryDrop(event) {
   event.preventDefault();
   document.getElementById('gallery-upload-zone').classList.remove('border-secondary');
   uploadGalleryFiles(event.dataTransfer.files);
+}
+
+// ── Hero Slideshow management ────────────────────────────────
+async function loadHeroSlidesData() {
+  const items = await fetch('/api/hero-slides').then(r => r.json());
+  const el = document.getElementById('hero-slides-grid');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<p class="text-gray-500 text-sm col-span-3">No slides yet. Add one above.</p>';
+    return;
+  }
+  el.innerHTML = items.map(s => `
+    <div class="rounded-xl overflow-hidden bg-white shadow border border-gray-100">
+      <div class="relative aspect-video bg-gray-100">
+        <img src="${escHtml(s.image_url)}" alt="${escHtml(s.title||'Slide')}" class="w-full h-full object-cover">
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+          ${s.title ? `<div class="text-white text-xs font-bold leading-tight">${escHtml(s.title)}</div>` : ''}
+          ${s.caption ? `<div class="text-white/80 text-xs leading-tight mt-0.5">${escHtml(s.caption.slice(0,80))}${s.caption.length>80?'…':''}</div>` : ''}
+        </div>
+      </div>
+      <div class="flex items-center justify-between px-3 py-2 gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-medium text-gray-700 truncate">${escHtml(s.title||'No title')}</div>
+          <div class="text-xs text-gray-400">Order: ${s.sort_order}</div>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick="editHeroSlide(${s.id})" class="text-xs bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded hover:bg-blue-200">Edit</button>
+          <button onclick="deleteHeroSlide(${s.id})" class="text-xs bg-red-100 text-red-700 px-2.5 py-1.5 rounded hover:bg-red-200">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function submitHeroSlide(e) {
+  e.preventDefault();
+  const form = e.target;
+  const storedFile = window._heroSlideFile;
+  if (!storedFile) { alert('Please choose an image file first.'); return; }
+  const fd = new FormData(form);
+  const multipart = new FormData();
+  multipart.append('photo', storedFile);
+  multipart.append('title', fd.get('title') || '');
+  multipart.append('caption', fd.get('caption') || '');
+  multipart.append('sort_order', fd.get('sort_order') || 0);
+  const statusEl = document.getElementById('hero-slide-upload-status');
+  statusEl.textContent = 'Saving…';
+  statusEl.className = 'text-xs mt-1 text-blue-600';
+  const r = await fetch('/api/hero-slides', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: multipart });
+  if (r.ok) {
+    form.reset();
+    document.getElementById('hero-slide-img-url').value = '';
+    statusEl.textContent = '✓ Slide added';
+    statusEl.className = 'text-xs mt-1 text-green-600';
+    window._heroSlideFile = null;
+    loadHeroSlidesData();
+    loadStats();
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  } else {
+    const err = await r.json().catch(() => ({}));
+    statusEl.textContent = '⚠ ' + (err.error || 'Save failed');
+    statusEl.className = 'text-xs mt-1 text-red-600';
+  }
+}
+
+function uploadHeroSlideImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  // Store the File object for use in submitHeroSlide (no pre-upload needed)
+  window._heroSlideFile = file;
+  const imgUrlEl = document.getElementById('hero-slide-img-url');
+  // Show a local blob preview URL so the user can see what they picked
+  imgUrlEl.value = file.name;
+  const statusEl = document.getElementById('hero-slide-upload-status');
+  statusEl.textContent = '✓ Image selected: ' + file.name;
+  statusEl.className = 'text-xs mt-1 text-green-600';
+  event.target.value = '';
+}
+
+function deleteHeroSlide(id) {
+  deleteCallback = async () => {
+    await fetch('/api/hero-slides/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
+    closeDeleteModal();
+    loadHeroSlidesData();
+    loadStats();
+  };
+  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
+  document.getElementById('delete-modal').classList.add('modal-open');
+}
+
+let _editingHeroSlideId = null;
+async function editHeroSlide(id) {
+  const items = await fetch('/api/hero-slides').then(r => r.json());
+  const s = items.find(x => x.id === id);
+  if (!s) return;
+  _editingHeroSlideId = id;
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modal-title');
+  const body = document.getElementById('modal-body');
+  title.textContent = 'Edit Hero Slide';
+  body.innerHTML = `
+    <form onsubmit="saveHeroSlide(event)" class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
+        <img src="${escHtml(s.image_url)}" alt="" class="w-full h-32 object-cover rounded-lg mb-2">
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <input name="title" value="${escHtml(s.title||'')}" maxlength="200" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Caption</label>
+        <textarea name="caption" rows="3" maxlength="400" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none resize-none">${escHtml(s.caption||'')}</textarea></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+        <input name="sort_order" type="number" value="${s.sort_order}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+        <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">Update</button>
+      </div>
+    </form>`;
+  modal.classList.add('modal-open');
+}
+
+async function saveHeroSlide(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const data = Object.fromEntries(fd.entries());
+  const r = await fetch('/api/hero-slides/' + _editingHeroSlideId, { method: 'PUT', headers: {'Content-Type':'application/json','x-csrf-token':csrfToken}, body: JSON.stringify(data) });
+  if (r.ok) { closeModal(); loadHeroSlidesData(); loadStats(); }
+  else alert('Error updating slide');
 }
 
 async function uploadSponsorLogo(event) {
