@@ -1,1134 +1,1267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LATFS Admin Panel</title>
-  <link rel="stylesheet" href="/tailwind.css">
-  <style>
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem; display: none; }
-    .modal-overlay.modal-open { display: flex; }
-    .tab-active { background: #1e3a5f; color: white; }
-    .tab-inactive { background: white; color: #374151; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LATFS · Lab Platform</title>
+<link rel="icon" href="/assets/favicon.gif">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+/* ============================================================
+   LATFS Design System — Colors & Type
+   Laboratory for Advanced Thermal and Fluid Systems
+   Villanova University
+   ============================================================ */
+/* ── Font imports ──────────────────────────────────────────── */
+:root {
+  /* ── Brand Colors ─────────────────────────────────────────
+     LATFS is a Villanova-aligned research lab. The palette
+     anchors on deep navy (institutional authority), academic
+     gold (heritage / accent), and a warm cream (softens the
+     academic tone so it feels approachable, not stuffy).
+  */
+  /* Primary — Navy */
+  --navy-950: #080f24;
+  --navy-900: #0f172a;    /* Primary brand navy (headers, nav) */
+  --navy-800: #162041;
+  --navy-700: #1e3a5f;    /* Legacy secondary navy (hovers) */
+  --navy-600: #2d4a78;
+  --navy-500: #4a6fa5;
+  /* Accent — Academic Gold */
+  --gold-900: #7a5e15;
+  --gold-700: #9a7820;
+  --gold-600: #b8912a;    /* Primary gold (accent bars, badges) */
+  --gold-500: #d4a942;
+  --gold-300: #e8c972;
+  --gold-100: #fef7e4;    /* Soft gold tint for badges */
+  --gold-50:  #fdfbf4;    /* Cream background */
+  /* Neutrals — Warm gray (paired with navy, not cold blue-gray) */
+  --gray-950: #0a0d13;
+  --gray-900: #111827;
+  --gray-800: #1f2937;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #64748b;
+  --gray-400: #94a3b8;
+  --gray-300: #cbd5e1;
+  --gray-200: #e2e8f0;
+  --gray-100: #f1f5f9;
+  --gray-50:  #f8fafc;
+  /* Lab-status semantic colors (for inventory, tasks, etc.) */
+  --status-ok:      #16a34a;    /* green — in stock, on track */
+  --status-warn:    #d97706;    /* amber — low, at risk */
+  --status-alert:   #dc2626;    /* red — out, blocked */
+  --status-info:    #0284c7;    /* blue — neutral info */
+  --status-ok-tint:    #dcfce7;
+  --status-warn-tint:  #fef3c7;
+  --status-alert-tint: #fee2e2;
+  --status-info-tint:  #e0f2fe;
+  /* ── Semantic tokens ──────────────────────────────────── */
+  --fg-1: var(--navy-900);     /* primary text */
+  --fg-2: var(--gray-700);     /* body text */
+  --fg-3: var(--gray-500);     /* muted text */
+  --fg-4: var(--gray-400);     /* tertiary / timestamps */
+  --fg-inv: #ffffff;
+  --bg-1: #ffffff;
+  --bg-2: var(--gray-50);      /* page background */
+  --bg-3: var(--gray-100);     /* subtle cards, fill inputs */
+  --bg-dark: var(--navy-900);  /* nav, footer */
+  --border-1: var(--gray-200); /* default borders */
+  --border-2: var(--gray-300); /* stronger borders / dividers */
+  --accent: var(--gold-600);
+  --accent-soft: var(--gold-100);
+  --accent-hover: var(--gold-700);
+  /* ── Elevation ────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.18);
+  --shadow-inset: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+  /* ── Radii ────────────────────────────────────────────── */
+  --radius-xs: 4px;     /* small inline chips */
+  --radius-sm: 6px;     /* inputs, small buttons */
+  --radius-md: 8px;     /* default buttons, tags */
+  --radius-lg: 12px;    /* cards */
+  --radius-xl: 16px;    /* feature cards, modals */
+  --radius-pill: 999px; /* badges */
+  /* ── Spacing (8-point grid, with 4 for inline) ──────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  /* ── Typography families ──────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif; /* serif display for editorial flourishes — publication titles, quote blocks */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* ── Type scale ──────────────────────────────────────── */
+  --text-xs:   0.75rem;   /* 12px — meta, timestamps */
+  --text-sm:   0.875rem;  /* 14px — secondary body */
+  --text-base: 1rem;      /* 16px — body default */
+  --text-lg:   1.125rem;  /* 18px — lead body */
+  --text-xl:   1.25rem;   /* 20px — small headings */
+  --text-2xl:  1.5rem;    /* 24px — h3 */
+  --text-3xl:  1.875rem;  /* 30px — h2 */
+  --text-4xl:  2.25rem;   /* 36px — h1 */
+  --text-5xl:  3rem;      /* 48px — hero */
+  --text-6xl:  3.75rem;   /* 60px — display */
+  /* ── Motion ───────────────────────────────────────────── */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:   150ms;
+  --dur-base:   220ms;
+  --dur-slow:   400ms;
+}
+/* ============================================================
+   Semantic element styles — drop into any page
+   ============================================================ */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--fg-1);
+  background: var(--bg-2);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1 {
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 4vw, var(--text-5xl));
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-4);
+}
+h2 {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-3);
+}
+h3 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-2);
+}
+h4 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-2);
+}
+h5, h6 {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin: 0 0 var(--space-2);
+}
+p {
+  font-size: var(--text-base);
+  color: var(--fg-2);
+  line-height: 1.65;
+  margin: 0 0 var(--space-4);
+  text-wrap: pretty;
+}
+small, .text-meta {
+  font-size: var(--text-xs);
+  color: var(--fg-4);
+}
+a {
+  color: var(--navy-700);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--gold-700); }
+code, kbd, pre {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+code {
+  background: var(--gray-100);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-xs);
+  color: var(--navy-800);
+}
+/* Serif display — use sparingly: publication titles, editorial quotes */
+.display-serif {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+/* Eyebrow / overline label — classic academic styling */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-700);
+}
+/* Section-header pattern: gold bar + title (used across lab site) */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.section-header::before {
+  content: "";
+  width: 3px;
+  height: 1.5rem;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Login overlay (kit doesn't define this — we add a simple navy gate) */
+.login-screen { position:fixed; inset:0; background: var(--navy-900); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.login-card   { background:#fff; border-radius: var(--radius-xl); padding: 36px 32px; width: 360px; box-shadow: var(--shadow-xl); }
+.login-card h1{ font-family: var(--font-display); font-size: 24px; color: var(--navy-900); margin: 0 0 4px; }
+.login-card p { font-size: 13px; color: var(--fg-3); margin: 0 0 20px; }
+.login-card label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 12px 0 4px; }
+.login-card input{ width:100%; padding: 9px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; box-sizing:border-box; }
+.login-card button{ width:100%; margin-top: 18px; background: var(--gold-600); color:#fff; border:none; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; cursor:pointer; font-family:inherit; }
+.login-card button:hover{ background: var(--gold-700); }
+.login-card .err{ color:#dc2626; font-size: 12px; margin-top: 10px; min-height: 14px; }
+/* Sidebar logout button */
+.p-logout { background:none; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; font-family:inherit; }
+.p-logout:hover{ background:rgba(255,255,255,0.05); color:#fff; }
+/* Modal (used for forms) */
+.modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
+.modal { background:#fff; border-radius: var(--radius-lg); padding:24px; width: 480px; max-width:100%; max-height: 90vh; overflow:auto; box-shadow: var(--shadow-xl); }
+.modal h2 { font-size:18px; font-weight:700; color: var(--navy-900); margin:0 0 6px; }
+.modal-sub{ font-size:12px; color: var(--fg-3); margin:0 0 16px; }
+.modal label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 10px 0 4px; }
+.modal input, .modal select, .modal textarea{ width:100%; padding: 8px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family:inherit; font-size:13px; box-sizing:border-box; }
+.modal textarea{ min-height: 80px; resize: vertical; }
+.modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+/* Empty state */
+.empty { padding: 40px 20px; text-align:center; color: var(--fg-4); font-size: 13px; }
+/* List item with delete button */
+.row-actions { display:flex; gap:6px; }
+.row-actions button { background:none; border:1px solid var(--border-1); color: var(--fg-3); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor:pointer; font-family:inherit; }
+.row-actions button:hover { background: var(--bg-2); color: var(--navy-900); }
+.row-actions button.danger:hover { background: #fee2e2; color: #991b1b; border-color:#fca5a5; }
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body>
 
-<!-- Login Screen -->
-<div id="login-screen" class="min-h-screen flex items-center justify-center">
-  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-        </svg>
-      </div>
-      <h1 class="text-2xl font-bold text-primary">LATFS Admin</h1>
-      <p class="text-gray-500 mt-1">Sign in to manage content</p>
-    </div>
-    <form id="login-form" onsubmit="doLogin(event)" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-        <input type="text" id="login-user" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder="admin">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input type="password" id="login-pass" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
-      </div>
-      <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">Invalid username or password.</div>
-      <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-secondary transition-colors font-medium text-lg">
-        Sign In
-      </button>
+<!-- Login gate -->
+<div id="loginScreen" class="login-screen" style="display:none">
+  <div class="login-card">
+    <h1>LATFS Platform</h1>
+    <p>Sign in to manage the lab.</p>
+    <form id="loginForm">
+      <label>Username</label>
+      <input id="lUser" type="text" autocomplete="username" required>
+      <label>Password</label>
+      <input id="lPass" type="password" autocomplete="current-password" required>
+      <button type="submit">Sign in</button>
+      <div class="err" id="lErr"></div>
     </form>
-    <p class="text-center text-gray-400 text-xs mt-4">Default: admin / admin123</p>
   </div>
 </div>
 
-<!-- Admin Dashboard -->
-<div id="admin-dashboard" class="hidden">
-  <!-- Top bar -->
-  <nav class="bg-primary text-white shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-primary text-sm">L</div>
-        <span class="font-bold text-lg">LATFS Admin</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <span id="admin-username" class="text-blue-200 text-sm"></span>
-        <a href="/" class="text-sm text-blue-200 hover:text-white flex items-center gap-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-          View Site
-        </a>
-        <button onclick="doLogout()" class="text-sm bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-colors">Logout</button>
+<!-- App shell -->
+<div id="appShell" class="p-app" style="display:none">
+  <aside class="p-sidebar">
+    <div class="p-brand">
+      <div class="p-brand-mark">L</div>
+      <div>
+        <div class="p-brand-wm">LATFS</div>
+        <div class="p-brand-sub">Lab Platform</div>
       </div>
     </div>
-  </nav>
-
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Stats cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">News Items</div>
-        <div id="stat-news" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Publications</div>
-        <div id="stat-pubs" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">People</div>
-        <div id="stat-people" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Research Areas</div>
-        <div id="stat-research" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Sponsors</div>
-        <div id="stat-sponsors" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Hero Slides</div>
-        <div id="stat-hero-slides" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Gallery Photos</div>
-        <div id="stat-gallery" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Facilities</div>
-        <div id="stat-facilities" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
+    <nav class="p-nav" id="navMain"></nav>
+    <div class="p-nav-section">
+      <div class="p-nav-head">Admin</div>
+      <button class="p-nav-item" data-route="admin">
+        <i data-lucide="shield" class="p-nav-icon"></i>
+        <span>Admin panel</span>
+      </button>
     </div>
-
-    <!-- Tabs -->
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-      <div class="flex border-b border-gray-200 overflow-x-auto">
-        <button onclick="switchTab('news')" id="tab-news" class="tab-active px-6 py-3 font-medium text-sm whitespace-nowrap">&#128240; News</button>
-        <button onclick="switchTab('publications')" id="tab-publications" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128218; Publications</button>
-        <button onclick="switchTab('people')" id="tab-people" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128101; People</button>
-        <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
-        <button onclick="switchTab('facilities')" id="tab-facilities" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127981; Facilities</button>
-        <button onclick="switchTab('sponsors')" id="tab-sponsors" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127970; Sponsors</button>
-        <button onclick="switchTab('hero-slides')" id="tab-hero-slides" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127775; Hero Slideshow</button>
-        <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128248; Photo Gallery</button>
+    <div class="p-user">
+      <div class="p-user-av" id="userInitials">AO</div>
+      <div style="flex:1">
+        <div class="p-user-name" id="userName">Dr. A. Ortega</div>
+        <div class="p-user-role" id="userRole">PI · Director</div>
       </div>
-      
-      <!-- NEWS TAB -->
-      <div id="content-news" class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">News Items</h2>
-          <button onclick="openModal('news')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add News</button>
-        </div>
-        <div id="news-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- PUBLICATIONS TAB -->
-      <div id="content-publications" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">Publications</h2>
-          <button onclick="openModal('publication')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Publication</button>
-        </div>
-        <div id="pub-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- PEOPLE TAB -->
-      <div id="content-people" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">People</h2>
-          <button onclick="openModal('person')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Person</button>
-        </div>
-        <div id="people-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- RESEARCH TAB -->
-      <div id="content-research" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">Research Areas</h2>
-          <button onclick="openModal('research')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Research Area</button>
-        </div>
-        <div id="research-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- SPONSORS TAB -->
-      <div id="content-sponsors" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-primary">Sponsors &amp; Partners</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Use the <strong>"Show in footer"</strong> checkbox to control which logos appear in the Partner Institutions section at the bottom of the main page.</p>
-          </div>
-          <button onclick="openModal('sponsor')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Sponsor</button>
-        </div>
-        <div id="sponsors-footer-preview" class="mb-4 p-4 bg-navy rounded-xl" style="background:#0f172a">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Footer Preview — Partner Institutions</p>
-          <div id="sponsors-footer-logos" class="flex flex-wrap gap-4 items-center"></div>
-        </div>
-        <div id="sponsors-table" class="space-y-2"></div>
-      </div>
-
-      <!-- HERO SLIDES TAB -->
-      <div id="content-hero-slides" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-primary">Hero Slideshow</h2>
-            <p class="text-xs text-gray-500 mt-0.5">These photos appear in the full-width hero slideshow on the home page. Each slide shows its title and caption text over the image.</p>
-          </div>
-        </div>
-        <!-- Upload form for a new hero slide -->
-        <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
-          <h3 class="text-sm font-semibold text-gray-700 mb-3">Add New Slide</h3>
-          <form id="hero-slide-form" onsubmit="submitHeroSlide(event)" class="space-y-3">
-            <div class="flex gap-3 items-start">
-              <div class="flex-1">
-                <label class="block text-xs font-medium text-gray-600 mb-1">Image *</label>
-                <div class="flex gap-2 items-center">
-                  <input type="text" id="hero-slide-img-url" name="image_url" readonly placeholder="Upload an image →" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <button type="button" onclick="document.getElementById('hero-slide-file').click()" class="px-3 py-2 bg-primary text-white rounded-lg text-xs font-medium hover:bg-secondary">Upload</button>
-                </div>
-                <input type="file" id="hero-slide-file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadHeroSlideImage(event)">
-                <div id="hero-slide-upload-status" class="text-xs mt-1 text-gray-500"></div>
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Slide Title</label>
-              <input type="text" name="title" maxlength="200" placeholder="e.g. Two-Phase Flow Lab" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-secondary focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Caption / Description</label>
-              <textarea name="caption" rows="2" maxlength="400" placeholder="e.g. High-speed imaging and precision instrumentation for boiling experiments." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-secondary focus:outline-none resize-none"></textarea>
-            </div>
-            <div class="flex gap-3 items-center">
-              <div class="flex-1">
-                <label class="block text-xs font-medium text-gray-600 mb-1">Sort Order</label>
-                <input type="number" name="sort_order" value="0" class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm">
-              </div>
-              <div class="pt-4">
-                <button type="submit" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-secondary">Add Slide</button>
-              </div>
-            </div>
-          </form>
-        </div>
-        <!-- Current slides grid -->
-        <div id="hero-slides-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-      </div>
-
-      <!-- GALLERY TAB -->
-      <div id="content-gallery" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-primary">Photo Gallery</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Photos shown on the public Gallery page. Separate from the hero slideshow. Drag &amp; drop or click to upload.</p>
-          </div>
-        </div>
-        <!-- Upload area -->
-        <div id="gallery-upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 mb-6 text-center cursor-pointer hover:border-secondary transition-colors"
-             onclick="document.getElementById('gallery-file-input').click()"
-             ondragover="event.preventDefault();this.classList.add('border-secondary')"
-             ondragleave="this.classList.remove('border-secondary')"
-             ondrop="handleGalleryDrop(event)">
-          <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <p class="text-gray-600 font-medium text-sm">Click or drag photos here to upload</p>
-          <p class="text-gray-400 text-xs mt-1">JPEG, PNG, GIF or WebP &bull; max 5 MB each</p>
-          <div id="gallery-upload-status" class="mt-2 text-sm font-medium text-gray-500"></div>
-        </div>
-        <input type="file" id="gallery-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" multiple onchange="handleGalleryFileSelect(event)">
-        <!-- Photo grid -->
-        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
-      </div>
-
-      <!-- FACILITIES TAB -->
-      <div id="content-facilities" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-primary">Facilities</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Manage lab facilities. Each can have a photo, detailed description, and a downloadable document.</p>
-          </div>
-          <button onclick="openModal('facility')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Facility</button>
-        </div>
-        <div id="facilities-table" class="space-y-2"></div>
-      </div>
-  </div>
-</div>
-
-<!-- Modal -->
-<div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-6">
-        <h3 id="modal-title" class="text-xl font-bold text-primary"></h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div id="modal-body"></div>
+      <button class="p-logout" id="logoutBtn" title="Sign out">⎋</button>
     </div>
-  </div>
-</div>
+  </aside>
 
-<!-- Delete Confirm Modal -->
-<div id="delete-modal" class="modal-overlay">
-  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
-    <h3 class="text-lg font-bold text-gray-800 mb-2">Confirm Delete</h3>
-    <p class="text-gray-600 mb-6">Are you sure you want to delete this item? This action cannot be undone.</p>
-    <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-      <button id="delete-confirm-btn" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Delete</button>
-    </div>
-  </div>
+  <main class="p-main" id="mainContent">
+    <div class="empty">Loading…</div>
+  </main>
 </div>
 
 <script>
-let currentTab = 'news';
-let editingId = null;
-let editingType = null;
-let deleteCallback = null;
-let csrfToken = '';
+/* ===========================================================
+   LATFS Platform — vanilla JS port of the React UI Kit
+   =========================================================== */
 
-// Auth
+let CSRF = '';
+let SESSION_USER = { name:'Dr. A. Ortega', role:'PI · Director', initials:'AO', first:'Alfonso' };
+
+const $ = (s, root=document) => root.querySelector(s);
+const escHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const initials = (name) => (name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase();
+
+async function api(path, opts={}) {
+  const headers = { 'Content-Type':'application/json' };
+  if (CSRF) headers['X-CSRF-Token'] = CSRF;
+  const r = await fetch(path, { credentials:'same-origin', ...opts, headers: {...headers, ...(opts.headers||{})} });
+  if (!r.ok) {
+    const txt = await r.text().catch(()=>'');
+    throw new Error(`${r.status} ${r.statusText} ${txt}`);
+  }
+  return r.json();
+}
+const apiGet = (p) => api(p);
+const apiPost = (p, body) => api(p, { method:'POST', body: JSON.stringify(body) });
+const apiPut  = (p, body) => api(p, { method:'PUT',  body: JSON.stringify(body) });
+const apiDel  = (p)       => api(p, { method:'DELETE' });
+
+/* ── Auth ──────────────────────────────────────────────── */
 async function checkAuth() {
-  const r = await fetch('/admin/check');
+  try {
+    const data = await fetch('/admin/check', { credentials:'same-origin' }).then(r=>r.json());
+    if (data.loggedIn) {
+      CSRF = data.csrfToken || '';
+      SESSION_USER.name = data.username === 'admin' ? 'Dr. A. Ortega' : data.username;
+      SESSION_USER.initials = initials(SESSION_USER.name);
+      return true;
+    }
+  } catch(e) { console.error('auth check failed', e); }
+  return false;
+}
+async function doLogin(user, pass) {
+  const r = await fetch('/admin/login', {
+    method:'POST',
+    credentials:'same-origin',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ username:user, password:pass })
+  });
+  if (!r.ok) throw new Error((await r.json()).error || 'Login failed');
   const data = await r.json();
-  if (data.loggedIn) {
-    csrfToken = data.csrfToken || '';
-    showDashboard(data.username);
-  } else {
-    document.getElementById('login-screen').classList.remove('hidden');
+  CSRF = data.csrfToken || '';
+  return true;
+}
+
+/* ── Sidebar nav ───────────────────────────────────────── */
+const NAV_ITEMS = [
+  ['dashboard',  'Dashboard',  'home'],
+  ['schedule',   'Schedule',   'calendar'],
+  ['tasks',      'Tasks',      'check-square'],
+  ['meetings',   'Meetings',   'users'],
+  ['inventory',  'Inventory',  'package'],
+  ['projects',   'Projects',   'flask-conical'],
+];
+
+let activeRoute = 'dashboard';
+
+function renderNav() {
+  $('#navMain').innerHTML = NAV_ITEMS.map(([id,label,icon]) =>
+    `<button class="p-nav-item${id===activeRoute?' active':''}" data-route="${id}">
+      <i data-lucide="${icon}" class="p-nav-icon"></i><span>${label}</span>
+    </button>`
+  ).join('');
+  document.querySelectorAll('.p-sidebar [data-route]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.route === activeRoute);
+    btn.onclick = () => navigate(btn.dataset.route);
+  });
+}
+
+async function navigate(route) {
+  activeRoute = route;
+  renderNav();
+  const main = $('#mainContent');
+  main.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const renderer = ROUTES[route];
+    if (!renderer) { main.innerHTML = '<div class="p-card"><em style="color:var(--fg-4)">Unknown route</em></div>'; return; }
+    await renderer(main);
+    if (window.lucide) window.lucide.createIcons();
+  } catch(e) {
+    console.error(e);
+    main.innerHTML = `<div class="p-card"><strong>Error loading ${escHtml(route)}:</strong> ${escHtml(e.message)}</div>`;
   }
 }
 
-async function doLogin(e) {
-  e.preventDefault();
-  const username = document.getElementById('login-user').value;
-  const password = document.getElementById('login-pass').value;
-  const r = await fetch('/admin/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username, password}) });
-  if (r.ok) {
-    const data = await r.json();
-    csrfToken = data.csrfToken || '';
-    showDashboard(data.username);
-  } else {
-    document.getElementById('login-error').classList.remove('hidden');
+/* ── Modal helper ──────────────────────────────────────── */
+function modal(title, sub, body, onSave) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal">
+    <h2>${escHtml(title)}</h2>
+    <p class="modal-sub">${escHtml(sub||'')}</p>
+    <div class="modal-body">${body}</div>
+    <div class="modal-actions">
+      <button class="btn-ghost-sm" data-act="cancel">Cancel</button>
+      <button class="btn-primary-sm" data-act="save">Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+  const close = () => bg.remove();
+  bg.addEventListener('click', e => { if (e.target === bg) close(); });
+  bg.querySelector('[data-act="cancel"]').onclick = close;
+  bg.querySelector('[data-act="save"]').onclick = async () => {
+    try { await onSave(bg.querySelector('.modal-body')); close(); }
+    catch(e){ alert(e.message); }
+  };
+  if (window.lucide) window.lucide.createIcons();
+  return bg;
+}
+
+/* ───────────────────────────────────────────────────────────
+   DASHBOARD
+   ─────────────────────────────────────────────────────────── */
+async function renderDashboard(root) {
+  const [meetings, tasks, inventory] = await Promise.all([
+    apiGet('/api/meetings').catch(()=>[]),
+    apiGet('/api/tasks').catch(()=>[]),
+    apiGet('/api/inventory').catch(()=>[]),
+  ]);
+  const todayMeetings = meetings.filter(m => m.day_label === 'TODAY').length;
+  const openTasks = tasks.filter(t => t.status !== 'done').length;
+  const lowInv = inventory.filter(i => i.qty < i.min_qty).length;
+  const todaySlots = meetings.filter(m => m.day_label === 'TODAY').slice(0,4);
+  const myTasks = tasks.filter(t => t.status !== 'done').slice(0,4);
+  const today = new Date().toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'}).toUpperCase();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
+  const tagColor = { team:'var(--navy-900)', experiment:'var(--gold-600)', '1:1':'var(--status-info)', external:'var(--gold-600)', review:'var(--status-warn)', onboarding:'var(--gold-700)', lab:'var(--fg-3)' };
+  const taskTag = { todo:['To do','p-tag-outline'], doing:['Doing','p-tag-info'], review:['Review','p-tag-gold'], done:['Done','p-tag-ok'] };
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <div class="eyebrow" style="color:var(--gold-700)">${escHtml(today)}</div>
+        <h1 class="p-h1">${greeting}, ${escHtml(SESSION_USER.first || SESSION_USER.name.split(' ')[0])}.</h1>
+        <p class="p-h1-sub">${todayMeetings} meeting${todayMeetings===1?'':'s'} today · ${openTasks} open task${openTasks===1?'':'s'} · ${lowInv} inventory item${lowInv===1?'':'s'} need attention.</p>
+      </div>
+    </div>
+
+    <div class="p-grid-3">
+      <div class="p-stat-card">
+        <i data-lucide="calendar-clock" class="p-stat-icon"></i>
+        <div class="p-stat-num">${todayMeetings}</div>
+        <div class="p-stat-lbl">Meetings today</div>
+      </div>
+      <div class="p-stat-card">
+        <i data-lucide="check-square" class="p-stat-icon" style="color:var(--gold-600)"></i>
+        <div class="p-stat-num">${openTasks}</div>
+        <div class="p-stat-lbl">Open tasks</div>
+      </div>
+      <div class="p-stat-card">
+        <i data-lucide="alert-triangle" class="p-stat-icon" style="color:var(--status-warn)"></i>
+        <div class="p-stat-num">${lowInv}</div>
+        <div class="p-stat-lbl">Inventory low</div>
+      </div>
+    </div>
+
+    <div class="p-grid-2" style="margin-top:24px">
+      <section class="p-card">
+        <div class="p-card-head">
+          <div class="p-card-title">Today's schedule</div>
+          <button class="w-link-gold" data-jump="schedule">Full week →</button>
+        </div>
+        ${todaySlots.length ? todaySlots.map(s => `
+          <div class="p-slot">
+            <div class="p-slot-time">${escHtml((s.time_label||'').split('–')[0].trim())}</div>
+            <div style="flex:1">
+              <div class="p-slot-title">${escHtml(s.title)}</div>
+              <div class="p-slot-room">${escHtml(s.room||'')}</div>
+            </div>
+            <span class="p-slot-tag" style="background:${tagColor[s.type]||'var(--fg-3)'}">${escHtml(s.type)}</span>
+          </div>`).join('') : '<div class="empty">No meetings scheduled today.</div>'}
+      </section>
+
+      <section class="p-card">
+        <div class="p-card-head">
+          <div class="p-card-title">My tasks</div>
+          <button class="w-link-gold" data-jump="tasks">All tasks →</button>
+        </div>
+        ${myTasks.length ? myTasks.map(t => {
+          const [lbl, cls] = taskTag[t.status] || ['','p-tag-outline'];
+          return `<div class="p-task">
+            <input type="checkbox" class="p-check">
+            <div style="flex:1">
+              <div class="p-task-title">${escHtml(t.title)}</div>
+              <div class="p-task-due">Due ${escHtml(t.due_label||'—')}</div>
+            </div>
+            <span class="p-tag ${cls}">${lbl}</span>
+          </div>`;
+        }).join('') : '<div class="empty">No open tasks. ✨</div>'}
+      </section>
+    </div>
+
+    <section class="p-card" style="margin-top:24px">
+      <div class="p-card-head">
+        <div class="p-card-title">Lab status</div>
+        <span class="p-tag p-tag-ok">All systems nominal</span>
+      </div>
+      <div class="p-grid-2">
+        <div>
+          <div class="p-lab-name">Lab A · Tolentine 344</div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--status-ok)"></span><div style="flex:1"><div class="p-lab-lbl">Boiling rig</div><div class="p-lab-meta">M. Reyes · ends 16:00</div></div><span class="p-lab-state">Running</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--fg-4)"></span><div style="flex:1"><div class="p-lab-lbl">PIV system</div><div class="p-lab-meta">Last used yesterday</div></div><span class="p-lab-state">Idle</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--status-info)"></span><div style="flex:1"><div class="p-lab-lbl">High-speed camera</div><div class="p-lab-meta">A. Park · tomorrow 09:00</div></div><span class="p-lab-state">Booked</span></div>
+        </div>
+        <div>
+          <div class="p-lab-name">Lab B · Mendel 270</div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--fg-4)"></span><div style="flex:1"><div class="p-lab-lbl">Thermocouple bench</div></div><span class="p-lab-state">Idle</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--status-warn)"></span><div style="flex:1"><div class="p-lab-lbl">Droplet impingement rig</div><div class="p-lab-meta">Pump replaced Mon</div></div><span class="p-lab-state">Maintenance</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--fg-4)"></span><div style="flex:1"><div class="p-lab-lbl">IR thermography</div></div><span class="p-lab-state">Idle</span></div>
+        </div>
+      </div>
+    </section>
+  `;
+  root.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => navigate(b.dataset.jump));
+}
+
+/* ───────────────────────────────────────────────────────────
+   SCHEDULE — weekly grid
+   ─────────────────────────────────────────────────────────── */
+async function renderSchedule(root) {
+  const events = await apiGet('/api/events');
+  const hours = ['08','09','10','11','12','13','14','15','16','17'];
+  const days = ['Mon 18','Tue 19','Wed 20','Thu 21','Fri 22'];
+  const colorMap = { navy:{bg:'var(--navy-900)',fg:'#fff'}, gold:{bg:'var(--gold-600)',fg:'#fff'}, info:{bg:'var(--status-info-tint)',fg:'#075985'}, warn:{bg:'var(--status-warn-tint)',fg:'#92400e'} };
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Schedule</h1>
+        <p class="p-h1-sub">Week of March 18 · weekly grid · ${events.length} events</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm">← Prev</button>
+        <button class="btn-ghost-sm">Today</button>
+        <button class="btn-ghost-sm">Next →</button>
+        <button class="btn-primary-sm" id="newEvent">+ New booking</button>
+      </div>
+    </div>
+
+    <div class="p-cal">
+      <div class="p-cal-head">
+        <div></div>
+        ${days.map(d => `<div class="p-cal-day-h">${escHtml(d)}</div>`).join('')}
+      </div>
+      <div class="p-cal-body">
+        <div class="p-cal-hours">
+          ${hours.map(h => `<div class="p-cal-hour">${h}:00</div>`).join('')}
+        </div>
+        ${days.map((d, di) => `
+          <div class="p-cal-col">
+            ${hours.map(()=>`<div class="p-cal-cell"></div>`).join('')}
+            ${events.filter(e=>e.day===di).map(e=>{
+              const c = colorMap[e.color] || colorMap.navy;
+              return `<div class="p-cal-event" data-id="${e.id}" style="top:${(e.start_hour-8)*46}px;height:${e.duration_hours*46-4}px;background:${c.bg};color:${c.fg}">
+                <div class="p-cal-ev-title">${escHtml(e.title)}</div>
+                <div class="p-cal-ev-room">${escHtml(e.room||'')}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  $('#newEvent').onclick = () => modal('New booking', 'Add an event to the weekly schedule.', `
+    <label>Title</label><input id="m_title" placeholder="Boiling rig · run 4">
+    <label>Day</label>
+    <select id="m_day">
+      <option value="0">Monday</option><option value="1">Tuesday</option>
+      <option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option>
+    </select>
+    <label>Start hour (24h)</label><input id="m_start" type="number" min="8" max="17" value="9">
+    <label>Duration (hours)</label><input id="m_dur" type="number" min="1" max="10" value="1">
+    <label>Room</label><input id="m_room" placeholder="Lab A">
+    <label>Color</label>
+    <select id="m_color"><option value="navy">Navy</option><option value="gold">Gold</option><option value="info">Info (blue)</option><option value="warn">Warning (amber)</option></select>
+  `, async (mb) => {
+    await apiPost('/api/events', {
+      title: $('#m_title', mb).value, day: +$('#m_day', mb).value,
+      start_hour: +$('#m_start', mb).value, duration_hours: +$('#m_dur', mb).value,
+      room: $('#m_room', mb).value, color: $('#m_color', mb).value
+    });
+    navigate('schedule');
+  });
+}
+
+/* ───────────────────────────────────────────────────────────
+   TASKS — kanban
+   ─────────────────────────────────────────────────────────── */
+async function renderTasks(root) {
+  const tasks = await apiGet('/api/tasks');
+  const COLS = [['todo','To do'], ['doing','Doing'], ['review','Review'], ['done','Done']];
+  const tagBg = { inventory:'var(--status-info-tint)', experiment:'var(--gold-100)', lab:'var(--gray-100)', paper:'var(--status-info-tint)', maintenance:'var(--status-warn-tint)', data:'var(--gold-100)', team:'var(--gray-100)' };
+  const tagFg = { inventory:'#075985', experiment:'var(--gold-700)', lab:'var(--fg-2)', paper:'#075985', maintenance:'#92400e', data:'var(--gold-700)', team:'var(--fg-2)' };
+
+  const open = tasks.filter(t => t.status !== 'done').length;
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Tasks</h1>
+        <p class="p-h1-sub">${open} open across the lab · ${tasks.length} total</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm">Filter</button>
+        <button class="btn-primary-sm" id="newTask">+ New task</button>
+      </div>
+    </div>
+    <div class="p-kanban">
+      ${COLS.map(([sid,sname]) => {
+        const items = tasks.filter(t=>t.status===sid);
+        return `<div class="p-col" data-status="${sid}">
+          <div class="p-col-head"><div class="p-col-title">${sname}</div><div class="p-col-count">${items.length}</div></div>
+          ${items.map(it => `<div class="p-task-card" data-id="${it.id}">
+            <div class="p-task-card-title">${escHtml(it.title)}</div>
+            <div class="p-task-card-foot">
+              <span class="p-tag-sm" style="background:${tagBg[it.tag]||'var(--gray-100)'};color:${tagFg[it.tag]||'var(--fg-2)'}">${escHtml(it.tag||'lab')}</span>
+              <div class="p-task-meta">
+                <span class="p-task-due-sm">${escHtml(it.due_label||'—')}</span>
+                <div class="p-task-av" title="${escHtml(it.assignee||'')}">${escHtml(initials(it.assignee))}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+          <button class="p-col-add" data-add="${sid}">+ Add task</button>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  // Click a task card → edit/delete
+  root.querySelectorAll('.p-task-card').forEach(card => {
+    card.onclick = async () => {
+      const t = tasks.find(x => x.id == card.dataset.id);
+      if (!t) return;
+      modal('Edit task', '', `
+        <label>Title</label><input id="m_title" value="${escHtml(t.title)}">
+        <label>Assignee</label><input id="m_who" value="${escHtml(t.assignee||'')}">
+        <label>Tag</label>
+        <select id="m_tag">
+          ${['inventory','experiment','lab','paper','maintenance','data','team'].map(x=>`<option value="${x}"${x===t.tag?' selected':''}>${x}</option>`).join('')}
+        </select>
+        <label>Due</label><input id="m_due" value="${escHtml(t.due_label||'')}">
+        <label>Status</label>
+        <select id="m_st">
+          ${['todo','doing','review','done'].map(x=>`<option value="${x}"${x===t.status?' selected':''}>${x}</option>`).join('')}
+        </select>
+        <label>&nbsp;</label>
+        <div class="row-actions"><button class="danger" id="m_del">Delete</button></div>
+      `, async (mb) => {
+        await apiPut('/api/tasks/'+t.id, {
+          title: $('#m_title',mb).value, assignee: $('#m_who',mb).value,
+          tag: $('#m_tag',mb).value, due_label: $('#m_due',mb).value,
+          status: $('#m_st',mb).value, sort_order: t.sort_order||0
+        });
+        navigate('tasks');
+      });
+      // hook delete
+      setTimeout(() => {
+        const delBtn = document.querySelector('#m_del');
+        if (delBtn) delBtn.onclick = async (e) => {
+          e.preventDefault();
+          if (!confirm('Delete this task?')) return;
+          await apiDel('/api/tasks/'+t.id);
+          document.querySelectorAll('.modal-bg').forEach(m=>m.remove());
+          navigate('tasks');
+        };
+      }, 50);
+    };
+  });
+
+  root.querySelectorAll('[data-add]').forEach(btn => btn.onclick = () => {
+    const status = btn.dataset.add;
+    modal('New task', `Adding to "${status}".`, `
+      <label>Title</label><input id="m_title" placeholder="Calibrate PIV camera">
+      <label>Assignee</label><input id="m_who" placeholder="A. Park">
+      <label>Tag</label>
+      <select id="m_tag">${['inventory','experiment','lab','paper','maintenance','data','team'].map(x=>`<option value="${x}">${x}</option>`).join('')}</select>
+      <label>Due</label><input id="m_due" placeholder="Fri">
+    `, async (mb) => {
+      await apiPost('/api/tasks', {
+        title: $('#m_title',mb).value, assignee: $('#m_who',mb).value,
+        tag: $('#m_tag',mb).value, due_label: $('#m_due',mb).value, status
+      });
+      navigate('tasks');
+    });
+  });
+
+  $('#newTask').onclick = () => $('[data-add="todo"]').click();
+}
+
+/* ───────────────────────────────────────────────────────────
+   MEETINGS — list
+   ─────────────────────────────────────────────────────────── */
+async function renderMeetings(root) {
+  const meetings = await apiGet('/api/meetings');
+  const typeColor = { team:'var(--navy-900)', '1:1':'var(--status-info)', external:'var(--gold-600)', review:'var(--status-warn)', onboarding:'var(--gold-700)' };
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Meetings</h1>
+        <p class="p-h1-sub">${meetings.length} upcoming · 15 lab members</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm">Calendar view</button>
+        <button class="btn-primary-sm" id="newMeet">+ Schedule meeting</button>
+      </div>
+    </div>
+    <div class="p-meet-list">
+      ${meetings.map(m => {
+        const att = (m.attendees||'').split(',').filter(Boolean);
+        return `<div class="p-meet-card" data-id="${m.id}">
+          <div class="p-meet-day">
+            <div class="p-meet-day-lbl">${escHtml(m.day_label)}</div>
+            <div class="p-meet-day-time">${escHtml(m.time_label)}</div>
+          </div>
+          <div class="p-meet-body">
+            <div class="p-meet-title">${escHtml(m.title)}</div>
+            <div class="p-meet-room"><i data-lucide="map-pin" class="p-icon-xs"></i>${escHtml(m.room||'')}</div>
+            <div class="p-avatars">
+              ${att.map((a,j)=>`<div class="p-av-sm" style="z-index:${att.length-j}">${escHtml(a.trim())}</div>`).join('')}
+            </div>
+          </div>
+          <div class="p-meet-tag-col">
+            <span class="p-meet-tag" style="background:${typeColor[m.type]||'var(--navy-900)'}">${escHtml(m.type)}</span>
+            <div class="row-actions">
+              <button data-edit="${m.id}">Edit</button>
+              <button class="danger" data-del="${m.id}">Delete</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('') || '<div class="empty">No meetings scheduled.</div>'}
+    </div>
+  `;
+
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = async (e) => {
+    e.stopPropagation();
+    if (!confirm('Delete meeting?')) return;
+    await apiDel('/api/meetings/'+b.dataset.del);
+    navigate('meetings');
+  });
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = (e) => {
+    e.stopPropagation();
+    const m = meetings.find(x=>x.id==b.dataset.edit);
+    openMeetingModal(m);
+  });
+
+  function openMeetingModal(m) {
+    const isNew = !m;
+    m = m || { day_label:'TODAY', time_label:'09:30 – 10:30', title:'', room:'', attendees:'', type:'team' };
+    modal(isNew?'Schedule meeting':'Edit meeting','',`
+      <label>Day label</label><input id="m_day" value="${escHtml(m.day_label)}" placeholder="TODAY, TUE, WED…">
+      <label>Time</label><input id="m_time" value="${escHtml(m.time_label)}" placeholder="09:30 – 10:30">
+      <label>Title</label><input id="m_title" value="${escHtml(m.title)}">
+      <label>Room</label><input id="m_room" value="${escHtml(m.room||'')}">
+      <label>Attendees (comma-sep initials)</label><input id="m_att" value="${escHtml(m.attendees||'')}" placeholder="AO,SK,MR">
+      <label>Type</label>
+      <select id="m_type">${['team','1:1','external','review','onboarding'].map(x=>`<option value="${x}"${x===m.type?' selected':''}>${x}</option>`).join('')}</select>
+    `, async (mb) => {
+      const body = {
+        day_label: $('#m_day',mb).value, time_label: $('#m_time',mb).value,
+        title: $('#m_title',mb).value, room: $('#m_room',mb).value,
+        attendees: $('#m_att',mb).value, type: $('#m_type',mb).value, sort_order: m.sort_order||0
+      };
+      if (isNew) await apiPost('/api/meetings', body);
+      else await apiPut('/api/meetings/'+m.id, body);
+      navigate('meetings');
+    });
+  }
+  $('#newMeet').onclick = () => openMeetingModal(null);
+}
+
+/* ───────────────────────────────────────────────────────────
+   INVENTORY — tabs + table
+   ─────────────────────────────────────────────────────────── */
+let _invLab = 'A';
+async function renderInventory(root) {
+  const items = await apiGet('/api/inventory');
+  const labA = items.filter(i => i.lab==='A');
+  const labB = items.filter(i => i.lab==='B');
+  const list = _invLab==='A'?labA:labB;
+  const stateOf = (it) => it.qty===0 ? 'alert' : it.qty < it.min_qty ? 'warn' : 'ok';
+  const stateMap = { ok:{cls:'p-tag-ok',lbl:'In stock',c:'var(--status-ok)'}, warn:{cls:'p-tag-warn',lbl:'Low',c:'var(--status-warn)'}, alert:{cls:'p-tag-alert',lbl:'Out',c:'var(--status-alert)'} };
+  const low = list.filter(i => stateOf(i)!=='ok').length;
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Inventory</h1>
+        <p class="p-h1-sub">Tracked across two lab spaces · ${low} item${low===1?'':'s'} need attention</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm">Export CSV</button>
+        <button class="btn-primary-sm" id="newInv">+ Add item</button>
+      </div>
+    </div>
+
+    <div class="p-tabs">
+      <button class="p-tab${_invLab==='A'?' active':''}" data-lab="A">Lab A · Tolentine 344 <span class="p-tab-count">${labA.length}</span></button>
+      <button class="p-tab${_invLab==='B'?' active':''}" data-lab="B">Lab B · Mendel 270 <span class="p-tab-count">${labB.length}</span></button>
+    </div>
+
+    <div class="p-inv-toolbar">
+      <div class="p-inv-search">
+        <i data-lucide="search" class="p-inv-search-i"></i>
+        <input id="invSearch" class="p-inv-input" placeholder="Search SKU, name, category…">
+      </div>
+      <select class="p-inv-select"><option>All categories</option></select>
+      <select class="p-inv-select"><option>All status</option></select>
+    </div>
+
+    <div class="p-inv-table" id="invTable">
+      <div class="p-inv-row p-inv-head">
+        <div style="flex-basis:140px">SKU</div>
+        <div style="flex:2">Item</div>
+        <div style="flex:1">Category</div>
+        <div style="flex:1">Quantity</div>
+        <div style="flex:1">Status</div>
+        <div style="flex-basis:80px"></div>
+      </div>
+      ${list.map(it => {
+        const st = stateOf(it); const sm = stateMap[st];
+        return `<div class="p-inv-row" data-id="${it.id}">
+          <div style="flex-basis:140px"><code class="p-mono">${escHtml(it.sku)}</code></div>
+          <div style="flex:2" class="p-inv-name">${escHtml(it.name)}</div>
+          <div style="flex:1" class="p-inv-cat">${escHtml(it.category||'')}</div>
+          <div style="flex:1">
+            <div><span class="p-qty-num">${it.qty}</span><span class="p-qty-min"> / min ${it.min_qty}</span></div>
+            <div class="p-qty-bar"><div class="p-qty-fill" style="width:${Math.min(100,(it.qty/Math.max(it.min_qty,1))*60)}%;background:${sm.c}"></div></div>
+          </div>
+          <div style="flex:1">
+            <span class="p-tag ${sm.cls}"><span class="p-dot" style="background:${sm.c}"></span>${sm.lbl}</span>
+          </div>
+          <div style="flex-basis:80px;text-align:right" class="row-actions">
+            <button data-edit="${it.id}">Edit</button>
+            <button class="danger" data-del="${it.id}">×</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  root.querySelectorAll('[data-lab]').forEach(b => b.onclick = () => { _invLab = b.dataset.lab; renderInventory(root); if(window.lucide) window.lucide.createIcons(); });
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('Delete item?')) return;
+    await apiDel('/api/inventory/'+b.dataset.del);
+    renderInventory(root);
+  });
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openInvModal(items.find(x=>x.id==b.dataset.edit)));
+  $('#newInv').onclick = () => openInvModal(null);
+  $('#invSearch').oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+    root.querySelectorAll('#invTable .p-inv-row:not(.p-inv-head)').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  };
+
+  function openInvModal(it) {
+    const isNew = !it;
+    it = it || { lab:_invLab, sku:'', name:'', category:'', qty:0, min_qty:0 };
+    modal(isNew?'Add inventory item':'Edit item','',`
+      <label>Lab</label><select id="m_lab"><option value="A"${it.lab==='A'?' selected':''}>Lab A</option><option value="B"${it.lab==='B'?' selected':''}>Lab B</option></select>
+      <label>SKU</label><input id="m_sku" value="${escHtml(it.sku)}" placeholder="SN-LAT-00000">
+      <label>Name</label><input id="m_name" value="${escHtml(it.name)}">
+      <label>Category</label><input id="m_cat" value="${escHtml(it.category||'')}" placeholder="Sensors / Hardware / Consumables / Fluids / Optics / PPE">
+      <label>Quantity</label><input id="m_qty" type="number" value="${it.qty}">
+      <label>Min quantity</label><input id="m_min" type="number" value="${it.min_qty}">
+    `, async (mb) => {
+      const body = {
+        lab: $('#m_lab',mb).value, sku: $('#m_sku',mb).value, name: $('#m_name',mb).value,
+        category: $('#m_cat',mb).value, qty: +$('#m_qty',mb).value, min_qty: +$('#m_min',mb).value,
+        sort_order: it.sort_order||0
+      };
+      if (isNew) await apiPost('/api/inventory', body);
+      else await apiPut('/api/inventory/'+it.id, body);
+      renderInventory(root); if(window.lucide) window.lucide.createIcons();
+    });
   }
 }
+
+/* ───────────────────────────────────────────────────────────
+   PROJECTS
+   ─────────────────────────────────────────────────────────── */
+async function renderProjects(root) {
+  const projs = await apiGet('/api/projects');
+  const statusTag = { active:['Active','p-tag-ok','var(--status-ok)'], paused:['Paused','p-tag-warn','var(--status-warn)'], completed:['Completed','p-tag-info','var(--status-info)'] };
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Projects</h1>
+        <p class="p-h1-sub">${projs.length} active project${projs.length===1?'':'s'} across the lab</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-primary-sm" id="newProj">+ New project</button>
+      </div>
+    </div>
+
+    <div class="p-grid-2">
+      ${projs.map(p => {
+        const [lbl,cls,c] = statusTag[p.status] || statusTag.active;
+        return `<div class="p-card">
+          <div class="p-card-head">
+            <div class="p-card-title">${escHtml(p.title)}</div>
+            <span class="p-tag ${cls}"><span class="p-dot" style="background:${c}"></span>${lbl}</span>
+          </div>
+          <div style="font-size:13px;color:var(--fg-2);line-height:1.55;margin-bottom:12px">${escHtml(p.description||'')}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--fg-3)">
+            <div><strong>Lead:</strong> ${escHtml(p.lead||'—')}</div>
+            <div class="row-actions">
+              <button data-edit="${p.id}">Edit</button>
+              <button class="danger" data-del="${p.id}">Delete</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('') || '<div class="empty p-card">No projects yet.</div>'}
+    </div>
+  `;
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = async ()=>{
+    if(!confirm('Delete project?')) return;
+    await apiDel('/api/projects/'+b.dataset.del); navigate('projects');
+  });
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openProj(projs.find(x=>x.id==b.dataset.edit)));
+  $('#newProj').onclick = () => openProj(null);
+
+  function openProj(p) {
+    const isNew = !p;
+    p = p || { title:'', lead:'', status:'active', description:'' };
+    modal(isNew?'New project':'Edit project','',`
+      <label>Title</label><input id="m_t" value="${escHtml(p.title)}">
+      <label>Lead</label><input id="m_l" value="${escHtml(p.lead||'')}">
+      <label>Status</label>
+      <select id="m_s">${['active','paused','completed'].map(x=>`<option value="${x}"${x===p.status?' selected':''}>${x}</option>`).join('')}</select>
+      <label>Description</label><textarea id="m_d">${escHtml(p.description||'')}</textarea>
+    `, async (mb) => {
+      const body = { title:$('#m_t',mb).value, lead:$('#m_l',mb).value, status:$('#m_s',mb).value, description:$('#m_d',mb).value, sort_order:p.sort_order||0 };
+      if(isNew) await apiPost('/api/projects', body); else await apiPut('/api/projects/'+p.id, body);
+      navigate('projects');
+    });
+  }
+}
+
+/* ───────────────────────────────────────────────────────────
+   ADMIN — Members / Content / Apps / Settings / Audit
+   Members + Content + Apps render real lab data (people/news/publications/research/sponsors)
+   ─────────────────────────────────────────────────────────── */
+let _adminTab = 'members';
+async function renderAdmin(root) {
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <div class="eyebrow" style="color:var(--gold-700)">Administration</div>
+        <h1 class="p-h1">Admin Panel</h1>
+        <p class="p-h1-sub">Members, content publishing, and site settings.</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm" id="logoutTop"><i data-lucide="log-out" style="width:12px;height:12px;margin-right:4px"></i>Sign out</button>
+      </div>
+    </div>
+
+    <div class="p-grid-3" style="margin-bottom:20px" id="adminStats"></div>
+
+    <div class="p-tabs" id="adminTabs">
+      ${[['members','Members & Roles','users'],
+         ['news','News','megaphone'],
+         ['publications','Publications','book-open'],
+         ['research','Research','flask-conical'],
+         ['people','People','user'],
+         ['settings','Settings','settings']
+        ].map(([id,lbl,icn]) =>
+        `<button class="p-tab${id===_adminTab?' active':''}" data-tab="${id}"><i data-lucide="${icn}" style="width:14px;height:14px"></i> ${lbl}</button>`
+      ).join('')}
+    </div>
+
+    <div id="adminBody"></div>
+  `;
+  root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { _adminTab = b.dataset.tab; renderAdmin(root); if(window.lucide) window.lucide.createIcons(); });
+  $('#logoutTop').onclick = doLogout;
+
+  // Stats
+  const [people, pubs, news] = await Promise.all([
+    apiGet('/api/people').catch(()=>[]),
+    apiGet('/api/publications').catch(()=>[]),
+    apiGet('/api/news').catch(()=>[]),
+  ]);
+  $('#adminStats').innerHTML = `
+    <div class="p-stat-card"><i data-lucide="users" class="p-stat-icon"></i><div class="p-stat-num">${people.length}</div><div class="p-stat-lbl">Lab members</div></div>
+    <div class="p-stat-card"><i data-lucide="book-open" class="p-stat-icon"></i><div class="p-stat-num">${pubs.length}</div><div class="p-stat-lbl">Publications</div></div>
+    <div class="p-stat-card"><i data-lucide="megaphone" class="p-stat-icon"></i><div class="p-stat-num">${news.length}</div><div class="p-stat-lbl">News items</div></div>
+  `;
+
+  const body = $('#adminBody');
+  if (_adminTab === 'members') renderMembersTab(body, people);
+  else if (_adminTab === 'news') renderNewsTab(body, news);
+  else if (_adminTab === 'publications') renderPubsTab(body, pubs);
+  else if (_adminTab === 'research') renderResearchTab(body);
+  else if (_adminTab === 'people') renderPeopleTab(body, people);
+  else if (_adminTab === 'settings') renderSettingsTab(body);
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderMembersTab(body, people) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar">
+      <div class="p-inv-search"><i data-lucide="search" class="p-inv-search-i"></i>
+        <input class="p-inv-input" id="memSearch" placeholder="Search members…"></div>
+    </div>
+    <div class="p-inv-table" id="memTable">
+      <div class="p-inv-row p-inv-head">
+        <div style="flex:2 1 260px">Member</div>
+        <div style="flex:1 1 140px">Role</div>
+        <div style="flex:1 1 120px">Category</div>
+        <div style="flex:0 0 80px;text-align:right"></div>
+      </div>
+      ${people.map((m,i) => `
+        <div class="p-inv-row">
+          <div style="flex:2 1 260px;display:flex;align-items:center;gap:12px">
+            <div class="p-task-av" style="width:32px;height:32px;font-size:12px;background:${i%2?'var(--navy-700)':'var(--gold-600)'}">${escHtml(initials(m.name))}</div>
+            <div><div class="p-inv-name">${escHtml(m.name)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(m.email||'')}</div></div>
+          </div>
+          <div style="flex:1 1 140px"><span class="p-tag p-tag-outline">${escHtml(m.role||'')}</span></div>
+          <div style="flex:1 1 120px;font-size:12px;color:var(--fg-3)">${escHtml(m.category||'')}</div>
+          <div style="flex:0 0 80px;text-align:right" class="row-actions">
+            <button class="danger" data-del="${m.id}">Delete</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('Remove this person?')) return;
+    await apiDel('/api/people/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  $('#memSearch').oninput = (e)=> {
+    const q = e.target.value.toLowerCase();
+    body.querySelectorAll('#memTable .p-inv-row:not(.p-inv-head)').forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(q)?'':'none'; });
+  };
+}
+
+function renderNewsTab(body, news) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar">
+      <button class="btn-primary-sm" id="newNews">+ New news item</button>
+    </div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head">
+        <div style="flex-basis:120px">Date</div>
+        <div style="flex:2">Title</div>
+        <div style="flex-basis:100px;text-align:right"></div>
+      </div>
+      ${news.map(n => `<div class="p-inv-row" data-id="${n.id}">
+        <div style="flex-basis:120px"><code class="p-mono">${escHtml(n.date)}</code></div>
+        <div style="flex:2"><div class="p-inv-name">${escHtml(n.title)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml((n.content||'').slice(0,100))}${(n.content||'').length>100?'…':''}</div></div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${n.id}">Edit</button><button class="danger" data-del="${n.id}">×</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if(confirm('Delete?')) { await apiDel('/api/news/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openNews(news.find(n=>n.id==b.dataset.edit)));
+  $('#newNews').onclick = () => openNews(null);
+  function openNews(n) {
+    const isNew = !n; n = n || {title:'',content:'',date: new Date().toISOString().slice(0,10)};
+    modal(isNew?'New news item':'Edit news','',`
+      <label>Date</label><input id="m_date" type="date" value="${escHtml(n.date)}">
+      <label>Title</label><input id="m_t" value="${escHtml(n.title)}">
+      <label>Content</label><textarea id="m_c">${escHtml(n.content)}</textarea>
+    `, async (mb) => {
+      const body = { date:$('#m_date',mb).value, title:$('#m_t',mb).value, content:$('#m_c',mb).value };
+      if (isNew) await apiPost('/api/news', body); else await apiPut('/api/news/'+n.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+function renderPubsTab(body, pubs) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newPub">+ Add publication</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex-basis:60px">Year</div><div style="flex:3">Title</div><div style="flex:1">Venue</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${pubs.map(p => `<div class="p-inv-row">
+        <div style="flex-basis:60px"><code class="p-mono">${p.year}</code></div>
+        <div style="flex:3"><div class="p-inv-name">${escHtml(p.title)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(p.authors||'')}</div></div>
+        <div style="flex:1;font-size:12px;color:var(--fg-3)">${escHtml(p.venue||'')}</div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${p.id}">Edit</button><button class="danger" data-del="${p.id}">×</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async ()=>{ if(confirm('Delete?')){ await apiDel('/api/publications/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = ()=>openPub(pubs.find(x=>x.id==b.dataset.edit)));
+  $('#newPub').onclick = () => openPub(null);
+  function openPub(p) {
+    const isNew = !p; p = p || {title:'',authors:'',venue:'',year:new Date().getFullYear(),pdf_url:'',doi_url:''};
+    modal(isNew?'Add publication':'Edit publication','',`
+      <label>Title</label><input id="m_t" value="${escHtml(p.title)}">
+      <label>Authors</label><input id="m_a" value="${escHtml(p.authors)}">
+      <label>Venue</label><input id="m_v" value="${escHtml(p.venue)}">
+      <label>Year</label><input id="m_y" type="number" value="${p.year}">
+      <label>PDF URL</label><input id="m_pdf" value="${escHtml(p.pdf_url||'')}">
+      <label>DOI URL</label><input id="m_doi" value="${escHtml(p.doi_url||'')}">
+    `, async (mb) => {
+      const body = { title:$('#m_t',mb).value, authors:$('#m_a',mb).value, venue:$('#m_v',mb).value, year:+$('#m_y',mb).value, pdf_url:$('#m_pdf',mb).value, doi_url:$('#m_doi',mb).value };
+      if(isNew) await apiPost('/api/publications', body); else await apiPut('/api/publications/'+p.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderResearchTab(body) {
+  const areas = await apiGet('/api/research');
+  body.innerHTML = `
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newR">+ Add research area</button></div>
+    <div class="p-grid-2">
+      ${areas.map(r => `<div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">${escHtml(r.title)}</div></div>
+        <div style="font-size:13px;color:var(--fg-2);margin-bottom:10px">${escHtml(r.description||'')}</div>
+        <div class="row-actions"><button data-edit="${r.id}">Edit</button><button class="danger" data-del="${r.id}">Delete</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async()=>{ if(confirm('Delete?')){ await apiDel('/api/research/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openR(areas.find(x=>x.id==b.dataset.edit)));
+  $('#newR').onclick = () => openR(null);
+  function openR(r) {
+    const isNew = !r; r = r || {title:'',description:'',image_url:'',sort_order:0};
+    modal(isNew?'Add research area':'Edit research area','',`
+      <label>Title</label><input id="m_t" value="${escHtml(r.title)}">
+      <label>Description</label><textarea id="m_d">${escHtml(r.description||'')}</textarea>
+      <label>Image URL</label><input id="m_i" value="${escHtml(r.image_url||'')}">
+      <label>Sort order</label><input id="m_s" type="number" value="${r.sort_order||0}">
+    `, async (mb) => {
+      const body = { title:$('#m_t',mb).value, description:$('#m_d',mb).value, image_url:$('#m_i',mb).value, sort_order:+$('#m_s',mb).value };
+      if(isNew) await apiPost('/api/research', body); else await apiPut('/api/research/'+r.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+function renderPeopleTab(body, people) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newP">+ Add person</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">Name</div><div style="flex:1">Role</div><div style="flex:1">Category</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${people.map(p => `<div class="p-inv-row">
+        <div style="flex:2"><div class="p-inv-name">${escHtml(p.name)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(p.email||'')}</div></div>
+        <div style="flex:1;font-size:12px;color:var(--fg-2)">${escHtml(p.role||'')}</div>
+        <div style="flex:1"><span class="p-tag p-tag-outline">${escHtml(p.category||'')}</span></div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${p.id}">Edit</button><button class="danger" data-del="${p.id}">×</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async ()=>{ if(confirm('Remove?')){ await apiDel('/api/people/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = ()=>openP(people.find(x=>x.id==b.dataset.edit)));
+  $('#newP').onclick = ()=>openP(null);
+  function openP(p) {
+    const isNew = !p; p = p || {name:'',role:'',category:'phd',email:'',bio:'',photo_url:'',active:1};
+    modal(isNew?'Add person':'Edit person','',`
+      <label>Name</label><input id="m_n" value="${escHtml(p.name)}">
+      <label>Role</label><input id="m_r" value="${escHtml(p.role)}">
+      <label>Category</label>
+      <select id="m_c">${['director','faculty','postdoc','phd','ms','ug','former'].map(x=>`<option value="${x}"${x===p.category?' selected':''}>${x}</option>`).join('')}</select>
+      <label>Email</label><input id="m_e" value="${escHtml(p.email||'')}">
+      <label>Photo URL</label><input id="m_ph" value="${escHtml(p.photo_url||'')}">
+      <label>Bio</label><textarea id="m_b">${escHtml(p.bio||'')}</textarea>
+    `, async (mb) => {
+      const body = { name:$('#m_n',mb).value, role:$('#m_r',mb).value, category:$('#m_c',mb).value, email:$('#m_e',mb).value, photo_url:$('#m_ph',mb).value, bio:$('#m_b',mb).value, active:1 };
+      if(isNew) await apiPost('/api/people', body); else await apiPut('/api/people/'+p.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+function renderSettingsTab(body) {
+  body.innerHTML = `
+    <div class="p-grid-2">
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Site</div></div>
+        ${[['globe','Public domain','latfs.villanova.edu'],
+            ['palette','Theme','Navy + Gold'],
+            ['image','Homepage hero','3 slides active'],
+            ['mail','Contact inbox','info@latfs.villanova.edu']
+          ].map(([icn,lbl,val])=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border-1)">
+            <i data-lucide="${icn}" style="width:16px;height:16px;color:var(--fg-4);flex-shrink:0"></i>
+            <div style="flex:1;font-size:13px;color:var(--navy-900);font-weight:600">${lbl}</div>
+            <div style="font-size:12px;color:var(--fg-3)">${val}</div>
+          </div>`).join('')}
+      </div>
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Account</div></div>
+        <div style="padding:10px 0;border-bottom:1px dashed var(--border-1);font-size:13px;color:var(--fg-2)">Signed in as <strong>${escHtml(SESSION_USER.name)}</strong></div>
+        <button class="btn-ghost-sm" id="logoutSet" style="margin-top:12px">Sign out</button>
+      </div>
+    </div>
+  `;
+  $('#logoutSet').onclick = doLogout;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Boot + auth flow
+   ─────────────────────────────────────────────────────────── */
+const ROUTES = {
+  dashboard: renderDashboard, schedule: renderSchedule, tasks: renderTasks,
+  meetings: renderMeetings, inventory: renderInventory, projects: renderProjects, admin: renderAdmin,
+};
 
 async function doLogout() {
-  await fetch('/admin/logout', { method: 'POST', headers: {'x-csrf-token': csrfToken} });
-  location.reload();
+  await fetch('/admin/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  CSRF = '';
+  $('#appShell').style.display = 'none';
+  $('#loginScreen').style.display = 'flex';
 }
 
-function showDashboard(username) {
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('admin-dashboard').classList.remove('hidden');
-  document.getElementById('admin-username').textContent = 'Logged in as: ' + username;
-  loadStats();
-  loadAllData();
-}
-
-// Tabs
-function switchTab(tab) {
-  currentTab = tab;
-  ['news','publications','people','research','facilities','sponsors','hero-slides','gallery'].forEach(t => {
-    document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
-    const content = document.getElementById('content-' + t);
-    if (content) content.classList.toggle('hidden', t !== tab);
-  });
-  if (tab === 'gallery') loadGalleryData();
-  if (tab === 'sponsors') loadSponsorsData();
-  if (tab === 'facilities') loadFacilitiesData();
-  if (tab === 'hero-slides') loadHeroSlidesData();
-}
-
-// Stats
-async function loadStats() {
-  try {
-    const [news, pubs, people, research, sponsors, gallery, facilities, heroSlides] = await Promise.all([
-      fetch('/api/news').then(r => r.json()),
-      fetch('/api/publications').then(r => r.json()),
-      fetch('/api/people').then(r => r.json()),
-      fetch('/api/research').then(r => r.json()),
-      fetch('/api/sponsors').then(r => r.json()),
-      fetch('/api/gallery').then(r => r.json()),
-      fetch('/api/facilities').then(r => r.json()),
-      fetch('/api/hero-slides').then(r => r.json()),
-    ]);
-    document.getElementById('stat-news').textContent = news.length;
-    document.getElementById('stat-pubs').textContent = pubs.length;
-    document.getElementById('stat-people').textContent = people.length;
-    document.getElementById('stat-research').textContent = research.length;
-    document.getElementById('stat-sponsors').textContent = sponsors.length;
-    document.getElementById('stat-gallery').textContent = gallery.length;
-    document.getElementById('stat-facilities').textContent = facilities.length;
-    document.getElementById('stat-hero-slides').textContent = heroSlides.length;
-  } catch(e) {}
-}
-
-// Load all data
-async function loadAllData() {
-  loadNewsData();
-  loadPubData();
-  loadPeopleData();
-  loadResearchData();
-  loadSponsorsData();
-  loadFacilitiesData();
-}
-
-async function loadNewsData() {
-  const items = await fetch('/api/news').then(r => r.json());
-  const el = document.getElementById('news-table');
-  el.innerHTML = items.length ? items.map(n => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(n.title)}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${n.date} &middot; ${escHtml(n.content.substring(0,80))}...</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('news',${n.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('news',${n.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No news items yet.</p>';
-}
-
-async function loadPubData() {
-  const items = await fetch('/api/publications').then(r => r.json());
-  const el = document.getElementById('pub-table');
-  el.innerHTML = items.length ? items.map(p => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(p.title.substring(0,80))}${p.title.length>80?'...':''}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${p.year} &middot; ${escHtml(p.venue)} &middot; ${escHtml(p.authors.substring(0,50))}</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('publication',${p.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('publication',${p.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No publications yet.</p>';
-}
-
-async function loadPeopleData() {
-  const items = await fetch('/api/people').then(r => r.json());
-  const el = document.getElementById('people-table');
-  el.innerHTML = items.length ? items.map(p => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(p.name)}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${escHtml(p.role)} &middot; <span class="capitalize">${escHtml(p.category)}</span> &middot; ${p.active ? '&#9989; Active' : '&#10060; Inactive'}</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('person',${p.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('person',${p.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No people yet.</p>';
-}
-
-async function loadResearchData() {
-  const items = await fetch('/api/research').then(r => r.json());
-  const el = document.getElementById('research-table');
-  el.innerHTML = items.length ? items.map(r => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(r.title)}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${escHtml(r.description.substring(0,100))}...</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('research',${r.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('research',${r.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No research areas yet.</p>';
-}
-
-async function loadSponsorsData() {
-  const items = await fetch('/api/sponsors').then(r => r.json());
-  const el = document.getElementById('sponsors-table');
-  el.innerHTML = items.length ? items.map(s => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0 flex items-center gap-3">
-        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:48px;width:auto;object-fit:contain" class="flex-shrink-0">` : `<div class="w-12 h-12 rounded flex-shrink-0 flex items-center justify-center bg-primary text-white text-sm font-bold">${escHtml(s.name.charAt(0))}</div>`}
-        <div>
-          <div class="font-medium text-gray-800 text-sm">${escHtml(s.name)}</div>
-          <div class="text-gray-400 text-xs">${escHtml(s.website_url || '—')}</div>
-          ${s.show_in_footer ? '<span class="inline-block mt-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">&#10003; Shows in footer</span>' : ''}
-        </div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('sponsor',${s.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('sponsor',${s.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No sponsors yet.</p>';
-
-  // Render footer preview
-  const previewEl = document.getElementById('sponsors-footer-logos');
-  if (previewEl) {
-    const footerItems = items.filter(s => s.show_in_footer && s.logo_url);
-    previewEl.innerHTML = footerItems.length
-      ? footerItems.map(s => `<div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.25rem"><img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:56px;object-fit:contain;opacity:0.9"></div>`).join('')
-      : '<p class="text-xs text-gray-400">No logos marked for footer yet. Edit a sponsor and check "Show in footer".</p>';
-  }
-}
-
-// Modal forms
-function openModal(type, data) {
-  editingId = data ? data.id : null;
-  editingType = type;
-  const modal = document.getElementById('modal');
-  const title = document.getElementById('modal-title');
-  const body = document.getElementById('modal-body');
-  
-  if (type === 'news') {
-    title.textContent = editingId ? 'Edit News' : 'Add News';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'news')" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-          <input name="date" type="date" required value="${data ? data.date : new Date().toISOString().slice(0,10)}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-          <textarea name="content" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.content) : ''}</textarea></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'publication') {
-    title.textContent = editingId ? 'Edit Publication' : 'Add Publication';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'publication')" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Authors *</label>
-          <input name="authors" required value="${data ? escHtml(data.authors) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
-            <input name="venue" required value="${data ? escHtml(data.venue) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Year *</label>
-            <input name="year" type="number" required value="${data ? data.year : new Date().getFullYear()}" min="1990" max="2030" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">DOI / Paper URL</label>
-          <input name="doi_url" type="url" value="${data && data.doi_url ? escHtml(data.doi_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://doi.org/10..."></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">PDF URL</label>
-          <input name="pdf_url" value="${data && data.pdf_url ? escHtml(data.pdf_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. /papers/paper.pdf"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Citation URL</label>
-          <input name="citation_url" value="${data && data.citation_url ? escHtml(data.citation_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. /papers/paper.ris"></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'person') {
-    title.textContent = editingId ? 'Edit Person' : 'Add Person';
-    const photoVal = data && data.photo_url ? escHtml(data.photo_url) : '';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'person')" class="space-y-4" id="person-form">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Role/Title *</label>
-          <input name="role" required value="${data ? escHtml(data.role) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. Ph.D. Candidate"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-          <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">
-            <option value="director" ${data && data.category==='director'?'selected':''}>Director</option>
-            <option value="postdoc" ${data && data.category==='postdoc'?'selected':''}>PostDoc Fellow</option>
-            <option value="phd" ${data && data.category==='phd'?'selected':''}>Ph.D. Candidate</option>
-            <option value="ms" ${data && data.category==='ms'?'selected':''}>M.S. Student</option>
-            <option value="ug" ${data && data.category==='ug'?'selected':''}>Undergrad Student</option>
-            <option value="former" ${data && data.category==='former'?'selected':''}>Former Member</option>
-          </select></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input name="email" type="email" value="${data && data.email ? escHtml(data.email) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
-            <input name="linkedin_url" type="url" value="${data && data.linkedin_url ? escHtml(data.linkedin_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://linkedin.com/in/..."></div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Personal Website</label>
-            <input name="website_url" type="url" value="${data && data.website_url ? escHtml(data.website_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://..."></div>
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
-          <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div id="photo-preview" class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-              ${photoVal ? `<img src="${photoVal}" class="w-full h-full object-cover" alt="Photo">` : `<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`}
-            </div>
-            <div class="flex-1 min-w-0">
-              <input type="file" id="photo-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="handlePhotoSelect(event)">
-              <button type="button" onclick="document.getElementById('photo-file-input').click()" class="text-sm bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-secondary mb-1">
-                ${photoVal ? 'Change Photo' : 'Upload Photo'}
-              </button>
-              <div id="photo-upload-status" class="text-xs text-gray-500">${photoVal ? 'Photo uploaded' : 'JPEG, PNG, GIF or WebP · max 5 MB'}</div>
-            </div>
-          </div>
-          <input type="hidden" name="photo_url" id="photo-url-hidden" value="${photoVal}">
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-          <textarea name="bio" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data && data.bio ? escHtml(data.bio) : ''}</textarea></div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" name="active" id="active-check" ${!data || data.active ? 'checked' : ''} class="w-4 h-4">
-          <label for="active-check" class="text-sm font-medium text-gray-700">Currently Active Member</label>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" id="person-save-btn" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'research') {
-    title.textContent = editingId ? 'Edit Research Area' : 'Add Research Area';
-    let existingLinks = [];
-    try { existingLinks = JSON.parse(data && data.links ? data.links : '[]'); } catch(e) {}
-    body.innerHTML = `
-      <form onsubmit="saveResearch(event)" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Short Description * <span class="text-xs text-gray-400">(shown on cards)</span></label>
-          <textarea name="description" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.description) : ''}</textarea></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Content <span class="text-xs text-gray-400">(shown on detail page)</span></label>
-          <textarea name="content" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="Detailed description, methods, results...">${data && data.content ? escHtml(data.content) : ''}</textarea></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-          <input name="image_url" value="${data && data.image_url ? escHtml(data.image_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="/images/research.jpg"></div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Links &amp; Resources</label>
-          <div id="links-container" class="space-y-2"></div>
-          <button type="button" onclick="addLinkRow()" class="mt-2 text-xs font-semibold px-3 py-1.5 rounded border border-dashed border-gray-300 hover:border-secondary text-gray-600">+ Add Link</button>
-          <input type="hidden" name="links" id="links-json" value="${escHtml(data && data.links ? data.links : '[]')}">
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-    // Populate existing links
-    existingLinks.forEach(l => addLinkRow(l.label, l.url));
-    if (!existingLinks.length) addLinkRow();
-  } else if (type === 'sponsor') {
-    title.textContent = editingId ? 'Edit Sponsor' : 'Add Sponsor';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'sponsor')" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
-          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Logo</label>
-          ${data && data.logo_url ? `<div class="mb-2"><img src="${escHtml(data.logo_url)}" alt="Current logo" style="height:56px;object-fit:contain"></div>` : ''}
-          <div class="flex gap-2 items-center">
-            <input name="logo_url" id="sponsor-logo-url" value="${data && data.logo_url ? escHtml(data.logo_url) : ''}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none text-sm" placeholder="e.g. images/nsf-logo.png">
-            <button type="button" onclick="document.getElementById('sponsor-logo-file').click()" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200">Upload</button>
-          </div>
-          <input type="file" id="sponsor-logo-file" accept="image/*" class="hidden" onchange="uploadSponsorLogo(event)">
-          <div id="sponsor-logo-upload-status" class="text-xs mt-1 text-gray-500"></div>
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-          <input name="website_url" type="url" value="${data && data.website_url ? escHtml(data.website_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://..."></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-          <input type="checkbox" name="show_in_footer" id="show_in_footer" value="1" ${data && data.show_in_footer ? 'checked' : ''} class="w-4 h-4 rounded">
-          <label for="show_in_footer" class="text-sm font-medium text-gray-700">Show in footer (Partner Institutions)</label>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'facility') {
-    title.textContent = editingId ? 'Edit Facility' : 'Add Facility';
-    const photoVal = data && data.photo_url ? escHtml(data.photo_url) : '';
-    const docVal = data && data.doc_url ? escHtml(data.doc_url) : '';
-    const docNameVal = data && data.doc_name ? escHtml(data.doc_name) : '';
-    body.innerHTML = `
-      <form onsubmit="saveFacility(event)" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Short Description * <span class="text-xs text-gray-400">(shown on card)</span></label>
-          <textarea name="description" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.description) : ''}</textarea></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Content <span class="text-xs text-gray-400">(shown on detail page)</span></label>
-          <textarea name="content" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="Detailed description of the facility...">${data && data.content ? escHtml(data.content) : ''}</textarea></div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Photo</label>
-          ${photoVal ? `<div class="mb-2"><img src="${photoVal}" alt="Current photo" style="height:80px;object-fit:cover;border-radius:6px"></div>` : ''}
-          <div class="flex gap-2 items-center">
-            <input name="photo_url" id="facility-photo-url" value="${photoVal}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none text-sm" placeholder="/images/facility.png">
-            <button type="button" onclick="document.getElementById('facility-photo-file').click()" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200">Upload</button>
-          </div>
-          <input type="file" id="facility-photo-file" accept="image/*" class="hidden" onchange="uploadFacilityPhoto(event)">
-          <div id="facility-photo-status" class="text-xs mt-1 text-gray-500"></div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Documentation <span class="text-xs text-gray-400">(PDF, DOC, TXT — max 20 MB)</span></label>
-          ${docNameVal ? `<div class="mb-2 text-xs text-green-700 bg-green-50 px-3 py-1.5 rounded flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> ${docNameVal}</div>` : ''}
-          <div class="flex gap-2 items-center">
-            <input name="doc_url" id="facility-doc-url" value="${docVal}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none text-sm" placeholder="URL or upload below">
-            <button type="button" onclick="document.getElementById('facility-doc-file').click()" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200">Upload</button>
-          </div>
-          <input type="file" id="facility-doc-file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" class="hidden" onchange="uploadFacilityDoc(event)">
-          <input type="hidden" name="doc_name" id="facility-doc-name" value="${docNameVal}">
-          <div id="facility-doc-status" class="text-xs mt-1 text-gray-500"></div>
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  }
-  
-  modal.classList.add('modal-open');
-}
-
-async function editItem(type, id) {
-  const endpointMap = { news:'news', publication:'publications', person:'people', research:'research', sponsor:'sponsors', facility:'facilities' };
-  const endpoint = endpointMap[type] || type;
-  const items = await fetch('/api/' + endpoint).then(r => r.json());
-  const item = items.find(i => i.id === id);
-  if (item) openModal(type, item);
-}
-
-async function handlePhotoSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById('photo-upload-status');
-  const btnEl = event.target.closest('.flex-1').querySelector('button');
-  statusEl.textContent = 'Uploading…';
-  if (btnEl) btnEl.disabled = true;
-  try {
-    const fd = new FormData();
-    fd.append('photo', file);
-    const r = await fetch('/api/upload/photo', {
-      method: 'POST',
-      headers: { 'x-csrf-token': csrfToken },
-      body: fd
-    });
-    if (!r.ok) throw new Error('Upload failed');
-    const { url } = await r.json();
-    document.getElementById('photo-url-hidden').value = url;
-    const preview = document.getElementById('photo-preview');
-    preview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" alt="Photo">`;
-    statusEl.textContent = '\u2713 Photo uploaded';
-    statusEl.className = 'text-xs text-green-600';
-    if (btnEl) { btnEl.textContent = 'Change Photo'; btnEl.disabled = false; }
-  } catch(err) {
-    statusEl.textContent = '\u2717 Upload failed \u2014 ' + err.message;
-    statusEl.className = 'text-xs text-red-500';
-    if (btnEl) btnEl.disabled = false;
-  }
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('modal-open');
-  editingId = null;
-  editingType = null;
-}
-
-async function saveItem(e, type) {
-  e.preventDefault();
-  const form = e.target;
-  const fd = new FormData(form);
-  let data = Object.fromEntries(fd.entries());
-  
-  if (type === 'person') data.active = form.querySelector('[name=active]').checked;
-  if (type === 'sponsor') data.show_in_footer = form.querySelector('[name=show_in_footer]') ? (form.querySelector('[name=show_in_footer]').checked ? 1 : 0) : 0;
-  
-  let endpoint;
-  if (type === 'news') endpoint = 'news';
-  else if (type === 'publication') endpoint = 'publications';
-  else if (type === 'person') endpoint = 'people';
-  else if (type === 'research') endpoint = 'research';
-  else if (type === 'sponsor') endpoint = 'sponsors';
-  
-  const method = editingId ? 'PUT' : 'POST';
-  const url = '/api/' + endpoint + (editingId ? '/' + editingId : '');
-  
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json', 'x-csrf-token': csrfToken}, body: JSON.stringify(data) });
-  if (r.ok) {
-    closeModal();
-    loadAllData();
-    loadStats();
-  } else {
-    alert('Error saving item');
-  }
-}
-
-function confirmDelete(type, id) {
-  deleteCallback = async () => {
-    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type === 'sponsor' ? 'sponsors' : type === 'facility' ? 'facilities' : type;
-    await fetch('/api/' + endpoint + '/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
-    closeDeleteModal();
-    loadAllData();
-    loadStats();
-  };
-  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
-  document.getElementById('delete-modal').classList.add('modal-open');
-}
-
-function closeDeleteModal() {
-  document.getElementById('delete-modal').classList.remove('modal-open');
-  deleteCallback = null;
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Research links builder ──────────────────────────────────
-function addLinkRow(label, url) {
-  const container = document.getElementById('links-container');
-  if (!container) return;
-  const row = document.createElement('div');
-  row.className = 'flex gap-2 link-row items-center';
-  row.innerHTML = `
-    <input type="text" placeholder="Label (e.g. Related Paper)" class="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm link-label" value="${escHtml(label||'')}">
-    <input type="url" placeholder="https://..." class="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm link-url" value="${escHtml(url||'')}">
-    <button type="button" onclick="this.closest('.link-row').remove();updateLinksJson()" class="flex-shrink-0 w-7 h-7 rounded text-red-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center text-lg leading-none">&times;</button>
-  `;
-  row.querySelectorAll('input').forEach(i => i.addEventListener('input', updateLinksJson));
-  container.appendChild(row);
-  updateLinksJson();
-}
-
-function updateLinksJson() {
-  const container = document.getElementById('links-container');
-  const jsonInput = document.getElementById('links-json');
-  if (!container || !jsonInput) return;
-  const links = [];
-  container.querySelectorAll('.link-row').forEach(row => {
-    const labelVal = row.querySelector('.link-label').value.trim();
-    const urlVal = row.querySelector('.link-url').value.trim();
-    if (urlVal) links.push({ label: labelVal || urlVal, url: urlVal });
-  });
-  jsonInput.value = JSON.stringify(links);
-}
-
-// saveResearch is a specialized handler (instead of generic saveItem) because it must
-// call updateLinksJson() first to serialize the dynamic link-builder rows into JSON.
-async function saveResearch(e) {
-  e.preventDefault();
-  updateLinksJson();
-  const form = e.target;
-  const fd = new FormData(form);
-  const data = Object.fromEntries(fd.entries());
-  const method = editingId ? 'PUT' : 'POST';
-  const url = '/api/research' + (editingId ? '/' + editingId : '');
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json','x-csrf-token':csrfToken}, body: JSON.stringify(data) });
-  if (r.ok) { closeModal(); loadAllData(); loadStats(); }
-  else alert('Error saving research area');
-}
-
-// ── Gallery ─────────────────────────────────────────────────
-async function loadGalleryData() {
-  const items = await fetch('/api/gallery').then(r => r.json());
-  const el = document.getElementById('gallery-grid');
-  if (!items.length) {
-    el.innerHTML = '<p class="text-gray-500 text-sm col-span-4">No photos yet. Upload one above.</p>';
-    return;
-  }
-  el.innerHTML = items.map(g => `
-    <div class="rounded-xl overflow-hidden bg-gray-100 shadow">
-      <div class="relative aspect-video">
-        <img src="${escHtml(g.image_url)}" alt="${escHtml(g.caption||'Gallery photo')}" class="w-full h-full object-cover">
-      </div>
-      <div class="flex items-center justify-between px-3 py-2 bg-white gap-2">
-        <span class="text-xs text-gray-500 truncate flex-1">${escHtml(g.caption||'No caption')}</span>
-        <button onclick="deleteGalleryPhoto(${g.id})"
-          class="flex-shrink-0 w-7 h-7 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors"
-          title="Delete photo" aria-label="Delete photo">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function deleteGalleryPhoto(id) {
-  deleteCallback = async () => {
-    await fetch('/api/gallery/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
-    closeDeleteModal();
-    loadGalleryData();
-    loadStats();
-  };
-  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
-  document.getElementById('delete-modal').classList.add('modal-open');
-}
-
-async function uploadGalleryFiles(files) {
-  const statusEl = document.getElementById('gallery-upload-status');
-  if (!files || !files.length) return;
-  const fileArr = Array.from(files);
-  statusEl.textContent = `Uploading ${fileArr.length} photo${fileArr.length > 1 ? 's' : ''}…`;
-  statusEl.className = 'mt-2 text-sm font-medium text-blue-600';
-  let succeeded = 0;
-  for (const file of fileArr) {
+async function boot() {
+  $('#loginForm').onsubmit = async (e) => {
+    e.preventDefault();
+    $('#lErr').textContent = '';
     try {
-      const fd = new FormData();
-      fd.append('photo', file);
-      const r = await fetch('/api/gallery', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
-      if (r.ok) succeeded++;
-    } catch(e) {}
-  }
-  statusEl.textContent = succeeded === fileArr.length
-    ? `✓ ${succeeded} photo${succeeded > 1 ? 's' : ''} uploaded`
-    : `⚠ ${succeeded}/${fileArr.length} uploaded`;
-  statusEl.className = 'mt-2 text-sm font-medium ' + (succeeded === fileArr.length ? 'text-green-600' : 'text-yellow-600');
-  loadGalleryData();
-  loadStats();
-  setTimeout(() => { statusEl.textContent = ''; }, 4000);
-}
-
-function handleGalleryFileSelect(event) {
-  uploadGalleryFiles(event.target.files);
-  event.target.value = '';
-}
-
-function handleGalleryDrop(event) {
-  event.preventDefault();
-  document.getElementById('gallery-upload-zone').classList.remove('border-secondary');
-  uploadGalleryFiles(event.dataTransfer.files);
-}
-
-// ── Hero Slideshow management ────────────────────────────────
-async function loadHeroSlidesData() {
-  const items = await fetch('/api/hero-slides').then(r => r.json());
-  const el = document.getElementById('hero-slides-grid');
-  if (!el) return;
-  if (!items.length) {
-    el.innerHTML = '<p class="text-gray-500 text-sm col-span-3">No slides yet. Add one above.</p>';
-    return;
-  }
-  el.innerHTML = items.map(s => `
-    <div class="rounded-xl overflow-hidden bg-white shadow border border-gray-100">
-      <div class="relative aspect-video bg-gray-100">
-        <img src="${escHtml(s.image_url)}" alt="${escHtml(s.title||'Slide')}" class="w-full h-full object-cover">
-        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
-          ${s.title ? `<div class="text-white text-xs font-bold leading-tight">${escHtml(s.title)}</div>` : ''}
-          ${s.caption ? `<div class="text-white/80 text-xs leading-tight mt-0.5">${escHtml(s.caption.slice(0,80))}${s.caption.length>80?'…':''}</div>` : ''}
-        </div>
-      </div>
-      <div class="flex items-center justify-between px-3 py-2 gap-2">
-        <div class="flex-1 min-w-0">
-          <div class="text-xs font-medium text-gray-700 truncate">${escHtml(s.title||'No title')}</div>
-          <div class="text-xs text-gray-400">Order: ${s.sort_order}</div>
-        </div>
-        <div class="flex gap-2 flex-shrink-0">
-          <button onclick="editHeroSlide(${s.id})" class="text-xs bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded hover:bg-blue-200">Edit</button>
-          <button onclick="deleteHeroSlide(${s.id})" class="text-xs bg-red-100 text-red-700 px-2.5 py-1.5 rounded hover:bg-red-200">Delete</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-async function submitHeroSlide(e) {
-  e.preventDefault();
-  const form = e.target;
-  const storedFile = window._heroSlideFile;
-  if (!storedFile) { alert('Please choose an image file first.'); return; }
-  const fd = new FormData(form);
-  const multipart = new FormData();
-  multipart.append('photo', storedFile);
-  multipart.append('title', fd.get('title') || '');
-  multipart.append('caption', fd.get('caption') || '');
-  multipart.append('sort_order', fd.get('sort_order') || 0);
-  const statusEl = document.getElementById('hero-slide-upload-status');
-  statusEl.textContent = 'Saving…';
-  statusEl.className = 'text-xs mt-1 text-blue-600';
-  const r = await fetch('/api/hero-slides', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: multipart });
-  if (r.ok) {
-    form.reset();
-    document.getElementById('hero-slide-img-url').value = '';
-    statusEl.textContent = '✓ Slide added';
-    statusEl.className = 'text-xs mt-1 text-green-600';
-    window._heroSlideFile = null;
-    loadHeroSlidesData();
-    loadStats();
-    setTimeout(() => { statusEl.textContent = ''; }, 3000);
-  } else {
-    const err = await r.json().catch(() => ({}));
-    statusEl.textContent = '⚠ ' + (err.error || 'Save failed');
-    statusEl.className = 'text-xs mt-1 text-red-600';
-  }
-}
-
-function uploadHeroSlideImage(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  // Store the File object for use in submitHeroSlide (no pre-upload needed)
-  window._heroSlideFile = file;
-  const imgUrlEl = document.getElementById('hero-slide-img-url');
-  // Show a local blob preview URL so the user can see what they picked
-  imgUrlEl.value = file.name;
-  const statusEl = document.getElementById('hero-slide-upload-status');
-  statusEl.textContent = '✓ Image selected: ' + file.name;
-  statusEl.className = 'text-xs mt-1 text-green-600';
-  event.target.value = '';
-}
-
-function deleteHeroSlide(id) {
-  deleteCallback = async () => {
-    await fetch('/api/hero-slides/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
-    closeDeleteModal();
-    loadHeroSlidesData();
-    loadStats();
+      await doLogin($('#lUser').value, $('#lPass').value);
+      $('#loginScreen').style.display = 'none';
+      $('#appShell').style.display = 'flex';
+      $('#userInitials').textContent = SESSION_USER.initials;
+      $('#userName').textContent = SESSION_USER.name;
+      navigate('dashboard');
+    } catch(err) { $('#lErr').textContent = err.message; }
   };
-  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
-  document.getElementById('delete-modal').classList.add('modal-open');
-}
+  $('#logoutBtn').onclick = doLogout;
 
-let _editingHeroSlideId = null;
-async function editHeroSlide(id) {
-  const items = await fetch('/api/hero-slides').then(r => r.json());
-  const s = items.find(x => x.id === id);
-  if (!s) return;
-  _editingHeroSlideId = id;
-  const modal = document.getElementById('modal');
-  const title = document.getElementById('modal-title');
-  const body = document.getElementById('modal-body');
-  title.textContent = 'Edit Hero Slide';
-  body.innerHTML = `
-    <form onsubmit="saveHeroSlide(event)" class="space-y-4">
-      <div><label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
-        <img src="${escHtml(s.image_url)}" alt="" class="w-full h-32 object-cover rounded-lg mb-2">
-      </div>
-      <div><label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-        <input name="title" value="${escHtml(s.title||'')}" maxlength="200" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-      <div><label class="block text-sm font-medium text-gray-700 mb-1">Caption</label>
-        <textarea name="caption" rows="3" maxlength="400" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none resize-none">${escHtml(s.caption||'')}</textarea></div>
-      <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-        <input name="sort_order" type="number" value="${s.sort_order}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-      <div class="flex gap-3 pt-2">
-        <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-        <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">Update</button>
-      </div>
-    </form>`;
-  modal.classList.add('modal-open');
-}
-
-async function saveHeroSlide(e) {
-  e.preventDefault();
-  const form = e.target;
-  const fd = new FormData(form);
-  const data = Object.fromEntries(fd.entries());
-  const r = await fetch('/api/hero-slides/' + _editingHeroSlideId, { method: 'PUT', headers: {'Content-Type':'application/json','x-csrf-token':csrfToken}, body: JSON.stringify(data) });
-  if (r.ok) { closeModal(); loadHeroSlidesData(); loadStats(); }
-  else alert('Error updating slide');
-}
-
-async function uploadSponsorLogo(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById('sponsor-logo-upload-status');
-  statusEl.textContent = 'Uploading…';
-  statusEl.className = 'text-xs mt-1 text-blue-600';
-  try {
-    const fd = new FormData();
-    fd.append('photo', file);
-    const r = await fetch('/api/upload/photo', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
-    if (r.ok) {
-      const result = await r.json();
-      document.getElementById('sponsor-logo-url').value = result.url;
-      statusEl.textContent = '✓ Logo uploaded';
-      statusEl.className = 'text-xs mt-1 text-green-600';
-    } else {
-      statusEl.textContent = '⚠ Upload failed';
-      statusEl.className = 'text-xs mt-1 text-red-600';
-    }
-  } catch(e) {
-    statusEl.textContent = '⚠ Upload error';
-    statusEl.className = 'text-xs mt-1 text-red-600';
+  const ok = await checkAuth();
+  if (ok) {
+    $('#appShell').style.display = 'flex';
+    $('#userInitials').textContent = SESSION_USER.initials;
+    $('#userName').textContent = SESSION_USER.name;
+    renderNav();
+    navigate('dashboard');
+  } else {
+    $('#loginScreen').style.display = 'flex';
   }
-  event.target.value = '';
+  if (window.lucide) window.lucide.createIcons();
 }
 
-// Init
-checkAuth();
-
-// ── Facilities ────────────────────────────────────────────────
-async function loadFacilitiesData() {
-  const items = await fetch('/api/facilities').then(r => r.json());
-  const el = document.getElementById('facilities-table');
-  if (!el) return;
-  el.innerHTML = items.length ? items.map(f => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex items-start gap-3 flex-1 min-w-0">
-        ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="${escHtml(f.name)}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0">` : '<div class="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>'}
-        <div class="flex-1 min-w-0">
-          <div class="font-medium text-gray-800 text-sm">${escHtml(f.name)}</div>
-          <div class="text-gray-500 text-xs mt-0.5">${escHtml((f.description||'').slice(0,100))}${(f.description||'').length>100?'…':''}</div>
-          ${f.doc_url ? `<div class="text-xs text-green-700 mt-1 flex items-center gap-1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>${escHtml(f.doc_name||'Document')}</div>` : ''}
-        </div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('facility',${f.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('facility',${f.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No facilities yet.</p>';
-}
-
-async function saveFacility(e) {
-  e.preventDefault();
-  const form = e.target;
-  const fd = new FormData(form);
-  const data = Object.fromEntries(fd.entries());
-  const method = editingId ? 'PUT' : 'POST';
-  const url = '/api/facilities' + (editingId ? '/' + editingId : '');
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json', 'x-csrf-token': csrfToken}, body: JSON.stringify(data) });
-  if (r.ok) { closeModal(); loadFacilitiesData(); loadStats(); }
-  else alert('Error saving facility');
-}
-
-async function uploadFacilityPhoto(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById('facility-photo-status');
-  statusEl.textContent = 'Uploading…';
-  statusEl.className = 'text-xs mt-1 text-blue-600';
-  try {
-    const fd = new FormData();
-    fd.append('photo', file);
-    const r = await fetch('/api/upload/photo', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
-    if (r.ok) {
-      const result = await r.json();
-      document.getElementById('facility-photo-url').value = result.url;
-      statusEl.textContent = '✓ Photo uploaded';
-      statusEl.className = 'text-xs mt-1 text-green-600';
-    } else {
-      statusEl.textContent = '⚠ Upload failed';
-      statusEl.className = 'text-xs mt-1 text-red-600';
-    }
-  } catch(err) {
-    statusEl.textContent = '⚠ Upload error';
-    statusEl.className = 'text-xs mt-1 text-red-600';
-  }
-  event.target.value = '';
-}
-
-async function uploadFacilityDoc(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById('facility-doc-status');
-  statusEl.textContent = 'Uploading…';
-  statusEl.className = 'text-xs mt-1 text-blue-600';
-  try {
-    const fd = new FormData();
-    fd.append('document', file);
-    const r = await fetch('/api/upload/document', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
-    if (r.ok) {
-      const result = await r.json();
-      document.getElementById('facility-doc-url').value = result.url;
-      document.getElementById('facility-doc-name').value = result.name;
-      statusEl.textContent = '✓ ' + result.name + ' uploaded';
-      statusEl.className = 'text-xs mt-1 text-green-600';
-    } else {
-      statusEl.textContent = '⚠ Upload failed';
-      statusEl.className = 'text-xs mt-1 text-red-600';
-    }
-  } catch(err) {
-    statusEl.textContent = '⚠ Upload error';
-    statusEl.className = 'text-xs mt-1 text-red-600';
-  }
-  event.target.value = '';
-}
+boot();
 </script>
 </body>
 </html>

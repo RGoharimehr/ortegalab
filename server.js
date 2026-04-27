@@ -145,6 +145,63 @@ db.exec(`
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  /* Platform tables — Schedule, Tasks, Meetings, Inventory, Projects */
+  CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    day INTEGER NOT NULL,
+    start_hour INTEGER NOT NULL,
+    duration_hours INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    room TEXT DEFAULT '',
+    color TEXT DEFAULT 'navy',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    assignee TEXT DEFAULT '',
+    tag TEXT DEFAULT 'lab',
+    due_label TEXT DEFAULT '',
+    status TEXT DEFAULT 'todo',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS meetings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    day_label TEXT NOT NULL,
+    time_label TEXT NOT NULL,
+    title TEXT NOT NULL,
+    room TEXT DEFAULT '',
+    attendees TEXT DEFAULT '',
+    type TEXT DEFAULT 'team',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS inventory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lab TEXT NOT NULL DEFAULT 'A',
+    sku TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT DEFAULT '',
+    qty INTEGER DEFAULT 0,
+    min_qty INTEGER DEFAULT 0,
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    lead TEXT DEFAULT '',
+    status TEXT DEFAULT 'active',
+    description TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Migrations: add new columns to existing databases (errors for duplicate columns are expected and ignored)
@@ -295,6 +352,83 @@ if (facilityCount.cnt === 0) {
   for (const f of facilities) {
     db.prepare('INSERT INTO facilities (name, description, content, photo_url, doc_url, doc_name, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)').run(f.name, f.description, f.content, f.photo_url, f.doc_url, f.doc_name, f.sort_order);
   }
+}
+
+// Seed platform tables (Schedule, Tasks, Meetings, Inventory, Projects)
+if (db.prepare('SELECT COUNT(*) as cnt FROM events').get().cnt === 0) {
+  const events = [
+    [0, 9, 1, 'Group meeting', 'Lab A', 'navy'],
+    [1, 11, 3, 'Boiling rig \u00b7 thermal imaging', 'Lab A', 'gold'],
+    [1, 14, 1, '1:1 \u00b7 Ortega', 'Office', 'info'],
+    [2, 10, 2, 'PIV calibration', 'Lab B', 'gold'],
+    [2, 13, 2, 'Droplet impingement run', 'Lab B', 'navy'],
+    [3, 9, 4, 'Paper writing block', 'Office', 'info'],
+    [4, 15, 2, 'Equipment maintenance', 'Lab A', 'warn'],
+  ];
+  const stmt = db.prepare('INSERT INTO events (day, start_hour, duration_hours, title, room, color) VALUES (?,?,?,?,?,?)');
+  for (const e of events) stmt.run(...e);
+}
+
+if (db.prepare('SELECT COUNT(*) as cnt FROM tasks').get().cnt === 0) {
+  const tasks = [
+    ['Order K-type thermocouples', 'M. Reyes', 'inventory', 'Fri', 'todo', 1],
+    ['Calibrate PIV camera (Lab B)', 'A. Park', 'experiment', 'Wed', 'todo', 2],
+    ['Book high-speed camera next week', 'S. Kim', 'lab', 'Mon', 'todo', 3],
+    ['Draft E3S quarterly report outline', 'Dr. Ortega', 'paper', 'Apr 5', 'todo', 4],
+    ['Replace O-rings on droplet rig', 'D. Hernandez', 'maintenance', '\u2014', 'todo', 5],
+    ['Draft ITherm 2024 abstract', 'M. Reyes', 'paper', 'today', 'doing', 1],
+    ["Process last week's IR data", 'S. Kim', 'data', 'Wed', 'doing', 2],
+    ['Run boiling experiment \u00b7 4-point', 'M. Reyes', 'experiment', 'today', 'doing', 3],
+    ['Data review \u00b7 synthetic jet', 'M. Reyes', 'data', '\u2014', 'review', 1],
+    ['Reviewing: Silva et al. draft', 'Dr. Ortega', 'paper', 'Thu', 'review', 2],
+    ['Weekly group meeting agenda', 'Dr. Ortega', 'team', 'Mon', 'done', 1],
+    ['Fix leak in coolant loop', 'D. Hernandez', 'maintenance', '\u2014', 'done', 2],
+  ];
+  const stmt = db.prepare('INSERT INTO tasks (title, assignee, tag, due_label, status, sort_order) VALUES (?,?,?,?,?,?)');
+  for (const t of tasks) stmt.run(...t);
+}
+
+if (db.prepare('SELECT COUNT(*) as cnt FROM meetings').get().cnt === 0) {
+  const meetings = [
+    ['TODAY', '09:30 \u2013 10:30', 'Weekly group meeting', 'Tolentine 344', 'AO,SK,MR,AP,DH,VH,+9', 'team', 1],
+    ['TODAY', '14:00 \u2013 14:30', '1:1 \u00b7 Ortega \u2194 Reyes', 'Office 218', 'AO,MR', '1:1', 2],
+    ['TUE',   '11:00 \u2013 12:00', 'E3S quarterly sync', 'Remote \u00b7 Zoom', 'AO,SK,+4', 'external', 3],
+    ['WED',   '15:00 \u2013 16:00', 'Paper review \u00b7 Silva et al.', 'Tolentine 344', 'AO,SK,MR,AP', 'review', 4],
+    ['FRI',   '10:00 \u2013 11:30', 'New student onboarding', 'Mendel 270', 'SK,+2', 'onboarding', 5],
+  ];
+  const stmt = db.prepare('INSERT INTO meetings (day_label, time_label, title, room, attendees, type, sort_order) VALUES (?,?,?,?,?,?,?)');
+  for (const m of meetings) stmt.run(...m);
+}
+
+if (db.prepare('SELECT COUNT(*) as cnt FROM inventory').get().cnt === 0) {
+  const inv = [
+    ['A', 'SN-LAT-00472', 'K-type thermocouples (0.010\")', 'Sensors',     3,  20, 1],
+    ['A', 'SN-LAT-00488', 'Silicon-carbide cold plates',     'Hardware',    12, 4,  2],
+    ['A', 'SN-LAT-00501', 'Viton O-rings \u00b7 size 012',  'Consumables', 0,  50, 3],
+    ['A', 'SN-LAT-00512', 'Deionized water (4L)',            'Fluids',      6,  3,  4],
+    ['A', 'SN-LAT-00530', 'Pressure transducers \u00b7 Omega','Sensors',   2,  2,  5],
+    ['A', 'SN-LAT-00544', 'PTFE tubing (1/4\")',            'Consumables', 18, 25, 6],
+    ['A', 'SN-LAT-00562', 'Glycol-water mixture 50/50',      'Fluids',      4,  2,  7],
+    ['B', 'SN-LAT-01004', 'Nikon high-speed camera lens',    'Optics',      1,  1,  1],
+    ['B', 'SN-LAT-01012', 'PIV seeding particles (10 \u00b5m)','Consumables',0,2, 2],
+    ['B', 'SN-LAT-01020', 'Laser safety goggles',            'PPE',         8,  6,  3],
+    ['B', 'SN-LAT-01035', 'Nitrogen cylinder \u00b7 compressed','Fluids', 2,   1,  4],
+    ['B', 'SN-LAT-01044', 'IR transparent windows \u00b7 ZnSe','Optics',  5,   3,  5],
+  ];
+  const stmt = db.prepare('INSERT INTO inventory (lab, sku, name, category, qty, min_qty, sort_order) VALUES (?,?,?,?,?,?,?)');
+  for (const i of inv) stmt.run(...i);
+}
+
+if (db.prepare('SELECT COUNT(*) as cnt FROM projects').get().cnt === 0) {
+  const projs = [
+    ['NSF E3S \u2014 Phase III', 'Dr. A. Ortega', 'active', 'Energy-efficient electronic systems \u00b7 Villanova node.', 1],
+    ['Microchannel cold plates', 'L. Kim',     'active', 'Industry partnership \u00b7 cooling for high-flux electronics.', 2],
+    ['Droplet impingement rig', 'M. Reyes',    'active', 'Spray cooling experiments + numerical model validation.', 3],
+    ['Synthetic jet program',   'A. Park',     'paused', 'Convective enhancement using synthetic impinging jets.', 4],
+    ['Geothermal storage',      'D. Hernandez','active', 'DOE-funded underground storage characterization.', 5],
+  ];
+  const stmt = db.prepare('INSERT INTO projects (title, lead, status, description, sort_order) VALUES (?,?,?,?,?)');
+  for (const p of projs) stmt.run(...p);
 }
 
 // Post-seed data migration: add ES2 sponsor if it doesn't exist in an existing DB
@@ -617,6 +751,125 @@ app.delete('/api/facilities/:id', apiWriteLimiter, requireAuth, requireCsrf, (re
       fs.unlink(filePath, (err) => { if (err) console.error('Failed to delete file:', filePath, err.message); });
     }
   }
+  res.json({ success: true });
+});
+
+// ────────────────────────────────────────────────────────────────────────
+// PLATFORM API — Schedule, Tasks, Meetings, Inventory, Projects
+// ────────────────────────────────────────────────────────────────────────
+
+// EVENTS
+app.get('/api/events', apiReadLimiter, (req, res) => {
+  res.json(db.prepare('SELECT * FROM events ORDER BY day, start_hour, id').all());
+});
+app.post('/api/events', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { day, start_hour, duration_hours, title, room, color } = req.body;
+  if (title == null || day == null || start_hour == null || duration_hours == null) return res.status(400).json({ error: 'Missing fields' });
+  const result = db.prepare('INSERT INTO events (day, start_hour, duration_hours, title, room, color) VALUES (?,?,?,?,?,?)')
+    .run(day, start_hour, duration_hours, title, room || '', color || 'navy');
+  res.json({ id: result.lastInsertRowid });
+});
+app.put('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { day, start_hour, duration_hours, title, room, color } = req.body;
+  db.prepare('UPDATE events SET day=?, start_hour=?, duration_hours=?, title=?, room=?, color=? WHERE id=?')
+    .run(day, start_hour, duration_hours, title, room || '', color || 'navy', req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM events WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// TASKS
+app.get('/api/tasks', apiReadLimiter, (req, res) => {
+  res.json(db.prepare('SELECT * FROM tasks ORDER BY status, sort_order, id').all());
+});
+app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, assignee, tag, due_label, status, sort_order } = req.body;
+  if (!title) return res.status(400).json({ error: 'Missing title' });
+  const result = db.prepare('INSERT INTO tasks (title, assignee, tag, due_label, status, sort_order) VALUES (?,?,?,?,?,?)')
+    .run(title, assignee || '', tag || 'lab', due_label || '', status || 'todo', sort_order || 0);
+  res.json({ id: result.lastInsertRowid });
+});
+app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, assignee, tag, due_label, status, sort_order } = req.body;
+  db.prepare('UPDATE tasks SET title=?, assignee=?, tag=?, due_label=?, status=?, sort_order=? WHERE id=?')
+    .run(title, assignee || '', tag || 'lab', due_label || '', status || 'todo', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM tasks WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// MEETINGS
+app.get('/api/meetings', apiReadLimiter, (req, res) => {
+  res.json(db.prepare('SELECT * FROM meetings ORDER BY sort_order, id').all());
+});
+app.post('/api/meetings', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { day_label, time_label, title, room, attendees, type, sort_order } = req.body;
+  if (!title || !day_label || !time_label) return res.status(400).json({ error: 'Missing fields' });
+  const result = db.prepare('INSERT INTO meetings (day_label, time_label, title, room, attendees, type, sort_order) VALUES (?,?,?,?,?,?,?)')
+    .run(day_label, time_label, title, room || '', attendees || '', type || 'team', sort_order || 0);
+  res.json({ id: result.lastInsertRowid });
+});
+app.put('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { day_label, time_label, title, room, attendees, type, sort_order } = req.body;
+  db.prepare('UPDATE meetings SET day_label=?, time_label=?, title=?, room=?, attendees=?, type=?, sort_order=? WHERE id=?')
+    .run(day_label, time_label, title, room || '', attendees || '', type || 'team', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM meetings WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// INVENTORY
+app.get('/api/inventory', apiReadLimiter, (req, res) => {
+  res.json(db.prepare('SELECT * FROM inventory ORDER BY lab, sort_order, id').all());
+});
+app.post('/api/inventory', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { lab, sku, name, category, qty, min_qty, sort_order } = req.body;
+  if (!sku || !name) return res.status(400).json({ error: 'Missing fields' });
+  try {
+    const result = db.prepare('INSERT INTO inventory (lab, sku, name, category, qty, min_qty, sort_order) VALUES (?,?,?,?,?,?,?)')
+      .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, sort_order || 0);
+    res.json({ id: result.lastInsertRowid });
+  } catch(e) {
+    if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'SKU already exists' });
+    res.status(500).json({ error: e.message });
+  }
+});
+app.put('/api/inventory/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { lab, sku, name, category, qty, min_qty, sort_order } = req.body;
+  db.prepare('UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, sort_order=? WHERE id=?')
+    .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/inventory/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM inventory WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// PROJECTS
+app.get('/api/projects', apiReadLimiter, (req, res) => {
+  res.json(db.prepare('SELECT * FROM projects ORDER BY sort_order, id').all());
+});
+app.post('/api/projects', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, lead, status, description, sort_order } = req.body;
+  if (!title) return res.status(400).json({ error: 'Missing title' });
+  const result = db.prepare('INSERT INTO projects (title, lead, status, description, sort_order) VALUES (?,?,?,?,?)')
+    .run(title, lead || '', status || 'active', description || '', sort_order || 0);
+  res.json({ id: result.lastInsertRowid });
+});
+app.put('/api/projects/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, lead, status, description, sort_order } = req.body;
+  db.prepare('UPDATE projects SET title=?, lead=?, status=?, description=?, sort_order=? WHERE id=?')
+    .run(title, lead || '', status || 'active', description || '', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/projects/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM projects WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
