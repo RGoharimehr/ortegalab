@@ -6,9 +6,43 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ── Email (optional) ────────────────────────────────────────────────────────
+// Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM to enable email.
+// If env vars are absent the mailer is silently disabled — nothing breaks.
+let mailer = null;
+if (process.env.SMTP_HOST) {
+  mailer = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+  });
+  mailer.verify((err) => {
+    if (err) console.warn('[email] SMTP verify failed:', err.message);
+    else     console.log('[email] SMTP ready —', process.env.SMTP_HOST);
+  });
+} else {
+  console.log('[email] SMTP not configured — email notifications disabled.');
+}
+
+/**
+ * Send an email if the mailer is configured.
+ * @param {string|string[]} to  — recipient(s)
+ * @param {string} subject
+ * @param {string} text         — plain-text body
+ */
+function sendMail(to, subject, text) {
+  if (!mailer) return;
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@latfs.lab';
+  mailer.sendMail({ from, to, subject, text }).catch(err => {
+    console.warn('[email] send failed:', err.message);
+  });
+}
 
 // Ensure uploads directory exists
 if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
@@ -336,17 +370,19 @@ try {
   db.prepare("UPDATE sponsors SET logo_url = '/' || logo_url WHERE logo_url != '' AND logo_url NOT LIKE '/%' AND logo_url NOT LIKE 'http%'").run();
 } catch(e) { console.error('Data migration error:', e.message); }
 
-// Seed admin user
+// Seed admin user — password can be overridden by ADMIN_SEED_PASSWORD env var
+const ADMIN_SEED_PW = process.env.ADMIN_SEED_PASSWORD || 'admin123';
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
 if (!adminExists) {
-  const hash = bcrypt.hashSync('admin123', 10);
+  const hash = bcrypt.hashSync(ADMIN_SEED_PW, 10);
   db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run('admin', hash);
 }
 
 // Make sure admin row has role + name
 try { db.prepare("UPDATE users SET role='admin', name=COALESCE(NULLIF(name,''),'Site administrator') WHERE username='admin'").run(); } catch(_){}
 
-// Seed sample lab accounts (all default password: latfs2024)
+// Seed sample lab accounts — password can be overridden by LAB_SEED_PASSWORD env var
+const LAB_SEED_PW = process.env.LAB_SEED_PASSWORD || 'latfs2024';
 const seedAccounts = [
   { username: 'aortega',   name: 'Dr. Alfonso Ortega', role: 'professor', email: 'aortega@villanova.edu' },
   { username: 'mreyes',    name: 'M. Reyes',           role: 'student',   email: 'mreyes@villanova.edu' },
@@ -354,13 +390,26 @@ const seedAccounts = [
   { username: 'dhernandez',name: 'D. Hernandez',       role: 'student',   email: 'dhernandez@villanova.edu' },
   { username: 'apark',     name: 'A. Park',            role: 'student',   email: 'apark@villanova.edu' },
 ];
-const seedHash = bcrypt.hashSync('latfs2024', 10);
+const seedHash = bcrypt.hashSync(LAB_SEED_PW, 10);
 for (const a of seedAccounts) {
   const exists = db.prepare('SELECT id FROM users WHERE username=?').get(a.username);
   if (!exists) {
     db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
       .run(a.username, seedHash, a.name, a.role, a.email);
   }
+}
+
+// ── Startup security warnings ────────────────────────────────────────────────
+function warnDefaultPassword(username, defaultPw) {
+  const row = db.prepare('SELECT password FROM users WHERE username=?').get(username);
+  if (row && bcrypt.compareSync(defaultPw, row.password)) {
+    console.warn(`[security] ⚠️  User "${username}" still has the default seed password. Change it via Lab Members → Reset PW.`);
+  }
+}
+warnDefaultPassword('admin', 'admin123');
+for (const a of seedAccounts) warnDefaultPassword(a.username, 'latfs2024');
+if (!process.env.SESSION_SECRET) {
+  console.warn('[security] ⚠️  SESSION_SECRET env var is not set — using insecure default. Set a random 64-char secret in production.');
 }
 
 // Seed equipment if empty
@@ -620,7 +669,7 @@ try {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'latfs-secret-key-2024',
+  secret: process.env.SESSION_SECRET || 'latfs-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000, sameSite: 'strict' }
@@ -697,55 +746,55 @@ app.get('/admin/check', (req, res) => {
   }
 });
 
-// NEWS API
+// NEWS API — write operations restricted to staff (admin/professor)
 app.get('/api/news', apiReadLimiter, (req, res) => {
   const news = db.prepare('SELECT * FROM news ORDER BY date DESC, id DESC').all();
   res.json(news);
 });
 
-app.post('/api/news', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/news', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, content, date, image_url, slug } = req.body;
   if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO news (title, content, date, image_url, slug) VALUES (?, ?, ?, ?, ?)').run(title, content, date, image_url || '', slug || '');
   res.json({ id: result.lastInsertRowid, title, content, date });
 });
 
-app.put('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/news/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, content, date, image_url, slug } = req.body;
   db.prepare('UPDATE news SET title=?, content=?, date=?, image_url=?, slug=? WHERE id=?').run(title, content, date, image_url || '', slug || '', req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/news/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM news WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
-// PUBLICATIONS API
+// PUBLICATIONS API — write operations restricted to staff
 app.get('/api/publications', apiReadLimiter, (req, res) => {
   const pubs = db.prepare('SELECT * FROM publications ORDER BY year DESC, id DESC').all();
   res.json(pubs);
 });
 
-app.post('/api/publications', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/publications', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, authors, venue, year, pdf_url, doi_url, citation_url } = req.body;
   if (!title || !authors || !venue || !year) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO publications (title, authors, venue, year, pdf_url, doi_url, citation_url) VALUES (?, ?, ?, ?, ?, ?, ?)').run(title, authors, venue, year, pdf_url || null, doi_url || null, citation_url || null);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/publications/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, authors, venue, year, pdf_url, doi_url, citation_url } = req.body;
   db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, doi_url=?, citation_url=? WHERE id=?').run(title, authors, venue, year, pdf_url || null, doi_url || null, citation_url || null, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/publications/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM publications WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
-// PEOPLE API
+// PEOPLE API — write operations restricted to staff
 app.get('/api/people', apiReadLimiter, (req, res) => {
   const { category, active } = req.query;
   let sql = 'SELECT * FROM people WHERE 1=1';
@@ -757,68 +806,68 @@ app.get('/api/people', apiReadLimiter, (req, res) => {
   res.json(people);
 });
 
-app.post('/api/people', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/people', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, role, category, bio, photo_url, photo_position, email, linkedin_url, website_url, active } = req.body;
   if (!name || !role || !category) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO people (name, role, category, bio, photo_url, photo_position, email, linkedin_url, website_url, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(name, role, category, bio || '', photo_url || '', photo_position || 'center center', email || '', linkedin_url || '', website_url || '', active !== false ? 1 : 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/people/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, role, category, bio, photo_url, photo_position, email, linkedin_url, website_url, active } = req.body;
   db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, photo_position=?, email=?, linkedin_url=?, website_url=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', photo_position || 'center center', email || '', linkedin_url || '', website_url || '', active ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/people/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM people WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
-// RESEARCH API
+// RESEARCH API — write operations restricted to staff
 app.get('/api/research', apiReadLimiter, (req, res) => {
   const areas = db.prepare('SELECT * FROM research ORDER BY sort_order, id').all();
   res.json(areas);
 });
 
-app.post('/api/research', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/research', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, description, content, image_url, links, sort_order } = req.body;
   if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO research (title, description, content, image_url, links, sort_order) VALUES (?, ?, ?, ?, ?, ?)').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/research/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, description, content, image_url, links, sort_order } = req.body;
   db.prepare('UPDATE research SET title=?, description=?, content=?, image_url=?, links=?, sort_order=? WHERE id=?').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/research/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM research WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
-// SPONSORS API
+// SPONSORS API — write operations restricted to staff
 app.get('/api/sponsors', apiReadLimiter, (req, res) => {
   const sponsors = db.prepare('SELECT * FROM sponsors ORDER BY sort_order, id').all();
   res.json(sponsors);
 });
 
-app.post('/api/sponsors', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/sponsors', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, logo_url, website_url, sort_order, show_in_footer } = req.body;
   if (!name) return res.status(400).json({ error: 'Missing name' });
   const result = db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run(name, logo_url || '', website_url || '', sort_order || 0, show_in_footer ? 1 : 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/sponsors/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, logo_url, website_url, sort_order, show_in_footer } = req.body;
   db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=?, show_in_footer=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, show_in_footer ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/sponsors/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM sponsors WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -917,20 +966,20 @@ app.get('/api/facilities', apiReadLimiter, (req, res) => {
   res.json(items);
 });
 
-app.post('/api/facilities', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/facilities', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, description, content, photo_url, doc_url, doc_name, sort_order } = req.body;
   if (!name || !description) return res.status(400).json({ error: 'Missing required fields' });
   const result = db.prepare('INSERT INTO facilities (name, description, content, photo_url, doc_url, doc_name, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)').run(name, description, content || '', photo_url || '', doc_url || '', doc_name || '', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/facilities/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/facilities/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, description, content, photo_url, doc_url, doc_name, sort_order } = req.body;
   db.prepare('UPDATE facilities SET name=?, description=?, content=?, photo_url=?, doc_url=?, doc_name=?, sort_order=? WHERE id=?').run(name, description, content || '', photo_url || '', doc_url || '', doc_name || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/facilities/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/facilities/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const item = db.prepare('SELECT * FROM facilities WHERE id=?').get(req.params.id);
   if (!item) return res.status(404).json({ error: 'Not found' });
   db.prepare('DELETE FROM facilities WHERE id=?').run(req.params.id);
@@ -993,6 +1042,18 @@ app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => 
   if (!title) return res.status(400).json({ error: 'Missing title' });
   const result = db.prepare('INSERT INTO tasks (title, description, assignee_user_id, created_by_user_id, priority, due_date, status, tag, sort_order) VALUES (?,?,?,?,?,?,?,?,?)')
     .run(title, description || '', assignee_user_id || null, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
+  // Email notification — alert the assignee if different from creator
+  if (assignee_user_id && Number(assignee_user_id) !== req.session.userId) {
+    const assignee = db.prepare('SELECT name, email FROM users WHERE id=?').get(assignee_user_id);
+    const creator  = db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId);
+    if (assignee && assignee.email) {
+      sendMail(
+        assignee.email,
+        `[LATFS] Task assigned to you: ${title}`,
+        `Hi ${assignee.name || assignee.email},\n\nA new task has been assigned to you by ${creator ? creator.name : 'a lab member'}.\n\nTask: ${title}\nPriority: ${priority || 'normal'}${due_date ? '\nDue: ' + due_date : ''}\n\nLog in to the LATFS Platform to view details.\n`
+      );
+    }
+  }
   res.json({ id: result.lastInsertRowid });
 });
 app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -1261,6 +1322,16 @@ app.post('/api/issues', apiWriteLimiter, requireAuth, requireCsrf, (req, res) =>
   if (!title) return res.status(400).json({ error: 'title required' });
   const r = db.prepare('INSERT INTO issues (title, body, category, priority, reporter_user_id, related_equipment_id) VALUES (?,?,?,?,?,?)')
     .run(title, body || '', category || 'other', priority || 'normal', req.session.userId, related_equipment_id || null);
+  // Email notification — alert all professors/admins about new issues
+  const reporter = db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId);
+  const staffEmails = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active != 0").all().map(u => u.email);
+  if (staffEmails.length) {
+    sendMail(
+      staffEmails,
+      `[LATFS] New ${priority || 'normal'}-priority issue: ${title}`,
+      `A new lab issue has been reported.\n\nTitle: ${title}\nCategory: ${category || 'other'}\nPriority: ${priority || 'normal'}\nReported by: ${reporter ? reporter.name : 'a lab member'}\n${body ? '\nDetails:\n' + body + '\n' : ''}\nLog in to the LATFS Platform to manage this issue.\n`
+    );
+  }
   res.json({ id: r.lastInsertRowid });
 });
 app.put('/api/issues/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -1315,6 +1386,37 @@ app.get('/api/tasks/full', apiReadLimiter, requireAuth, (req, res) => {
   res.json(db.prepare(sql).all(...params));
 });
 
+// ---- PI / Director dashboard overview (staff only) ----
+// Returns a single JSON snapshot of key lab metrics useful for the director.
+app.get('/api/dashboard/pi', apiReadLimiter, requireStaff, (req, res) => {
+  const totalMembers     = db.prepare("SELECT COUNT(*) as n FROM users WHERE active!=0").get().n;
+  const openIssues       = db.prepare("SELECT COUNT(*) as n FROM issues WHERE status='open'").get().n;
+  const highIssues       = db.prepare("SELECT COUNT(*) as n FROM issues WHERE status='open' AND priority='high'").get().n;
+  const equipmentInUse   = db.prepare("SELECT COUNT(*) as n FROM equipment WHERE current_user_id IS NOT NULL").get().n;
+  const overdueTasks     = db.prepare("SELECT COUNT(*) as n FROM tasks WHERE status NOT IN ('done') AND due_date != '' AND date(due_date) < date('now')").get().n;
+  const recentIssues     = db.prepare(`
+    SELECT i.id, i.title, i.priority, i.status, i.created_at, u.name AS reporter_name
+    FROM issues i LEFT JOIN users u ON u.id=i.reporter_user_id
+    WHERE i.status='open' ORDER BY CASE i.priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END, i.created_at DESC LIMIT 5`).all();
+  const checkedOutEq     = db.prepare(`
+    SELECT e.name, e.sku, e.last_used_at, u.name AS held_by
+    FROM equipment e LEFT JOIN users u ON u.id=e.current_user_id
+    WHERE e.current_user_id IS NOT NULL ORDER BY e.last_used_at ASC LIMIT 10`).all();
+  const upcomingEvents   = db.prepare(`
+    SELECT title, start_time, location FROM events
+    WHERE datetime(start_time) >= datetime('now') ORDER BY start_time LIMIT 5`).all();
+  const overdueTasksList = db.prepare(`
+    SELECT t.title, t.due_date, u.name AS assignee_name
+    FROM tasks t LEFT JOIN users u ON u.id=t.assignee_user_id
+    WHERE t.status NOT IN ('done') AND t.due_date != '' AND date(t.due_date) < date('now')
+    ORDER BY t.due_date ASC LIMIT 10`).all();
+
+  res.json({
+    totalMembers, openIssues, highIssues, equipmentInUse, overdueTasks,
+    recentIssues, checkedOutEq, upcomingEvents, overdueTasksList
+  });
+});
+
 // ---- Generic documents (attached files for any entity) ----
 app.get('/api/documents', apiReadLimiter, (req, res) => {
   const { entity_type, entity_id } = req.query;
@@ -1336,6 +1438,49 @@ app.delete('/api/documents/:id', apiWriteLimiter, requireAuth, requireCsrf, (req
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/platform', (req, res) => res.sendFile(path.join(__dirname, 'public', 'platform.html')));
+
+// ── Lab calendar — iCal export ───────────────────────────────────────────────
+// Public endpoint (no auth required) so users can subscribe in Google/Apple Calendar.
+// URL: /api/events/calendar.ics
+function toICSDate(dt) {
+  if (!dt) return null;
+  const d = new Date(dt);
+  if (isNaN(d)) return null;
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+function escapeICS(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+app.get('/api/events/calendar.ics', apiReadLimiter, (req, res) => {
+  const events = db.prepare('SELECT * FROM events WHERE visibility != ? OR visibility IS NULL ORDER BY start_time').all('private');
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//LATFS//Lab Platform//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:LATFS Lab Schedule',
+    'X-WR-CALDESC:Laboratory for Advanced Thermal and Fluid Systems — public schedule',
+  ];
+  for (const ev of events) {
+    const dtStart = toICSDate(ev.start_time);
+    if (!dtStart) continue;
+    const dtEnd = toICSDate(ev.end_time) || dtStart;
+    lines.push('BEGIN:VEVENT');
+    lines.push(`UID:latfs-ev-${ev.id}@latfs.villanova.edu`);
+    lines.push(`DTSTAMP:${toICSDate(new Date())}`);
+    lines.push(`DTSTART:${dtStart}`);
+    lines.push(`DTEND:${dtEnd}`);
+    lines.push(`SUMMARY:${escapeICS(ev.title)}`);
+    if (ev.location) lines.push(`LOCATION:${escapeICS(ev.location)}`);
+    if (ev.event_type) lines.push(`CATEGORIES:${escapeICS(ev.event_type)}`);
+    lines.push('END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="latfs-schedule.ics"');
+  res.send(lines.join('\r\n'));
+});
 
 app.listen(PORT, () => {
   console.log(`LATFS Website running at http://localhost:${PORT}`);

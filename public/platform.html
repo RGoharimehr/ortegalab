@@ -460,6 +460,59 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-log-note { color:var(--fg-3); font-style:italic; }
 .p-banner { background: var(--gold-100); border:1px solid var(--gold-300); color: var(--gold-900); padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
 
+/* ---- PI Director summary panel ---- */
+.pi-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-bottom:18px; }
+.pi-stat { background:#fff; border:1px solid var(--border-1); border-radius:var(--radius-lg); padding:16px 18px; }
+.pi-stat-num { font-size:2rem; font-weight:900; color:var(--navy-900); line-height:1; }
+.pi-stat-lbl { font-size:11px; color:var(--fg-3); text-transform:uppercase; letter-spacing:.07em; margin-top:4px; }
+.pi-stat.warn .pi-stat-num { color:var(--status-warn); }
+.pi-stat.alert .pi-stat-num { color:var(--status-alert); }
+.pi-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-1); font-size:13px; }
+.pi-row:last-child { border-bottom:none; }
+.pi-badge { font-size:11px; font-weight:700; padding:2px 7px; border-radius:var(--radius-pill); background:var(--status-warn-tint); color:var(--status-warn); }
+.pi-badge.high { background:var(--status-alert-tint); color:var(--status-alert); }
+.pi-badge.resolved { background:var(--status-ok-tint); color:var(--status-ok); }
+
+/* ---- Mobile / responsive ---- */
+/* Hamburger button — hidden on desktop */
+.p-hamburger { display:none; background:none; border:none; cursor:pointer; padding:8px; color:#fff; }
+.p-hamburger svg { display:block; }
+
+/* Mobile overlay (darkens main when sidebar is open) */
+.p-sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:199; }
+.p-sidebar-overlay.open { display:block; }
+
+@media (max-width: 768px) {
+  .p-app { display: block; position: relative; }
+  .p-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+    width: 260px; transform: translateX(-100%);
+    transition: transform 240ms var(--ease-out);
+    overflow-y: auto;
+  }
+  .p-sidebar.open { transform: translateX(0); }
+  .p-main { padding: 16px; }
+  /* Topbar — shows on mobile, hidden on desktop */
+  .p-topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy-900); color: #fff;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; margin: -16px -16px 16px;
+  }
+  .p-topbar-title { font-weight: 800; font-size: 14px; color: #fff; flex: 1; }
+  .p-hamburger { display: block; }
+  /* Stack grid cards on mobile */
+  .p-grid-2, .p-grid-3 { grid-template-columns: 1fr; }
+  .p-kanban { flex-direction: column; }
+  .p-page-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .pi-grid { grid-template-columns: repeat(2, 1fr); }
+  .p-inv-row { flex-wrap: wrap; gap: 4px; }
+  .p-inv-head { display: none; }
+}
+@media (min-width: 769px) {
+  .p-topbar { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -480,7 +533,10 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 
 <!-- App shell -->
 <div class="p-app hidden" id="appShell">
-  <aside class="p-sidebar">
+  <!-- Mobile sidebar overlay -->
+  <div class="p-sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="p-sidebar" id="sidebar">
     <div class="p-brand">
       <div class="p-brand-mark">L</div>
       <div>
@@ -517,6 +573,15 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   </aside>
 
   <main class="p-main">
+    <!-- Mobile top bar (hidden on desktop via CSS) -->
+    <div class="p-topbar">
+      <button class="p-hamburger" id="hamburgerBtn" aria-label="Open menu">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="p-topbar-title">LATFS Platform</div>
+    </div>
 
     <!-- Dashboard -->
     <section class="p-section active" data-section="dashboard">
@@ -560,9 +625,45 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
           <div id="dashIssues"><div class="empty">No open issues.</div></div>
         </div>
       </div>
+      <!-- Staff-only PI overview panel (inserted below personal cards) -->
+      <div id="piPanel" class="staff-only hidden" style="margin-top:18px;">
+        <div class="p-page-head" style="margin-bottom:12px;">
+          <div>
+            <div class="eyebrow" style="color:var(--gold-700);">Director view</div>
+            <h2 class="p-h1" style="font-size:1.1rem;">Lab-wide overview</h2>
+          </div>
+        </div>
+        <div class="pi-grid" id="piStats"></div>
+        <div class="p-grid-2">
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Open issues (high priority first)</div>
+              <button class="w-link-gold" onclick="goRoute('issues')">View all →</button>
+            </div>
+            <div id="piIssues"><div class="empty">Loading…</div></div>
+          </div>
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Equipment in use</div>
+              <button class="w-link-gold" onclick="goRoute('equipment')">View all →</button>
+            </div>
+            <div id="piEquip"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+        <div class="p-grid-2" style="margin-top:18px;">
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Overdue tasks</div>
+              <button class="w-link-gold" onclick="goRoute('tasks')">View all →</button>
+            </div>
+            <div id="piOverdue"><div class="empty">Loading…</div></div>
+          </div>
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Upcoming events</div>
+              <button class="w-link-gold" onclick="goRoute('schedule')">View all →</button>
+            </div>
+            <div id="piEvents"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+      </div>
     </section>
-
-    <!-- Schedule -->
     <section class="p-section" data-section="schedule">
       <div class="p-page-head">
         <div>
@@ -575,6 +676,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
             <button class="active" data-scope="mine">Mine</button>
             <button data-scope="all">All</button>
           </div>
+          <a class="btn-ghost-sm" href="/api/events/calendar.ics" download="latfs-schedule.ics" title="Subscribe / download .ics for Google, Apple, or Outlook Calendar">⬇ .ics</a>
           <button class="btn-primary-sm" id="addEventBtn">+ Add event</button>
         </div>
       </div>
@@ -825,6 +927,24 @@ function showApp(){
   loadDashboard();
 }
 
+/* ---------- Mobile sidebar (hamburger) ---------- */
+function openSidebar(){
+  $('#sidebar').classList.add('open');
+  $('#sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar(){
+  $('#sidebar').classList.remove('open');
+  $('#sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+$('#hamburgerBtn').addEventListener('click', openSidebar);
+$('#sidebarOverlay').addEventListener('click', closeSidebar);
+// Close sidebar when nav item is clicked on mobile
+document.addEventListener('click', e => {
+  if(e.target.closest('.p-nav-item') && window.innerWidth <= 768) closeSidebar();
+});
+
 /* ---------- Routing ---------- */
 function goRoute(name){
   $$('.p-section').forEach(s => s.classList.toggle('active', s.dataset.section === name));
@@ -906,6 +1026,51 @@ async function loadDashboard(){
         </div>
       </div>`).join('') : '<div class="empty">No open issues.</div>';
   } catch(e){ $('#dashIssues').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  // PI panel — only for staff
+  if(ME.role === 'admin' || ME.role === 'professor') loadPIDashboard();
+}
+
+/* ---------- PI / Director dashboard ---------- */
+async function loadPIDashboard(){
+  try {
+    const d = await api('/api/dashboard/pi');
+    $('#piStats').innerHTML = [
+      { label:'Lab members', val: d.totalMembers, cls:'' },
+      { label:'Open issues', val: d.openIssues, cls: d.openIssues > 0 ? 'warn' : '' },
+      { label:'High-priority issues', val: d.highIssues, cls: d.highIssues > 0 ? 'alert' : '' },
+      { label:'Equipment in use', val: d.equipmentInUse, cls:'' },
+      { label:'Overdue tasks', val: d.overdueTasks, cls: d.overdueTasks > 0 ? 'warn' : '' },
+    ].map(s => `<div class="pi-stat ${s.cls}"><div class="pi-stat-num">${s.val}</div><div class="pi-stat-lbl">${s.label}</div></div>`).join('');
+
+    $('#piIssues').innerHTML = d.recentIssues.length ? d.recentIssues.map(it => `
+      <div class="pi-row">
+        <span class="pi-badge ${it.priority==='high'?'high':''}">${escapeHTML(it.priority)}</span>
+        <span style="flex:1;">${escapeHTML(it.title)}</span>
+        <span style="color:var(--fg-3);font-size:12px;">${escapeHTML(it.reporter_name||'')}</span>
+      </div>`).join('') : '<div class="empty">No open issues.</div>';
+
+    $('#piEquip').innerHTML = d.checkedOutEq.length ? d.checkedOutEq.map(e => `
+      <div class="pi-row">
+        <span style="flex:1;font-weight:600;">${escapeHTML(e.name)}</span>
+        <span style="color:var(--fg-3);font-size:12px;">${escapeHTML(e.held_by||'—')}</span>
+        <span style="color:var(--fg-4);font-size:11px;margin-left:6px;">${e.last_used_at?fmtDT(e.last_used_at):''}</span>
+      </div>`).join('') : '<div class="empty">No equipment checked out.</div>';
+
+    $('#piOverdue').innerHTML = d.overdueTasksList.length ? d.overdueTasksList.map(t => `
+      <div class="pi-row">
+        <span style="flex:1;">${escapeHTML(t.title)}</span>
+        <span style="color:var(--status-alert);font-size:12px;font-weight:600;">${escapeHTML(t.due_date||'')}</span>
+        <span style="color:var(--fg-3);font-size:12px;margin-left:6px;">${escapeHTML(t.assignee_name||'—')}</span>
+      </div>`).join('') : '<div class="empty">No overdue tasks.</div>';
+
+    $('#piEvents').innerHTML = d.upcomingEvents.length ? d.upcomingEvents.map(ev => `
+      <div class="pi-row">
+        <span style="flex:1;">${escapeHTML(ev.title)}</span>
+        <span style="color:var(--fg-3);font-size:12px;">${fmtDT(ev.start_time)}</span>
+      </div>`).join('') : '<div class="empty">No upcoming events.</div>';
+  } catch(e){
+    $('#piStats').innerHTML = `<div class="p-banner">Could not load director overview: ${escapeHTML(e.message)}</div>`;
+  }
 }
 
 document.addEventListener('click', async e => {
