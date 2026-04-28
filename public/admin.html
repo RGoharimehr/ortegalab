@@ -528,7 +528,7 @@ async function checkAuth() {
     if (data.loggedIn) {
       CSRF = data.csrfToken || '';
       SESSION_USER.name = data.name || data.username;
-      SESSION_USER.first = (data.name || data.username).split(' ')[0];
+      SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
       SESSION_USER.initials = initials(SESSION_USER.name);
       return true;
     }
@@ -546,7 +546,7 @@ async function doLogin(user, pass) {
   const data = await r.json();
   CSRF = data.csrfToken || '';
   SESSION_USER.name = data.name || data.username;
-  SESSION_USER.first = (data.name || data.username).split(' ')[0];
+  SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
   SESSION_USER.initials = initials(SESSION_USER.name);
   return true;
 }

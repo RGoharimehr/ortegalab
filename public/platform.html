@@ -1393,7 +1393,7 @@ async function loadIssues(){
           <button class="btn-ghost-sm" data-issue-id="${it.id}" data-act="open">Open</button>
         </div>
         <div class="p-issue-title">${escapeHTML(it.title)}</div>
-        <div class="p-issue-body">${escapeHTML((it.body||'').slice(0,200))}${(it.body||'').length>200?'…':''}</div>
+        ${(body => `<div class="p-issue-body">${escapeHTML(body.slice(0,200))}${body.length>200?'…':''}</div>`)(it.body||'')}
         <div class="p-issue-meta">Reported by ${escapeHTML(it.reporter_name||it.reporter_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
       </div>`).join('');
   } catch(e){ $('#issueList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
