@@ -49,19 +49,21 @@ h1, h2, h3, h4 { color: var(--fg-1); margin: 0; }
 p { margin: 0; color: var(--fg-2); }
 a { color: var(--navy-700); text-decoration: none; transition: color var(--dur-fast) var(--ease-out); }
 a:hover { color: var(--gold-700); }
-.max-w { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.max-w { max-width: min(1480px, 94vw); margin: 0 auto; padding: 0 24px; }
 .eyebrow { font-size: var(--text-xs); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-700); }
 .display-serif { font-family: var(--font-display); font-weight: 600; letter-spacing: -.02em; }
 
 /* Nav */
 .w-nav { background: var(--navy-900); position: sticky; top: 0; z-index: 30; border-bottom: 1px solid rgba(255,255,255,.06); }
-.w-nav-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; }
+.w-nav-inner { max-width: min(1480px, 94vw); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; }
 .w-brand { display: flex; align-items: center; cursor: pointer; gap: 10px; }
 .w-brand-img { height: 38px; width: auto; display: block; }
 .w-brand-text { color: #fff; font-weight: 800; letter-spacing: -.01em; font-size: 14px; }
 .w-brand-text small { display: block; font-weight: 500; color: rgba(255,255,255,.55); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-top: 1px; }
 .w-nav-links { display: flex; gap: 2px; }
 .w-nav-link { color: rgba(255,255,255,.65); font-size: 13px; font-weight: 500; padding: 8px 12px; border-radius: 4px; cursor: pointer; position: relative; transition: color .15s; user-select: none; }
+.w-nav-signin { color: #fff; background: var(--gold-600); font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 6px; margin-left: 12px; text-decoration: none; letter-spacing: .04em; text-transform: uppercase; transition: background .15s; }
+.w-nav-signin:hover { background: var(--gold-700); color: #fff; }
 .w-nav-link:hover { color: #fff; }
 .w-nav-link.active { color: #fff; }
 .w-nav-link.active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -2px; height: 2px; background: var(--gold-600); border-radius: 1px; }
@@ -74,13 +76,13 @@ a:hover { color: var(--gold-700); }
 .w-hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.58) 65%, rgba(15,23,42,.28) 100%); }
 .w-hero-grain { position: absolute; inset: 0; opacity: .08; pointer-events: none; mix-blend-mode: overlay;
   background-image: radial-gradient(rgba(255,255,255,.4) 1px, transparent 1px); background-size: 3px 3px; }
-.w-hero-content { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 96px 24px 24px; min-height: 460px; display: flex; flex-direction: column; justify-content: center; }
+.w-hero-content { position: relative; z-index: 2; max-width: min(1480px, 94vw); margin: 0 auto; padding: 96px 24px 24px; min-height: 460px; display: flex; flex-direction: column; justify-content: center; }
 .w-hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.78); margin-bottom: 18px; }
 .w-hero-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gold-500); box-shadow: 0 0 0 3px rgba(212,169,66,.18); }
 .w-hero-title { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin: 8px 0 0; max-width: 880px; color: #fff; }
 .w-amp { font-family: var(--font-display); font-weight: 500; font-style: italic; color: var(--gold-300); padding: 0 .04em; }
 
-.w-hero-footer { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 0 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.w-hero-footer { position: relative; z-index: 2; max-width: min(1480px, 94vw); margin: 0 auto; padding: 0 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .w-hero-metrics { display: flex; gap: 38px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14); width: 100%; }
 .w-metric { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .w-metric-num { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: -.02em; line-height: 1; }
@@ -194,18 +196,75 @@ a:hover { color: var(--gold-700); }
 .w-card:hover { box-shadow: var(--shadow-md); }
 .w-card h3 { color: var(--navy-900); font-size: 16px; margin: 0 0 6px; font-weight: 700; }
 .w-card p { color: var(--fg-3); font-size: 13px; line-height: 1.55; margin: 0; }
-.w-person { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s; }
-.w-person:hover { box-shadow: var(--shadow-md); }
-.w-person-img { height: 200px; background: var(--gray-100) center/cover no-repeat; }
-.w-person-body { padding: 16px 18px; }
-.w-person-name { font-size: 15px; font-weight: 700; color: var(--navy-900); margin: 0 0 2px; }
-.w-person-role { font-size: 12px; color: var(--fg-3); margin: 0 0 6px; }
-.w-person-cat { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--gold-100); color: var(--gold-900); }
+.w-person { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; cursor: pointer; width: 200px; flex: 0 0 200px; text-align: center; }
+.w-person:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.w-person-img { width: 120px; height: 120px; border-radius: 50%; background: var(--gray-100) center/cover no-repeat; margin: 22px auto 12px; border: 3px solid #fff; box-shadow: var(--shadow-sm); }
+.w-person-body { padding: 0 14px 18px; }
+.w-person-name { font-size: 14px; font-weight: 700; color: var(--navy-900); margin: 0 0 2px; }
+.w-person-role { font-size: 11.5px; color: var(--fg-3); margin: 0 0 6px; line-height: 1.35; }
+.w-person-cat { display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--gold-100); color: var(--gold-900); margin-top: 2px; }
+.w-people-row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-top: 12px; }
+.w-person-detail { background:#fff; border:1px solid var(--border-1); border-radius:14px; padding:32px; max-width: 720px; margin: 0 auto; box-shadow: var(--shadow-sm); }
+.w-person-detail-img { width: 180px; height: 180px; border-radius: 50%; background: var(--gray-100) center/cover no-repeat; margin: 0 auto 18px; border: 4px solid #fff; box-shadow: var(--shadow-md); }
+.w-person-detail h2 { font-size: 1.6rem; margin: 0 0 4px; text-align:center; }
+.w-person-detail .sub { text-align:center; color: var(--fg-3); margin: 0 0 18px; font-size: 14px; }
+.w-person-detail .bio { font-size: 14px; color: var(--fg-2); line-height: 1.7; white-space: pre-wrap; margin: 18px 0; }
+.w-person-detail .links { display:flex; flex-wrap:wrap; gap: 8px; justify-content:center; margin-top: 18px; }
+.w-person-detail .links a { background: var(--bg-1); border:1px solid var(--border-1); padding: 6px 14px; border-radius: 999px; font-size: 12px; color: var(--navy-900); text-decoration: none; font-weight: 600; }
+.w-person-detail .links a:hover { background: var(--gold-100); border-color: var(--gold-300); color: var(--gold-900); }
+.w-back-link { display:inline-block; font-size:12px; font-weight:600; color:var(--gold-700); margin-bottom: 18px; cursor:pointer; text-decoration:none; }
+.w-back-link:hover { color: var(--gold-900); }
 .w-pub-row { display: grid; grid-template-columns: 60px 1fr auto; gap: 18px; align-items: start; padding: 16px 4px; border-bottom: 1px solid var(--border-1); }
 .w-pub-row .w-yr { font-family: var(--font-display); font-weight: 600; color: var(--gold-700); font-size: 22px; line-height: 1; }
 .w-pub-row .w-pub-t { font-size: 14px; font-weight: 600; color: var(--navy-900); margin: 0 0 3px; line-height: 1.35; }
 .w-pub-row .w-pub-a { font-size: 12px; color: var(--fg-3); margin: 0; }
 .w-pub-row .w-pub-v { font-size: 11px; color: var(--fg-4); font-style: italic; margin-top: 2px; }
+
+/* Publications — polished */
+.w-pub-list { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); }
+.w-pub-row2 { display: grid; grid-template-columns: 84px 1fr auto; gap: 22px; padding: 22px 22px; border-bottom: 1px solid var(--border-1); align-items: flex-start; transition: background .15s; }
+.w-pub-row2:last-child { border-bottom: none; }
+.w-pub-row2:hover { background: var(--gold-50); }
+.w-pub-left { position: relative; }
+.w-pub-yr { font-family: var(--font-display); font-weight: 600; color: var(--gold-700); font-size: 28px; line-height: 1; letter-spacing: -.02em; }
+.w-pub-title2 { font-size: 16px; font-weight: 600; color: var(--navy-900); margin: 0 0 6px; line-height: 1.35; letter-spacing: -.01em; }
+.w-pub-authors { font-size: 13px; color: var(--fg-2); margin: 0 0 4px; }
+.w-pub-venue { font-size: 12px; color: var(--gold-700); font-style: italic; }
+.w-pub-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.w-pub-btn { background: var(--navy-900); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; transition: background .15s; }
+.w-pub-btn:hover { background: var(--gold-700); color: #fff; }
+.w-pub-btn.ghost { background: #fff; color: var(--fg-2); border: 1px solid var(--border-1); }
+.w-pub-btn.ghost:hover { background: var(--bg-1); color: var(--gold-700); border-color: var(--gold-300); }
+
+/* News — with thumbnail */
+.w-news-card { display: flex; gap: 18px; align-items: stretch; padding: 18px 20px; border: 1px solid var(--border-1); border-radius: 12px; background: #fff; transition: box-shadow .2s, transform .2s; }
+.w-news-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.w-news-thumb { width: 140px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--bg-1); }
+.w-news-body-wrap { flex: 1; min-width: 0; }
+.w-news-date { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--gold-700); letter-spacing: .08em; margin-bottom: 4px; }
+.w-news-title { font-size: 16px; font-weight: 700; color: var(--navy-900); margin: 0 0 6px; line-height: 1.35; }
+.w-news-body { font-size: 13px; color: var(--fg-2); line-height: 1.6; margin: 0; }
+.w-news-detail { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; padding: 36px; max-width: 820px; margin: 0 auto; box-shadow: var(--shadow-sm); }
+.w-news-detail-img { width: 100%; max-height: 380px; object-fit: cover; border-radius: 10px; margin: 0 0 24px; }
+.w-news-body-rich { font-size: 15px; color: var(--fg-2); line-height: 1.75; white-space: pre-wrap; }
+.w-news-body-rich a { color: var(--gold-700); text-decoration: underline; }
+
+/* Facilities — clickable cards */
+.w-fac-card { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; }
+.w-fac-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.w-fac-img { height: 200px; background: var(--gray-100) center/cover no-repeat; }
+.w-fac-img-empty { background: linear-gradient(135deg, var(--navy-700), var(--navy-900)); }
+.w-fac-body { padding: 22px; }
+.w-fac-title { font-size: 18px; font-weight: 700; color: var(--navy-900); margin: 0 0 8px; letter-spacing: -.01em; }
+.w-fac-desc { font-size: 13px; color: var(--fg-2); line-height: 1.6; margin: 0 0 12px; }
+.w-fac-cta { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-700); }
+.w-fac-detail { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; padding: 36px; max-width: 880px; margin: 0 auto; box-shadow: var(--shadow-sm); }
+.w-fac-detail-img { width: 100%; max-height: 460px; object-fit: cover; border-radius: 10px; margin: 0 0 24px; }
+.w-doc-link { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--bg-1); border: 1px solid var(--border-1); border-radius: 10px; text-decoration: none; transition: background .15s, border-color .15s; }
+.w-doc-link:hover { background: var(--gold-50); border-color: var(--gold-300); }
+.w-doc-icon { font-size: 22px; }
+.w-doc-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--navy-900); }
+.w-doc-sub { font-size: 11px; font-weight: 700; color: var(--gold-700); letter-spacing: .06em; text-transform: uppercase; }
 .w-page-section + .w-page-section { margin-top: 48px; }
 .w-page-section h2 { font-size: 1.125rem; font-weight: 800; letter-spacing: -.01em; color: var(--navy-900); display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
 .w-page-section h2::before { content: ""; width: 3px; height: 18px; background: var(--gold-600); border-radius: 2px; }
@@ -330,7 +389,10 @@ function Nav() {
         h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' }),
         h('div', { class: 'w-brand-text' }, 'LATFS', h('small', null, 'Villanova University'))
       ),
-      h('div', { class: 'w-nav-links' + (state.navOpen ? ' open' : '') }, ...links),
+      h('div', { class: 'w-nav-links' + (state.navOpen ? ' open' : '') },
+        ...links,
+        h('a', { class: 'w-nav-signin', href: '/platform' }, 'Sign in')
+      ),
       h('button', { class: 'w-nav-toggle', 'aria-label': 'Menu', onclick: () => { state.navOpen = !state.navOpen; render(); } }, '☰')
     )
   );
@@ -663,7 +725,7 @@ function Footer() {
 let DATA = { news: null, pubs: null, people: null, research: null, gallery: null, sponsors: null, hero: null };
 
 async function loadAll() {
-  const [news, pubs, people, research, gallery, sponsors, hero] = await Promise.all([
+  const [news, pubs, people, research, gallery, sponsors, hero, facilities, apps] = await Promise.all([
     getJSON('/api/news'),
     getJSON('/api/publications'),
     getJSON('/api/people'),
@@ -671,8 +733,10 @@ async function loadAll() {
     getJSON('/api/gallery'),
     getJSON('/api/sponsors'),
     getJSON('/api/hero-slides'),
+    getJSON('/api/facilities'),
+    getJSON('/api/apps'),
   ]);
-  DATA = { news, pubs, people, research, gallery, sponsors, hero };
+  DATA = { news, pubs, people, research, gallery, sponsors, hero, facilities, apps };
 }
 
 /* ---- Pages ---- */
@@ -718,23 +782,25 @@ function PageResearch() {
 function PagePeople() {
   const people = DATA.people || [];
   const groups = [
-    ['director',  'Director'],
-    ['faculty',   'Faculty & senior researchers'],
-    ['postdoc',   'Postdoctoral researchers'],
-    ['phd',       'PhD candidates'],
-    ['ms',        'MS students'],
-    ['ug',        'Undergraduate researchers'],
-    ['collaborator','Collaborators'],
+    ['director',     'Director'],
+    ['manager',      'Lab manager / assistant'],
+    ['faculty',      'Faculty & senior researchers'],
+    ['postdoc',      'Postdoctoral researchers'],
+    ['phd',          'PhD candidates'],
+    ['ms',           'MS students'],
+    ['ug',           'Undergraduate researchers'],
+    ['alumni',       'Alumni'],
+    ['collaborator', 'Collaborators'],
   ];
   const sections = groups.map(([key, label]) => {
     const ours = people.filter(p => (p.category || '').toLowerCase() === key && (p.active === undefined ? true : p.active));
     if (!ours.length) return null;
     return h('div', { class: 'w-page-section' },
       h('h2', null, label),
-      h('div', { class: 'w-grid-3' },
+      h('div', { class: 'w-people-row' },
         ...ours.map(p =>
-          h('div', { class: 'w-person' },
-            h('div', { class: 'w-person-img', style: p.photo_url ? { backgroundImage: `url(${p.photo_url})` } : {} }),
+          h('div', { class: 'w-person', onclick: () => go('person/' + p.id) },
+            h('div', { class: 'w-person-img', style: p.photo_url ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' } : {} }),
             h('div', { class: 'w-person-body' },
               h('div', { class: 'w-person-name' }, p.name || ''),
               h('div', { class: 'w-person-role' }, p.role || ''),
@@ -755,11 +821,36 @@ function PagePeople() {
   );
 }
 
+function PagePersonDetail(id) {
+  const p = (DATA.people || []).find(x => String(x.id) === String(id));
+  if (!p) return h('section', { class: 'w-page' },
+    h('div', { class: 'max-w' },
+      h('a', { class: 'w-back-link', onclick: () => go('people') }, '← Back to People'),
+      h('div', { class: 'w-empty' }, 'Person not found.')
+    ));
+  const links = [];
+  if (p.email)        links.push(h('a', { href: 'mailto:' + p.email }, 'Email'));
+  if (p.linkedin_url) links.push(h('a', { href: p.linkedin_url, target: '_blank', rel: 'noopener' }, 'LinkedIn'));
+  if (p.website_url)  links.push(h('a', { href: p.website_url, target: '_blank', rel: 'noopener' }, 'Website'));
+  return h('section', { class: 'w-page' },
+    h('div', { class: 'max-w' },
+      h('a', { class: 'w-back-link', onclick: () => go('people') }, '← Back to People'),
+      h('div', { class: 'w-person-detail' },
+        h('div', { class: 'w-person-detail-img', style: p.photo_url ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' } : {} }),
+        h('h2', null, p.name || ''),
+        h('div', { class: 'sub' }, [p.role, p.category].filter(Boolean).join(' · ')),
+        p.bio ? h('div', { class: 'bio' }, p.bio) : h('div', { class: 'bio', style: { color: 'var(--fg-4)' } }, 'Biography coming soon.'),
+        links.length ? h('div', { class: 'links' }, ...links) : null,
+      )
+    )
+  );
+}
+
 function PagePublications() {
   const pubs = DATA.pubs || [];
   const byYear = {};
   pubs.forEach(p => { const y = p.year || 'n.d.'; (byYear[y] ||= []).push(p); });
-  const years = Object.keys(byYear).sort((a, b) => String(b).localeCompare(String(a)));
+  const years = Object.keys(byYear).sort((a, b) => String(b).locCompare(String(a)));
   return h('section', { class: 'w-page' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'Publications'),
@@ -768,17 +859,22 @@ function PagePublications() {
       ...(years.length ? years.map(y =>
         h('div', { class: 'w-page-section' },
           h('h2', null, y === 'n.d.' ? 'Other' : y),
-          h('div', null, ...byYear[y].map(p =>
-            h('div', { class: 'w-pub-row' },
-              h('div', { class: 'w-yr' }, String(p.year || '')),
-              h('div', null,
-                h('div', { class: 'w-pub-t' }, p.title || ''),
-                h('div', { class: 'w-pub-a' }, p.authors || ''),
-                h('div', { class: 'w-pub-v' }, p.venue || ''),
+          h('div', { class: 'w-pub-list' }, ...byYear[y].map(p =>
+            h('article', { class: 'w-pub-row2' },
+              h('div', { class: 'w-pub-left' },
+                h('div', { class: 'w-pub-yr' }, String(p.year || '')),
+                h('div', { class: 'w-pub-spine' })
               ),
-              p.pdf_url
-                ? h('a', { class: 'btn-ghost', href: p.pdf_url, target: '_blank' }, 'PDF')
-                : h('span', null, '')
+              h('div', { class: 'w-pub-mid' },
+                h('div', { class: 'w-pub-title2 display-serif' }, p.title || ''),
+                h('div', { class: 'w-pub-authors' }, p.authors || ''),
+                h('div', { class: 'w-pub-venue' }, p.venue || ''),
+              ),
+              h('div', { class: 'w-pub-right' },
+                p.pdf_url ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null,
+                p.doi_url ? h('a', { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' }, 'DOI') : null,
+                p.ris_url ? h('a', { class: 'w-pub-btn ghost', href: p.ris_url, target: '_blank', rel: 'noopener' }, 'Cite') : null,
+              )
             )
           ))
         )
@@ -788,55 +884,82 @@ function PagePublications() {
 }
 
 function PageFacilities() {
+  const facs = DATA.facilities || [];
   return h('section', { class: 'w-page' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'Facilities'),
-      h('h1',  { class: 'w-page-title' }, 'Two custom-built laboratories'),
-      h('p',   { class: 'w-page-intro' }, 'LATFS operates two adjacent labs in Tolentine Hall, with a shared instrumentation pool: high-speed cameras, IR thermography, micro-PIV, optical bench, and a calibrated environmental chamber.'),
-      h('div', { class: 'w-grid-2' },
-        h('div', { class: 'w-card' },
-          h('div', { class: 'eyebrow' }, 'Lab A · Tolentine 344'),
-          h('h3', null, 'Two-phase & boiling test cells'),
-          h('p',  null, 'Closed-loop refrigeration, condenser, and a 4-channel boiling test rig with calibrated heaters and high-speed video capture.'),
-        ),
-        h('div', { class: 'w-card' },
-          h('div', { class: 'eyebrow' }, 'Lab B · Tolentine 346'),
-          h('h3', null, 'Optical & micro-channel bench'),
-          h('p',  null, 'PIV / shadowgraph, temperature-controlled microchannel test sections, and a precision flow loop for electronics-cooling cold plates.'),
-        ),
-      ),
-      h('div', { class: 'w-page-section' },
-        h('h2', null, 'Shared instrumentation'),
-        h('div', { class: 'w-grid-3' },
-          ['IR thermography (FLIR A655)', 'High-speed video (Phantom v710)', 'Micro-PIV (TSI 2-camera)',
-           'Calibrated heat-flux meters', 'Differential pressure transducers', 'Environmental chamber (–40 to +180 °C)']
-            .map(t => h('div', { class: 'w-card' }, h('h3', null, t), h('p', null, 'Available for member and collaborator projects.')))
-        )
+      h('h1',  { class: 'w-page-title' }, 'Lab facilities & instruments'),
+      h('p',   { class: 'w-page-intro' }, 'Click any facility to see photos, the full description, and any documentation we have on it.'),
+      facs.length
+        ? h('div', { class: 'w-grid-2' },
+            ...facs.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },
+              f.photo_url ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } }) : h('div', { class: 'w-fac-img w-fac-img-empty' }),
+              h('div', { class: 'w-fac-body' },
+                h('h3', { class: 'w-fac-title' }, f.name || ''),
+                h('p',  { class: 'w-fac-desc' }, (f.description || '').slice(0, 220) + ((f.description||'').length>220?'…':'')),
+                h('span', { class: 'w-fac-cta' }, 'View facility →')
+              )
+            )))
+        : h('div', { class: 'w-empty' }, 'Facilities will be listed here.')
+    )
+  );
+}
+
+function PageFacilityDetail(id) {
+  const f = (DATA.facilities || []).find(x => String(x.id) === String(id));
+  if (!f) return h('section', { class: 'w-page' },
+    h('div', { class: 'max-w' },
+      h('a', { class: 'w-back-link', onclick: () => go('facilities') }, '← Back to Facilities'),
+      h('div', { class: 'w-empty' }, 'Facility not found.')
+    ));
+  const docs = [];
+  if (f.doc_url) docs.push(h('a', { class: 'w-doc-link', href: f.doc_url, target: '_blank', rel: 'noopener' },
+    h('span', { class: 'w-doc-icon' }, '📄'),
+    h('span', { class: 'w-doc-name' }, f.doc_name || 'Documentation'),
+    h('span', { class: 'w-doc-sub' }, 'Open file')
+  ));
+  return h('section', { class: 'w-page' },
+    h('div', { class: 'max-w' },
+      h('a', { class: 'w-back-link', onclick: () => go('facilities') }, '← Back to Facilities'),
+      h('article', { class: 'w-fac-detail' },
+        h('div', { class: 'eyebrow' }, 'Facility'),
+        h('h1', { class: 'w-page-title', style: { margin: '6px 0 16px' } }, f.name || ''),
+        f.photo_url ? h('img', { src: f.photo_url, alt: '', class: 'w-fac-detail-img' }) : null,
+        h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
+        docs.length ? h('div', { class: 'w-page-section' }, h('h2', null, 'Documentation'), ...docs) : null,
       )
     )
   );
 }
 
 function PageApps() {
+  const apps = DATA.apps || [];
   return h('section', { class: 'w-page alt' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'Apps'),
-      h('h1',  { class: 'w-page-title' }, 'Internal lab platform'),
-      h('p',   { class: 'w-page-intro' }, 'LATFS members manage projects, schedule equipment, and track inventory through the lab platform. Lab director and admins manage members, news, and publications from the same surface.'),
-      h('div', { class: 'w-grid-2' },
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Lab Platform'),
-          h('p',  null, 'Schedule the boiling rig, claim a meeting room, log a sample, file an experiment write-up.'),
-          h('a',  { class: 'btn-ghost', href: '/admin', style: { marginTop: '12px', display: 'inline-block' } }, 'Open platform →'),
-        ),
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Public site admin'),
-          h('p',  null, 'Edit the news feed, publication list, and roster. Changes appear on this site immediately.'),
-          h('a',  { class: 'btn-ghost', href: '/admin', style: { marginTop: '12px', display: 'inline-block' } }, 'Open admin →'),
-        ),
-      )
+      h('h1',  { class: 'w-page-title' }, 'Lab apps & calculators'),
+      h('p',   { class: 'w-page-intro' }, 'Browser-based mini-applications produced by the lab — calculators, regime maps, and interactive teaching tools tied to our research.'),
+      apps.length
+        ? h('div', { class: 'w-grid-2' },
+            ...apps.map(a => h('div', { class: 'w-card' },
+              h('h3', null, a.title || ''),
+              h('p',  null, a.summary || a.description || ''),
+              a.url
+                ? h('a', { class: 'btn-ghost', href: a.url, target: '_blank', rel: 'noopener', style: { marginTop: '12px', display: 'inline-block' } }, 'Open app →')
+                : h('span', { class: 'eyebrow', style: { marginTop: '12px', display: 'inline-block', color: 'var(--fg-4)' } }, 'Coming soon'),
+            )))
+        : h('div', { class: 'w-empty' }, 'No apps published yet.')
     )
   );
+}
+
+function fmtNewsDate(when) {
+  if (!when) return '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(when)) {
+    const dt = new Date(when);
+    return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+  }
+  return when;
 }
 
 function PageNews() {
@@ -845,22 +968,38 @@ function PageNews() {
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'News'),
       h('h1',  { class: 'w-page-title' }, 'Updates from the lab'),
-      h('p',   { class: 'w-page-intro' }, 'New papers, awards, and milestones. Follow the lab via the contact page.'),
+      h('p',   { class: 'w-page-intro' }, 'New papers, awards, and milestones. Click any item to read the full story.'),
       news.length
-        ? h('div', { class: 'w-news-stack', style: { gap: '12px' } },
-            ...news.map(n => {
-              let when = n.published_at || n.date || n.created_at || '';
-              if (when && /^\d{4}-\d{2}-\d{2}/.test(when)) {
-                const dt = new Date(when);
-                when = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
-              }
-              return h('article', { class: 'w-news-card' },
-                h('div', { class: 'w-news-date' }, when),
+        ? h('div', { class: 'w-news-stack', style: { gap: '14px' } },
+            ...news.map(n => h('article', { class: 'w-news-card', onclick: () => go('news/' + n.id), style: { cursor: 'pointer' } },
+              n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
+              h('div', { class: 'w-news-body-wrap' },
+                h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
                 h('h3',  { class: 'w-news-title' }, n.title || ''),
-                h('p',   { class: 'w-news-body' }, n.body || n.summary || ''),
-              );
-            }))
+                h('p',   { class: 'w-news-body' }, (n.content || n.body || n.summary || '').slice(0, 220) + ((n.content||'').length>220?'…':'')),
+              )
+            )))
         : h('div', { class: 'w-empty' }, 'No news yet — check back soon.')
+    )
+  );
+}
+
+function PageNewsDetail(id) {
+  const n = (DATA.news || []).find(x => String(x.id) === String(id));
+  if (!n) return h('section', { class: 'w-page' },
+    h('div', { class: 'max-w' },
+      h('a', { class: 'w-back-link', onclick: () => go('news') }, '← Back to News'),
+      h('div', { class: 'w-empty' }, 'News item not found.')
+    ));
+  return h('section', { class: 'w-page' },
+    h('div', { class: 'max-w' },
+      h('a', { class: 'w-back-link', onclick: () => go('news') }, '← Back to News'),
+      h('article', { class: 'w-news-detail' },
+        h('div', { class: 'eyebrow' }, fmtNewsDate(n.date)),
+        h('h1', { class: 'w-page-title', style: { margin: '6px 0 18px' } }, n.title || ''),
+        n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
+        h('div', { class: 'w-news-body-rich' }, n.content || n.body || ''),
+      )
     )
   );
 }
@@ -872,22 +1011,10 @@ function PageJoin() {
       h('h1',  { class: 'w-page-title' }, 'Work with LATFS'),
       h('p',   { class: 'w-page-intro' }, 'We welcome motivated graduate, undergraduate, and visiting researchers. Funded positions are announced on the news page.'),
       h('div', { class: 'w-grid-2' },
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Prospective PhD students'),
-          h('p',  null, 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.'),
-        ),
-        h('div', { class: 'w-card' },
-          h('h3', null, 'MS / Undergraduate'),
-          h('p',  null, 'Course-based research projects available. Contact the lab to discuss what you would like to learn.'),
-        ),
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Industry collaboration'),
-          h('p',  null, 'We partner with industry on directed research, often through the NSF E³S Center. Reach out for membership and project framing.'),
-        ),
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Visiting scholars'),
-          h('p',  null, 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.'),
-        ),
+        h('div', { class: 'w-card' }, h('h3', null, 'Prospective PhD students'), h('p',  null, 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.')),
+        h('div', { class: 'w-card' }, h('h3', null, 'MS / Undergraduate'), h('p',  null, 'Course-based research projects available. Contact the lab to discuss what you would like to learn.')),
+        h('div', { class: 'w-card' }, h('h3', null, 'Industry collaboration'), h('p',  null, 'We partner with industry on directed research, often through the NSF E³S Center. Reach out for membership and project framing.')),
+        h('div', { class: 'w-card' }, h('h3', null, 'Visiting scholars'), h('p',  null, 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.'))
       )
     )
   );
@@ -900,38 +1027,32 @@ function PageContact() {
       h('h1',  { class: 'w-page-title' }, 'Get in touch'),
       h('p',   { class: 'w-page-intro' }, 'For research collaborations, prospective student inquiries, and press, the fastest route is email.'),
       h('div', { class: 'w-grid-2' },
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Director'),
-          h('p',  null, 'Dr. Alfonso Ortega', h('br'), 'aortega@villanova.edu', h('br'), '+1 (610) 519-4996'),
-        ),
-        h('div', { class: 'w-card' },
-          h('h3', null, 'Mailing address'),
-          h('p',  null, 'Tolentine Hall 344', h('br'), 'Villanova University', h('br'), '800 Lancaster Avenue', h('br'), 'Villanova, PA 19085'),
-        ),
+        h('div', { class: 'w-card' }, h('h3', null, 'Director'), h('p',  null, 'Dr. Alfonso Ortega', h('br'), 'aortega@villanova.edu', h('br'), '+1 (610) 519-4996')),
+        h('div', { class: 'w-card' }, h('h3', null, 'Mailing address'), h('p',  null, 'Tolentine Hall 344', h('br'), 'Villanova University', h('br'), '800 Lancaster Avenue', h('br'), 'Villanova, PA 19085'))
       )
     )
   );
 }
 
-const PAGES = {
-  home: Home,
-  research: PageResearch,
-  people: PagePeople,
-  publications: PagePublications,
-  facilities: PageFacilities,
-  apps: PageApps,
-  news: PageNews,
-  join: PageJoin,
-  contact: PageContact,
-};
+const PAGES = { home: Home, research: PageResearch, people: PagePeople, publications: PagePublications, facilities: PageFacilities, apps: PageApps, news: PageNews, join: PageJoin, contact: PageContact };
 
-/* ---- Render ---- */
 function render() {
   const root = document.getElementById('app');
   root.innerHTML = '';
   root.appendChild(Nav());
-  const Page = PAGES[state.route] || Home;
-  root.appendChild(Page());
+  const m = /^([a-z]+)\/(.+)$/.exec(state.route || '');
+  let pageEl;
+  if (m) {
+    const [, kind, id] = m;
+    if (kind === 'person')        pageEl = PagePersonDetail(id);
+    else if (kind === 'news')     pageEl = PageNewsDetail(id);
+    else if (kind === 'facility') pageEl = PageFacilityDetail(id);
+    else pageEl = (PAGES[kind] || Home)();
+  } else {
+    const Page = PAGES[state.route] || Home;
+    pageEl = Page();
+  }
+  root.appendChild(pageEl);
   root.appendChild(Footer());
   if (state.route === 'home') restartHeroTimer();
   else if (state.heroTimer) { clearInterval(state.heroTimer); state.heroTimer = null; }
@@ -939,9 +1060,9 @@ function render() {
 
 (async function init() {
   state.route = (location.hash.replace('#','') || 'home');
-  render();                  // first paint with fallback data
+  render();
   await loadAll();
-  render();                  // re-render with real data
+  render();
 })();
 </script>
 </body>

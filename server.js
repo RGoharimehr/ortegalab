@@ -202,16 +202,123 @@ db.exec(`
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS equipment (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    sku TEXT UNIQUE,
+    category TEXT DEFAULT '',
+    location TEXT DEFAULT '',
+    status TEXT DEFAULT 'available',           -- available | in_use | maintenance | broken
+    notes TEXT DEFAULT '',
+    last_used_user_id INTEGER,
+    last_used_at DATETIME,
+    current_user_id INTEGER,
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS equipment_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    equipment_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    action TEXT NOT NULL,                       -- checkout | checkin | note
+    note TEXT DEFAULT '',
+    started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ended_at DATETIME
+  );
+
+  CREATE TABLE IF NOT EXISTS issues (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    body TEXT DEFAULT '',
+    category TEXT DEFAULT 'other',              -- broken | supply | facility | other
+    status TEXT DEFAULT 'open',                 -- open | in_progress | resolved
+    priority TEXT DEFAULT 'normal',             -- low | normal | high
+    reporter_user_id INTEGER,
+    assignee_user_id INTEGER,
+    related_equipment_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS issue_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    issue_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    title TEXT DEFAULT '',
+    file_url TEXT NOT NULL,
+    file_name TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS apps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT DEFAULT '',
+    description TEXT DEFAULT '',
+    url TEXT DEFAULT '',
+    embed_html TEXT DEFAULT '',
+    thumbnail TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    published INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Migrations: add new columns to existing databases (errors for duplicate columns are expected and ignored)
 const migrations = [
+  // Users → richer accounts
+  "ALTER TABLE users ADD COLUMN name TEXT DEFAULT ''",
+  "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'student'",
+  "ALTER TABLE users ADD COLUMN email TEXT DEFAULT ''",
+  "ALTER TABLE users ADD COLUMN person_id INTEGER",
+  "ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1",
+  // Tasks → person assignment
+  "ALTER TABLE tasks ADD COLUMN assignee_user_id INTEGER",
+  "ALTER TABLE tasks ADD COLUMN created_by_user_id INTEGER",
+  "ALTER TABLE tasks ADD COLUMN due_date TEXT DEFAULT ''",
+  "ALTER TABLE tasks ADD COLUMN description TEXT DEFAULT ''",
+  // Events → owner + new schema
+  "ALTER TABLE events ADD COLUMN owner_user_id INTEGER",
+  "ALTER TABLE events ADD COLUMN visibility TEXT DEFAULT 'lab'",
+  "ALTER TABLE events ADD COLUMN start_time TEXT",
+  "ALTER TABLE events ADD COLUMN end_time TEXT",
+  "ALTER TABLE events ADD COLUMN location TEXT DEFAULT ''",
+  "ALTER TABLE events ADD COLUMN event_type TEXT DEFAULT 'meeting'",
+  "ALTER TABLE events ADD COLUMN attendees TEXT DEFAULT ''",
+  // Meetings → richer fields
+  "ALTER TABLE meetings ADD COLUMN scheduled_at TEXT",
+  "ALTER TABLE meetings ADD COLUMN location TEXT DEFAULT ''",
+  "ALTER TABLE meetings ADD COLUMN description TEXT DEFAULT ''",
+  "ALTER TABLE meetings ADD COLUMN meeting_type TEXT DEFAULT 'group'",
+  // Tasks → priority field
+  "ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT 'normal'",
+  // Content tables
   'ALTER TABLE research ADD COLUMN content TEXT DEFAULT ""',
   'ALTER TABLE research ADD COLUMN links TEXT DEFAULT "[]"',
   'ALTER TABLE publications ADD COLUMN doi_url TEXT',
+  'ALTER TABLE publications ADD COLUMN ris_url TEXT DEFAULT ""',
   'ALTER TABLE people ADD COLUMN linkedin_url TEXT DEFAULT ""',
   'ALTER TABLE people ADD COLUMN website_url TEXT DEFAULT ""',
+  'ALTER TABLE people ADD COLUMN photo_position TEXT DEFAULT "center center"',
   'ALTER TABLE sponsors ADD COLUMN show_in_footer INTEGER DEFAULT 0',
+  // News + facilities richer content
+  'ALTER TABLE news ADD COLUMN image_url TEXT DEFAULT ""',
+  'ALTER TABLE news ADD COLUMN slug TEXT DEFAULT ""',
+  'ALTER TABLE facilities ADD COLUMN slug TEXT DEFAULT ""',
+  'ALTER TABLE facilities ADD COLUMN image_url TEXT DEFAULT ""',
+  'ALTER TABLE facilities ADD COLUMN long_description TEXT DEFAULT ""',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch(e) {
@@ -235,6 +342,74 @@ if (!adminExists) {
   const hash = bcrypt.hashSync('admin123', 10);
   db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run('admin', hash);
 }
+
+// Make sure admin row has role + name
+try { db.prepare("UPDATE users SET role='admin', name=COALESCE(NULLIF(name,''),'Site administrator') WHERE username='admin'").run(); } catch(_){}
+
+// Seed sample lab accounts (all default password: latfs2024)
+const seedAccounts = [
+  { username: 'aortega',   name: 'Dr. Alfonso Ortega', role: 'professor', email: 'aortega@villanova.edu' },
+  { username: 'mreyes',    name: 'M. Reyes',           role: 'student',   email: 'mreyes@villanova.edu' },
+  { username: 'skim',      name: 'S. Kim',             role: 'postdoc',   email: 'skim@villanova.edu' },
+  { username: 'dhernandez',name: 'D. Hernandez',       role: 'student',   email: 'dhernandez@villanova.edu' },
+  { username: 'apark',     name: 'A. Park',            role: 'student',   email: 'apark@villanova.edu' },
+];
+const seedHash = bcrypt.hashSync('latfs2024', 10);
+for (const a of seedAccounts) {
+  const exists = db.prepare('SELECT id FROM users WHERE username=?').get(a.username);
+  if (!exists) {
+    db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
+      .run(a.username, seedHash, a.name, a.role, a.email);
+  }
+}
+
+// Seed equipment if empty
+const eqCount = db.prepare('SELECT COUNT(*) as cnt FROM equipment').get();
+if (eqCount.cnt === 0) {
+  const eqs = [
+    { name: 'Boiling rig · 4-point',   sku: 'RIG-BOIL-04', category: 'Test rig',     location: 'Lab A · Tolentine 344', status: 'available' },
+    { name: 'Phantom v710 high-speed camera', sku: 'CAM-PHANTOM-V710', category: 'Imaging', location: 'Lab B · Tolentine 346', status: 'available' },
+    { name: 'FLIR A655 IR camera',     sku: 'IR-FLIR-A655', category: 'Imaging',     location: 'Lab A · Tolentine 344', status: 'available' },
+    { name: 'TSI micro-PIV system',    sku: 'PIV-TSI-2C',   category: 'Diagnostics', location: 'Lab B · Tolentine 346', status: 'available' },
+    { name: 'Microchannel test rig',   sku: 'RIG-MICRO-01', category: 'Test rig',    location: 'Lab B · Tolentine 346', status: 'maintenance', notes: 'Awaiting new heater pad' },
+    { name: 'Environmental chamber',   sku: 'ENV-CHAMB-01', category: 'Conditioning', location: 'Lab A · Tolentine 344', status: 'available' },
+    { name: 'Heat-flux meter (Vatell)', sku: 'HFM-VATELL-A', category: 'Sensor',     location: 'Shared cabinet',         status: 'available' },
+    { name: 'Differential pressure transducer', sku: 'DP-OMEGA-01', category: 'Sensor', location: 'Shared cabinet',     status: 'available' },
+  ];
+  const stmt = db.prepare('INSERT INTO equipment (name, sku, category, location, status, notes, sort_order) VALUES (?,?,?,?,?,?,?)');
+  eqs.forEach((e, i) => stmt.run(e.name, e.sku, e.category, e.location, e.status, e.notes || '', i));
+}
+
+// Seed apps catalogue (HTML mini-apps embedded in the public website)
+const appsCount = db.prepare('SELECT COUNT(*) as cnt FROM apps').get();
+if (appsCount.cnt === 0) {
+  const seed = [
+    { slug: 'thermal-resistance', title: 'Thermal resistance calculator',
+      summary: 'Plug in geometry + materials, get junction-to-ambient resistance.',
+      description: 'A simple browser-based calculator that estimates Rja for a heat-sink + spreader + interface stack. Useful for quick first-order sanity checks before running a CFD.',
+      url: '', embed_html: '', sort_order: 1 },
+    { slug: 'two-phase-map', title: 'Two-phase flow regime map',
+      summary: 'Plot operating points on Mandhane / Taitel-Dukler maps.',
+      description: 'Enter mass flux, quality, and channel geometry to overlay your operating point on classic two-phase regime maps for design or teaching.',
+      url: '', embed_html: '', sort_order: 2 },
+  ];
+  const ins = db.prepare('INSERT INTO apps (slug, title, summary, description, url, embed_html, sort_order) VALUES (?,?,?,?,?,?,?)');
+  seed.forEach(a => ins.run(a.slug, a.title, a.summary, a.description, a.url, a.embed_html, a.sort_order));
+}
+
+// Seed a couple of issues
+const issuesCount = db.prepare('SELECT COUNT(*) as cnt FROM issues').get();
+if (issuesCount.cnt === 0) {
+  const aOrtegaId = db.prepare('SELECT id FROM users WHERE username=?').get('aortega')?.id || 1;
+  const mReyesId  = db.prepare('SELECT id FROM users WHERE username=?').get('mreyes')?.id || 1;
+  db.prepare('INSERT INTO issues (title, body, category, status, priority, reporter_user_id) VALUES (?,?,?,?,?,?)')
+    .run('Microchannel rig heater pad failed', 'Heater pad on the micro rig stopped responding mid-run on Friday. Powered down. Needs replacement before Tuesday.', 'broken', 'in_progress', 'high', mReyesId);
+  db.prepare('INSERT INTO issues (title, body, category, status, priority, reporter_user_id) VALUES (?,?,?,?,?,?)')
+    .run('Order acetone (4 L)', 'Stock cabinet only has ~500 mL left. Need a 4 L bottle for cleaning. Vendor: Sigma.', 'supply', 'open', 'normal', aOrtegaId);
+  db.prepare('INSERT INTO issues (title, body, category, status, priority, reporter_user_id) VALUES (?,?,?,?,?,?)')
+    .run('Lab door latch sticking', 'Tolentine 344 door latch sticks, especially in humid weather. Facilities ticket would be ideal.', 'facility', 'open', 'low', mReyesId);
+}
+
 
 // Seed news
 const newsCount = db.prepare('SELECT COUNT(*) as cnt FROM news').get();
@@ -477,6 +652,19 @@ function requireCsrf(req, res, next) {
   next();
 }
 
+// Role-based access control
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.session || !req.session.userId) return res.status(401).json({ error: 'Auth required' });
+    const role = req.session.role || 'student';
+    if (!roles.includes(role)) return res.status(403).json({ error: 'Forbidden — needs role: ' + roles.join('/') });
+    next();
+  };
+}
+
+// Convenience: admin or professor (anyone who can manage the lab)
+const requireStaff = requireRole('admin', 'professor');
+
 // Admin auth routes
 app.post('/admin/login', authLimiter, (req, res) => {
   const { username, password } = req.body;
@@ -484,8 +672,9 @@ app.post('/admin/login', authLimiter, (req, res) => {
   if (user && bcrypt.compareSync(password, user.password)) {
     req.session.userId = user.id;
     req.session.username = user.username;
+    req.session.role = user.role || 'student';
     req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
-    res.json({ success: true, username: user.username, csrfToken: req.session.csrfToken });
+    res.json({ success: true, username: user.username, name: user.name || '', role: user.role || 'student', csrfToken: req.session.csrfToken });
   } else {
     res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -501,7 +690,8 @@ app.get('/admin/check', (req, res) => {
     if (!req.session.csrfToken) {
       req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
     }
-    res.json({ loggedIn: true, username: req.session.username, csrfToken: req.session.csrfToken });
+    const u = db.prepare('SELECT id, username, name, role, email FROM users WHERE id=?').get(req.session.userId) || {};
+    res.json({ loggedIn: true, username: req.session.username, name: u.name || '', role: u.role || req.session.role || 'student', email: u.email || '', csrfToken: req.session.csrfToken });
   } else {
     res.json({ loggedIn: false });
   }
@@ -514,15 +704,15 @@ app.get('/api/news', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/news', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, content, date } = req.body;
+  const { title, content, date, image_url, slug } = req.body;
   if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO news (title, content, date) VALUES (?, ?, ?)').run(title, content, date);
+  const result = db.prepare('INSERT INTO news (title, content, date, image_url, slug) VALUES (?, ?, ?, ?, ?)').run(title, content, date, image_url || '', slug || '');
   res.json({ id: result.lastInsertRowid, title, content, date });
 });
 
 app.put('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, content, date } = req.body;
-  db.prepare('UPDATE news SET title=?, content=?, date=? WHERE id=?').run(title, content, date, req.params.id);
+  const { title, content, date, image_url, slug } = req.body;
+  db.prepare('UPDATE news SET title=?, content=?, date=?, image_url=?, slug=? WHERE id=?').run(title, content, date, image_url || '', slug || '', req.params.id);
   res.json({ success: true });
 });
 
@@ -568,15 +758,15 @@ app.get('/api/people', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/people', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { name, role, category, bio, photo_url, email, linkedin_url, website_url, active } = req.body;
+  const { name, role, category, bio, photo_url, photo_position, email, linkedin_url, website_url, active } = req.body;
   if (!name || !role || !category) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO people (name, role, category, bio, photo_url, email, linkedin_url, website_url, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(name, role, category, bio || '', photo_url || '', email || '', linkedin_url || '', website_url || '', active !== false ? 1 : 0);
+  const result = db.prepare('INSERT INTO people (name, role, category, bio, photo_url, photo_position, email, linkedin_url, website_url, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(name, role, category, bio || '', photo_url || '', photo_position || 'center center', email || '', linkedin_url || '', website_url || '', active !== false ? 1 : 0);
   res.json({ id: result.lastInsertRowid });
 });
 
 app.put('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { name, role, category, bio, photo_url, email, linkedin_url, website_url, active } = req.body;
-  db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, email=?, linkedin_url=?, website_url=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', email || '', linkedin_url || '', website_url || '', active ? 1 : 0, req.params.id);
+  const { name, role, category, bio, photo_url, photo_position, email, linkedin_url, website_url, active } = req.body;
+  db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, photo_position=?, email=?, linkedin_url=?, website_url=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', photo_position || 'center center', email || '', linkedin_url || '', website_url || '', active ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
@@ -758,21 +948,35 @@ app.delete('/api/facilities/:id', apiWriteLimiter, requireAuth, requireCsrf, (re
 // PLATFORM API — Schedule, Tasks, Meetings, Inventory, Projects
 // ────────────────────────────────────────────────────────────────────────
 
-// EVENTS
+// EVENTS — schedule entries (meetings, seminars, reservations) used by /platform Schedule
 app.get('/api/events', apiReadLimiter, (req, res) => {
-  res.json(db.prepare('SELECT * FROM events ORDER BY day, start_hour, id').all());
+  res.json(db.prepare('SELECT * FROM events ORDER BY COALESCE(start_time, ""), id').all());
 });
 app.post('/api/events', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { day, start_hour, duration_hours, title, room, color } = req.body;
-  if (title == null || day == null || start_hour == null || duration_hours == null) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO events (day, start_hour, duration_hours, title, room, color) VALUES (?,?,?,?,?,?)')
-    .run(day, start_hour, duration_hours, title, room || '', color || 'navy');
+  const { title, event_type, start_time, end_time, location, visibility, attendees } = req.body;
+  if (!title || !start_time) return res.status(400).json({ error: 'Title and start time are required' });
+  const result = db.prepare('INSERT INTO events (title, event_type, start_time, end_time, location, visibility, attendees, owner_user_id) VALUES (?,?,?,?,?,?,?,?)')
+    .run(title, event_type || 'meeting', start_time, end_time || '', location || '', visibility || 'public', attendees || '', req.session.userId || null);
   res.json({ id: result.lastInsertRowid });
 });
 app.put('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { day, start_hour, duration_hours, title, room, color } = req.body;
-  db.prepare('UPDATE events SET day=?, start_hour=?, duration_hours=?, title=?, room=?, color=? WHERE id=?')
-    .run(day, start_hour, duration_hours, title, room || '', color || 'navy', req.params.id);
+  const ev = db.prepare('SELECT * FROM events WHERE id=?').get(req.params.id);
+  if (!ev) return res.status(404).json({ error: 'Not found' });
+  const role = req.session.role || 'student';
+  const isOwner = ev.owner_user_id === req.session.userId;
+  if (!isOwner && role !== 'admin' && role !== 'professor') return res.status(403).json({ error: 'Only the owner or staff can edit this event' });
+  const { title, event_type, start_time, end_time, location, visibility, attendees } = req.body;
+  const sets = [], params = [];
+  if (title !== undefined)      { sets.push('title=?');      params.push(title); }
+  if (event_type !== undefined) { sets.push('event_type=?'); params.push(event_type); }
+  if (start_time !== undefined) { sets.push('start_time=?'); params.push(start_time); }
+  if (end_time !== undefined)   { sets.push('end_time=?');   params.push(end_time || ''); }
+  if (location !== undefined)   { sets.push('location=?');   params.push(location || ''); }
+  if (visibility !== undefined) { sets.push('visibility=?'); params.push(visibility || 'public'); }
+  if (attendees !== undefined)  { sets.push('attendees=?');  params.push(attendees || ''); }
+  if (!sets.length) return res.json({ success: true });
+  params.push(req.params.id);
+  db.prepare(`UPDATE events SET ${sets.join(', ')} WHERE id=?`).run(...params);
   res.json({ success: true });
 });
 app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -785,16 +989,26 @@ app.get('/api/tasks', apiReadLimiter, (req, res) => {
   res.json(db.prepare('SELECT * FROM tasks ORDER BY status, sort_order, id').all());
 });
 app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, assignee, tag, due_label, status, sort_order } = req.body;
+  const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Missing title' });
-  const result = db.prepare('INSERT INTO tasks (title, assignee, tag, due_label, status, sort_order) VALUES (?,?,?,?,?,?)')
-    .run(title, assignee || '', tag || 'lab', due_label || '', status || 'todo', sort_order || 0);
+  const result = db.prepare('INSERT INTO tasks (title, description, assignee_user_id, created_by_user_id, priority, due_date, status, tag, sort_order) VALUES (?,?,?,?,?,?,?,?,?)')
+    .run(title, description || '', assignee_user_id || null, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, assignee, tag, due_label, status, sort_order } = req.body;
-  db.prepare('UPDATE tasks SET title=?, assignee=?, tag=?, due_label=?, status=?, sort_order=? WHERE id=?')
-    .run(title, assignee || '', tag || 'lab', due_label || '', status || 'todo', sort_order || 0, req.params.id);
+  const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
+  const sets = [], params = [];
+  if (title !== undefined)            { sets.push('title=?');            params.push(title); }
+  if (description !== undefined)      { sets.push('description=?');      params.push(description || ''); }
+  if (assignee_user_id !== undefined) { sets.push('assignee_user_id=?'); params.push(assignee_user_id || null); }
+  if (priority !== undefined)         { sets.push('priority=?');         params.push(priority || 'normal'); }
+  if (due_date !== undefined)         { sets.push('due_date=?');         params.push(due_date || ''); }
+  if (status !== undefined)           { sets.push('status=?');           params.push(status || 'todo'); }
+  if (tag !== undefined)              { sets.push('tag=?');              params.push(tag || 'lab'); }
+  if (sort_order !== undefined)       { sets.push('sort_order=?');       params.push(sort_order || 0); }
+  if (!sets.length) return res.json({ success: true });
+  params.push(req.params.id);
+  db.prepare(`UPDATE tasks SET ${sets.join(', ')} WHERE id=?`).run(...params);
   res.json({ success: true });
 });
 app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -802,21 +1016,29 @@ app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, re
   res.json({ success: true });
 });
 
-// MEETINGS
+// MEETINGS — group meetings, seminars and announcements
 app.get('/api/meetings', apiReadLimiter, (req, res) => {
-  res.json(db.prepare('SELECT * FROM meetings ORDER BY sort_order, id').all());
+  res.json(db.prepare('SELECT * FROM meetings ORDER BY COALESCE(scheduled_at, ""), sort_order, id').all());
 });
 app.post('/api/meetings', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { day_label, time_label, title, room, attendees, type, sort_order } = req.body;
-  if (!title || !day_label || !time_label) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO meetings (day_label, time_label, title, room, attendees, type, sort_order) VALUES (?,?,?,?,?,?,?)')
-    .run(day_label, time_label, title, room || '', attendees || '', type || 'team', sort_order || 0);
+  const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+  const result = db.prepare('INSERT INTO meetings (title, meeting_type, scheduled_at, location, description, sort_order) VALUES (?,?,?,?,?,?)')
+    .run(title, meeting_type || 'group', scheduled_at || '', location || '', description || '', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
 app.put('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { day_label, time_label, title, room, attendees, type, sort_order } = req.body;
-  db.prepare('UPDATE meetings SET day_label=?, time_label=?, title=?, room=?, attendees=?, type=?, sort_order=? WHERE id=?')
-    .run(day_label, time_label, title, room || '', attendees || '', type || 'team', sort_order || 0, req.params.id);
+  const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
+  const sets = [], params = [];
+  if (title !== undefined)        { sets.push('title=?');        params.push(title); }
+  if (meeting_type !== undefined) { sets.push('meeting_type=?'); params.push(meeting_type || 'group'); }
+  if (scheduled_at !== undefined) { sets.push('scheduled_at=?'); params.push(scheduled_at || ''); }
+  if (location !== undefined)     { sets.push('location=?');     params.push(location || ''); }
+  if (description !== undefined)  { sets.push('description=?');  params.push(description || ''); }
+  if (sort_order !== undefined)   { sets.push('sort_order=?');   params.push(sort_order || 0); }
+  if (!sets.length) return res.json({ success: true });
+  params.push(req.params.id);
+  db.prepare(`UPDATE meetings SET ${sets.join(', ')} WHERE id=?`).run(...params);
   res.json({ success: true });
 });
 app.delete('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -851,6 +1073,36 @@ app.delete('/api/inventory/:id', apiWriteLimiter, requireAuth, requireCsrf, (req
   res.json({ success: true });
 });
 
+// APPS — HTML mini-applications featured on the public website
+app.get('/api/apps', apiReadLimiter, (req, res) => {
+  res.json(db.prepare('SELECT * FROM apps WHERE published=1 ORDER BY sort_order, id').all());
+});
+app.get('/api/apps/all', apiReadLimiter, requireAuth, (req, res) => {
+  res.json(db.prepare('SELECT * FROM apps ORDER BY sort_order, id').all());
+});
+app.post('/api/apps', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { slug, title, summary, description, url, embed_html, thumbnail, sort_order, published } = req.body;
+  if (!slug || !title) return res.status(400).json({ error: 'slug and title required' });
+  try {
+    const r = db.prepare('INSERT INTO apps (slug, title, summary, description, url, embed_html, thumbnail, sort_order, published) VALUES (?,?,?,?,?,?,?,?,?)')
+      .run(slug, title, summary||'', description||'', url||'', embed_html||'', thumbnail||'', sort_order||0, published===0?0:1);
+    res.json({ id: r.lastInsertRowid });
+  } catch(e) {
+    if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'Slug already exists' });
+    res.status(500).json({ error: e.message });
+  }
+});
+app.put('/api/apps/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { slug, title, summary, description, url, embed_html, thumbnail, sort_order, published } = req.body;
+  db.prepare('UPDATE apps SET slug=?, title=?, summary=?, description=?, url=?, embed_html=?, thumbnail=?, sort_order=?, published=? WHERE id=?')
+    .run(slug, title, summary||'', description||'', url||'', embed_html||'', thumbnail||'', sort_order||0, published===0?0:1, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/apps/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM apps WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
 // PROJECTS
 app.get('/api/projects', apiReadLimiter, (req, res) => {
   res.json(db.prepare('SELECT * FROM projects ORDER BY sort_order, id').all());
@@ -873,12 +1125,220 @@ app.delete('/api/projects/:id', apiWriteLimiter, requireAuth, requireCsrf, (req,
   res.json({ success: true });
 });
 
-// Serve the main app for all frontend routes
+// ---- Self / current user ----
+app.get('/api/me', apiReadLimiter, (req, res) => {
+  if (!req.session || !req.session.userId) return res.status(401).json({ error: 'Auth required' });
+  const u = db.prepare('SELECT id, username, name, role, email, person_id FROM users WHERE id=?').get(req.session.userId);
+  if (!u) return res.status(401).json({ error: 'Auth required' });
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+  }
+  res.json({ loggedIn: true, ...u, csrfToken: req.session.csrfToken });
+});
+
+// ---- Users (admin/professor manage; everyone can list lightweight roster for assignment) ----
+app.get('/api/users', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare("SELECT id, username, name, role, email, active FROM users WHERE active!=0 ORDER BY role, name, username").all();
+  res.json(rows);
+});
+app.post('/api/users', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { username, password, name, role, email } = req.body;
+  if (!username || !password || !role) return res.status(400).json({ error: 'username, password, role required' });
+  if (db.prepare('SELECT 1 FROM users WHERE username=?').get(username)) return res.status(409).json({ error: 'username exists' });
+  const hash = bcrypt.hashSync(password, 10);
+  const r = db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
+    .run(username, hash, name || '', role, email || '');
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { name, role, email, active, password } = req.body;
+  const sets = [], params = [];
+  if (name !== undefined)   { sets.push('name=?');   params.push(name); }
+  if (role !== undefined)   { sets.push('role=?');   params.push(role); }
+  if (email !== undefined)  { sets.push('email=?');  params.push(email); }
+  if (active !== undefined) { sets.push('active=?'); params.push(active ? 1 : 0); }
+  if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, 10)); }
+  if (!sets.length) return res.json({ success: true });
+  params.push(req.params.id);
+  db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
+  res.json({ success: true });
+});
+app.delete('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  if (Number(req.params.id) === req.session.userId) return res.status(400).json({ error: "can't delete self" });
+  db.prepare('UPDATE users SET active=0 WHERE id=?').run(req.params.id); // soft-delete
+  res.json({ success: true });
+});
+
+// ---- Equipment ----
+app.get('/api/equipment', apiReadLimiter, (req, res) => {
+  const rows = db.prepare(`
+    SELECT e.*,
+      lu.name AS last_used_user_name, lu.username AS last_used_username,
+      cu.name AS current_user_name,   cu.username AS current_username
+    FROM equipment e
+    LEFT JOIN users lu ON lu.id = e.last_used_user_id
+    LEFT JOIN users cu ON cu.id = e.current_user_id
+    ORDER BY e.sort_order, e.name`).all();
+  res.json(rows);
+});
+app.post('/api/equipment', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { name, sku, category, location, status, notes, sort_order } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const r = db.prepare('INSERT INTO equipment (name, sku, category, location, status, notes, sort_order) VALUES (?,?,?,?,?,?,?)')
+    .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0);
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/equipment/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { name, sku, category, location, status, notes, sort_order } = req.body;
+  db.prepare('UPDATE equipment SET name=?, sku=?, category=?, location=?, status=?, notes=?, sort_order=? WHERE id=?')
+    .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/equipment/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM equipment WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// Check out: any authed user can claim a free piece of equipment
+app.post('/api/equipment/:id/checkout', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const eq = db.prepare('SELECT * FROM equipment WHERE id=?').get(req.params.id);
+  if (!eq) return res.status(404).json({ error: 'not found' });
+  if (eq.current_user_id) return res.status(409).json({ error: 'already checked out' });
+  if (eq.status === 'broken' || eq.status === 'maintenance') return res.status(409).json({ error: 'unavailable: ' + eq.status });
+  const note = (req.body && req.body.note) || '';
+  const userId = req.session.userId;
+  db.prepare('UPDATE equipment SET status=?, current_user_id=?, last_used_user_id=?, last_used_at=CURRENT_TIMESTAMP WHERE id=?')
+    .run('in_use', userId, userId, eq.id);
+  db.prepare('INSERT INTO equipment_log (equipment_id, user_id, action, note) VALUES (?,?,?,?)').run(eq.id, userId, 'checkout', note);
+  res.json({ success: true });
+});
+
+// Check in: only the current holder, an admin, or a professor can return
+app.post('/api/equipment/:id/checkin', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const eq = db.prepare('SELECT * FROM equipment WHERE id=?').get(req.params.id);
+  if (!eq) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  if (eq.current_user_id !== req.session.userId && role !== 'admin' && role !== 'professor') {
+    return res.status(403).json({ error: 'only current holder or staff can check in' });
+  }
+  const note = (req.body && req.body.note) || '';
+  db.prepare('UPDATE equipment SET status=?, current_user_id=NULL, last_used_at=CURRENT_TIMESTAMP WHERE id=?')
+    .run('available', eq.id);
+  db.prepare("UPDATE equipment_log SET ended_at=CURRENT_TIMESTAMP WHERE equipment_id=? AND user_id=? AND action='checkout' AND ended_at IS NULL")
+    .run(eq.id, eq.current_user_id || req.session.userId);
+  db.prepare('INSERT INTO equipment_log (equipment_id, user_id, action, note) VALUES (?,?,?,?)').run(eq.id, req.session.userId, 'checkin', note);
+  res.json({ success: true });
+});
+
+app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT l.*, u.username, u.name AS user_name
+    FROM equipment_log l LEFT JOIN users u ON u.id = l.user_id
+    WHERE l.equipment_id=? ORDER BY l.id DESC LIMIT 100`).all(req.params.id);
+  res.json(rows);
+});
+
+// ---- Issues ----
+app.get('/api/issues', apiReadLimiter, requireAuth, (req, res) => {
+  const { status, mine } = req.query;
+  let sql = `SELECT i.*,
+      r.name AS reporter_name, r.username AS reporter_username,
+      a.name AS assignee_name, a.username AS assignee_username,
+      e.name AS equipment_name
+    FROM issues i
+    LEFT JOIN users r ON r.id = i.reporter_user_id
+    LEFT JOIN users a ON a.id = i.assignee_user_id
+    LEFT JOIN equipment e ON e.id = i.related_equipment_id
+    WHERE 1=1`;
+  const params = [];
+  if (status) { sql += ' AND i.status=?'; params.push(status); }
+  if (mine === '1') { sql += ' AND (i.reporter_user_id=? OR i.assignee_user_id=?)'; params.push(req.session.userId, req.session.userId); }
+  sql += " ORDER BY CASE i.status WHEN 'open' THEN 0 WHEN 'in_progress' THEN 1 ELSE 2 END, CASE i.priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END, i.created_at DESC";
+  res.json(db.prepare(sql).all(...params));
+});
+app.post('/api/issues', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, body, category, priority, related_equipment_id } = req.body;
+  if (!title) return res.status(400).json({ error: 'title required' });
+  const r = db.prepare('INSERT INTO issues (title, body, category, priority, reporter_user_id, related_equipment_id) VALUES (?,?,?,?,?,?)')
+    .run(title, body || '', category || 'other', priority || 'normal', req.session.userId, related_equipment_id || null);
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/issues/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  // Anyone can update title/body if reporter; status/assignee only by staff
+  const issue = db.prepare('SELECT * FROM issues WHERE id=?').get(req.params.id);
+  if (!issue) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  const isStaff = role === 'admin' || role === 'professor';
+  const isReporter = issue.reporter_user_id === req.session.userId;
+  if (!isStaff && !isReporter) return res.status(403).json({ error: 'not allowed' });
+  const sets = [], params = [];
+  const { title, body, category, priority, status, assignee_user_id, related_equipment_id } = req.body;
+  if (title !== undefined && (isReporter || isStaff)) { sets.push('title=?'); params.push(title); }
+  if (body !== undefined && (isReporter || isStaff)) { sets.push('body=?'); params.push(body); }
+  if (category !== undefined && (isReporter || isStaff)) { sets.push('category=?'); params.push(category); }
+  if (priority !== undefined && isStaff) { sets.push('priority=?'); params.push(priority); }
+  if (status !== undefined && isStaff) { sets.push('status=?'); params.push(status); }
+  if (assignee_user_id !== undefined && isStaff) { sets.push('assignee_user_id=?'); params.push(assignee_user_id || null); }
+  if (related_equipment_id !== undefined && isStaff) { sets.push('related_equipment_id=?'); params.push(related_equipment_id || null); }
+  if (!sets.length) return res.json({ success: true });
+  sets.push('updated_at=CURRENT_TIMESTAMP');
+  params.push(req.params.id);
+  db.prepare('UPDATE issues SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
+  res.json({ success: true });
+});
+app.delete('/api/issues/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM issues WHERE id=?').run(req.params.id);
+  db.prepare('DELETE FROM issue_comments WHERE issue_id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+app.get('/api/issues/:id/comments', apiReadLimiter, requireAuth, (req, res) => {
+  res.json(db.prepare(`SELECT c.*, u.name AS user_name, u.username FROM issue_comments c LEFT JOIN users u ON u.id=c.user_id WHERE c.issue_id=? ORDER BY c.id`).all(req.params.id));
+});
+app.post('/api/issues/:id/comments', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { body } = req.body;
+  if (!body) return res.status(400).json({ error: 'body required' });
+  const r = db.prepare('INSERT INTO issue_comments (issue_id, user_id, body) VALUES (?,?,?)').run(req.params.id, req.session.userId, body);
+  res.json({ id: r.lastInsertRowid });
+});
+
+// ---- Per-user task helpers ----
+// Listing tasks already exists at /api/tasks; provide an enriched view with assignee info + filter "mine".
+app.get('/api/tasks/full', apiReadLimiter, requireAuth, (req, res) => {
+  const { mine, status } = req.query;
+  let sql = `SELECT t.*, u.name AS assignee_name, u.username AS assignee_username
+             FROM tasks t LEFT JOIN users u ON u.id = t.assignee_user_id WHERE 1=1`;
+  const params = [];
+  if (mine === '1') { sql += ' AND t.assignee_user_id=?'; params.push(req.session.userId); }
+  if (status) { sql += ' AND t.status=?'; params.push(status); }
+  sql += ' ORDER BY t.status, t.sort_order, t.id';
+  res.json(db.prepare(sql).all(...params));
+});
+
+// ---- Generic documents (attached files for any entity) ----
+app.get('/api/documents', apiReadLimiter, (req, res) => {
+  const { entity_type, entity_id } = req.query;
+  if (!entity_type || !entity_id) return res.status(400).json({ error: 'entity_type and entity_id required' });
+  res.json(db.prepare('SELECT * FROM documents WHERE entity_type=? AND entity_id=? ORDER BY sort_order, id').all(entity_type, entity_id));
+});
+app.post('/api/documents', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { entity_type, entity_id, title, file_url, file_name, sort_order } = req.body;
+  if (!entity_type || !entity_id || !file_url) return res.status(400).json({ error: 'entity_type, entity_id, file_url required' });
+  const r = db.prepare('INSERT INTO documents (entity_type, entity_id, title, file_url, file_name, sort_order) VALUES (?,?,?,?,?,?)')
+    .run(entity_type, entity_id, title || '', file_url, file_name || '', sort_order || 0);
+  res.json({ id: r.lastInsertRowid });
+});
+app.delete('/api/documents/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM documents WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/platform', (req, res) => res.sendFile(path.join(__dirname, 'public', 'platform.html')));
 
 app.listen(PORT, () => {
   console.log(`LATFS Website running at http://localhost:${PORT}`);
   console.log(`Admin panel: http://localhost:${PORT}/admin`);
-  console.log(`Default credentials: admin / admin123`);
+  console.log(`Platform:    http://localhost:${PORT}/platform`);
 });

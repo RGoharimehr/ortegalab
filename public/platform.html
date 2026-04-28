@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LATFS Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   LATFS Design System — Colors & Type
+   Laboratory for Advanced Thermal and Fluid Systems
+   Villanova University
+   ============================================================ */
+/* ── Font imports ──────────────────────────────────────────── */
+:root {
+  /* ── Brand Colors ─────────────────────────────────────────
+     LATFS is a Villanova-aligned research lab. The palette
+     anchors on deep navy (institutional authority), academic
+     gold (heritage / accent), and a warm cream (softens the
+     academic tone so it feels approachable, not stuffy).
+  */
+  /* Primary — Navy */
+  --navy-950: #080f24;
+  --navy-900: #0f172a;    /* Primary brand navy (headers, nav) */
+  --navy-800: #162041;
+  --navy-700: #1e3a5f;    /* Legacy secondary navy (hovers) */
+  --navy-600: #2d4a78;
+  --navy-500: #4a6fa5;
+  /* Accent — Academic Gold */
+  --gold-900: #7a5e15;
+  --gold-700: #9a7820;
+  --gold-600: #b8912a;    /* Primary gold (accent bars, badges) */
+  --gold-500: #d4a942;
+  --gold-300: #e8c972;
+  --gold-100: #fef7e4;    /* Soft gold tint for badges */
+  --gold-50:  #fdfbf4;    /* Cream background */
+  /* Neutrals — Warm gray (paired with navy, not cold blue-gray) */
+  --gray-950: #0a0d13;
+  --gray-900: #111827;
+  --gray-800: #1f2937;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #64748b;
+  --gray-400: #94a3b8;
+  --gray-300: #cbd5e1;
+  --gray-200: #e2e8f0;
+  --gray-100: #f1f5f9;
+  --gray-50:  #f8fafc;
+  /* Lab-status semantic colors (for inventory, tasks, etc.) */
+  --status-ok:      #16a34a;    /* green — in stock, on track */
+  --status-warn:    #d97706;    /* amber — low, at risk */
+  --status-alert:   #dc2626;    /* red — out, blocked */
+  --status-info:    #0284c7;    /* blue — neutral info */
+  --status-ok-tint:    #dcfce7;
+  --status-warn-tint:  #fef3c7;
+  --status-alert-tint: #fee2e2;
+  --status-info-tint:  #e0f2fe;
+  /* ── Semantic tokens ──────────────────────────────────── */
+  --fg-1: var(--navy-900);     /* primary text */
+  --fg-2: var(--gray-700);     /* body text */
+  --fg-3: var(--gray-500);     /* muted text */
+  --fg-4: var(--gray-400);     /* tertiary / timestamps */
+  --fg-inv: #ffffff;
+  --bg-1: #ffffff;
+  --bg-2: var(--gray-50);      /* page background */
+  --bg-3: var(--gray-100);     /* subtle cards, fill inputs */
+  --bg-dark: var(--navy-900);  /* nav, footer */
+  --border-1: var(--gray-200); /* default borders */
+  --border-2: var(--gray-300); /* stronger borders / dividers */
+  --accent: var(--gold-600);
+  --accent-soft: var(--gold-100);
+  --accent-hover: var(--gold-700);
+  /* ── Elevation ────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.18);
+  --shadow-inset: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+  /* ── Radii ────────────────────────────────────────────── */
+  --radius-xs: 4px;     /* small inline chips */
+  --radius-sm: 6px;     /* inputs, small buttons */
+  --radius-md: 8px;     /* default buttons, tags */
+  --radius-lg: 12px;    /* cards */
+  --radius-xl: 16px;    /* feature cards, modals */
+  --radius-pill: 999px; /* badges */
+  /* ── Spacing (8-point grid, with 4 for inline) ──────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  /* ── Typography families ──────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif; /* serif display for editorial flourishes — publication titles, quote blocks */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* ── Type scale ──────────────────────────────────────── */
+  --text-xs:   0.75rem;   /* 12px — meta, timestamps */
+  --text-sm:   0.875rem;  /* 14px — secondary body */
+  --text-base: 1rem;      /* 16px — body default */
+  --text-lg:   1.125rem;  /* 18px — lead body */
+  --text-xl:   1.25rem;   /* 20px — small headings */
+  --text-2xl:  1.5rem;    /* 24px — h3 */
+  --text-3xl:  1.875rem;  /* 30px — h2 */
+  --text-4xl:  2.25rem;   /* 36px — h1 */
+  --text-5xl:  3rem;      /* 48px — hero */
+  --text-6xl:  3.75rem;   /* 60px — display */
+  /* ── Motion ───────────────────────────────────────────── */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:   150ms;
+  --dur-base:   220ms;
+  --dur-slow:   400ms;
+}
+/* ============================================================
+   Semantic element styles — drop into any page
+   ============================================================ */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--fg-1);
+  background: var(--bg-2);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1 {
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 4vw, var(--text-5xl));
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-4);
+}
+h2 {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-3);
+}
+h3 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-2);
+}
+h4 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-2);
+}
+h5, h6 {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin: 0 0 var(--space-2);
+}
+p {
+  font-size: var(--text-base);
+  color: var(--fg-2);
+  line-height: 1.65;
+  margin: 0 0 var(--space-4);
+  text-wrap: pretty;
+}
+small, .text-meta {
+  font-size: var(--text-xs);
+  color: var(--fg-4);
+}
+a {
+  color: var(--navy-700);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--gold-700); }
+code, kbd, pre {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+code {
+  background: var(--gray-100);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-xs);
+  color: var(--navy-800);
+}
+/* Serif display — use sparingly: publication titles, editorial quotes */
+.display-serif {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+/* Eyebrow / overline label — classic academic styling */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-700);
+}
+/* Section-header pattern: gold bar + title (used across lab site) */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.section-header::before {
+  content: "";
+  width: 3px;
+  height: 1.5rem;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Login overlay (kit doesn't define this — we add a simple navy gate) */
+.login-screen { position:fixed; inset:0; background: var(--navy-900); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.login-card   { background:#fff; border-radius: var(--radius-xl); padding: 36px 32px; width: 360px; box-shadow: var(--shadow-xl); }
+.login-card h1{ font-family: var(--font-display); font-size: 24px; color: var(--navy-900); margin: 0 0 4px; }
+.login-card p { font-size: 13px; color: var(--fg-3); margin: 0 0 20px; }
+.login-card label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 12px 0 4px; }
+.login-card input{ width:100%; padding: 9px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; box-sizing:border-box; }
+.login-card button{ width:100%; margin-top: 18px; background: var(--gold-600); color:#fff; border:none; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; cursor:pointer; font-family:inherit; }
+.login-card button:hover{ background: var(--gold-700); }
+.login-card .err{ color:#dc2626; font-size: 12px; margin-top: 10px; min-height: 14px; }
+/* Sidebar logout button */
+.p-logout { background:none; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; font-family:inherit; }
+.p-logout:hover{ background:rgba(255,255,255,0.05); color:#fff; }
+/* Modal (used for forms) */
+.modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
+.modal { background:#fff; border-radius: var(--radius-lg); padding:24px; width: 480px; max-width:100%; max-height: 90vh; overflow:auto; box-shadow: var(--shadow-xl); }
+.modal h2 { font-size:18px; font-weight:700; color: var(--navy-900); margin:0 0 6px; }
+.modal-sub{ font-size:12px; color: var(--fg-3); margin:0 0 16px; }
+.modal label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 10px 0 4px; }
+.modal input, .modal select, .modal textarea{ width:100%; padding: 8px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family:inherit; font-size:13px; box-sizing:border-box; }
+.modal textarea{ min-height: 80px; resize: vertical; }
+.modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+/* Empty state */
+.empty { padding: 40px 20px; text-align:center; color: var(--fg-4); font-size: 13px; }
+/* List item with delete button */
+.row-actions { display:flex; gap:6px; }
+.row-actions button { background:none; border:1px solid var(--border-1); color: var(--fg-3); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor:pointer; font-family:inherit; }
+.row-actions button:hover { background: var(--bg-2); color: var(--navy-900); }
+.row-actions button.danger:hover { background: #fee2e2; color: #991b1b; border-color:#fca5a5; }
+
+
+/* ---- Platform layout (sidebar/main, cards, kanban, calendar, etc.) ---- */
+html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
+  .p-app { display: flex; min-height: 100vh; }
+  .p-main { flex: 1; padding: 28px 32px; overflow: auto; }
+
+  /* Sidebar */
+  .p-sidebar { width: 240px; background: var(--navy-900); color: rgba(255,255,255,.8); display: flex; flex-direction: column; padding: 20px 12px; }
+  .p-brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 12px; }
+  .p-brand-mark { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .p-brand-wm { color: #fff; font-weight: 800; font-size: 14px; }
+  .p-brand-sub { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .08em; text-transform: uppercase; }
+  .p-nav, .p-nav-section { display: flex; flex-direction: column; gap: 2px; }
+  .p-nav-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.08); }
+  .p-nav-head { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .1em; text-transform: uppercase; padding: 4px 12px 8px; }
+  .p-nav-item { background: none; border: none; color: rgba(255,255,255,.7); text-align: left; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit; }
+  .p-nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .p-nav-item.active { background: var(--gold-600); color: #fff; }
+  .p-nav-icon { width: 16px; height: 16px; }
+  .p-user { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08); }
+  .p-user-av { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .p-user-name { color: #fff; font-size: 13px; font-weight: 600; }
+  .p-user-role { color: rgba(255,255,255,.5); font-size: 11px; }
+
+  /* Page head */
+  .p-page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+  .p-h1 { font-size: 1.5rem; font-weight: 800; color: var(--navy-900); margin: 4px 0 4px; letter-spacing: -.02em; }
+  .p-h1-sub { font-size: 13px; color: var(--fg-3); margin: 0; }
+  .p-actions { display: flex; gap: 8px; }
+  .btn-primary-sm { background: var(--gold-600); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn-primary-sm:hover { background: var(--gold-700); }
+  .btn-ghost-sm { background: #fff; border: 1px solid var(--border-1); color: var(--fg-2); border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .btn-ghost-sm:hover { background: var(--bg-1); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+  /* Cards + grid */
+  .p-card { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-xs); }
+  .p-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-1); }
+  .p-card-title { font-weight: 700; font-size: 14px; color: var(--navy-900); }
+  .p-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .p-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .p-stat-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px; position: relative; box-shadow: var(--shadow-xs); }
+  .p-stat-icon { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; color: var(--fg-4); }
+  .p-stat-num { font-size: 1.75rem; font-weight: 800; color: var(--navy-900); line-height: 1; }
+  .p-stat-lbl { font-size: 12px; color: var(--fg-3); }
+  .w-link-gold { background: none; border: none; color: var(--gold-700); font-weight: 600; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+
+  /* Slots */
+  .p-slot { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-slot:last-child { border-bottom: none; }
+  .p-slot-time { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); font-weight: 600; width: 44px; }
+  .p-slot-title { font-size: 13px; color: var(--navy-900); font-weight: 600; }
+  .p-slot-room { font-size: 11px; color: var(--fg-4); }
+  .p-slot-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+
+  /* Tasks in dashboard */
+  .p-task { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-task:last-child { border-bottom: none; }
+  .p-check { width: 14px; height: 14px; accent-color: var(--gold-600); }
+  .p-task-title { font-size: 13px; color: var(--navy-900); font-weight: 500; }
+  .p-task-due { font-size: 11px; color: var(--fg-4); }
+
+  /* Tags */
+  .p-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: .02em; }
+  .p-tag-ok { background: var(--status-ok-tint); color: #166534; }
+  .p-tag-warn { background: var(--status-warn-tint); color: #92400e; }
+  .p-tag-alert { background: var(--status-alert-tint); color: #991b1b; }
+  .p-tag-info { background: var(--status-info-tint); color: #075985; }
+  .p-tag-gold { background: var(--gold-100); color: var(--gold-700); }
+  .p-tag-outline { background: #fff; border: 1px solid var(--border-2); color: var(--fg-3); }
+  .p-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Lab status */
+  .p-lab-name { font-size: 12px; font-weight: 700; color: var(--fg-2); letter-spacing: .04em; margin-bottom: 6px; text-transform: uppercase; }
+  .p-lab-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-lab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .p-lab-lbl { font-size: 13px; color: var(--navy-900); font-weight: 500; }
+  .p-lab-meta { font-size: 11px; color: var(--fg-4); }
+  .p-lab-state { font-size: 11px; color: var(--fg-3); font-weight: 600; }
+
+  /* Calendar */
+  .p-cal { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; }
+  .p-cal-head { display: grid; grid-template-columns: 60px repeat(5, 1fr); border-bottom: 1px solid var(--border-1); background: var(--bg-1); }
+  .p-cal-day-h { padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--navy-900); border-left: 1px solid var(--border-1); }
+  .p-cal-body { display: grid; grid-template-columns: 60px repeat(5, 1fr); position: relative; }
+  .p-cal-hours { display: flex; flex-direction: column; }
+  .p-cal-hour { height: 46px; font-size: 10px; color: var(--fg-4); padding: 2px 8px; border-bottom: 1px solid var(--border-1); font-family: var(--font-mono); }
+  .p-cal-col { position: relative; border-left: 1px solid var(--border-1); }
+  .p-cal-cell { height: 46px; border-bottom: 1px solid var(--border-1); }
+  .p-cal-event { position: absolute; left: 4px; right: 4px; border-radius: 6px; padding: 6px 8px; font-size: 11px; overflow: hidden; box-shadow: var(--shadow-xs); cursor: pointer; }
+  .p-cal-ev-title { font-weight: 700; line-height: 1.2; }
+  .p-cal-ev-room { font-size: 10px; opacity: .8; margin-top: 2px; }
+
+  /* Kanban */
+  .p-kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .p-col { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: 10px; padding: 10px; }
+  .p-col-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+  .p-col-title { font-size: 12px; font-weight: 700; color: var(--navy-900); letter-spacing: .02em; text-transform: uppercase; }
+  .p-col-count { font-size: 11px; font-weight: 700; color: var(--fg-4); background: #fff; border: 1px solid var(--border-1); border-radius: 999px; padding: 1px 8px; }
+  .p-task-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 8px; padding: 10px; margin-bottom: 8px; box-shadow: var(--shadow-xs); cursor: pointer; }
+  .p-task-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+  .p-task-card-title { font-size: 13px; color: var(--navy-900); font-weight: 600; line-height: 1.35; margin-bottom: 8px; }
+  .p-task-card-foot { display: flex; justify-content: space-between; align-items: center; }
+  .p-tag-sm { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: .02em; }
+  .p-task-meta { display: flex; align-items: center; gap: 8px; }
+  .p-task-due-sm { font-size: 11px; color: var(--fg-4); }
+  .p-task-av { width: 22px; height: 22px; border-radius: 50%; background: var(--navy-700); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .p-col-add { width: 100%; border: 1px dashed var(--border-2); background: transparent; color: var(--fg-4); padding: 8px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 12px; margin-top: 4px; }
+  .p-col-add:hover { border-color: var(--gold-600); color: var(--gold-700); }
+
+  /* Inventory */
+  .p-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border-1); margin-bottom: 16px; }
+  .p-tab { background: none; border: none; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--fg-3); cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 8px; }
+  .p-tab.active { color: var(--navy-900); border-bottom-color: var(--gold-600); }
+  .p-tab-count { background: var(--bg-1); border-radius: 999px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--fg-3); }
+  .p-inv-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .p-inv-search { position: relative; flex: 1; }
+  .p-inv-search-i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--fg-4); }
+  .p-inv-input { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; box-sizing: border-box; }
+  .p-inv-select { padding: 8px 10px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; }
+  .p-inv-table { background: #fff; border: 1px solid var(--border-1); border-radius: 10px; overflow: hidden; }
+  .p-inv-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border-1); font-size: 13px; }
+  .p-inv-row:last-child { border-bottom: none; }
+  .p-inv-head { background: var(--bg-1); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-3); }
+  .p-inv-name { font-weight: 600; color: var(--navy-900); }
+  .p-inv-cat { color: var(--fg-3); }
+  .p-mono { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); background: var(--bg-1); padding: 2px 6px; border-radius: 4px; }
+  .p-qty-num { font-weight: 700; color: var(--navy-900); }
+  .p-qty-min { font-size: 11px; color: var(--fg-4); }
+  .p-qty-bar { height: 4px; background: var(--bg-1); border-radius: 2px; margin-top: 4px; overflow: hidden; max-width: 120px; }
+  .p-qty-fill { height: 100%; border-radius: 2px; }
+  .p-inv-more { background: none; border: none; color: var(--fg-4); cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 4px; }
+  .p-inv-more:hover { background: var(--bg-1); }
+
+  /* Meetings */
+  .p-meet-list { display: flex; flex-direction: column; gap: 10px; }
+  .p-meet-card { display: flex; background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 16px; align-items: center; gap: 20px; box-shadow: var(--shadow-xs); }
+  .p-meet-day { display: flex; flex-direction: column; text-align: center; min-width: 110px; padding-right: 20px; border-right: 1px solid var(--border-1); }
+  .p-meet-day-lbl { font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--gold-700); }
+  .p-meet-day-time { font-size: 12px; font-weight: 600; color: var(--navy-900); margin-top: 2px; font-family: var(--font-mono); }
+  .p-meet-body { flex: 1; }
+  .p-meet-title { font-size: 15px; font-weight: 700; color: var(--navy-900); }
+  .p-meet-room { font-size: 12px; color: var(--fg-3); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .p-icon-xs { width: 12px; height: 12px; }
+  .p-avatars { display: flex; margin-top: 8px; }
+  .p-av-sm { width: 26px; height: 26px; border-radius: 50%; background: var(--navy-700); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; margin-left: -6px; }
+  .p-av-sm:first-child { margin-left: 0; }
+  .p-meet-tag-col { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .p-meet-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
+
+  code { font-family: var(--font-mono); }
+
+/* ---- Platform-specific additions ---- */
+.p-section { display: none; }
+.p-section.active { display: block; }
+.hidden { display: none !important; }
+.p-eq-status-available { background: var(--status-ok-tint); color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.p-eq-status-out { background: var(--status-warn-tint); color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.p-eq-status-broken { background: var(--status-alert-tint); color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.p-eq-status-maint { background: var(--status-info-tint); color: #075985; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.p-issue-card { background:#fff; border:1px solid var(--border-1); border-radius:10px; padding:14px; margin-bottom:10px; box-shadow: var(--shadow-xs); }
+.p-issue-card.priority-high { border-left: 4px solid var(--status-alert); }
+.p-issue-card.priority-medium { border-left: 4px solid var(--status-warn); }
+.p-issue-card.priority-low { border-left: 4px solid var(--status-info); }
+.p-issue-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
+.p-issue-title { font-weight:700; color:var(--navy-900); font-size:14px; }
+.p-issue-meta { font-size:11px; color:var(--fg-4); margin-top:4px; }
+.p-issue-body { font-size:13px; color:var(--fg-2); margin:8px 0; }
+.p-profile-card { background:#fff; border:1px solid var(--border-1); border-radius:12px; padding:24px; margin-bottom:16px; }
+.p-prof-av { width: 72px; height: 72px; border-radius: 50%; background: var(--gold-600); color:#fff; font-weight:800; font-size:24px; display:flex; align-items:center; justify-content:center; }
+.p-prof-row { display:flex; gap:20px; align-items:center; }
+.p-prof-name { font-size:1.5rem; font-weight:800; color:var(--navy-900); margin:0; }
+.p-prof-role { font-size:13px; color:var(--gold-700); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+.p-prof-email { font-size:13px; color:var(--fg-3); }
+.p-bigbtn { background: var(--gold-600); color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:600; font-size:13px; cursor:pointer; font-family:inherit; }
+.p-bigbtn:hover{ background: var(--gold-700); }
+.p-bigbtn.ghost { background:#fff; color:var(--fg-2); border:1px solid var(--border-1); }
+.p-bigbtn.ghost:hover{ background: var(--bg-1); }
+.p-bigbtn.danger { background: #dc2626; }
+.p-bigbtn.danger:hover{ background:#b91c1c; }
+.p-toolbar-spacer { flex:1; }
+.p-row-flex { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.p-issue-comments { margin-top:14px; padding-top:14px; border-top:1px solid var(--border-1); }
+.p-comment { padding:8px 0; border-bottom:1px dashed var(--border-1); font-size:13px; }
+.p-comment:last-child{ border-bottom:none; }
+.p-comment-meta { font-size:11px; color:var(--fg-4); margin-bottom:2px; }
+.p-toggle { display:inline-flex; gap:0; border:1px solid var(--border-1); border-radius:6px; overflow:hidden; }
+.p-toggle button { background:#fff; border:none; padding:6px 12px; font-size:12px; font-weight:600; color:var(--fg-3); cursor:pointer; font-family:inherit; }
+.p-toggle button.active { background: var(--navy-900); color:#fff; }
+.p-log-row { display:flex; gap:14px; padding:10px 0; border-bottom:1px dashed var(--border-1); font-size:12px; align-items:center; }
+.p-log-row:last-child{ border-bottom:none; }
+.p-log-when { font-family:var(--font-mono); color:var(--fg-3); width:140px; flex-shrink:0; }
+.p-log-act { font-weight:700; width:80px; }
+.p-log-act.checkout { color: var(--status-warn); }
+.p-log-act.checkin { color: var(--status-ok); }
+.p-log-who { color:var(--navy-900); font-weight:600; }
+.p-log-note { color:var(--fg-3); font-style:italic; }
+.p-banner { background: var(--gold-100); border:1px solid var(--gold-300); color: var(--gold-900); padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
+
+</style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <h1 class="display-serif">LATFS Platform</h1>
+    <p>Sign in with your lab account.<br><span style="color:var(--fg-4); font-size:11px;">No account? Ask the lab director / professor — they create accounts in <strong>Lab Members</strong>.</span></p>
+    <label for="loginUser">Username</label>
+    <input id="loginUser" name="username" autocomplete="username" autofocus>
+    <label for="loginPass">Password</label>
+    <input id="loginPass" name="password" type="password" autocomplete="current-password">
+    <button type="submit">Sign in</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</div>
+
+<!-- App shell -->
+<div class="p-app hidden" id="appShell">
+  <aside class="p-sidebar">
+    <div class="p-brand">
+      <div class="p-brand-mark">L</div>
+      <div>
+        <div class="p-brand-wm">LATFS</div>
+        <div class="p-brand-sub">Platform</div>
+      </div>
+    </div>
+
+    <nav class="p-nav">
+      <button class="p-nav-item active" data-route="dashboard"><span>Dashboard</span></button>
+      <button class="p-nav-item" data-route="schedule"><span>Schedule</span></button>
+      <button class="p-nav-item" data-route="tasks"><span>Tasks</span></button>
+      <button class="p-nav-item" data-route="meetings"><span>Meetings</span></button>
+      <button class="p-nav-item" data-route="equipment"><span>Equipment</span></button>
+      <button class="p-nav-item" data-route="issues"><span>Issues / Requests</span></button>
+      <button class="p-nav-item" data-route="profile"><span>My Profile</span></button>
+    </nav>
+
+    <nav class="p-nav-section staff-only hidden">
+      <div class="p-nav-head">Staff</div>
+      <button class="p-nav-item" data-route="people-admin"><span>Lab Members</span></button>
+      <a class="p-nav-item" href="/admin"><span>Website Admin →</span></a>
+    </nav>
+
+    <div class="p-user">
+      <div class="p-user-av" id="userAv">??</div>
+      <div style="flex:1;min-width:0;">
+        <div class="p-user-name" id="userName">—</div>
+        <div class="p-user-role" id="userRole">—</div>
+      </div>
+      <button class="p-logout" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
+
+  <main class="p-main">
+
+    <!-- Dashboard -->
+    <section class="p-section active" data-section="dashboard">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Welcome</div>
+          <h1 class="p-h1" id="dashGreeting">Good morning</h1>
+          <p class="p-h1-sub" id="dashSub">Here is today's snapshot.</p>
+        </div>
+      </div>
+      <div class="p-grid-3" style="margin-bottom:18px;">
+        <div class="p-stat-card"><div class="p-stat-num" id="stMyTasks">0</div><div class="p-stat-lbl">My open tasks</div></div>
+        <div class="p-stat-card"><div class="p-stat-num" id="stMyMeetings">0</div><div class="p-stat-lbl">Meetings this week</div></div>
+        <div class="p-stat-card"><div class="p-stat-num" id="stMyEq">0</div><div class="p-stat-lbl">Equipment checked out to me</div></div>
+      </div>
+      <div class="p-grid-2">
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">My tasks</div>
+            <button class="w-link-gold" onclick="goRoute('tasks')">View all →</button>
+          </div>
+          <div id="dashTasks"><div class="empty">No tasks assigned to you.</div></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">Upcoming meetings</div>
+            <button class="w-link-gold" onclick="goRoute('meetings')">View all →</button>
+          </div>
+          <div id="dashMeetings"><div class="empty">No upcoming meetings.</div></div>
+        </div>
+      </div>
+      <div class="p-grid-2" style="margin-top:18px;">
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">Checked out to me</div>
+            <button class="w-link-gold" onclick="goRoute('equipment')">View all →</button>
+          </div>
+          <div id="dashEquip"><div class="empty">No equipment checked out.</div></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">Open lab issues</div>
+            <button class="w-link-gold" onclick="goRoute('issues')">View board →</button>
+          </div>
+          <div id="dashIssues"><div class="empty">No open issues.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section class="p-section" data-section="schedule">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Schedule</div>
+          <h1 class="p-h1">Lab schedule</h1>
+          <p class="p-h1-sub" id="schedSub">Calendar of meetings, sessions and reservations.</p>
+        </div>
+        <div class="p-actions">
+          <div class="p-toggle" id="schedScope">
+            <button class="active" data-scope="mine">Mine</button>
+            <button data-scope="all">All</button>
+          </div>
+          <button class="btn-primary-sm" id="addEventBtn">+ Add event</button>
+        </div>
+      </div>
+      <div id="schedList" class="p-card"><div class="empty">Loading…</div></div>
+    </section>
+
+    <!-- Tasks -->
+    <section class="p-section" data-section="tasks">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Tasks</div>
+          <h1 class="p-h1">Tasks</h1>
+          <p class="p-h1-sub">Drag-style kanban (open / in progress / blocked / done).</p>
+        </div>
+        <div class="p-actions">
+          <div class="p-toggle" id="taskScope">
+            <button class="active" data-scope="mine">Assigned to me</button>
+            <button data-scope="all">All</button>
+          </div>
+          <button class="btn-primary-sm" id="addTaskBtn">+ New task</button>
+        </div>
+      </div>
+      <div class="p-kanban" id="kanbanRoot"></div>
+    </section>
+
+    <!-- Meetings -->
+    <section class="p-section" data-section="meetings">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Meetings & announcements</div>
+          <h1 class="p-h1">Meetings</h1>
+          <p class="p-h1-sub">Group meetings, seminars and announcements from the PI.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm staff-only hidden" id="addMeetingBtn">+ Add meeting</button>
+        </div>
+      </div>
+      <div class="p-meet-list" id="meetList"></div>
+    </section>
+
+    <!-- Equipment -->
+    <section class="p-section" data-section="equipment">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Equipment & supplies</div>
+          <h1 class="p-h1">Equipment</h1>
+          <p class="p-h1-sub">Check items out and check them back in. Last-user is tracked.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm staff-only hidden" id="addEquipBtn">+ Add item</button>
+        </div>
+      </div>
+      <div class="p-tabs" id="eqTabs">
+        <button class="p-tab active" data-eqcat="">All</button>
+        <button class="p-tab" data-eqcat="rig">Rigs</button>
+        <button class="p-tab" data-eqcat="instrument">Instruments</button>
+        <button class="p-tab" data-eqcat="supply">Supplies</button>
+        <button class="p-tab" data-eqcat="tool">Tools</button>
+      </div>
+      <div class="p-inv-toolbar">
+        <div class="p-inv-search"><input class="p-inv-input" id="eqSearch" placeholder="Search equipment by name or tag…"></div>
+        <select class="p-inv-select" id="eqStatus">
+          <option value="">Any status</option>
+          <option value="available">Available</option>
+          <option value="checked_out">Checked out</option>
+          <option value="broken">Broken</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+      <div class="p-inv-table">
+        <div class="p-inv-row p-inv-head">
+          <div style="flex:2;">Name</div>
+          <div style="flex:1;">Tag</div>
+          <div style="flex:1;">Category</div>
+          <div style="flex:1;">Last used by</div>
+          <div style="flex:1;">Status</div>
+          <div style="width:160px;">Actions</div>
+        </div>
+        <div id="eqList"></div>
+      </div>
+    </section>
+
+    <!-- Issues -->
+    <section class="p-section" data-section="issues">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Issues & requests</div>
+          <h1 class="p-h1">Issues board</h1>
+          <p class="p-h1-sub">Report broken equipment, request supplies, flag facility issues.</p>
+        </div>
+        <div class="p-actions">
+          <div class="p-toggle" id="issueFilter">
+            <button class="active" data-filter="open">Open</button>
+            <button data-filter="all">All</button>
+          </div>
+          <button class="btn-primary-sm" id="addIssueBtn">+ Report issue</button>
+        </div>
+      </div>
+      <div id="issueList"></div>
+    </section>
+
+    <!-- Profile -->
+    <section class="p-section" data-section="profile">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">My profile</div>
+          <h1 class="p-h1">Profile</h1>
+          <p class="p-h1-sub">Your details, assigned tasks and equipment.</p>
+        </div>
+      </div>
+      <div class="p-profile-card">
+        <div class="p-prof-row">
+          <div class="p-prof-av" id="profAv">??</div>
+          <div style="flex:1;">
+            <div class="p-prof-name" id="profName">—</div>
+            <div class="p-prof-role" id="profRole">—</div>
+            <div class="p-prof-email" id="profEmail">—</div>
+          </div>
+          <button class="p-bigbtn ghost" id="profEditBtn">Edit details</button>
+        </div>
+      </div>
+      <div class="p-grid-2">
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">My open tasks</div></div>
+          <div id="profTasks"></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">My equipment</div></div>
+          <div id="profEquip"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lab members (staff only) -->
+    <section class="p-section" data-section="people-admin">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Staff</div>
+          <h1 class="p-h1">Lab members</h1>
+          <p class="p-h1-sub">Manage accounts. Only admins / professors can edit.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm" id="addUserBtn">+ Add member</button>
+        </div>
+      </div>
+      <div class="p-card">
+        <div id="usersList"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Generic modal mount -->
+<div id="modalMount"></div>
+
+<script>
+/* ============================================================
+   LATFS Platform — vanilla JS app
+   ============================================================ */
+let ME = null;
+let CSRF = null;
+
+const $  = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+function escapeHTML(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(d){ if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+function fmtDT(d){ if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
+function initials(name){ if(!name) return '??'; return name.trim().split(/\s+/).slice(0,2).map(s=>s[0]).join('').toUpperCase(); }
+
+async function api(path, opts={}){
+  const o = Object.assign({ credentials:'same-origin', headers:{} }, opts);
+  if(o.body && typeof o.body !== 'string') { o.body = JSON.stringify(o.body); o.headers['Content-Type']='application/json'; }
+  if(['POST','PUT','DELETE'].includes((o.method||'GET').toUpperCase()) && CSRF) o.headers['x-csrf-token'] = CSRF;
+  const r = await fetch(path, o);
+  const ct = r.headers.get('content-type') || '';
+  const data = ct.includes('application/json') ? await r.json() : await r.text();
+  if(!r.ok) throw new Error((data && data.error) || ('HTTP '+r.status));
+  return data;
+}
+
+/* ---------- Auth ---------- */
+async function checkAuth(){
+  try {
+    const me = await api('/api/me');
+    ME = me;
+    CSRF = me.csrfToken;
+    return true;
+  } catch(e){
+    return false;
+  }
+}
+
+async function doLogin(ev){
+  ev.preventDefault();
+  const u = $('#loginUser').value.trim();
+  const p = $('#loginPass').value;
+  $('#loginErr').textContent = '';
+  try {
+    const r = await fetch('/admin/login', {
+      method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username:u, password:p })
+    });
+    const data = await r.json();
+    if(!r.ok || !data.success){ $('#loginErr').textContent = data.error || 'Login failed'; return; }
+    CSRF = data.csrfToken;
+    ME = { username:data.username, name:data.name||data.username, role:data.role||'student', csrfToken: data.csrfToken };
+    showApp();
+  } catch(e){ $('#loginErr').textContent = e.message; }
+}
+
+async function doLogout(){
+  try { await fetch('/admin/logout',{method:'POST',credentials:'same-origin', headers:{'x-csrf-token':CSRF||''}}); } catch(e){}
+  location.reload();
+}
+
+function showApp(){
+  $('#loginScreen').style.display = 'none';
+  $('#appShell').classList.remove('hidden');
+  $('#userName').textContent = ME.name || ME.username;
+  $('#userRole').textContent = (ME.role || 'member').toUpperCase();
+  $('#userAv').textContent = initials(ME.name || ME.username);
+  if(ME.role === 'admin' || ME.role === 'professor'){
+    $$('.staff-only').forEach(el => el.classList.remove('hidden'));
+  }
+  goRoute('dashboard');
+  loadDashboard();
+}
+
+/* ---------- Routing ---------- */
+function goRoute(name){
+  $$('.p-section').forEach(s => s.classList.toggle('active', s.dataset.section === name));
+  $$('.p-nav-item').forEach(b => b.classList.toggle('active', b.dataset.route === name));
+  if(name === 'dashboard') loadDashboard();
+  if(name === 'schedule') loadSchedule();
+  if(name === 'tasks') loadTasks();
+  if(name === 'meetings') loadMeetings();
+  if(name === 'equipment') loadEquipment();
+  if(name === 'issues') loadIssues();
+  if(name === 'profile') loadProfile();
+  if(name === 'people-admin') loadUsers();
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('.p-nav-item');
+  if(t && t.dataset.route){ e.preventDefault(); goRoute(t.dataset.route); }
+});
+
+/* ---------- Dashboard ---------- */
+async function loadDashboard(){
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  $('#dashGreeting').textContent = `${greet}, ${(ME.name||ME.username).split(' ')[0]}`;
+  $('#dashSub').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+  // tasks
+  try {
+    const tasks = await api('/api/tasks/full?mine=1');
+    const open = tasks.filter(t => t.status !== 'done');
+    $('#stMyTasks').textContent = open.length;
+    $('#dashTasks').innerHTML = open.length ? open.slice(0,5).map(t => `
+      <div class="p-task">
+        <input class="p-check" type="checkbox" ${t.status==='done'?'checked':''} disabled>
+        <div style="flex:1;">
+          <div class="p-task-title">${escapeHTML(t.title)}</div>
+          <div class="p-task-due">${t.due_date ? 'Due '+fmtDate(t.due_date) : 'No due date'} · ${escapeHTML(t.status)}</div>
+        </div>
+      </div>`).join('') : '<div class="empty">No open tasks.</div>';
+  } catch(e){ $('#dashTasks').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  // meetings (events)
+  try {
+    const events = await api('/api/events');
+    const now = new Date();
+    const upcoming = events.filter(ev => new Date(ev.start_time) >= now).sort((a,b)=> new Date(a.start_time)-new Date(b.start_time));
+    $('#stMyMeetings').textContent = upcoming.length;
+    $('#dashMeetings').innerHTML = upcoming.length ? upcoming.slice(0,5).map(ev => `
+      <div class="p-slot">
+        <div class="p-slot-time">${new Date(ev.start_time).toLocaleString(undefined,{weekday:'short'})}</div>
+        <div style="flex:1;">
+          <div class="p-slot-title">${escapeHTML(ev.title)}</div>
+          <div class="p-slot-room">${fmtDT(ev.start_time)} · ${escapeHTML(ev.location||'')}</div>
+        </div>
+      </div>`).join('') : '<div class="empty">No upcoming events.</div>';
+  } catch(e){ $('#dashMeetings').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  // equipment checked out to me
+  try {
+    const eq = await api('/api/equipment');
+    const mine = eq.filter(x => x.checked_out_user_id === ME.id);
+    $('#stMyEq').textContent = mine.length;
+    $('#dashEquip').innerHTML = mine.length ? mine.map(x => `
+      <div class="p-task">
+        <div style="flex:1;">
+          <div class="p-task-title">${escapeHTML(x.name)}</div>
+          <div class="p-task-due">Tag ${escapeHTML(x.tag||'—')} · since ${fmtDT(x.checked_out_at)}</div>
+        </div>
+        <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
+      </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
+  } catch(e){ $('#dashEquip').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  // issues
+  try {
+    const issues = await api('/api/issues?status=open');
+    $('#dashIssues').innerHTML = issues.length ? issues.slice(0,5).map(it => `
+      <div class="p-task">
+        <div class="p-dot" style="background: ${it.priority==='high'?'var(--status-alert)':it.priority==='medium'?'var(--status-warn)':'var(--status-info)'};"></div>
+        <div style="flex:1;">
+          <div class="p-task-title">${escapeHTML(it.title)}</div>
+          <div class="p-task-due">${escapeHTML(it.category)} · ${escapeHTML(it.created_by_name||'')}</div>
+        </div>
+      </div>`).join('') : '<div class="empty">No open issues.</div>';
+  } catch(e){ $('#dashIssues').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-checkin-id]');
+  if(!b) return;
+  const id = b.dataset.checkinId;
+  const note = prompt('Optional return note:') || '';
+  try { await api(`/api/equipment/${id}/checkin`, {method:'POST', body:{note}}); loadDashboard(); loadEquipment(); }
+  catch(err){ alert(err.message); }
+});
+
+/* ---------- Schedule ---------- */
+let SCHED_SCOPE = 'mine';
+async function loadSchedule(){
+  try {
+    const events = await api('/api/events');
+    const now = new Date();
+    const filtered = (SCHED_SCOPE === 'mine')
+      ? events.filter(ev => ev.owner_user_id === ME.id || (ev.attendees||'').includes(ME.username))
+      : events;
+    const upcoming = filtered.filter(ev => new Date(ev.start_time) >= now)
+      .sort((a,b)=> new Date(a.start_time)-new Date(b.start_time));
+    if(!upcoming.length){ $('#schedList').innerHTML = '<div class="empty">No upcoming events.</div>'; return; }
+    $('#schedList').innerHTML = upcoming.map(ev => {
+      const canEdit = (ev.owner_user_id===ME.id) || ME.role==='admin' || ME.role==='professor';
+      return `
+      <div class="p-slot">
+        <div class="p-slot-time">${new Date(ev.start_time).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+        <div style="flex:1;">
+          <div class="p-slot-title">${escapeHTML(ev.title)}</div>
+          <div class="p-slot-room">${fmtDT(ev.start_time)} → ${ev.end_time?fmtDT(ev.end_time):''} · ${escapeHTML(ev.location||'')}</div>
+        </div>
+        <div class="p-slot-tag" style="background: var(--navy-700);">${escapeHTML(ev.event_type||'event')}</div>
+        ${canEdit ? `<button class="btn-ghost-sm" data-event-edit="${ev.id}">Edit</button>
+        <button class="btn-ghost-sm" data-event-del="${ev.id}">Delete</button>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e){ $('#schedList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+document.addEventListener('click', async e => {
+  const ed = e.target.closest('[data-event-edit]');
+  const dl = e.target.closest('[data-event-del]');
+  if(ed){
+    try { const ev = (await api('/api/events')).find(x => x.id == ed.dataset.eventEdit); if(ev) openEventModal(ev); }
+    catch(err){ alert(err.message); }
+  }
+  if(dl){
+    if(!confirm('Delete this event?')) return;
+    try { await api('/api/events/'+dl.dataset.eventDel, {method:'DELETE'}); loadSchedule(); loadDashboard(); }
+    catch(err){ alert(err.message); }
+  }
+});
+$('#schedScope').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  $$('#schedScope button').forEach(x=>x.classList.toggle('active', x===b));
+  SCHED_SCOPE = b.dataset.scope; loadSchedule();
+});
+
+$('#addEventBtn').addEventListener('click', () => openEventModal());
+function openEventModal(ev){
+  const isEdit = !!ev;
+  modal(`<h2>${isEdit?'Edit':'New'} event</h2>
+    <label>Title<input id="evTitle" value="${escapeHTML(ev?.title||'')}"></label>
+    <label>Type<select id="evType"><option value="meeting">Meeting</option><option value="seminar">Seminar</option><option value="reservation">Reservation</option><option value="other">Other</option></select></label>
+    <label>Start<input id="evStart" type="datetime-local" value="${ev?.start_time?ev.start_time.slice(0,16):''}"></label>
+    <label>End<input id="evEnd" type="datetime-local" value="${ev?.end_time?ev.end_time.slice(0,16):''}"></label>
+    <label>Location<input id="evLoc" value="${escapeHTML(ev?.location||'')}"></label>
+    <label>Visibility<select id="evVis"><option value="public">Public</option><option value="private">Private (just me)</option></select></label>`,
+    async () => {
+      const body = {
+        title: $('#evTitle').value.trim(),
+        event_type: $('#evType').value,
+        start_time: $('#evStart').value,
+        end_time: $('#evEnd').value,
+        location: $('#evLoc').value,
+        visibility: $('#evVis').value
+      };
+      if(!body.title || !body.start_time) throw new Error('Title and start required');
+      if(isEdit) await api('/api/events/'+ev.id,{method:'PUT', body});
+      else await api('/api/events',{method:'POST', body});
+      loadSchedule(); loadDashboard();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delEv">Delete</button>` : '');
+  if(isEdit){
+    $('#delEv').addEventListener('click', async () => {
+      if(!confirm('Delete this event?')) return;
+      try { await api('/api/events/'+ev.id, {method:'DELETE'}); closeModal(); loadSchedule(); loadDashboard(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Tasks ---------- */
+let TASK_SCOPE='mine';
+async function loadTasks(){
+  try {
+    const tasks = await api('/api/tasks/full?'+(TASK_SCOPE==='mine'?'mine=1':'all=1'));
+    const cols = [
+      ['todo','To do'],
+      ['in_progress','In progress'],
+      ['blocked','Blocked'],
+      ['done','Done']
+    ];
+    const root = $('#kanbanRoot');
+    root.innerHTML = cols.map(([k,t])=>{
+      const items = tasks.filter(x => (x.status||'todo')===k);
+      return `<div class="p-col"><div class="p-col-head"><div class="p-col-title">${t}</div><div class="p-col-count">${items.length}</div></div>
+        ${items.map(x => `
+          <div class="p-task-card" data-task-id="${x.id}">
+            <div class="p-task-card-title">${escapeHTML(x.title)}</div>
+            <div class="p-task-card-foot">
+              <span class="p-tag-sm ${prioClass(x.priority)}">${escapeHTML(x.priority||'normal')}</span>
+              <div class="p-task-meta">
+                <span class="p-task-due-sm">${x.due_date?fmtDate(x.due_date):''}</span>
+                <span class="p-task-av" title="${escapeHTML(x.assignee_name||'')}">${initials(x.assignee_name||x.assignee||'')}</span>
+              </div>
+            </div>
+          </div>`).join('')}
+        <button class="p-col-add" data-add-status="${k}">+ Add task</button></div>`;
+    }).join('');
+  } catch(e){ $('#kanbanRoot').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+function prioClass(p){ if(p==='high') return 'p-tag-alert'; if(p==='low') return 'p-tag-info'; return 'p-tag-warn'; }
+
+$('#taskScope').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  $$('#taskScope button').forEach(x=>x.classList.toggle('active', x===b));
+  TASK_SCOPE = b.dataset.scope; loadTasks();
+});
+$('#addTaskBtn').addEventListener('click', () => openTaskModal());
+document.addEventListener('click', async e => {
+  const add = e.target.closest('[data-add-status]');
+  if(add){ openTaskModal({status: add.dataset.addStatus}); return; }
+  const card = e.target.closest('.p-task-card');
+  if(card && card.dataset.taskId){
+    try { const t = (await api('/api/tasks/full?all=1')).find(x=>x.id==card.dataset.taskId); if(t) openTaskModal(t); }
+    catch(err){ alert(err.message); }
+  }
+});
+
+async function openTaskModal(t){
+  const isEdit = !!(t && t.id);
+  let users = [];
+  try { users = await api('/api/users'); } catch(e){ users = []; }
+  modal(`<h2>${isEdit?'Edit task':'New task'}</h2>
+    <label>Title<input id="tTitle" value="${escapeHTML(t?.title||'')}"></label>
+    <label>Description<textarea id="tDesc">${escapeHTML(t?.description||'')}</textarea></label>
+    <label>Priority<select id="tPri">
+      ${['low','normal','high'].map(p=>`<option value="${p}" ${t?.priority===p?'selected':''}>${p}</option>`).join('')}
+    </select></label>
+    <label>Status<select id="tSt">
+      ${['todo','in_progress','blocked','done'].map(p=>`<option value="${p}" ${(t?.status||'todo')===p?'selected':''}>${p.replace('_',' ')}</option>`).join('')}
+    </select></label>
+    <label>Due date<input id="tDue" type="date" value="${t?.due_date?t.due_date.slice(0,10):''}"></label>
+    <label>Assigned to<select id="tAss"><option value="">—</option>
+      ${users.map(u=>`<option value="${u.id}" ${t?.assignee_user_id===u.id?'selected':''}>${escapeHTML(u.name||u.username)}</option>`).join('')}
+    </select></label>`,
+    async () => {
+      const body = {
+        title: $('#tTitle').value.trim(),
+        description: $('#tDesc').value,
+        priority: $('#tPri').value,
+        status: $('#tSt').value,
+        due_date: $('#tDue').value || null,
+        assignee_user_id: $('#tAss').value ? Number($('#tAss').value) : null
+      };
+      if(!body.title) throw new Error('Title required');
+      if(isEdit) await api('/api/tasks/'+t.id,{method:'PUT', body});
+      else await api('/api/tasks',{method:'POST', body});
+      loadTasks(); loadDashboard();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delTask">Delete</button>` : ''
+  );
+  if(isEdit){
+    $('#delTask').addEventListener('click', async () => {
+      if(!confirm('Delete this task?')) return;
+      try { await api('/api/tasks/'+t.id,{method:'DELETE'}); closeModal(); loadTasks(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Meetings ---------- */
+async function loadMeetings(){
+  try {
+    const meetings = await api('/api/meetings');
+    const now = new Date();
+    const upcoming = meetings.sort((a,b)=> new Date(a.scheduled_at||a.created_at)-new Date(b.scheduled_at||b.created_at));
+    if(!upcoming.length){ $('#meetList').innerHTML='<div class="empty">No meetings yet.</div>'; return; }
+    const isStaff = ME.role==='admin' || ME.role==='professor';
+    $('#meetList').innerHTML = upcoming.map(m => {
+      const d = new Date(m.scheduled_at||m.created_at);
+      return `<div class="p-meet-card">
+        <div class="p-meet-day">
+          <div class="p-meet-day-lbl">${d.toLocaleString(undefined,{weekday:'short'}).toUpperCase()}</div>
+          <div class="p-meet-day-time">${d.toLocaleString(undefined,{month:'short',day:'numeric'})}</div>
+          <div class="p-meet-day-time">${d.toLocaleString(undefined,{hour:'numeric',minute:'2-digit'})}</div>
+        </div>
+        <div class="p-meet-body">
+          <div class="p-meet-title">${escapeHTML(m.title)}</div>
+          <div class="p-meet-room">${escapeHTML(m.location||'')}</div>
+          <div style="font-size:13px;color:var(--fg-2); margin-top:6px;">${escapeHTML(m.description||m.notes||'')}</div>
+        </div>
+        <div class="p-meet-tag-col">
+          <div class="p-meet-tag" style="background: var(--navy-700);">${escapeHTML(m.meeting_type||'meeting')}</div>
+          ${isStaff ? `<div style="display:flex; gap:6px;">
+            <button class="btn-ghost-sm" data-meet-edit="${m.id}">Edit</button>
+            <button class="btn-ghost-sm" data-meet-del="${m.id}">Delete</button>
+          </div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ $('#meetList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+document.addEventListener('click', async e => {
+  const ed = e.target.closest('[data-meet-edit]');
+  const dl = e.target.closest('[data-meet-del]');
+  if(ed){
+    try { const m = (await api('/api/meetings')).find(x => x.id == ed.dataset.meetEdit); if(m) openMeetingModal(m); }
+    catch(err){ alert(err.message); }
+  }
+  if(dl){
+    if(!confirm('Delete this meeting?')) return;
+    try { await api('/api/meetings/'+dl.dataset.meetDel, {method:'DELETE'}); loadMeetings(); }
+    catch(err){ alert(err.message); }
+  }
+});
+$('#addMeetingBtn').addEventListener('click', () => openMeetingModal());
+function openMeetingModal(m){
+  const isEdit = !!m;
+  modal(`<h2>${isEdit?'Edit':'New'} meeting / announcement</h2>
+    <label>Title<input id="mTitle" value="${escapeHTML(m?.title||'')}"></label>
+    <label>Type<select id="mType">
+      ${['group','seminar','announcement'].map(v=>`<option value="${v}" ${m?.meeting_type===v?'selected':''}>${v}</option>`).join('')}
+    </select></label>
+    <label>Date & time<input id="mWhen" type="datetime-local" value="${m?.scheduled_at?String(m.scheduled_at).slice(0,16):''}"></label>
+    <label>Location<input id="mLoc" value="${escapeHTML(m?.location||'')}"></label>
+    <label>Notes / description<textarea id="mDesc">${escapeHTML(m?.description||m?.notes||'')}</textarea></label>`,
+    async () => {
+      const body = {
+        title: $('#mTitle').value.trim(),
+        meeting_type: $('#mType').value,
+        scheduled_at: $('#mWhen').value || null,
+        location: $('#mLoc').value,
+        description: $('#mDesc').value
+      };
+      if(!body.title) throw new Error('Title required');
+      if(isEdit) await api('/api/meetings/'+m.id, {method:'PUT', body});
+      else await api('/api/meetings', {method:'POST', body});
+      loadMeetings();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delMeet">Delete</button>` : '');
+  if(isEdit){
+    $('#delMeet').addEventListener('click', async () => {
+      if(!confirm('Delete this meeting?')) return;
+      try { await api('/api/meetings/'+m.id, {method:'DELETE'}); closeModal(); loadMeetings(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Equipment ---------- */
+let EQ_CAT='', EQ_STATUS='', EQ_QUERY='';
+async function loadEquipment(){
+  try {
+    const eq = await api('/api/equipment');
+    let filtered = eq;
+    if(EQ_CAT) filtered = filtered.filter(x => x.category === EQ_CAT);
+    if(EQ_STATUS) filtered = filtered.filter(x => x.status === EQ_STATUS);
+    if(EQ_QUERY){
+      const q = EQ_QUERY.toLowerCase();
+      filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(q) || (x.tag||'').toLowerCase().includes(q));
+    }
+    const list = $('#eqList');
+    if(!filtered.length){ list.innerHTML='<div class="empty">No equipment matches.</div>'; return; }
+    list.innerHTML = filtered.map(x => {
+      const statusCls = x.status==='available' ? 'p-eq-status-available'
+                       : x.status==='checked_out' ? 'p-eq-status-out'
+                       : x.status==='broken' ? 'p-eq-status-broken'
+                       : 'p-eq-status-maint';
+      return `<div class="p-inv-row">
+        <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div>
+          <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.location||'')}</div>
+        </div>
+        <div style="flex:1;"><span class="p-mono">${escapeHTML(x.tag||'—')}</span></div>
+        <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.category||'')}</div>
+        <div style="flex:1;font-size:12px;">${x.last_user_name?escapeHTML(x.last_user_name):'<span style="color:var(--fg-4);">never</span>'}<br>
+          <span style="font-size:11px;color:var(--fg-4);">${x.last_used_at?fmtDT(x.last_used_at):''}</span></div>
+        <div style="flex:1;"><span class="${statusCls}">${escapeHTML((x.status||'').replace('_',' '))}</span></div>
+        <div style="width:160px; display:flex; gap:6px; flex-wrap:wrap;">
+          ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="checkout" data-eq-id="${x.id}">Check out</button>` : ''}
+          ${x.status==='checked_out' && x.checked_out_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
+          ${(ME.role==='admin'||ME.role==='professor') && x.status==='checked_out' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
+          <button class="btn-ghost-sm" data-eq-action="log" data-eq-id="${x.id}">Log</button>
+          ${(ME.role==='admin'||ME.role==='professor') ? `<button class="btn-ghost-sm" data-eq-action="edit" data-eq-id="${x.id}">Edit</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ $('#eqList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#eqTabs').addEventListener('click', e => {
+  const b = e.target.closest('.p-tab'); if(!b) return;
+  $$('#eqTabs .p-tab').forEach(x=>x.classList.toggle('active', x===b));
+  EQ_CAT = b.dataset.eqcat||''; loadEquipment();
+});
+$('#eqStatus').addEventListener('change', e => { EQ_STATUS = e.target.value; loadEquipment(); });
+$('#eqSearch').addEventListener('input', e => { EQ_QUERY = e.target.value; loadEquipment(); });
+$('#addEquipBtn').addEventListener('click', () => openEquipModal());
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-eq-action]'); if(!b) return;
+  const id = b.dataset.eqId; const action = b.dataset.eqAction;
+  if(action==='checkout'){
+    const note = prompt('Optional note (e.g. project, expected return):')||'';
+    try { await api('/api/equipment/'+id+'/checkout',{method:'POST', body:{note}}); loadEquipment(); loadDashboard(); }
+    catch(err){ alert(err.message); }
+  } else if(action==='checkin'){
+    const note = prompt('Optional return note:')||'';
+    try { await api('/api/equipment/'+id+'/checkin',{method:'POST', body:{note}}); loadEquipment(); loadDashboard(); }
+    catch(err){ alert(err.message); }
+  } else if(action==='log'){
+    try {
+      const log = await api('/api/equipment/'+id+'/log');
+      const eq = (await api('/api/equipment')).find(x => x.id == id);
+      modal(`<h2>${escapeHTML(eq?.name||'Equipment')} — usage log</h2>
+        <p style="font-size:12px;color:var(--fg-3);">Tag ${escapeHTML(eq?.tag||'—')}</p>
+        ${log.length ? log.map(l => `
+          <div class="p-log-row">
+            <span class="p-log-when">${fmtDT(l.action_at)}</span>
+            <span class="p-log-act ${l.action}">${escapeHTML(l.action)}</span>
+            <span class="p-log-who">${escapeHTML(l.user_name||l.username||'?')}</span>
+            <span class="p-log-note">${escapeHTML(l.note||'')}</span>
+          </div>`).join('') : '<div class="empty">No usage history.</div>'}`,
+        null, '', 'Close');
+    } catch(err){ alert(err.message); }
+  } else if(action==='edit'){
+    try { const eq = (await api('/api/equipment')).find(x=>x.id==id); openEquipModal(eq); }
+    catch(err){ alert(err.message); }
+  }
+});
+
+function openEquipModal(eq){
+  const isEdit = !!eq;
+  modal(`<h2>${isEdit?'Edit':'New'} equipment</h2>
+    <label>Name<input id="eqName" value="${escapeHTML(eq?.name||'')}"></label>
+    <label>Tag / asset #<input id="eqTag" value="${escapeHTML(eq?.tag||'')}"></label>
+    <label>Category<select id="eqCat">
+      ${['rig','instrument','supply','tool'].map(c=>`<option value="${c}" ${eq?.category===c?'selected':''}>${c}</option>`).join('')}
+    </select></label>
+    <label>Location<input id="eqLoc" value="${escapeHTML(eq?.location||'')}"></label>
+    <label>Status<select id="eqSt">
+      ${['available','checked_out','broken','maintenance'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
+    </select></label>
+    <label>Notes<textarea id="eqNotes">${escapeHTML(eq?.notes||'')}</textarea></label>`,
+    async () => {
+      const body = {
+        name: $('#eqName').value.trim(),
+        tag: $('#eqTag').value,
+        category: $('#eqCat').value,
+        location: $('#eqLoc').value,
+        status: $('#eqSt').value,
+        notes: $('#eqNotes').value
+      };
+      if(!body.name) throw new Error('Name required');
+      if(isEdit) await api('/api/equipment/'+eq.id,{method:'PUT', body});
+      else await api('/api/equipment',{method:'POST', body});
+      loadEquipment();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delEq">Delete</button>` : ''
+  );
+  if(isEdit){
+    $('#delEq').addEventListener('click', async () => {
+      if(!confirm('Delete this equipment? Its usage log will be lost.')) return;
+      try { await api('/api/equipment/'+eq.id,{method:'DELETE'}); closeModal(); loadEquipment(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Issues ---------- */
+let ISSUE_FILTER='open';
+async function loadIssues(){
+  try {
+    const params = ISSUE_FILTER==='open' ? '?status=open' : '';
+    const issues = await api('/api/issues'+params);
+    if(!issues.length){ $('#issueList').innerHTML='<div class="empty">No issues to show.</div>'; return; }
+    $('#issueList').innerHTML = issues.map(it => `
+      <div class="p-issue-card priority-${escapeHTML(it.priority||'medium')}">
+        <div class="p-issue-head">
+          <div>
+            <span class="p-tag-sm ${{open:'p-tag-warn',in_progress:'p-tag-info',resolved:'p-tag-ok'}[it.status]||'p-tag-outline'}">${escapeHTML((it.status||'').replace('_',' '))}</span>
+            <span class="p-tag-sm p-tag-outline">${escapeHTML(it.category||'')}</span>
+            <span class="p-tag-sm p-tag-outline">${escapeHTML(it.priority||'')}</span>
+          </div>
+          <button class="btn-ghost-sm" data-issue-id="${it.id}" data-act="open">Open</button>
+        </div>
+        <div class="p-issue-title">${escapeHTML(it.title)}</div>
+        <div class="p-issue-body">${escapeHTML(it.description||'').slice(0,200)}${(it.description||'').length>200?'…':''}</div>
+        <div class="p-issue-meta">Reported by ${escapeHTML(it.created_by_name||it.created_by_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
+      </div>`).join('');
+  } catch(e){ $('#issueList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#issueFilter').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  $$('#issueFilter button').forEach(x=>x.classList.toggle('active', x===b));
+  ISSUE_FILTER = b.dataset.filter; loadIssues();
+});
+$('#addIssueBtn').addEventListener('click', () => openIssueModal());
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-issue-id][data-act="open"]'); if(!b) return;
+  try {
+    const issues = await api('/api/issues');
+    const it = issues.find(x => x.id == b.dataset.issueId);
+    if(it) openIssueDetail(it);
+  } catch(err){ alert(err.message); }
+});
+
+async function openIssueModal(){
+  let equipment=[];
+  try { equipment = await api('/api/equipment'); } catch(e){}
+  modal(`<h2>Report an issue or request</h2>
+    <label>Title<input id="iTitle" placeholder="Short summary…"></label>
+    <label>Category<select id="iCat">
+      <option value="broken">Broken equipment</option>
+      <option value="supply">Supply needed</option>
+      <option value="facility">Facility issue</option>
+      <option value="other">Other</option>
+    </select></label>
+    <label>Priority<select id="iPri">
+      <option value="low">Low</option>
+      <option value="medium" selected>Medium</option>
+      <option value="high">High</option>
+    </select></label>
+    <label>Related equipment (optional)<select id="iEq"><option value="">—</option>
+      ${equipment.map(e=>`<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.tag||'')})</option>`).join('')}
+    </select></label>
+    <label>Description<textarea id="iDesc" placeholder="What happened? What's needed?"></textarea></label>`,
+    async () => {
+      const body = {
+        title: $('#iTitle').value.trim(),
+        category: $('#iCat').value,
+        priority: $('#iPri').value,
+        equipment_id: $('#iEq').value || null,
+        description: $('#iDesc').value
+      };
+      if(!body.title) throw new Error('Title required');
+      await api('/api/issues',{method:'POST', body});
+      loadIssues(); loadDashboard();
+    });
+}
+
+async function openIssueDetail(it){
+  let comments=[];
+  try { comments = await api('/api/issues/'+it.id+'/comments'); } catch(e){}
+  const isStaff = ME.role==='admin' || ME.role==='professor';
+  modal(`<h2>${escapeHTML(it.title)}</h2>
+    <div class="p-issue-meta">${escapeHTML(it.category)} · ${escapeHTML(it.priority||'')} · reported by ${escapeHTML(it.created_by_name||'?')} on ${fmtDT(it.created_at)}</div>
+    <div class="p-issue-body" style="margin-top:12px;">${escapeHTML(it.description||'')}</div>
+    ${isStaff?`<label>Status<select id="iStatus">
+      ${['open','in_progress','resolved'].map(s=>`<option value="${s}" ${it.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
+    </select></label>`:''}
+    <div class="p-issue-comments">
+      <div class="p-card-title" style="margin-bottom:8px;">Comments</div>
+      <div id="iComments">${comments.length?comments.map(c=>`
+        <div class="p-comment">
+          <div class="p-comment-meta">${escapeHTML(c.user_name||c.username||'?')} · ${fmtDT(c.created_at)}</div>
+          <div>${escapeHTML(c.body)}</div>
+        </div>`).join(''):'<div class="empty">No comments yet.</div>'}
+      </div>
+      <label style="margin-top:14px;">Add comment<textarea id="iCmtNew" placeholder="Reply…"></textarea></label>
+      <button class="p-bigbtn ghost" id="iCmtBtn" style="margin-top:8px;">Post</button>
+    </div>`,
+    isStaff ? async () => {
+      const body = { status: $('#iStatus').value };
+      await api('/api/issues/'+it.id,{method:'PUT', body});
+      loadIssues(); loadDashboard();
+    } : null,
+    isStaff ? `<button type="button" class="p-bigbtn danger" id="iDel">Delete</button>` : '',
+    isStaff ? 'Save' : 'Close');
+  $('#iCmtBtn').addEventListener('click', async () => {
+    const body = $('#iCmtNew').value.trim(); if(!body) return;
+    try { await api('/api/issues/'+it.id+'/comments',{method:'POST', body:{body}});
+      const cs = await api('/api/issues/'+it.id+'/comments');
+      $('#iComments').innerHTML = cs.map(c=>`
+        <div class="p-comment">
+          <div class="p-comment-meta">${escapeHTML(c.user_name||c.username||'?')} · ${fmtDT(c.created_at)}</div>
+          <div>${escapeHTML(c.body)}</div>
+        </div>`).join('');
+      $('#iCmtNew').value='';
+    } catch(err){ alert(err.message); }
+  });
+  if(isStaff){
+    $('#iDel').addEventListener('click', async () => {
+      if(!confirm('Delete this issue?')) return;
+      try { await api('/api/issues/'+it.id,{method:'DELETE'}); closeModal(); loadIssues(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Profile ---------- */
+async function loadProfile(){
+  $('#profAv').textContent = initials(ME.name||ME.username);
+  $('#profName').textContent = ME.name || ME.username;
+  $('#profRole').textContent = (ME.role || '').toUpperCase();
+  $('#profEmail').textContent = ME.email || `@${ME.username}`;
+  try {
+    const tasks = await api('/api/tasks/full?mine=1');
+    const open = tasks.filter(t => t.status !== 'done');
+    $('#profTasks').innerHTML = open.length ? open.map(t=>`
+      <div class="p-task">
+        <input class="p-check" type="checkbox" disabled>
+        <div style="flex:1;">
+          <div class="p-task-title">${escapeHTML(t.title)}</div>
+          <div class="p-task-due">${t.due_date?'Due '+fmtDate(t.due_date):'No due'} · ${escapeHTML(t.status)}</div>
+        </div>
+      </div>`).join('') : '<div class="empty">No open tasks.</div>';
+  } catch(e){ $('#profTasks').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  try {
+    const eq = await api('/api/equipment');
+    const mine = eq.filter(x => x.checked_out_user_id === ME.id);
+    $('#profEquip').innerHTML = mine.length ? mine.map(x=>`
+      <div class="p-task">
+        <div style="flex:1;">
+          <div class="p-task-title">${escapeHTML(x.name)}</div>
+          <div class="p-task-due">Tag ${escapeHTML(x.tag||'—')} · since ${fmtDT(x.checked_out_at)}</div>
+        </div>
+        <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
+      </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
+  } catch(e){ $('#profEquip').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#profEditBtn').addEventListener('click', () => {
+  modal(`<h2>Edit my details</h2>
+    <label>Display name<input id="meName" value="${escapeHTML(ME.name||'')}"></label>
+    <label>Email<input id="meEmail" value="${escapeHTML(ME.email||'')}"></label>
+    <p style="font-size:12px;color:var(--fg-3);">Role and username are managed by an admin.</p>`,
+    async () => {
+      const body = { name: $('#meName').value.trim(), email: $('#meEmail').value.trim() };
+      await api('/api/users/'+ME.id, {method:'PUT', body});
+      ME.name = body.name; ME.email = body.email;
+      $('#userName').textContent = ME.name || ME.username;
+      $('#userAv').textContent = initials(ME.name||ME.username);
+      loadProfile();
+    });
+});
+
+/* ---------- Lab members (staff only) ---------- */
+async function loadUsers(){
+  try {
+    const users = await api('/api/users');
+    if(!users.length){ $('#usersList').innerHTML='<div class="empty">No members.</div>'; return; }
+    $('#usersList').innerHTML = users.map(u=>`
+      <div class="p-inv-row">
+        <div style="flex:2;">
+          <div class="p-inv-name">${escapeHTML(u.name||u.username)}</div>
+          <div style="font-size:11px;color:var(--fg-4);">@${escapeHTML(u.username)} · ${escapeHTML(u.email||'')}</div>
+        </div>
+        <div style="flex:1;"><span class="p-tag-sm p-tag-outline">${escapeHTML(u.role||'')}</span></div>
+        <div style="flex:1;color:var(--fg-3);font-size:12px;">${u.active?'active':'<span style="color:#dc2626;">disabled</span>'}</div>
+        <div style="width:200px;display:flex;gap:6px;">
+          <button class="btn-ghost-sm" data-user-edit="${u.id}">Edit</button>
+          ${u.id !== ME.id ? `<button class="btn-ghost-sm" data-user-pw="${u.id}">Reset PW</button>` : ''}
+          ${u.id !== ME.id && ME.role==='admin' ? `<button class="btn-ghost-sm" data-user-del="${u.id}">Disable</button>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e){ $('#usersList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#addUserBtn').addEventListener('click', () => openUserModal());
+document.addEventListener('click', async e => {
+  const ed = e.target.closest('[data-user-edit]');
+  const pw = e.target.closest('[data-user-pw]');
+  const dl = e.target.closest('[data-user-del]');
+  if(ed){ try { const u=(await api('/api/users')).find(x=>x.id==ed.dataset.userEdit); if(u) openUserModal(u); } catch(err){ alert(err.message); } }
+  if(pw){ const np = prompt('New password (min 8 chars):'); if(!np||np.length<8){ alert('Min 8 characters'); return; }
+    try { await api('/api/users/'+pw.dataset.userPw,{method:'PUT', body:{password:np}}); alert('Password reset'); } catch(err){ alert(err.message); } }
+  if(dl){ if(!confirm('Disable this account?')) return;
+    try { await api('/api/users/'+dl.dataset.userDel,{method:'DELETE'}); loadUsers(); } catch(err){ alert(err.message); } }
+});
+function openUserModal(u){
+  const isEdit = !!u;
+  modal(`<h2>${isEdit?'Edit member':'Add lab member'}</h2>
+    <label>Username (for login)<input id="uUsr" value="${escapeHTML(u?.username||'')}" ${isEdit?'readonly':''}></label>
+    <label>Display name<input id="uName" value="${escapeHTML(u?.name||'')}"></label>
+    <label>Email<input id="uEmail" value="${escapeHTML(u?.email||'')}"></label>
+    <label>Role<select id="uRole">
+      ${['admin','professor','postdoc','student'].map(r=>`<option value="${r}" ${u?.role===r?'selected':''}>${r}</option>`).join('')}
+    </select></label>
+    ${!isEdit?`<label>Initial password (min 8)<input id="uPw" type="text" value=""></label>`:''}`,
+    async () => {
+      const body = {
+        username: $('#uUsr').value.trim(),
+        name: $('#uName').value.trim(),
+        email: $('#uEmail').value.trim(),
+        role: $('#uRole').value
+      };
+      if(!isEdit){ body.password = $('#uPw').value; if(!body.password||body.password.length<8) throw new Error('Password >= 8 chars'); }
+      if(isEdit) await api('/api/users/'+u.id,{method:'PUT', body});
+      else await api('/api/users',{method:'POST', body});
+      loadUsers();
+    });
+}
+
+/* ---------- Modal helper ---------- */
+function modal(bodyHTML, onSave, extraFootHTML='', saveLabel='Save'){
+  const root = $('#modalMount');
+  root.innerHTML = `<div class="modal-bg"><form class="modal" id="modalForm" novalidate>
+    ${bodyHTML}
+    <div class="modal-actions">
+      ${extraFootHTML}
+      <button type="button" class="p-bigbtn ghost" id="modalCancel">${onSave?'Cancel':'Close'}</button>
+      ${onSave?`<button type="submit" class="p-bigbtn">${saveLabel}</button>`:''}
+    </div>
+  </form></div>`;
+  $('#modalCancel').addEventListener('click', closeModal);
+  if(onSave){
+    $('#modalForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      try { await onSave(); closeModal(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+function closeModal(){ $('#modalMount').innerHTML=''; }
+
+/* ---------- Boot ---------- */
+$('#loginForm').addEventListener('submit', doLogin);
+$('#logoutBtn').addEventListener('click', doLogout);
+(async function boot(){
+  if(await checkAuth()) showApp();
+})();
+</script>
+</body>
+</html>
+submit', doLogin);
+$('#logoutBtn').addEventListener('click', doLogout);
+(async function boot(){
+  if(await checkAuth()) showApp();
+})();
+</script>
+</body>
+</html>

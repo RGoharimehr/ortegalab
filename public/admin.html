@@ -260,6 +260,158 @@ code {
 .row-actions button { background:none; border:1px solid var(--border-1); color: var(--fg-3); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor:pointer; font-family:inherit; }
 .row-actions button:hover { background: var(--bg-2); color: var(--navy-900); }
 .row-actions button.danger:hover { background: #fee2e2; color: #991b1b; border-color:#fca5a5; }
+
+
+/* ---- Platform layout (sidebar/main, cards, kanban, calendar, etc.) ---- */
+html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
+  .p-app { display: flex; min-height: 100vh; }
+  .p-main { flex: 1; padding: 28px 32px; overflow: auto; }
+
+  /* Sidebar */
+  .p-sidebar { width: 240px; background: var(--navy-900); color: rgba(255,255,255,.8); display: flex; flex-direction: column; padding: 20px 12px; }
+  .p-brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 12px; }
+  .p-brand-mark { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .p-brand-wm { color: #fff; font-weight: 800; font-size: 14px; }
+  .p-brand-sub { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .08em; text-transform: uppercase; }
+  .p-nav, .p-nav-section { display: flex; flex-direction: column; gap: 2px; }
+  .p-nav-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.08); }
+  .p-nav-head { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .1em; text-transform: uppercase; padding: 4px 12px 8px; }
+  .p-nav-item { background: none; border: none; color: rgba(255,255,255,.7); text-align: left; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit; }
+  .p-nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .p-nav-item.active { background: var(--gold-600); color: #fff; }
+  .p-nav-icon { width: 16px; height: 16px; }
+  .p-user { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08); }
+  .p-user-av { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .p-user-name { color: #fff; font-size: 13px; font-weight: 600; }
+  .p-user-role { color: rgba(255,255,255,.5); font-size: 11px; }
+
+  /* Page head */
+  .p-page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+  .p-h1 { font-size: 1.5rem; font-weight: 800; color: var(--navy-900); margin: 4px 0 4px; letter-spacing: -.02em; }
+  .p-h1-sub { font-size: 13px; color: var(--fg-3); margin: 0; }
+  .p-actions { display: flex; gap: 8px; }
+  .btn-primary-sm { background: var(--gold-600); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn-primary-sm:hover { background: var(--gold-700); }
+  .btn-ghost-sm { background: #fff; border: 1px solid var(--border-1); color: var(--fg-2); border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .btn-ghost-sm:hover { background: var(--bg-1); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+  /* Cards + grid */
+  .p-card { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-xs); }
+  .p-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-1); }
+  .p-card-title { font-weight: 700; font-size: 14px; color: var(--navy-900); }
+  .p-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .p-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .p-stat-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px; position: relative; box-shadow: var(--shadow-xs); }
+  .p-stat-icon { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; color: var(--fg-4); }
+  .p-stat-num { font-size: 1.75rem; font-weight: 800; color: var(--navy-900); line-height: 1; }
+  .p-stat-lbl { font-size: 12px; color: var(--fg-3); }
+  .w-link-gold { background: none; border: none; color: var(--gold-700); font-weight: 600; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+
+  /* Slots */
+  .p-slot { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-slot:last-child { border-bottom: none; }
+  .p-slot-time { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); font-weight: 600; width: 44px; }
+  .p-slot-title { font-size: 13px; color: var(--navy-900); font-weight: 600; }
+  .p-slot-room { font-size: 11px; color: var(--fg-4); }
+  .p-slot-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+
+  /* Tasks in dashboard */
+  .p-task { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-task:last-child { border-bottom: none; }
+  .p-check { width: 14px; height: 14px; accent-color: var(--gold-600); }
+  .p-task-title { font-size: 13px; color: var(--navy-900); font-weight: 500; }
+  .p-task-due { font-size: 11px; color: var(--fg-4); }
+
+  /* Tags */
+  .p-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: .02em; }
+  .p-tag-ok { background: var(--status-ok-tint); color: #166534; }
+  .p-tag-warn { background: var(--status-warn-tint); color: #92400e; }
+  .p-tag-alert { background: var(--status-alert-tint); color: #991b1b; }
+  .p-tag-info { background: var(--status-info-tint); color: #075985; }
+  .p-tag-gold { background: var(--gold-100); color: var(--gold-700); }
+  .p-tag-outline { background: #fff; border: 1px solid var(--border-2); color: var(--fg-3); }
+  .p-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Lab status */
+  .p-lab-name { font-size: 12px; font-weight: 700; color: var(--fg-2); letter-spacing: .04em; margin-bottom: 6px; text-transform: uppercase; }
+  .p-lab-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-lab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .p-lab-lbl { font-size: 13px; color: var(--navy-900); font-weight: 500; }
+  .p-lab-meta { font-size: 11px; color: var(--fg-4); }
+  .p-lab-state { font-size: 11px; color: var(--fg-3); font-weight: 600; }
+
+  /* Calendar */
+  .p-cal { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; }
+  .p-cal-head { display: grid; grid-template-columns: 60px repeat(5, 1fr); border-bottom: 1px solid var(--border-1); background: var(--bg-1); }
+  .p-cal-day-h { padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--navy-900); border-left: 1px solid var(--border-1); }
+  .p-cal-body { display: grid; grid-template-columns: 60px repeat(5, 1fr); position: relative; }
+  .p-cal-hours { display: flex; flex-direction: column; }
+  .p-cal-hour { height: 46px; font-size: 10px; color: var(--fg-4); padding: 2px 8px; border-bottom: 1px solid var(--border-1); font-family: var(--font-mono); }
+  .p-cal-col { position: relative; border-left: 1px solid var(--border-1); }
+  .p-cal-cell { height: 46px; border-bottom: 1px solid var(--border-1); }
+  .p-cal-event { position: absolute; left: 4px; right: 4px; border-radius: 6px; padding: 6px 8px; font-size: 11px; overflow: hidden; box-shadow: var(--shadow-xs); cursor: pointer; }
+  .p-cal-ev-title { font-weight: 700; line-height: 1.2; }
+  .p-cal-ev-room { font-size: 10px; opacity: .8; margin-top: 2px; }
+
+  /* Kanban */
+  .p-kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .p-col { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: 10px; padding: 10px; }
+  .p-col-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+  .p-col-title { font-size: 12px; font-weight: 700; color: var(--navy-900); letter-spacing: .02em; text-transform: uppercase; }
+  .p-col-count { font-size: 11px; font-weight: 700; color: var(--fg-4); background: #fff; border: 1px solid var(--border-1); border-radius: 999px; padding: 1px 8px; }
+  .p-task-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 8px; padding: 10px; margin-bottom: 8px; box-shadow: var(--shadow-xs); cursor: pointer; }
+  .p-task-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+  .p-task-card-title { font-size: 13px; color: var(--navy-900); font-weight: 600; line-height: 1.35; margin-bottom: 8px; }
+  .p-task-card-foot { display: flex; justify-content: space-between; align-items: center; }
+  .p-tag-sm { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: .02em; }
+  .p-task-meta { display: flex; align-items: center; gap: 8px; }
+  .p-task-due-sm { font-size: 11px; color: var(--fg-4); }
+  .p-task-av { width: 22px; height: 22px; border-radius: 50%; background: var(--navy-700); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .p-col-add { width: 100%; border: 1px dashed var(--border-2); background: transparent; color: var(--fg-4); padding: 8px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 12px; margin-top: 4px; }
+  .p-col-add:hover { border-color: var(--gold-600); color: var(--gold-700); }
+
+  /* Inventory */
+  .p-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border-1); margin-bottom: 16px; }
+  .p-tab { background: none; border: none; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--fg-3); cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 8px; }
+  .p-tab.active { color: var(--navy-900); border-bottom-color: var(--gold-600); }
+  .p-tab-count { background: var(--bg-1); border-radius: 999px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--fg-3); }
+  .p-inv-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .p-inv-search { position: relative; flex: 1; }
+  .p-inv-search-i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--fg-4); }
+  .p-inv-input { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; box-sizing: border-box; }
+  .p-inv-select { padding: 8px 10px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; }
+  .p-inv-table { background: #fff; border: 1px solid var(--border-1); border-radius: 10px; overflow: hidden; }
+  .p-inv-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border-1); font-size: 13px; }
+  .p-inv-row:last-child { border-bottom: none; }
+  .p-inv-head { background: var(--bg-1); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-3); }
+  .p-inv-name { font-weight: 600; color: var(--navy-900); }
+  .p-inv-cat { color: var(--fg-3); }
+  .p-mono { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); background: var(--bg-1); padding: 2px 6px; border-radius: 4px; }
+  .p-qty-num { font-weight: 700; color: var(--navy-900); }
+  .p-qty-min { font-size: 11px; color: var(--fg-4); }
+  .p-qty-bar { height: 4px; background: var(--bg-1); border-radius: 2px; margin-top: 4px; overflow: hidden; max-width: 120px; }
+  .p-qty-fill { height: 100%; border-radius: 2px; }
+  .p-inv-more { background: none; border: none; color: var(--fg-4); cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 4px; }
+  .p-inv-more:hover { background: var(--bg-1); }
+
+  /* Meetings */
+  .p-meet-list { display: flex; flex-direction: column; gap: 10px; }
+  .p-meet-card { display: flex; background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 16px; align-items: center; gap: 20px; box-shadow: var(--shadow-xs); }
+  .p-meet-day { display: flex; flex-direction: column; text-align: center; min-width: 110px; padding-right: 20px; border-right: 1px solid var(--border-1); }
+  .p-meet-day-lbl { font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--gold-700); }
+  .p-meet-day-time { font-size: 12px; font-weight: 600; color: var(--navy-900); margin-top: 2px; font-family: var(--font-mono); }
+  .p-meet-body { flex: 1; }
+  .p-meet-title { font-size: 15px; font-weight: 700; color: var(--navy-900); }
+  .p-meet-room { font-size: 12px; color: var(--fg-3); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .p-icon-xs { width: 12px; height: 12px; }
+  .p-avatars { display: flex; margin-top: 8px; }
+  .p-av-sm { width: 26px; height: 26px; border-radius: 50%; background: var(--navy-700); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; margin-left: -6px; }
+  .p-av-sm:first-child { margin-left: 0; }
+  .p-meet-tag-col { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .p-meet-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
+
+  code { font-family: var(--font-mono); }
 </style>
 </head>
 <body>
@@ -292,11 +444,15 @@ code {
     </div>
     <nav class="p-nav" id="navMain"></nav>
     <div class="p-nav-section">
-      <div class="p-nav-head">Admin</div>
-      <button class="p-nav-item" data-route="admin">
-        <i data-lucide="shield" class="p-nav-icon"></i>
-        <span>Admin panel</span>
-      </button>
+      <div class="p-nav-head">Other surfaces</div>
+      <a class="p-nav-item" href="/platform" style="text-decoration:none;">
+        <i data-lucide="users" class="p-nav-icon"></i>
+        <span>Lab platform →</span>
+      </a>
+      <a class="p-nav-item" href="/" style="text-decoration:none;">
+        <i data-lucide="globe" class="p-nav-icon"></i>
+        <span>Public website →</span>
+      </a>
     </div>
     <div class="p-user">
       <div class="p-user-av" id="userInitials">AO</div>
@@ -340,6 +496,31 @@ const apiPost = (p, body) => api(p, { method:'POST', body: JSON.stringify(body) 
 const apiPut  = (p, body) => api(p, { method:'PUT',  body: JSON.stringify(body) });
 const apiDel  = (p)       => api(p, { method:'DELETE' });
 
+async function uploadPhoto(file) {
+  const fd = new FormData(); fd.append('photo', file);
+  const r = await fetch('/api/upload/photo', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return (await r.json()).url;
+}
+async function uploadDoc(file) {
+  const fd = new FormData(); fd.append('document', file);
+  const r = await fetch('/api/upload/document', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return await r.json();
+}
+async function uploadGallery(file, caption='', sort_order=0) {
+  const fd = new FormData(); fd.append('photo', file); fd.append('caption', caption); fd.append('sort_order', sort_order);
+  const r = await fetch('/api/gallery', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return await r.json();
+}
+async function uploadHeroSlide(file, title='', caption='', sort_order=0) {
+  const fd = new FormData(); fd.append('photo', file); fd.append('title', title); fd.append('caption', caption); fd.append('sort_order', sort_order);
+  const r = await fetch('/api/hero-slides', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return await r.json();
+}
+
 /* ── Auth ──────────────────────────────────────────────── */
 async function checkAuth() {
   try {
@@ -368,15 +549,11 @@ async function doLogin(user, pass) {
 
 /* ── Sidebar nav ───────────────────────────────────────── */
 const NAV_ITEMS = [
-  ['dashboard',  'Dashboard',  'home'],
-  ['schedule',   'Schedule',   'calendar'],
-  ['tasks',      'Tasks',      'check-square'],
-  ['meetings',   'Meetings',   'users'],
-  ['inventory',  'Inventory',  'package'],
-  ['projects',   'Projects',   'flask-conical'],
+  ['overview',   'Overview',     'home'],
+  ['content',    'Site content', 'edit-3'],
 ];
 
-let activeRoute = 'dashboard';
+let activeRoute = 'overview';
 
 function renderNav() {
   $('#navMain').innerHTML = NAV_ITEMS.map(([id,label,icon]) =>
@@ -967,7 +1144,7 @@ async function renderProjects(root) {
    ADMIN — Members / Content / Apps / Settings / Audit
    Members + Content + Apps render real lab data (people/news/publications/research/sponsors)
    ─────────────────────────────────────────────────────────── */
-let _adminTab = 'members';
+let _adminTab = 'people';
 async function renderAdmin(root) {
   root.innerHTML = `
     <div class="p-page-head">
@@ -984,11 +1161,15 @@ async function renderAdmin(root) {
     <div class="p-grid-3" style="margin-bottom:20px" id="adminStats"></div>
 
     <div class="p-tabs" id="adminTabs">
-      ${[['members','Members & Roles','users'],
+      ${[['people','People','users'],
          ['news','News','megaphone'],
          ['publications','Publications','book-open'],
          ['research','Research','flask-conical'],
-         ['people','People','user'],
+         ['facilities','Facilities','building-2'],
+         ['hero','Hero / homepage','image'],
+         ['gallery','Gallery','images'],
+         ['sponsors','Sponsors','briefcase'],
+         ['apps','Apps','grid'],
          ['settings','Settings','settings']
         ].map(([id,lbl,icn]) =>
         `<button class="p-tab${id===_adminTab?' active':''}" data-tab="${id}"><i data-lucide="${icn}" style="width:14px;height:14px"></i> ${lbl}</button>`
@@ -1013,11 +1194,15 @@ async function renderAdmin(root) {
   `;
 
   const body = $('#adminBody');
-  if (_adminTab === 'members') renderMembersTab(body, people);
-  else if (_adminTab === 'news') renderNewsTab(body, news);
+  if (_adminTab === 'news') renderNewsTab(body, news);
   else if (_adminTab === 'publications') renderPubsTab(body, pubs);
   else if (_adminTab === 'research') renderResearchTab(body);
   else if (_adminTab === 'people') renderPeopleTab(body, people);
+  else if (_adminTab === 'facilities') renderFacilitiesTab(body);
+  else if (_adminTab === 'hero') renderHeroTab(body);
+  else if (_adminTab === 'gallery') renderGalleryTab(body);
+  else if (_adminTab === 'sponsors') renderSponsorsTab(body);
+  else if (_adminTab === 'apps') renderAppsTab(body);
   else if (_adminTab === 'settings') renderSettingsTab(body);
 
   if (window.lucide) window.lucide.createIcons();
@@ -1082,13 +1267,21 @@ function renderNewsTab(body, news) {
   body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openNews(news.find(n=>n.id==b.dataset.edit)));
   $('#newNews').onclick = () => openNews(null);
   function openNews(n) {
-    const isNew = !n; n = n || {title:'',content:'',date: new Date().toISOString().slice(0,10)};
+    const isNew = !n; n = n || {title:'',content:'',date: new Date().toISOString().slice(0,10), image_url:''};
     modal(isNew?'New news item':'Edit news','',`
       <label>Date</label><input id="m_date" type="date" value="${escHtml(n.date)}">
       <label>Title</label><input id="m_t" value="${escHtml(n.title)}">
-      <label>Content</label><textarea id="m_c">${escHtml(n.content)}</textarea>
+      <label>Cover image (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${n.image_url ? `<img src="${escHtml(n.image_url)}" alt="" style="height:48px;border-radius:6px;border:1px solid var(--border-1);">` : ''}
+        <input type="file" id="m_img_file" accept="image/*" style="flex:1;">
+      </div>
+      <label>Cover image URL</label><input id="m_img" value="${escHtml(n.image_url||'')}">
+      <label>Content</label><textarea id="m_c" style="min-height:160px;">${escHtml(n.content)}</textarea>
     `, async (mb) => {
-      const body = { date:$('#m_date',mb).value, title:$('#m_t',mb).value, content:$('#m_c',mb).value };
+      const f = $('#m_img_file', mb);
+      if (f && f.files && f.files[0]) { const url = await uploadPhoto(f.files[0]); $('#m_img', mb).value = url; }
+      const body = { date:$('#m_date',mb).value, title:$('#m_t',mb).value, content:$('#m_c',mb).value, image_url:$('#m_img',mb).value };
       if (isNew) await apiPost('/api/news', body); else await apiPut('/api/news/'+n.id, body);
       renderAdmin($('#mainContent'));
     });
@@ -1118,9 +1311,20 @@ function renderPubsTab(body, pubs) {
       <label>Authors</label><input id="m_a" value="${escHtml(p.authors)}">
       <label>Venue</label><input id="m_v" value="${escHtml(p.venue)}">
       <label>Year</label><input id="m_y" type="number" value="${p.year}">
-      <label>PDF URL</label><input id="m_pdf" value="${escHtml(p.pdf_url||'')}">
+      <label>PDF file (upload, optional)</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="file" id="m_pdf_file" accept=".pdf,application/pdf" style="flex:1;">
+        <span id="m_pdf_status" style="font-size:11px; color:var(--fg-4);"></span>
+      </div>
+      <label>PDF URL (or use upload above)</label><input id="m_pdf" value="${escHtml(p.pdf_url||'')}">
       <label>DOI URL</label><input id="m_doi" value="${escHtml(p.doi_url||'')}">
     `, async (mb) => {
+      const fileInput = $('#m_pdf_file', mb);
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        $('#m_pdf_status', mb).textContent = 'Uploading...';
+        try { const u = await uploadDoc(fileInput.files[0]); $('#m_pdf', mb).value = u.url; $('#m_pdf_status', mb).textContent = 'Uploaded.'; }
+        catch(e){ $('#m_pdf_status', mb).textContent = e.message; throw e; }
+      }
       const body = { title:$('#m_t',mb).value, authors:$('#m_a',mb).value, venue:$('#m_v',mb).value, year:+$('#m_y',mb).value, pdf_url:$('#m_pdf',mb).value, doi_url:$('#m_doi',mb).value };
       if(isNew) await apiPost('/api/publications', body); else await apiPut('/api/publications/'+p.id, body);
       renderAdmin($('#mainContent'));
@@ -1147,10 +1351,17 @@ async function renderResearchTab(body) {
     const isNew = !r; r = r || {title:'',description:'',image_url:'',sort_order:0};
     modal(isNew?'Add research area':'Edit research area','',`
       <label>Title</label><input id="m_t" value="${escHtml(r.title)}">
-      <label>Description</label><textarea id="m_d">${escHtml(r.description||'')}</textarea>
-      <label>Image URL</label><input id="m_i" value="${escHtml(r.image_url||'')}">
+      <label>Description</label><textarea id="m_d" style="min-height:140px;">${escHtml(r.description||'')}</textarea>
+      <label>Cover image (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${r.image_url ? `<img src="${escHtml(r.image_url)}" alt="" style="height:48px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
+        <input type="file" id="m_i_file" accept="image/*" style="flex:1;">
+      </div>
+      <label>Image URL (or use upload above)</label><input id="m_i" value="${escHtml(r.image_url||'')}">
       <label>Sort order</label><input id="m_s" type="number" value="${r.sort_order||0}">
     `, async (mb) => {
+      const f = $('#m_i_file', mb);
+      if (f && f.files && f.files[0]) { const url = await uploadPhoto(f.files[0]); $('#m_i', mb).value = url; }
       const body = { title:$('#m_t',mb).value, description:$('#m_d',mb).value, image_url:$('#m_i',mb).value, sort_order:+$('#m_s',mb).value };
       if(isNew) await apiPost('/api/research', body); else await apiPut('/api/research/'+r.id, body);
       renderAdmin($('#mainContent'));
@@ -1164,7 +1375,11 @@ function renderPeopleTab(body, people) {
     <div class="p-inv-table">
       <div class="p-inv-row p-inv-head"><div style="flex:2">Name</div><div style="flex:1">Role</div><div style="flex:1">Category</div><div style="flex-basis:100px;text-align:right"></div></div>
       ${people.map(p => `<div class="p-inv-row">
-        <div style="flex:2"><div class="p-inv-name">${escHtml(p.name)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(p.email||'')}</div></div>
+        <div style="flex:2;display:flex;align-items:center;gap:12px">
+          ${p.photo_url ? `<img src="${escHtml(p.photo_url)}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--border-1);">`
+          : `<div class="p-task-av" style="width:36px;height:36px;font-size:12px;background:var(--gold-600)">${escHtml(initials(p.name))}</div>`}
+          <div><div class="p-inv-name">${escHtml(p.name)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(p.email||'')}</div></div>
+        </div>
         <div style="flex:1;font-size:12px;color:var(--fg-2)">${escHtml(p.role||'')}</div>
         <div style="flex:1"><span class="p-tag p-tag-outline">${escHtml(p.category||'')}</span></div>
         <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${p.id}">Edit</button><button class="danger" data-del="${p.id}">×</button></div>
@@ -1180,13 +1395,295 @@ function renderPeopleTab(body, people) {
       <label>Name</label><input id="m_n" value="${escHtml(p.name)}">
       <label>Role</label><input id="m_r" value="${escHtml(p.role)}">
       <label>Category</label>
-      <select id="m_c">${['director','faculty','postdoc','phd','ms','ug','former'].map(x=>`<option value="${x}"${x===p.category?' selected':''}>${x}</option>`).join('')}</select>
+      <select id="m_c">${['director','manager','faculty','postdoc','phd','ms','ug','alumni','collaborator'].map(x=>`<option value="${x}"${x===p.category?' selected':''}>${x}</option>`).join('')}</select>
       <label>Email</label><input id="m_e" value="${escHtml(p.email||'')}">
-      <label>Photo URL</label><input id="m_ph" value="${escHtml(p.photo_url||'')}">
-      <label>Bio</label><textarea id="m_b">${escHtml(p.bio||'')}</textarea>
+      <label>Profile photo (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <img id="m_ph_prev" src="${escHtml(p.photo_url||'')}" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:${escHtml(p.photo_position||'center center')};background:var(--bg-1);border:1px solid var(--border-1);${p.photo_url?'':'visibility:hidden;'}">
+        <input type="file" id="m_ph_file" accept="image/*" style="flex:1;">
+      </div>
+      <label>Photo URL (or use upload above)</label><input id="m_ph" value="${escHtml(p.photo_url||'')}">
+      <label>Photo focal point — click on the image to choose what should be centered in the circle</label>
+      <div id="m_ph_picker" style="position:relative; width:300px; height:300px; border:1px solid var(--border-1); border-radius:8px; overflow:hidden; background:var(--bg-1); cursor:crosshair;">
+        <img id="m_ph_picker_img" src="${escHtml(p.photo_url||'')}" alt="" style="width:100%; height:100%; object-fit:contain; ${p.photo_url?'':'display:none;'}">
+        <div id="m_ph_picker_dot" style="position:absolute; width:18px; height:18px; border:2px solid var(--gold-600); background:rgba(255,255,255,.6); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; left:50%; top:50%;"></div>
+      </div>
+      <input id="m_pp" type="hidden" value="${escHtml(p.photo_position||'center center')}">
+      <label>Result preview</label>
+      <img id="m_ph_result" src="${escHtml(p.photo_url||'')}" alt="" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:${escHtml(p.photo_position||'center center')};border:3px solid #fff; box-shadow:var(--shadow-sm); ${p.photo_url?'':'display:none;'}">
+      <label>LinkedIn URL</label><input id="m_li" value="${escHtml(p.linkedin_url||'')}" placeholder="https://linkedin.com/in/...">
+      <label>Personal website (optional)</label><input id="m_ws" value="${escHtml(p.website_url||'')}">
+      <label>Bio</label><textarea id="m_b" style="min-height:120px;">${escHtml(p.bio||'')}</textarea>
     `, async (mb) => {
-      const body = { name:$('#m_n',mb).value, role:$('#m_r',mb).value, category:$('#m_c',mb).value, email:$('#m_e',mb).value, photo_url:$('#m_ph',mb).value, bio:$('#m_b',mb).value, active:1 };
+      const f = $('#m_ph_file', mb);
+      if (f && f.files && f.files[0]) {
+        const url = await uploadPhoto(f.files[0]);
+        $('#m_ph', mb).value = url;
+        $('#m_ph_picker_img', mb).src = url; $('#m_ph_picker_img', mb).style.display = 'block';
+        $('#m_ph_result', mb).src = url; $('#m_ph_result', mb).style.display = 'inline-block';
+      }
+      const body = { name:$('#m_n',mb).value, role:$('#m_r',mb).value, category:$('#m_c',mb).value, email:$('#m_e',mb).value, photo_url:$('#m_ph',mb).value, photo_position:$('#m_pp',mb).value, linkedin_url:$('#m_li',mb).value, website_url:$('#m_ws',mb).value, bio:$('#m_b',mb).value, active:1 };
       if(isNew) await apiPost('/api/people', body); else await apiPut('/api/people/'+p.id, body);
+      renderAdmin($('#mainContent'));
+    });
+    // Wire up the focal-point picker on the modal we just opened
+    setTimeout(() => {
+      const picker = document.getElementById('m_ph_picker');
+      if (!picker) return;
+      const img = document.getElementById('m_ph_picker_img');
+      const dot = document.getElementById('m_ph_picker_dot');
+      const result = document.getElementById('m_ph_result');
+      const hidden = document.getElementById('m_pp');
+      // Initial dot position
+      const init = (hidden.value || 'center center').split(' ');
+      const xMap = { left: '0%', center: '50%', right: '100%' };
+      const yMap = { top: '0%', center: '50%', bottom: '100%' };
+      const initX = xMap[init[0]] || init[0] || '50%';
+      const initY = yMap[init[1]] || init[1] || '50%';
+      dot.style.left = initX; dot.style.top = initY;
+      picker.addEventListener('click', e => {
+        if (!img.src) return;
+        const rect = picker.getBoundingClientRect();
+        const xPct = ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%';
+        const yPct = ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%';
+        dot.style.left = xPct; dot.style.top = yPct;
+        const pos = xPct + ' ' + yPct;
+        hidden.value = pos;
+        if (result) { result.style.objectPosition = pos; result.style.display = 'inline-block'; }
+      });
+    }, 0);
+  }
+}
+
+
+async function renderFacilitiesTab(body) {
+  const facs = await apiGet('/api/facilities').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Each facility has its own page on the public site (Facilities → click a card). Add photos and PDF documentation per facility.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newFac">+ Add facility</button></div>
+    <div class="p-grid-2">
+      ${facs.length ? facs.map(f => `
+        <div class="p-card" style="padding:0; overflow:hidden;">
+          ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="" style="width:100%; height:160px; object-fit:cover; display:block; background:var(--bg-1);">` : '<div style="height:160px;background:var(--bg-1);"></div>'}
+          <div style="padding:14px 16px;">
+            <div class="p-inv-name">${escHtml(f.name||'(untitled)')}</div>
+            <div style="font-size:12px;color:var(--fg-3); margin:4px 0 10px;">${escHtml((f.description||'').slice(0,120))}${(f.description||'').length>120?'...':''}</div>
+            <div style="font-size:11px;color:var(--fg-4); margin-bottom:8px;">${f.doc_url?'<a href="'+escHtml(f.doc_url)+'" target="_blank" style="color:var(--gold-700);">'+escHtml(f.doc_name||'document')+'</a>':'no document'}</div>
+            <div class="row-actions"><button data-edit="${f.id}">Edit</button><button class="danger" data-del="${f.id}">Delete</button></div>
+          </div>
+        </div>`).join('') : '<div class="empty">No facilities yet.</div>'}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Delete this facility?')) return;
+    await apiDel('/api/facilities/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openFac(facs.find(f=>f.id==b.dataset.edit)));
+  $('#newFac').onclick = () => openFac(null);
+  function openFac(f) {
+    const isNew = !f; f = f || {name:'', description:'', content:'', photo_url:'', doc_url:'', doc_name:'', sort_order:0};
+    modal(isNew?'Add facility':'Edit facility','',`
+      <label>Name</label><input id="m_n" value="${escHtml(f.name||'')}">
+      <label>Short description (one or two lines)</label><textarea id="m_d">${escHtml(f.description||'')}</textarea>
+      <label>Long description (shown on detail page)</label><textarea id="m_c" style="min-height:160px;">${escHtml(f.content||'')}</textarea>
+      <label>Cover photo (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="" style="height:50px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
+        <input type="file" id="m_pf" accept="image/*" style="flex:1;">
+      </div>
+      <label>Photo URL (or use upload above)</label><input id="m_p" value="${escHtml(f.photo_url||'')}">
+      <label>Documentation file (PDF, upload)</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="file" id="m_df" accept=".pdf,application/pdf" style="flex:1;">
+        <span id="m_df_status" style="font-size:11px; color:var(--fg-4);">${f.doc_url ? '<a href="'+escHtml(f.doc_url)+'" target="_blank" style="color:var(--gold-700);">current: '+escHtml(f.doc_name||'doc')+'</a>' : ''}</span>
+      </div>
+      <label>Doc URL (or use upload above)</label><input id="m_du" value="${escHtml(f.doc_url||'')}">
+      <label>Doc display name</label><input id="m_dn" value="${escHtml(f.doc_name||'')}">
+      <label>Sort order</label><input id="m_s" type="number" value="${f.sort_order||0}">
+    `, async (mb) => {
+      const pf = $('#m_pf', mb);
+      if (pf && pf.files && pf.files[0]) { const url = await uploadPhoto(pf.files[0]); $('#m_p', mb).value = url; }
+      const df = $('#m_df', mb);
+      if (df && df.files && df.files[0]) {
+        const u = await uploadDoc(df.files[0]);
+        $('#m_du', mb).value = u.url;
+        if (!$('#m_dn', mb).value) $('#m_dn', mb).value = u.name;
+      }
+      const body = { name:$('#m_n',mb).value, description:$('#m_d',mb).value, content:$('#m_c',mb).value, photo_url:$('#m_p',mb).value, doc_url:$('#m_du',mb).value, doc_name:$('#m_dn',mb).value, sort_order:+$('#m_s',mb).value };
+      if(isNew) await apiPost('/api/facilities', body); else await apiPut('/api/facilities/'+f.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderHeroTab(body) {
+  const slides = await apiGet('/api/hero-slides').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Images shown behind the lab name on the public homepage. The slideshow rotates through these. Drop in 1600x900+ photos for best quality.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newSlide">+ Add hero slide</button></div>
+    <div class="p-grid-3">
+      ${slides.length ? slides.map(s => `
+        <div class="p-card" style="padding:0; overflow:hidden;">
+          <img src="${escHtml(s.image_url)}" alt="" style="width:100%; height:170px; object-fit:cover; display:block; background:var(--bg-1);">
+          <div style="padding:12px;">
+            <div class="p-inv-name">${escHtml(s.title||'(untitled)')}</div>
+            <div style="font-size:12px;color:var(--fg-3); margin:4px 0 10px;">${escHtml(s.caption||'')}</div>
+            <div class="row-actions"><button data-edit="${s.id}">Edit</button><button class="danger" data-del="${s.id}">Delete</button></div>
+          </div>
+        </div>`).join('') : '<div class="empty">No hero slides yet.</div>'}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Delete this slide?')) return;
+    await apiDel('/api/hero-slides/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openSlide(slides.find(s=>s.id==b.dataset.edit)));
+  $('#newSlide').onclick = () => openSlide(null);
+  function openSlide(s) {
+    const isNew = !s; s = s || {title:'', caption:'', image_url:'', sort_order:0};
+    modal(isNew?'Add hero slide':'Edit hero slide','',`
+      <label>Title</label><input id="m_t" value="${escHtml(s.title||'')}">
+      <label>Caption</label><textarea id="m_c">${escHtml(s.caption||'')}</textarea>
+      <label>Sort order</label><input id="m_s" type="number" value="${s.sort_order||0}">
+      ${isNew ? `<label>Image (required)</label><input type="file" id="m_f" accept="image/*">` :
+                `<label>Replace image (optional)</label><input type="file" id="m_f" accept="image/*">
+                 <div style="margin-top:8px;"><img src="${escHtml(s.image_url)}" alt="" style="max-width:100%; max-height:140px; border-radius:6px; border:1px solid var(--border-1);"></div>`}
+    `, async (mb) => {
+      const f = $('#m_f', mb);
+      const title = $('#m_t', mb).value;
+      const caption = $('#m_c', mb).value;
+      const sort_order = +$('#m_s', mb).value;
+      if (isNew) {
+        if(!f.files[0]) throw new Error('Please pick an image file');
+        await uploadHeroSlide(f.files[0], title, caption, sort_order);
+      } else {
+        let image_url = s.image_url;
+        if (f.files[0]) image_url = await uploadPhoto(f.files[0]);
+        await apiPut('/api/hero-slides/'+s.id, { title, caption, image_url, sort_order });
+      }
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderGalleryTab(body) {
+  const photos = await apiGet('/api/gallery').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Photos shown in the homepage gallery strip. Add candid lab shots, conferences, and milestones.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newPic">+ Add photo</button></div>
+    <div class="p-grid-3">
+      ${photos.length ? photos.map(g => `
+        <div class="p-card" style="padding:0; overflow:hidden;">
+          <img src="${escHtml(g.image_url)}" alt="" style="width:100%; height:170px; object-fit:cover; display:block; background:var(--bg-1);">
+          <div style="padding:10px 12px;">
+            <div style="font-size:12px;color:var(--fg-2);">${escHtml(g.caption||'(no caption)')}</div>
+            <div class="row-actions" style="margin-top:8px;"><button class="danger" data-del="${g.id}">Delete</button></div>
+          </div>
+        </div>`).join('') : '<div class="empty">No gallery photos yet.</div>'}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Delete this photo?')) return;
+    await apiDel('/api/gallery/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  $('#newPic').onclick = () => {
+    modal('Add gallery photo','',`
+      <label>Image file (required)</label><input type="file" id="m_f" accept="image/*">
+      <label>Caption</label><input id="m_c" value="">
+      <label>Sort order</label><input id="m_s" type="number" value="0">
+    `, async (mb) => {
+      const f = $('#m_f', mb);
+      if (!f.files[0]) throw new Error('Please pick an image file');
+      await uploadGallery(f.files[0], $('#m_c', mb).value, +$('#m_s', mb).value);
+      renderAdmin($('#mainContent'));
+    });
+  };
+}
+
+async function renderSponsorsTab(body) {
+  const sponsors = await apiGet('/api/sponsors').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Sponsors and collaborators. Logo and name appear on the homepage marquee. URL links the logo. Mark "show in footer" to also display in the footer.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newSp">+ Add sponsor / collaborator</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">Name</div><div style="flex:2">Logo</div><div style="flex:2">Website</div><div style="flex-basis:80px;text-align:center">Footer</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${sponsors.map(sp => `<div class="p-inv-row">
+        <div style="flex:2"><div class="p-inv-name">${escHtml(sp.name)}</div></div>
+        <div style="flex:2">${sp.logo_url ? `<img src="${escHtml(sp.logo_url)}" alt="" style="max-height:34px; max-width:140px;">` : '<span style="color:var(--fg-4); font-size:12px;">no logo</span>'}</div>
+        <div style="flex:2; font-size:12px; color:var(--fg-3); word-break:break-all;">${escHtml(sp.website_url||'')}</div>
+        <div style="flex-basis:80px; text-align:center; font-size:12px; color:${sp.show_in_footer?'var(--status-ok)':'var(--fg-4)'};">${sp.show_in_footer?'Yes':'-'}</div>
+        <div style="flex-basis:100px; text-align:right" class="row-actions"><button data-edit="${sp.id}">Edit</button><button class="danger" data-del="${sp.id}">x</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Remove this sponsor?')) return;
+    await apiDel('/api/sponsors/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openSp(sponsors.find(s=>s.id==b.dataset.edit)));
+  $('#newSp').onclick = () => openSp(null);
+  function openSp(sp) {
+    const isNew = !sp; sp = sp || {name:'', logo_url:'', website_url:'', sort_order:0, show_in_footer:0};
+    modal(isNew?'Add sponsor':'Edit sponsor','',`
+      <label>Name</label><input id="m_n" value="${escHtml(sp.name||'')}">
+      <label>Website URL</label><input id="m_w" value="${escHtml(sp.website_url||'')}">
+      <label>Logo (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${sp.logo_url ? `<img src="${escHtml(sp.logo_url)}" alt="" style="max-height:40px; max-width:120px;">` : ''}
+        <input type="file" id="m_lf" accept="image/*">
+      </div>
+      <label>Logo URL (or use upload above)</label><input id="m_l" value="${escHtml(sp.logo_url||'')}">
+      <label>Sort order</label><input id="m_s" type="number" value="${sp.sort_order||0}">
+      <label><input type="checkbox" id="m_sf" ${sp.show_in_footer?'checked':''}> Show in footer</label>
+    `, async (mb) => {
+      const lf = $('#m_lf', mb);
+      if (lf && lf.files && lf.files[0]) {
+        const url = await uploadPhoto(lf.files[0]);
+        $('#m_l', mb).value = url;
+      }
+      const body = { name:$('#m_n',mb).value, logo_url:$('#m_l',mb).value, website_url:$('#m_w',mb).value, sort_order:+$('#m_s',mb).value, show_in_footer: $('#m_sf', mb).checked ? 1 : 0 };
+      if(isNew) await apiPost('/api/sponsors', body); else await apiPut('/api/sponsors/'+sp.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderAppsTab(body) {
+  const apps = await apiGet('/api/apps/all').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">HTML mini-apps and calculators that appear on the public site Apps page. Each entry needs a title, short summary, and a link to the app.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newApp">+ Add app</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">App</div><div style="flex:1">Slug</div><div style="flex:2">Summary</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${apps.map(a => `<div class="p-inv-row">
+        <div style="flex:2"><div class="p-inv-name">${escHtml(a.title)}</div><div style="font-size:11px;color:var(--fg-4)"><a href="${escHtml(a.url||'#')}" target="_blank" style="color:var(--fg-4); text-decoration:underline;">${escHtml(a.url||'(no url)')}</a></div></div>
+        <div style="flex:1"><code class="p-mono">${escHtml(a.slug)}</code></div>
+        <div style="flex:2; font-size:12px; color:var(--fg-2);">${escHtml(a.summary||'')}</div>
+        <div style="flex-basis:80px; text-align:center; font-size:12px; color:${a.published?'var(--status-ok)':'var(--fg-4)'};">${a.published?'Yes':'Draft'}</div>
+        <div style="flex-basis:100px; text-align:right" class="row-actions"><button data-edit="${a.id}">Edit</button><button class="danger" data-del="${a.id}">x</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Remove this app?')) return;
+    await apiDel('/api/apps/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openApp(apps.find(a=>a.id==b.dataset.edit)));
+  $('#newApp').onclick = () => openApp(null);
+  function openApp(a) {
+    const isNew = !a; a = a || {slug:'', title:'', summary:'', description:'', url:'', sort_order:0, published:1};
+    modal(isNew?'Add app':'Edit app','',`
+      <label>Title</label><input id="m_t" value="${escHtml(a.title||'')}">
+      <label>Slug (URL-safe id)</label><input id="m_sl" value="${escHtml(a.slug||'')}">
+      <label>Summary (one line)</label><input id="m_su" value="${escHtml(a.summary||'')}">
+      <label>Description</label><textarea id="m_d">${escHtml(a.description||'')}</textarea>
+      <label>App URL (where users open it)</label><input id="m_u" value="${escHtml(a.url||'')}" placeholder="https://... or /apps/your-app">
+      <label>Sort order</label><input id="m_so" type="number" value="${a.sort_order||0}">
+      <label><input type="checkbox" id="m_pub" ${a.published?'checked':''}> Published (visible on public site)</label>
+    `, async (mb) => {
+      const body = { slug:$('#m_sl',mb).value.trim(), title:$('#m_t',mb).value, summary:$('#m_su',mb).value, description:$('#m_d',mb).value, url:$('#m_u',mb).value, sort_order:+$('#m_so',mb).value, published: $('#m_pub', mb).checked ? 1 : 0 };
+      if(!body.slug || !body.title) throw new Error('Slug and title required');
+      if(isNew) await apiPost('/api/apps', body); else await apiPut('/api/apps/'+a.id, body);
       renderAdmin($('#mainContent'));
     });
   }
@@ -1197,11 +1694,7 @@ function renderSettingsTab(body) {
     <div class="p-grid-2">
       <div class="p-card">
         <div class="p-card-head"><div class="p-card-title">Site</div></div>
-        ${[['globe','Public domain','latfs.villanova.edu'],
-            ['palette','Theme','Navy + Gold'],
-            ['image','Homepage hero','3 slides active'],
-            ['mail','Contact inbox','info@latfs.villanova.edu']
-          ].map(([icn,lbl,val])=>`
+        ${[['globe','Public domain','latfs.villanova.edu'],['palette','Theme','Navy + Gold'],['image','Homepage hero','from Hero tab'],['mail','Contact inbox','info@latfs.villanova.edu']].map(([icn,lbl,val])=>`
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border-1)">
             <i data-lucide="${icn}" style="width:16px;height:16px;color:var(--fg-4);flex-shrink:0"></i>
             <div style="flex:1;font-size:13px;color:var(--navy-900);font-weight:600">${lbl}</div>
@@ -1218,13 +1711,53 @@ function renderSettingsTab(body) {
   $('#logoutSet').onclick = doLogout;
 }
 
-/* ───────────────────────────────────────────────────────────
-   Boot + auth flow
-   ─────────────────────────────────────────────────────────── */
-const ROUTES = {
-  dashboard: renderDashboard, schedule: renderSchedule, tasks: renderTasks,
-  meetings: renderMeetings, inventory: renderInventory, projects: renderProjects, admin: renderAdmin,
-};
+async function renderOverview(root){
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <div class="eyebrow" style="color:var(--gold-700)">Website admin</div>
+        <h1 class="p-h1">Content overview</h1>
+        <p class="p-h1-sub">This panel manages the public LATFS website. For day-to-day lab use, use the Lab platform.</p>
+      </div>
+      <div class="p-actions">
+        <a class="btn-primary-sm" href="/platform" style="text-decoration:none;">Open Lab platform &rarr;</a>
+        <button class="btn-ghost-sm" id="ovLogout">Sign out</button>
+      </div>
+    </div>
+    <div class="p-banner" style="background:var(--gold-100); border:1px solid var(--gold-300); color:var(--gold-900); padding:12px 16px; border-radius:10px; margin-bottom:20px; font-size:13px;">
+      <strong>What is here:</strong> people, news, publications, research, facilities, hero, gallery, sponsors, apps, settings. <strong>What moved:</strong> schedule / tasks / meetings / equipment / issues live at <a href="/platform" style="color:var(--gold-900); text-decoration:underline;">/platform</a>.
+    </div>
+    <div class="p-grid-3" id="ovStats" style="margin-bottom:20px;"></div>
+    <div class="p-grid-2">
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Edit site content</div></div>
+        <p style="color:var(--fg-3); font-size:13px;">Open the content editor to add or update items.</p>
+        <button class="btn-primary-sm" onclick="navigate('content')">Open content editor</button>
+      </div>
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Quick links</div></div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <a class="w-link-gold" href="/" target="_blank">View public site &rarr;</a>
+          <a class="w-link-gold" href="/platform">Open lab platform &rarr;</a>
+        </div>
+      </div>
+    </div>
+  `;
+  $('#ovLogout').onclick = doLogout;
+  try {
+    const [people, pubs, news, research, sponsors, gallery] = await Promise.all([
+      apiGet('/api/people').catch(()=>[]), apiGet('/api/publications').catch(()=>[]), apiGet('/api/news').catch(()=>[]),
+      apiGet('/api/research').catch(()=>[]), apiGet('/api/sponsors').catch(()=>[]), apiGet('/api/gallery').catch(()=>[]),
+    ]);
+    $('#ovStats').innerHTML = [
+      ['News', news.length, 'megaphone'],['Publications', pubs.length, 'book-open'],['Research', research.length, 'flask-conical'],
+      ['People', people.length, 'users'],['Sponsors', sponsors.length, 'briefcase'],['Gallery', gallery.length, 'image'],
+    ].map(([lbl,n,icn]) => `<div class="p-stat-card"><i data-lucide="${icn}" class="p-stat-icon"></i><div class="p-stat-num">${n}</div><div class="p-stat-lbl">${lbl}</div></div>`).join('');
+    if(window.lucide) window.lucide.createIcons();
+  } catch(e){ console.error(e); }
+}
+
+const ROUTES = { overview: renderOverview, content: renderAdmin };
 
 async function doLogout() {
   await fetch('/admin/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
@@ -1243,18 +1776,17 @@ async function boot() {
       $('#appShell').style.display = 'flex';
       $('#userInitials').textContent = SESSION_USER.initials;
       $('#userName').textContent = SESSION_USER.name;
-      navigate('dashboard');
+      navigate('overview');
     } catch(err) { $('#lErr').textContent = err.message; }
   };
   $('#logoutBtn').onclick = doLogout;
-
   const ok = await checkAuth();
   if (ok) {
     $('#appShell').style.display = 'flex';
     $('#userInitials').textContent = SESSION_USER.initials;
     $('#userName').textContent = SESSION_USER.name;
     renderNav();
-    navigate('dashboard');
+    navigate('overview');
   } else {
     $('#loginScreen').style.display = 'flex';
   }
