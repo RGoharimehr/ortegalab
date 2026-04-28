@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LATFS · Lab Platform</title>
+<title>LATFS · Website Admin</title>
 <link rel="icon" href="/assets/favicon.gif">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,8 +419,8 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 <!-- Login gate -->
 <div id="loginScreen" class="login-screen" style="display:none">
   <div class="login-card">
-    <h1>LATFS Platform</h1>
-    <p>Sign in to manage the lab.</p>
+    <h1>LATFS Website Admin</h1>
+    <p>Sign in to manage the website.</p>
     <form id="loginForm">
       <label>Username</label>
       <input id="lUser" type="text" autocomplete="username" required>
@@ -439,7 +439,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
       <div class="p-brand-mark">L</div>
       <div>
         <div class="p-brand-wm">LATFS</div>
-        <div class="p-brand-sub">Lab Platform</div>
+        <div class="p-brand-sub">Website Admin</div>
       </div>
     </div>
     <nav class="p-nav" id="navMain"></nav>
@@ -527,7 +527,8 @@ async function checkAuth() {
     const data = await fetch('/admin/check', { credentials:'same-origin' }).then(r=>r.json());
     if (data.loggedIn) {
       CSRF = data.csrfToken || '';
-      SESSION_USER.name = data.username === 'admin' ? 'Dr. A. Ortega' : data.username;
+      SESSION_USER.name = data.name || data.username;
+      SESSION_USER.first = (data.name || data.username).split(' ')[0];
       SESSION_USER.initials = initials(SESSION_USER.name);
       return true;
     }
@@ -544,6 +545,9 @@ async function doLogin(user, pass) {
   if (!r.ok) throw new Error((await r.json()).error || 'Login failed');
   const data = await r.json();
   CSRF = data.csrfToken || '';
+  SESSION_USER.name = data.name || data.username;
+  SESSION_USER.first = (data.name || data.username).split(' ')[0];
+  SESSION_USER.initials = initials(SESSION_USER.name);
   return true;
 }
 
@@ -1166,6 +1170,7 @@ async function renderAdmin(root) {
          ['publications','Publications','book-open'],
          ['research','Research','flask-conical'],
          ['facilities','Facilities','building-2'],
+         ['inventory','Inventory','package'],
          ['hero','Hero / homepage','image'],
          ['gallery','Gallery','images'],
          ['sponsors','Sponsors','briefcase'],
@@ -1199,6 +1204,7 @@ async function renderAdmin(root) {
   else if (_adminTab === 'research') renderResearchTab(body);
   else if (_adminTab === 'people') renderPeopleTab(body, people);
   else if (_adminTab === 'facilities') renderFacilitiesTab(body);
+  else if (_adminTab === 'inventory') renderInventory(body);
   else if (_adminTab === 'hero') renderHeroTab(body);
   else if (_adminTab === 'gallery') renderGalleryTab(body);
   else if (_adminTab === 'sponsors') renderSponsorsTab(body);

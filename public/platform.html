@@ -423,6 +423,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-issue-card { background:#fff; border:1px solid var(--border-1); border-radius:10px; padding:14px; margin-bottom:10px; box-shadow: var(--shadow-xs); }
 .p-issue-card.priority-high { border-left: 4px solid var(--status-alert); }
 .p-issue-card.priority-medium { border-left: 4px solid var(--status-warn); }
+.p-issue-card.priority-normal { border-left: 4px solid var(--status-warn); }
 .p-issue-card.priority-low { border-left: 4px solid var(--status-info); }
 .p-issue-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
 .p-issue-title { font-weight:700; color:var(--navy-900); font-size:14px; }
@@ -494,6 +495,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
       <button class="p-nav-item" data-route="tasks"><span>Tasks</span></button>
       <button class="p-nav-item" data-route="meetings"><span>Meetings</span></button>
       <button class="p-nav-item" data-route="equipment"><span>Equipment</span></button>
+      <button class="p-nav-item" data-route="inventory"><span>Inventory</span></button>
       <button class="p-nav-item" data-route="issues"><span>Issues / Requests</span></button>
       <button class="p-nav-item" data-route="profile"><span>My Profile</span></button>
     </nav>
@@ -674,6 +676,25 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
       <div id="issueList"></div>
     </section>
 
+    <!-- Inventory -->
+    <section class="p-section" data-section="inventory">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Lab supplies</div>
+          <h1 class="p-h1">Inventory</h1>
+          <p class="p-h1-sub">Track consumables, chemicals, reagents and supplies.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm staff-only hidden" id="addInvBtn">+ Add item</button>
+        </div>
+      </div>
+      <div class="p-inv-toolbar">
+        <div class="p-inv-search"><input class="p-inv-input" id="invSearch" placeholder="Search items…"></div>
+        <select class="p-inv-select" id="invLab"><option value="">All labs</option></select>
+      </div>
+      <div id="invList"></div>
+    </section>
+
     <!-- Profile -->
     <section class="p-section" data-section="profile">
       <div class="p-page-head">
@@ -813,6 +834,7 @@ function goRoute(name){
   if(name === 'tasks') loadTasks();
   if(name === 'meetings') loadMeetings();
   if(name === 'equipment') loadEquipment();
+  if(name === 'inventory') loadInventory();
   if(name === 'issues') loadIssues();
   if(name === 'profile') loadProfile();
   if(name === 'people-admin') loadUsers();
@@ -861,13 +883,13 @@ async function loadDashboard(){
   // equipment checked out to me
   try {
     const eq = await api('/api/equipment');
-    const mine = eq.filter(x => x.checked_out_user_id === ME.id);
+    const mine = eq.filter(x => x.current_user_id === ME.id);
     $('#stMyEq').textContent = mine.length;
     $('#dashEquip').innerHTML = mine.length ? mine.map(x => `
       <div class="p-task">
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(x.name)}</div>
-          <div class="p-task-due">Tag ${escapeHTML(x.tag||'—')} · since ${fmtDT(x.checked_out_at)}</div>
+          <div class="p-task-due">SKU ${escapeHTML(x.sku||'—')} · since ${fmtDT(x.last_used_at)}</div>
         </div>
         <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
       </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
@@ -880,7 +902,7 @@ async function loadDashboard(){
         <div class="p-dot" style="background: ${it.priority==='high'?'var(--status-alert)':it.priority==='medium'?'var(--status-warn)':'var(--status-info)'};"></div>
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(it.title)}</div>
-          <div class="p-task-due">${escapeHTML(it.category)} · ${escapeHTML(it.created_by_name||'')}</div>
+          <div class="p-task-due">${escapeHTML(it.category)} · ${escapeHTML(it.reporter_name||'')}</div>
         </div>
       </div>`).join('') : '<div class="empty">No open issues.</div>';
   } catch(e){ $('#dashIssues').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
@@ -1155,28 +1177,28 @@ async function loadEquipment(){
     if(EQ_STATUS) filtered = filtered.filter(x => x.status === EQ_STATUS);
     if(EQ_QUERY){
       const q = EQ_QUERY.toLowerCase();
-      filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(q) || (x.tag||'').toLowerCase().includes(q));
+      filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q));
     }
     const list = $('#eqList');
     if(!filtered.length){ list.innerHTML='<div class="empty">No equipment matches.</div>'; return; }
     list.innerHTML = filtered.map(x => {
       const statusCls = x.status==='available' ? 'p-eq-status-available'
-                       : x.status==='checked_out' ? 'p-eq-status-out'
+                       : x.status==='in_use' ? 'p-eq-status-out'
                        : x.status==='broken' ? 'p-eq-status-broken'
                        : 'p-eq-status-maint';
       return `<div class="p-inv-row">
         <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div>
           <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.location||'')}</div>
         </div>
-        <div style="flex:1;"><span class="p-mono">${escapeHTML(x.tag||'—')}</span></div>
+        <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
         <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.category||'')}</div>
-        <div style="flex:1;font-size:12px;">${x.last_user_name?escapeHTML(x.last_user_name):'<span style="color:var(--fg-4);">never</span>'}<br>
+        <div style="flex:1;font-size:12px;">${x.last_used_user_name?escapeHTML(x.last_used_user_name):'<span style="color:var(--fg-4);">never</span>'}<br>
           <span style="font-size:11px;color:var(--fg-4);">${x.last_used_at?fmtDT(x.last_used_at):''}</span></div>
         <div style="flex:1;"><span class="${statusCls}">${escapeHTML((x.status||'').replace('_',' '))}</span></div>
         <div style="width:160px; display:flex; gap:6px; flex-wrap:wrap;">
           ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="checkout" data-eq-id="${x.id}">Check out</button>` : ''}
-          ${x.status==='checked_out' && x.checked_out_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
-          ${(ME.role==='admin'||ME.role==='professor') && x.status==='checked_out' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
+          ${x.status==='in_use' && x.current_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
+          ${(ME.role==='admin'||ME.role==='professor') && x.status==='in_use' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
           <button class="btn-ghost-sm" data-eq-action="log" data-eq-id="${x.id}">Log</button>
           ${(ME.role==='admin'||ME.role==='professor') ? `<button class="btn-ghost-sm" data-eq-action="edit" data-eq-id="${x.id}">Edit</button>` : ''}
         </div>
@@ -1209,7 +1231,7 @@ document.addEventListener('click', async e => {
       const log = await api('/api/equipment/'+id+'/log');
       const eq = (await api('/api/equipment')).find(x => x.id == id);
       modal(`<h2>${escapeHTML(eq?.name||'Equipment')} — usage log</h2>
-        <p style="font-size:12px;color:var(--fg-3);">Tag ${escapeHTML(eq?.tag||'—')}</p>
+        <p style="font-size:12px;color:var(--fg-3);">SKU ${escapeHTML(eq?.sku||'—')}</p>
         ${log.length ? log.map(l => `
           <div class="p-log-row">
             <span class="p-log-when">${fmtDT(l.action_at)}</span>
@@ -1229,19 +1251,19 @@ function openEquipModal(eq){
   const isEdit = !!eq;
   modal(`<h2>${isEdit?'Edit':'New'} equipment</h2>
     <label>Name<input id="eqName" value="${escapeHTML(eq?.name||'')}"></label>
-    <label>Tag / asset #<input id="eqTag" value="${escapeHTML(eq?.tag||'')}"></label>
+    <label>SKU / asset #<input id="eqTag" value="${escapeHTML(eq?.sku||'')}"></label>
     <label>Category<select id="eqCat">
       ${['rig','instrument','supply','tool'].map(c=>`<option value="${c}" ${eq?.category===c?'selected':''}>${c}</option>`).join('')}
     </select></label>
     <label>Location<input id="eqLoc" value="${escapeHTML(eq?.location||'')}"></label>
     <label>Status<select id="eqSt">
-      ${['available','checked_out','broken','maintenance'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
+      ${['available','in_use','maintenance','broken'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
     </select></label>
     <label>Notes<textarea id="eqNotes">${escapeHTML(eq?.notes||'')}</textarea></label>`,
     async () => {
       const body = {
         name: $('#eqName').value.trim(),
-        tag: $('#eqTag').value,
+        sku: $('#eqTag').value,
         category: $('#eqCat').value,
         location: $('#eqLoc').value,
         status: $('#eqSt').value,
@@ -1258,6 +1280,96 @@ function openEquipModal(eq){
     $('#delEq').addEventListener('click', async () => {
       if(!confirm('Delete this equipment? Its usage log will be lost.')) return;
       try { await api('/api/equipment/'+eq.id,{method:'DELETE'}); closeModal(); loadEquipment(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Inventory ---------- */
+let INV_LAB = '', INV_QUERY = '';
+async function loadInventory(){
+  try {
+    let items = await api('/api/inventory');
+    // populate lab filter
+    const labs = [...new Set(items.map(x=>x.lab||'').filter(Boolean))];
+    const sel = $('#invLab');
+    const cur = INV_LAB || sel.value;
+    sel.innerHTML = '<option value="">All labs</option>' + labs.map(l=>`<option value="${l}" ${l===cur?'selected':''}>${escapeHTML(l)}</option>`).join('');
+    // apply filters
+    if(INV_LAB) items = items.filter(x => (x.lab||'') === INV_LAB);
+    if(INV_QUERY){
+      const q = INV_QUERY.toLowerCase();
+      items = items.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q) || (x.lab||'').toLowerCase().includes(q));
+    }
+    const isStaff = ME.role==='admin' || ME.role==='professor';
+    if(!items.length){ $('#invList').innerHTML='<div class="empty">No inventory items match.</div>'; return; }
+    $('#invList').innerHTML = `
+      <div class="p-inv-table">
+        <div class="p-inv-row p-inv-head">
+          <div style="flex:2;">Item</div><div style="flex:1;">SKU</div><div style="flex:1;">Lab</div>
+          <div style="flex:1;">Qty</div><div style="width:80px;"></div>
+        </div>
+        ${items.map(x => {
+          const pct = x.min_qty > 0 ? Math.min(100, Math.round((x.qty/x.min_qty)*100)) : 100;
+          const fillColor = x.qty <= 0 ? 'var(--status-alert)' : x.qty < x.min_qty ? 'var(--status-warn)' : 'var(--status-ok)';
+          return `<div class="p-inv-row">
+            <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div><div class="p-inv-cat">${escapeHTML(x.category||'')}</div></div>
+            <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
+            <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.lab||'—')}</div>
+            <div style="flex:1;">
+              <div><span class="p-qty-num">${x.qty}</span> <span class="p-qty-min">/ min ${x.min_qty}</span></div>
+              <div class="p-qty-bar"><div class="p-qty-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+            </div>
+            <div style="width:80px;">
+              ${isStaff ? `<button class="btn-ghost-sm" data-inv-edit="${x.id}">Edit</button>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    $('#invList').querySelectorAll('[data-inv-edit]').forEach(b => b.addEventListener('click', async () => {
+      const it = items.find(x => x.id == b.dataset.invEdit); if(it) openInvModal(it);
+    }));
+  } catch(e){ $('#invList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+
+$('#invSearch').addEventListener('input', e => { INV_QUERY = e.target.value; loadInventory(); });
+$('#invLab').addEventListener('change', e => { INV_LAB = e.target.value; loadInventory(); });
+$('#addInvBtn').addEventListener('click', () => openInvModal());
+
+function openInvModal(it){
+  const isEdit = !!it;
+  modal(`<h2>${isEdit?'Edit inventory item':'Add inventory item'}</h2>
+    <label>Name<input id="ivName" value="${escapeHTML(it?.name||'')}"></label>
+    <label>SKU / part # (required, unique)<input id="ivSku" value="${escapeHTML(it?.sku||'')}" placeholder="SN-LAT-00000"></label>
+    <label>Category<input id="ivCat" value="${escapeHTML(it?.category||'')}" placeholder="Sensors / Hardware / Consumables / Fluids…"></label>
+    <label>Lab<select id="ivLab">
+      <option value="A" ${it?.lab==='A'||!it?'selected':''}>Lab A</option>
+      <option value="B" ${it?.lab==='B'?'selected':''}>Lab B</option>
+    </select></label>
+    <label>Qty on hand<input id="ivQty" type="number" value="${it?.qty??0}" min="0"></label>
+    <label>Min qty (reorder threshold)<input id="ivMin" type="number" value="${it?.min_qty??1}" min="0"></label>`,
+    async () => {
+      const body = {
+        name: $('#ivName').value.trim(),
+        sku: $('#ivSku').value.trim(),
+        category: $('#ivCat').value,
+        lab: $('#ivLab').value,
+        qty: Number($('#ivQty').value)||0,
+        min_qty: Number($('#ivMin').value)||0,
+        sort_order: it?.sort_order||0
+      };
+      if(!body.name) throw new Error('Name required');
+      if(!body.sku) throw new Error('SKU required');
+      if(isEdit) await api('/api/inventory/'+it.id,{method:'PUT', body});
+      else await api('/api/inventory',{method:'POST', body});
+      loadInventory();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delInv">Delete</button>` : ''
+  );
+  if(isEdit){
+    $('#delInv').addEventListener('click', async () => {
+      if(!confirm('Delete this item?')) return;
+      try { await api('/api/inventory/'+it.id,{method:'DELETE'}); closeModal(); loadInventory(); }
       catch(err){ alert(err.message); }
     });
   }
@@ -1281,8 +1393,8 @@ async function loadIssues(){
           <button class="btn-ghost-sm" data-issue-id="${it.id}" data-act="open">Open</button>
         </div>
         <div class="p-issue-title">${escapeHTML(it.title)}</div>
-        <div class="p-issue-body">${escapeHTML(it.description||'').slice(0,200)}${(it.description||'').length>200?'…':''}</div>
-        <div class="p-issue-meta">Reported by ${escapeHTML(it.created_by_name||it.created_by_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
+        <div class="p-issue-body">${escapeHTML((it.body||'').slice(0,200))}${(it.body||'').length>200?'…':''}</div>
+        <div class="p-issue-meta">Reported by ${escapeHTML(it.reporter_name||it.reporter_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
       </div>`).join('');
   } catch(e){ $('#issueList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
 }
@@ -1314,11 +1426,11 @@ async function openIssueModal(){
     </select></label>
     <label>Priority<select id="iPri">
       <option value="low">Low</option>
-      <option value="medium" selected>Medium</option>
+      <option value="normal" selected>Normal</option>
       <option value="high">High</option>
     </select></label>
     <label>Related equipment (optional)<select id="iEq"><option value="">—</option>
-      ${equipment.map(e=>`<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.tag||'')})</option>`).join('')}
+      ${equipment.map(e=>`<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.sku||'')})</option>`).join('')}
     </select></label>
     <label>Description<textarea id="iDesc" placeholder="What happened? What's needed?"></textarea></label>`,
     async () => {
@@ -1326,8 +1438,8 @@ async function openIssueModal(){
         title: $('#iTitle').value.trim(),
         category: $('#iCat').value,
         priority: $('#iPri').value,
-        equipment_id: $('#iEq').value || null,
-        description: $('#iDesc').value
+        related_equipment_id: $('#iEq').value || null,
+        body: $('#iDesc').value
       };
       if(!body.title) throw new Error('Title required');
       await api('/api/issues',{method:'POST', body});
@@ -1340,8 +1452,8 @@ async function openIssueDetail(it){
   try { comments = await api('/api/issues/'+it.id+'/comments'); } catch(e){}
   const isStaff = ME.role==='admin' || ME.role==='professor';
   modal(`<h2>${escapeHTML(it.title)}</h2>
-    <div class="p-issue-meta">${escapeHTML(it.category)} · ${escapeHTML(it.priority||'')} · reported by ${escapeHTML(it.created_by_name||'?')} on ${fmtDT(it.created_at)}</div>
-    <div class="p-issue-body" style="margin-top:12px;">${escapeHTML(it.description||'')}</div>
+    <div class="p-issue-meta">${escapeHTML(it.category)} · ${escapeHTML(it.priority||'')} · reported by ${escapeHTML(it.reporter_name||'?')} on ${fmtDT(it.created_at)}</div>
+    <div class="p-issue-body" style="margin-top:12px;">${escapeHTML(it.body||'')}</div>
     ${isStaff?`<label>Status<select id="iStatus">
       ${['open','in_progress','resolved'].map(s=>`<option value="${s}" ${it.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
     </select></label>`:''}
@@ -1404,12 +1516,12 @@ async function loadProfile(){
   } catch(e){ $('#profTasks').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
   try {
     const eq = await api('/api/equipment');
-    const mine = eq.filter(x => x.checked_out_user_id === ME.id);
+    const mine = eq.filter(x => x.current_user_id === ME.id);
     $('#profEquip').innerHTML = mine.length ? mine.map(x=>`
       <div class="p-task">
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(x.name)}</div>
-          <div class="p-task-due">Tag ${escapeHTML(x.tag||'—')} · since ${fmtDT(x.checked_out_at)}</div>
+          <div class="p-task-due">SKU ${escapeHTML(x.sku||'—')} · since ${fmtDT(x.last_used_at)}</div>
         </div>
         <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
       </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
@@ -1510,14 +1622,6 @@ function closeModal(){ $('#modalMount').innerHTML=''; }
 
 /* ---------- Boot ---------- */
 $('#loginForm').addEventListener('submit', doLogin);
-$('#logoutBtn').addEventListener('click', doLogout);
-(async function boot(){
-  if(await checkAuth()) showApp();
-})();
-</script>
-</body>
-</html>
-submit', doLogin);
 $('#logoutBtn').addEventListener('click', doLogout);
 (async function boot(){
   if(await checkAuth()) showApp();
