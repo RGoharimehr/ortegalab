@@ -7,17 +7,13 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || 'https://latfs.villanova.edu';
-
-// Warn if SESSION_SECRET is not set in production
-if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
-  console.warn('[security] SESSION_SECRET env var is not set — using insecure default. Set it before deploying!');
-}
 
 // ── Email (optional) ────────────────────────────────────────────────────────
 // Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM to enable email.
@@ -92,8 +88,9 @@ const docUpload = multer({
   }
 });
 
-// Database setup
-const db = new Database('./latfs.db');
+// Database setup — path can be overridden via DATABASE_PATH env var (useful in Docker)
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'latfs.db');
+const db = new Database(DB_PATH);
 
 // Create tables
 db.exec(`
@@ -686,7 +683,10 @@ try {
 } catch(e) { console.error('password_reset_tokens migration error:', e.message); }
 
 // Middleware
-// Security headers (helmet) — CSP disabled to allow inline scripts/styles in the admin/platform SPAs
+// Security headers (helmet) — Content Security Policy is intentionally disabled because the
+// admin and platform SPAs use inline scripts and styles. All other helmet protections are active
+// (X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy, etc.).
+// TODO: migrate inline scripts to external files and re-enable CSP.
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '256kb' }));
 app.use(express.urlencoded({ extended: true, limit: '256kb' }));
@@ -720,6 +720,8 @@ app.use(express.static(__dirname));
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
 const apiWriteLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
 const apiReadLimiter = rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false });
+// Strict limiter for heavy admin operations (e.g. DB backup, password reset)
+const adminOpLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
 
 // Auth middleware
 function requireAuth(req, res, next) {
