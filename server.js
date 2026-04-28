@@ -111,6 +111,7 @@ const migrations = [
   'ALTER TABLE research ADD COLUMN content TEXT DEFAULT ""',
   'ALTER TABLE research ADD COLUMN links TEXT DEFAULT "[]"',
   'ALTER TABLE publications ADD COLUMN doi_url TEXT',
+  'ALTER TABLE publications ADD COLUMN citation_url TEXT',
   'ALTER TABLE people ADD COLUMN linkedin_url TEXT DEFAULT ""',
   'ALTER TABLE people ADD COLUMN website_url TEXT DEFAULT ""',
 ];
@@ -217,10 +218,10 @@ if (galleryCount.cnt === 0) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'latfs-secret-key-2024',
+  secret: process.env.SESSION_SECRET || 'latfs-secret-key-2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000, sameSite: 'strict' }
+  cookie: { maxAge: 24 * 60 * 60 * 1000, sameSite: 'strict', httpOnly: true }
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 // Serve old static files for legacy URLs
@@ -238,6 +239,14 @@ function requireAuth(req, res, next) {
   } else {
     res.status(401).json({ error: 'Unauthorized' });
   }
+}
+
+// Validate that a route parameter is a positive integer
+function requireIntId(req, res, next) {
+  if (!/^\d+$/.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid id' });
+  }
+  next();
 }
 
 // CSRF token middleware for mutating admin routes
@@ -292,13 +301,14 @@ app.post('/api/news', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   res.json({ id: result.lastInsertRowid, title, content, date });
 });
 
-app.put('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   const { title, content, date } = req.body;
+  if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
   db.prepare('UPDATE news SET title=?, content=?, date=? WHERE id=?').run(title, content, date, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/news/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   db.prepare('DELETE FROM news WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -316,13 +326,14 @@ app.post('/api/publications', apiWriteLimiter, requireAuth, requireCsrf, (req, r
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   const { title, authors, venue, year, pdf_url, doi_url, citation_url } = req.body;
+  if (!title || !authors || !venue || !year) return res.status(400).json({ error: 'Missing fields' });
   db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, doi_url=?, citation_url=? WHERE id=?').run(title, authors, venue, year, pdf_url || null, doi_url || null, citation_url || null, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/publications/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   db.prepare('DELETE FROM publications WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -346,13 +357,14 @@ app.post('/api/people', apiWriteLimiter, requireAuth, requireCsrf, (req, res) =>
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   const { name, role, category, bio, photo_url, email, linkedin_url, website_url, active } = req.body;
+  if (!name || !role || !category) return res.status(400).json({ error: 'Missing fields' });
   db.prepare('UPDATE people SET name=?, role=?, category=?, bio=?, photo_url=?, email=?, linkedin_url=?, website_url=?, active=? WHERE id=?').run(name, role, category, bio || '', photo_url || '', email || '', linkedin_url || '', website_url || '', active ? 1 : 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/people/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   db.prepare('DELETE FROM people WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -370,13 +382,14 @@ app.post('/api/research', apiWriteLimiter, requireAuth, requireCsrf, (req, res) 
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   const { title, description, content, image_url, links, sort_order } = req.body;
+  if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
   db.prepare('UPDATE research SET title=?, description=?, content=?, image_url=?, links=?, sort_order=? WHERE id=?').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/research/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   db.prepare('DELETE FROM research WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -394,13 +407,14 @@ app.post('/api/sponsors', apiWriteLimiter, requireAuth, requireCsrf, (req, res) 
   res.json({ id: result.lastInsertRowid });
 });
 
-app.put('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   const { name, logo_url, website_url, sort_order } = req.body;
+  if (!name) return res.status(400).json({ error: 'Missing name' });
   db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/sponsors/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   db.prepare('DELETE FROM sponsors WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -436,7 +450,7 @@ app.post('/api/gallery', uploadRateLimiter, requireAuth, requireCsrf, (req, res)
   });
 });
 
-app.delete('/api/gallery/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/gallery/:id', apiWriteLimiter, requireAuth, requireCsrf, requireIntId, (req, res) => {
   const photo = db.prepare('SELECT * FROM gallery WHERE id=?').get(req.params.id);
   if (!photo) return res.status(404).json({ error: 'Not found' });
   db.prepare('DELETE FROM gallery WHERE id=?').run(req.params.id);
