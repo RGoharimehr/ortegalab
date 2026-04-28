@@ -406,8 +406,8 @@ function warnDefaultPassword(username, defaultPw) {
     console.warn(`[security] ⚠️  User "${username}" still has the default seed password. Change it via Lab Members → Reset PW.`);
   }
 }
-warnDefaultPassword('admin', 'admin123');
-for (const a of seedAccounts) warnDefaultPassword(a.username, 'latfs2024');
+warnDefaultPassword('admin', ADMIN_SEED_PW);
+for (const a of seedAccounts) warnDefaultPassword(a.username, LAB_SEED_PW);
 if (!process.env.SESSION_SECRET) {
   console.warn('[security] ⚠️  SESSION_SECRET env var is not set — using insecure default. Set a random 64-char secret in production.');
 }
@@ -1446,13 +1446,14 @@ function toICSDate(dt) {
   if (!dt) return null;
   const d = new Date(dt);
   if (isNaN(d)) return null;
-  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 function escapeICS(s) {
   return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 }
 app.get('/api/events/calendar.ics', apiReadLimiter, (req, res) => {
-  const events = db.prepare('SELECT * FROM events WHERE visibility != ? OR visibility IS NULL ORDER BY start_time').all('private');
+  // Exclude events explicitly set to 'private'; treat NULL visibility as 'public'
+  const events = db.prepare("SELECT * FROM events WHERE (visibility IS NULL OR visibility != 'private') ORDER BY start_time").all();
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
