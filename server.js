@@ -1,15 +1,23 @@
 const express = require('express');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
+const helmet = require('helmet');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.BASE_URL || 'https://latfs.villanova.edu';
+
+// Warn if SESSION_SECRET is not set in production
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+  console.warn('[security] SESSION_SECRET env var is not set — using insecure default. Set it before deploying!');
+}
 
 // ── Email (optional) ────────────────────────────────────────────────────────
 // Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM to enable email.
@@ -665,15 +673,45 @@ try {
   }
 } catch(e) { console.error('ES2 migration error:', e.message); }
 
+// Password-reset tokens (added as migration — safe to run multiple times)
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      token TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      expires_at DATETIME NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+} catch(e) { console.error('password_reset_tokens migration error:', e.message); }
+
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security headers (helmet) — CSP disabled to allow inline scripts/styles in the admin/platform SPAs
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.json({ limit: '256kb' }));
+app.use(express.urlencoded({ extended: true, limit: '256kb' }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'latfs-secret-key-2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000, sameSite: 'strict' }
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+  }
 }));
+
+// Structured request logging
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    console.log(`${req.method} ${req.path} ${res.statusCode} ${ms}ms`);
+  });
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 // Serve old static files for legacy URLs
 app.use(express.static(__dirname));
@@ -714,6 +752,15 @@ function requireRole(...roles) {
 // Convenience: admin or professor (anyone who can manage the lab)
 const requireStaff = requireRole('admin', 'professor');
 
+/**
+ * Truncate a user-supplied string to `max` characters.
+ * Prevents oversized strings from being stored in SQLite.
+ */
+function str(v, max) {
+  return String(v == null ? '' : v).slice(0, max);
+}
+
+
 // Admin auth routes
 app.post('/admin/login', authLimiter, (req, res) => {
   const { username, password } = req.body;
@@ -722,7 +769,7 @@ app.post('/admin/login', authLimiter, (req, res) => {
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.role = user.role || 'student';
-    req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
     res.json({ success: true, username: user.username, name: user.name || '', role: user.role || 'student', csrfToken: req.session.csrfToken });
   } else {
     res.status(401).json({ error: 'Invalid credentials' });
@@ -737,7 +784,7 @@ app.post('/admin/logout', (req, res) => {
 app.get('/admin/check', (req, res) => {
   if (req.session && req.session.userId) {
     if (!req.session.csrfToken) {
-      req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+      req.session.csrfToken = crypto.randomBytes(32).toString('hex');
     }
     const u = db.prepare('SELECT id, username, name, role, email FROM users WHERE id=?').get(req.session.userId) || {};
     res.json({ loggedIn: true, username: req.session.username, name: u.name || '', role: u.role || req.session.role || 'student', email: u.email || '', csrfToken: req.session.csrfToken });
@@ -755,13 +802,13 @@ app.get('/api/news', apiReadLimiter, (req, res) => {
 app.post('/api/news', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, content, date, image_url, slug } = req.body;
   if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
-  const result = db.prepare('INSERT INTO news (title, content, date, image_url, slug) VALUES (?, ?, ?, ?, ?)').run(title, content, date, image_url || '', slug || '');
+  const result = db.prepare('INSERT INTO news (title, content, date, image_url, slug) VALUES (?, ?, ?, ?, ?)').run(str(title,500), str(content,20000), date, str(image_url,500), str(slug,200));
   res.json({ id: result.lastInsertRowid, title, content, date });
 });
 
 app.put('/api/news/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, content, date, image_url, slug } = req.body;
-  db.prepare('UPDATE news SET title=?, content=?, date=?, image_url=?, slug=? WHERE id=?').run(title, content, date, image_url || '', slug || '', req.params.id);
+  db.prepare('UPDATE news SET title=?, content=?, date=?, image_url=?, slug=? WHERE id=?').run(str(title,500), str(content,20000), date, str(image_url,500), str(slug,200), req.params.id);
   res.json({ success: true });
 });
 
@@ -900,7 +947,7 @@ app.get('/api/gallery', apiReadLimiter, (req, res) => {
   res.json(photos);
 });
 
-app.post('/api/gallery', uploadRateLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/gallery', uploadRateLimiter, requireStaff, requireCsrf, (req, res) => {
   photoUpload.single('photo')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message || 'Upload error' });
     if (!req.file) return res.status(400).json({ error: 'No image file provided' });
@@ -912,7 +959,7 @@ app.post('/api/gallery', uploadRateLimiter, requireAuth, requireCsrf, (req, res)
   });
 });
 
-app.delete('/api/gallery/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/gallery/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const photo = db.prepare('SELECT * FROM gallery WHERE id=?').get(req.params.id);
   if (!photo) return res.status(404).json({ error: 'Not found' });
   db.prepare('DELETE FROM gallery WHERE id=?').run(req.params.id);
@@ -930,7 +977,7 @@ app.get('/api/hero-slides', apiReadLimiter, (req, res) => {
   res.json(slides);
 });
 
-app.post('/api/hero-slides', uploadRateLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/hero-slides', uploadRateLimiter, requireStaff, requireCsrf, (req, res) => {
   photoUpload.single('photo')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message || 'Upload error' });
     if (!req.file) return res.status(400).json({ error: 'No image file provided' });
@@ -943,13 +990,13 @@ app.post('/api/hero-slides', uploadRateLimiter, requireAuth, requireCsrf, (req, 
   });
 });
 
-app.put('/api/hero-slides/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/hero-slides/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, caption, sort_order } = req.body;
   db.prepare('UPDATE hero_slides SET title=?, caption=?, sort_order=? WHERE id=?').run(title || '', caption || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/hero-slides/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/hero-slides/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const slide = db.prepare('SELECT * FROM hero_slides WHERE id=?').get(req.params.id);
   if (!slide) return res.status(404).json({ error: 'Not found' });
   db.prepare('DELETE FROM hero_slides WHERE id=?').run(req.params.id);
@@ -1035,13 +1082,19 @@ app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, r
 
 // TASKS
 app.get('/api/tasks', apiReadLimiter, (req, res) => {
-  res.json(db.prepare('SELECT * FROM tasks ORDER BY status, sort_order, id').all());
+  const { page, limit } = req.query;
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
+  const offset = (pageNum - 1) * pageSize;
+  const total = db.prepare('SELECT COUNT(*) as n FROM tasks').get().n;
+  const rows = db.prepare('SELECT * FROM tasks ORDER BY status, sort_order, id LIMIT ? OFFSET ?').all(pageSize, offset);
+  res.json({ total, page: pageNum, limit: pageSize, rows });
 });
 app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Missing title' });
   const result = db.prepare('INSERT INTO tasks (title, description, assignee_user_id, created_by_user_id, priority, due_date, status, tag, sort_order) VALUES (?,?,?,?,?,?,?,?,?)')
-    .run(title, description || '', assignee_user_id || null, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
+    .run(str(title,500), str(description,5000), assignee_user_id || null, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
   // Email notification — alert the assignee if different from creator
   if (assignee_user_id && Number(assignee_user_id) !== req.session.userId) {
     const assignee = db.prepare('SELECT name, email FROM users WHERE id=?').get(assignee_user_id);
@@ -1056,11 +1109,24 @@ app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => 
   }
   res.json({ id: result.lastInsertRowid });
 });
+// Bulk status update — accepts { ids: number[], status: string }
+app.put('/api/tasks/bulk', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { ids, status } = req.body;
+  if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ error: 'ids array required' });
+  const validStatuses = ['todo', 'in_progress', 'blocked', 'done'];
+  if (!validStatuses.includes(status)) return res.status(400).json({ error: 'invalid status' });
+  const update = db.prepare('UPDATE tasks SET status=? WHERE id=?');
+  const bulkUpdate = db.transaction((taskIds, st) => {
+    for (const id of taskIds) update.run(st, id);
+  });
+  bulkUpdate(ids.map(Number), status);
+  res.json({ success: true, updated: ids.length });
+});
 app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
   const sets = [], params = [];
-  if (title !== undefined)            { sets.push('title=?');            params.push(title); }
-  if (description !== undefined)      { sets.push('description=?');      params.push(description || ''); }
+  if (title !== undefined)            { sets.push('title=?');            params.push(str(title,500)); }
+  if (description !== undefined)      { sets.push('description=?');      params.push(str(description,5000)); }
   if (assignee_user_id !== undefined) { sets.push('assignee_user_id=?'); params.push(assignee_user_id || null); }
   if (priority !== undefined)         { sets.push('priority=?');         params.push(priority || 'normal'); }
   if (due_date !== undefined)         { sets.push('due_date=?');         params.push(due_date || ''); }
@@ -1081,14 +1147,14 @@ app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, re
 app.get('/api/meetings', apiReadLimiter, (req, res) => {
   res.json(db.prepare('SELECT * FROM meetings ORDER BY COALESCE(scheduled_at, ""), sort_order, id').all());
 });
-app.post('/api/meetings', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/meetings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Title required' });
   const result = db.prepare('INSERT INTO meetings (title, meeting_type, scheduled_at, location, description, sort_order) VALUES (?,?,?,?,?,?)')
-    .run(title, meeting_type || 'group', scheduled_at || '', location || '', description || '', sort_order || 0);
+    .run(str(title,300), meeting_type || 'group', scheduled_at || '', str(location,300), str(description,5000), sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
-app.put('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
   const sets = [], params = [];
   if (title !== undefined)        { sets.push('title=?');        params.push(title); }
@@ -1102,16 +1168,21 @@ app.put('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, re
   db.prepare(`UPDATE meetings SET ${sets.join(', ')} WHERE id=?`).run(...params);
   res.json({ success: true });
 });
-app.delete('/api/meetings/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM meetings WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
 // INVENTORY
 app.get('/api/inventory', apiReadLimiter, (req, res) => {
-  res.json(db.prepare('SELECT * FROM inventory ORDER BY lab, sort_order, id').all());
+  const { page, limit } = req.query;
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
+  const total = db.prepare('SELECT COUNT(*) as n FROM inventory').get().n;
+  const rows = db.prepare('SELECT * FROM inventory ORDER BY lab, sort_order, id LIMIT ? OFFSET ?').all(pageSize, (pageNum - 1) * pageSize);
+  res.json({ total, page: pageNum, limit: pageSize, rows });
 });
-app.post('/api/inventory', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/inventory', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { lab, sku, name, category, qty, min_qty, sort_order } = req.body;
   if (!sku || !name) return res.status(400).json({ error: 'Missing fields' });
   try {
@@ -1123,13 +1194,13 @@ app.post('/api/inventory', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
     res.status(500).json({ error: e.message });
   }
 });
-app.put('/api/inventory/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { lab, sku, name, category, qty, min_qty, sort_order } = req.body;
   db.prepare('UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, sort_order=? WHERE id=?')
     .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, sort_order || 0, req.params.id);
   res.json({ success: true });
 });
-app.delete('/api/inventory/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM inventory WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -1138,10 +1209,10 @@ app.delete('/api/inventory/:id', apiWriteLimiter, requireAuth, requireCsrf, (req
 app.get('/api/apps', apiReadLimiter, (req, res) => {
   res.json(db.prepare('SELECT * FROM apps WHERE published=1 ORDER BY sort_order, id').all());
 });
-app.get('/api/apps/all', apiReadLimiter, requireAuth, (req, res) => {
+app.get('/api/apps/all', apiReadLimiter, requireStaff, (req, res) => {
   res.json(db.prepare('SELECT * FROM apps ORDER BY sort_order, id').all());
 });
-app.post('/api/apps', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/apps', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { slug, title, summary, description, url, embed_html, thumbnail, sort_order, published } = req.body;
   if (!slug || !title) return res.status(400).json({ error: 'slug and title required' });
   try {
@@ -1153,13 +1224,13 @@ app.post('/api/apps', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-app.put('/api/apps/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { slug, title, summary, description, url, embed_html, thumbnail, sort_order, published } = req.body;
   db.prepare('UPDATE apps SET slug=?, title=?, summary=?, description=?, url=?, embed_html=?, thumbnail=?, sort_order=?, published=? WHERE id=?')
     .run(slug, title, summary||'', description||'', url||'', embed_html||'', thumbnail||'', sort_order||0, published===0?0:1, req.params.id);
   res.json({ success: true });
 });
-app.delete('/api/apps/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM apps WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -1168,20 +1239,20 @@ app.delete('/api/apps/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res
 app.get('/api/projects', apiReadLimiter, (req, res) => {
   res.json(db.prepare('SELECT * FROM projects ORDER BY sort_order, id').all());
 });
-app.post('/api/projects', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/projects', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, lead, status, description, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Missing title' });
   const result = db.prepare('INSERT INTO projects (title, lead, status, description, sort_order) VALUES (?,?,?,?,?)')
     .run(title, lead || '', status || 'active', description || '', sort_order || 0);
   res.json({ id: result.lastInsertRowid });
 });
-app.put('/api/projects/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.put('/api/projects/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, lead, status, description, sort_order } = req.body;
   db.prepare('UPDATE projects SET title=?, lead=?, status=?, description=?, sort_order=? WHERE id=?')
     .run(title, lead || '', status || 'active', description || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
-app.delete('/api/projects/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.delete('/api/projects/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM projects WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -1192,7 +1263,7 @@ app.get('/api/me', apiReadLimiter, (req, res) => {
   const u = db.prepare('SELECT id, username, name, role, email, person_id FROM users WHERE id=?').get(req.session.userId);
   if (!u) return res.status(401).json({ error: 'Auth required' });
   if (!req.session.csrfToken) {
-    req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
   }
   res.json({ loggedIn: true, ...u, csrfToken: req.session.csrfToken });
 });
@@ -1232,6 +1303,10 @@ app.delete('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, r
 
 // ---- Equipment ----
 app.get('/api/equipment', apiReadLimiter, (req, res) => {
+  const { page, limit } = req.query;
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
+  const total = db.prepare('SELECT COUNT(*) as n FROM equipment').get().n;
   const rows = db.prepare(`
     SELECT e.*,
       lu.name AS last_used_user_name, lu.username AS last_used_username,
@@ -1239,8 +1314,8 @@ app.get('/api/equipment', apiReadLimiter, (req, res) => {
     FROM equipment e
     LEFT JOIN users lu ON lu.id = e.last_used_user_id
     LEFT JOIN users cu ON cu.id = e.current_user_id
-    ORDER BY e.sort_order, e.name`).all();
-  res.json(rows);
+    ORDER BY e.sort_order, e.name LIMIT ? OFFSET ?`).all(pageSize, (pageNum - 1) * pageSize);
+  res.json({ total, page: pageNum, limit: pageSize, rows });
 });
 app.post('/api/equipment', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, sku, category, location, status, notes, sort_order } = req.body;
@@ -1301,7 +1376,7 @@ app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
 
 // ---- Issues ----
 app.get('/api/issues', apiReadLimiter, requireAuth, (req, res) => {
-  const { status, mine } = req.query;
+  const { status, mine, query, category, priority, page, limit } = req.query;
   let sql = `SELECT i.*,
       r.name AS reporter_name, r.username AS reporter_username,
       a.name AS assignee_name, a.username AS assignee_username,
@@ -1312,16 +1387,28 @@ app.get('/api/issues', apiReadLimiter, requireAuth, (req, res) => {
     LEFT JOIN equipment e ON e.id = i.related_equipment_id
     WHERE 1=1`;
   const params = [];
-  if (status) { sql += ' AND i.status=?'; params.push(status); }
+  if (status)   { sql += ' AND i.status=?';   params.push(status); }
+  if (category) { sql += ' AND i.category=?'; params.push(category); }
+  if (priority) { sql += ' AND i.priority=?'; params.push(priority); }
   if (mine === '1') { sql += ' AND (i.reporter_user_id=? OR i.assignee_user_id=?)'; params.push(req.session.userId, req.session.userId); }
+  if (query) {
+    sql += " AND (i.title LIKE ? OR i.body LIKE ?)";
+    const like = `%${query}%`;
+    params.push(like, like);
+  }
   sql += " ORDER BY CASE i.status WHEN 'open' THEN 0 WHEN 'in_progress' THEN 1 ELSE 2 END, CASE i.priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END, i.created_at DESC";
-  res.json(db.prepare(sql).all(...params));
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
+  const total = db.prepare(`SELECT COUNT(*) as n FROM (${sql})`).get(...params).n;
+  sql += ' LIMIT ? OFFSET ?';
+  params.push(pageSize, (pageNum - 1) * pageSize);
+  res.json({ total, page: pageNum, limit: pageSize, rows: db.prepare(sql).all(...params) });
 });
 app.post('/api/issues', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, body, category, priority, related_equipment_id } = req.body;
   if (!title) return res.status(400).json({ error: 'title required' });
   const r = db.prepare('INSERT INTO issues (title, body, category, priority, reporter_user_id, related_equipment_id) VALUES (?,?,?,?,?,?)')
-    .run(title, body || '', category || 'other', priority || 'normal', req.session.userId, related_equipment_id || null);
+    .run(str(title,500), str(body,10000), category || 'other', priority || 'normal', req.session.userId, related_equipment_id || null);
   // Email notification — alert all professors/admins about new issues
   const reporter = db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId);
   const staffEmails = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active != 0").all().map(u => u.email);
@@ -1344,8 +1431,8 @@ app.put('/api/issues/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
   if (!isStaff && !isReporter) return res.status(403).json({ error: 'not allowed' });
   const sets = [], params = [];
   const { title, body, category, priority, status, assignee_user_id, related_equipment_id } = req.body;
-  if (title !== undefined && (isReporter || isStaff)) { sets.push('title=?'); params.push(title); }
-  if (body !== undefined && (isReporter || isStaff)) { sets.push('body=?'); params.push(body); }
+  if (title !== undefined && (isReporter || isStaff)) { sets.push('title=?'); params.push(str(title,500)); }
+  if (body !== undefined && (isReporter || isStaff)) { sets.push('body=?'); params.push(str(body,10000)); }
   if (category !== undefined && (isReporter || isStaff)) { sets.push('category=?'); params.push(category); }
   if (priority !== undefined && isStaff) { sets.push('priority=?'); params.push(priority); }
   if (status !== undefined && isStaff) { sets.push('status=?'); params.push(status); }
@@ -1439,6 +1526,80 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/platform', (req, res) => res.sendFile(path.join(__dirname, 'public', 'platform.html')));
 
+// ── Forgot / reset password ──────────────────────────────────────────────────
+// Rate-limited to prevent abuse; both endpoints return generic messages to prevent
+// user enumeration (they always succeed from the client's perspective).
+const passwordResetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
+
+app.post('/api/forgot-password', passwordResetLimiter, (req, res) => {
+  const { email } = req.body;
+  // Always return success to prevent user enumeration
+  res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
+  if (!email || !mailer) return;
+  const user = db.prepare("SELECT id, name, email FROM users WHERE email=? AND active!=0").get(email.toLowerCase().trim());
+  if (!user) return;
+  // Delete any existing tokens for this user
+  db.prepare('DELETE FROM password_reset_tokens WHERE user_id=?').run(user.id);
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+  db.prepare('INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?,?,?)').run(token, user.id, expires);
+  const resetUrl = `${BASE_URL}/reset-password?token=${token}`;
+  sendMail(
+    user.email,
+    '[LATFS] Password reset request',
+    `Hi ${user.name || user.email},\n\nSomeone requested a password reset for your LATFS account.\n\nReset link (valid for 1 hour):\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email.\n`
+  );
+});
+
+app.post('/api/reset-password', passwordResetLimiter, (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'token and password required' });
+  if (password.length < 8) return res.status(400).json({ error: 'password must be at least 8 characters' });
+  // Clean up expired tokens
+  db.prepare("DELETE FROM password_reset_tokens WHERE datetime(expires_at) < datetime('now')").run();
+  const row = db.prepare('SELECT * FROM password_reset_tokens WHERE token=?').get(token);
+  if (!row) return res.status(400).json({ error: 'Invalid or expired reset token' });
+  const hash = bcrypt.hashSync(password, 10);
+  db.prepare('UPDATE users SET password=? WHERE id=?').run(hash, row.user_id);
+  db.prepare('DELETE FROM password_reset_tokens WHERE token=?').run(token);
+  res.json({ success: true });
+});
+
+// Serve reset-password page (same as platform for now — JS will detect token query param)
+app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
+
+// ── Admin: database backup download ─────────────────────────────────────────
+app.get('/api/admin/backup', apiReadLimiter, requireStaff, (req, res) => {
+  const backupPath = path.join('/tmp', `latfs-backup-${Date.now()}.db`);
+  try {
+    db.backup(backupPath)
+      .then(() => {
+        const ts = new Date().toISOString().slice(0, 10);
+        res.download(backupPath, `latfs-backup-${ts}.db`, (err) => {
+          fs.unlink(backupPath, () => {});
+          if (err && !res.headersSent) res.status(500).json({ error: 'Backup download failed' });
+        });
+      })
+      .catch(err => res.status(500).json({ error: err.message }));
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Sitemap.xml — dynamic, generated from DB content ────────────────────────
+app.get('/sitemap.xml', (req, res) => {
+  const host = BASE_URL.replace(/\/$/, '');
+  const staticUrls = ['/', '/#publications', '/#research', '/#people', '/#facilities', '/#news'];
+  const lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...staticUrls.map(u => `  <url><loc>${host}${u}</loc><changefreq>weekly</changefreq></url>`),
+    '</urlset>'
+  ];
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.send(lines.join('\n'));
+});
+
 // ── Lab calendar — iCal export ───────────────────────────────────────────────
 // Public endpoint (no auth required) so users can subscribe in Google/Apple Calendar.
 // URL: /api/events/calendar.ics
@@ -1483,8 +1644,22 @@ app.get('/api/events/calendar.ics', apiReadLimiter, (req, res) => {
   res.send(lines.join('\r\n'));
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`LATFS Website running at http://localhost:${PORT}`);
   console.log(`Admin panel: http://localhost:${PORT}/admin`);
   console.log(`Platform:    http://localhost:${PORT}/platform`);
 });
+
+// ── Graceful shutdown ────────────────────────────────────────────────────────
+function shutdown(signal) {
+  console.log(`[${signal}] Shutting down gracefully…`);
+  server.close(() => {
+    db.close();
+    console.log('Database closed. Goodbye.');
+    process.exit(0);
+  });
+  // Force-close after 10 s if connections won't drain
+  setTimeout(() => { db.close(); process.exit(1); }, 10000).unref();
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));

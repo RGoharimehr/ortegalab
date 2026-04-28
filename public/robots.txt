@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /platform
+Disallow: /api/
+Disallow: /uploads/
+
+Sitemap: https://latfs.villanova.edu/sitemap.xml
