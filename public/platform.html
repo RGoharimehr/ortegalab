@@ -540,7 +540,7 @@ body.dm .p-kanban-col { background: var(--bg-3); border-color: var(--border-1); 
 body.dm .p-inv-row { background: var(--bg-3); border-color: var(--border-1); }
 body.dm .p-task-card { background: var(--bg-1); border-color: var(--border-2); }
 body.dm input, body.dm select, body.dm textarea { background: var(--bg-3); color: var(--fg-1); border-color: var(--border-2); }
-body.dm .p-modal-bg .p-modal { background: var(--bg-2); }
+body.dm .modal-bg .modal { background: var(--bg-2); }
 
 /* Notification badge on nav items */
 .p-nav-badge {
@@ -1098,7 +1098,7 @@ async function loadDashboard(){
     if(badge) badge.textContent = issues.length || '';
     $('#dashIssues').innerHTML = issues.length ? issues.slice(0,5).map(it => `
       <div class="p-task">
-        <div class="p-dot" style="background: ${it.priority==='high'?'var(--status-alert)':it.priority==='medium'?'var(--status-warn)':'var(--status-info)'};"></div>
+        <div class="p-dot" style="background: ${it.priority==='high'?'var(--status-alert)':it.priority==='low'?'var(--status-info)':'var(--status-warn)'};"></div>
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(it.title)}</div>
           <div class="p-task-due">${escapeHTML(it.category)} · ${escapeHTML(it.reporter_name||'')}</div>
@@ -1272,7 +1272,7 @@ async function loadTasks(){
     }).join('');
   } catch(e){ $('#kanbanRoot').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
 }
-function prioClass(p){ if(p==='high') return 'p-tag-alert'; if(p==='low') return 'p-tag-info'; return 'p-tag-warn'; }
+function prioClass(p){ if(p==='high') return 'p-tag-alert'; if(p==='low') return 'p-tag-info'; if(p==='normal') return 'p-tag-outline'; return 'p-tag-warn'; }
 
 $('#taskScope').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
@@ -1337,7 +1337,11 @@ async function loadMeetings(){
   try {
     const meetings = await api('/api/meetings');
     const now = new Date();
-    const upcoming = meetings.sort((a,b)=> new Date(a.scheduled_at||a.created_at)-new Date(b.scheduled_at||b.created_at));
+    const upcoming = meetings
+      .filter(m => m.scheduled_at)
+      .sort((a,b)=> new Date(a.scheduled_at)-new Date(b.scheduled_at))
+      .concat(meetings.filter(m => !m.scheduled_at)
+        .sort((a,b)=> new Date(a.created_at||0)-new Date(b.created_at||0)));
     if(!upcoming.length){ $('#meetList').innerHTML='<div class="empty">No meetings yet.</div>'; return; }
     const isStaff = ME.role==='admin' || ME.role==='professor';
     $('#meetList').innerHTML = upcoming.map(m => {
@@ -1797,7 +1801,7 @@ $('#profEditBtn').addEventListener('click', () => {
     <p style="font-size:12px;color:var(--fg-3);">Role and username are managed by an admin.</p>`,
     async () => {
       const body = { name: $('#meName').value.trim(), email: $('#meEmail').value.trim() };
-      await api('/api/users/'+ME.id, {method:'PUT', body});
+      await api('/api/me/profile', {method:'PUT', body});
       ME.name = body.name; ME.email = body.email;
       $('#userName').textContent = ME.name || ME.username;
       $('#userAv').textContent = initials(ME.name||ME.username);

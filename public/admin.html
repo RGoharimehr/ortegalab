@@ -413,6 +413,16 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   .p-meet-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
 
   code { font-family: var(--font-mono); }
+
+  /* Banner / callout */
+  .p-banner { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; }
+
+  /* Schedule list */
+  .p-slot { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--border-1); }
+  .p-slot:last-child { border-bottom: none; }
+  .p-slot-time { font-size: 12px; font-weight: 700; color: var(--gold-700); min-width: 60px; }
+  .p-slot-title { font-size: 14px; font-weight: 600; color: var(--navy-900); }
+  .p-slot-room { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -481,6 +491,7 @@ let SESSION_USER = { name:'Dr. A. Ortega', role:'PI · Director', initials:'AO',
 const $ = (s, root=document) => root.querySelector(s);
 const escHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const initials = (name) => (name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase();
+const fmtDT = (d) => { if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); };
 
 async function api(path, opts={}) {
   const headers = { 'Content-Type':'application/json' };
@@ -558,6 +569,11 @@ async function doLogin(user, pass) {
 const NAV_ITEMS = [
   ['overview',   'Overview',     'home'],
   ['content',    'Site content', 'edit-3'],
+  ['schedule',   'Schedule',     'calendar'],
+  ['tasks',      'Tasks',        'check-square'],
+  ['meetings',   'Meetings',     'users'],
+  ['inventory',  'Inventory',    'package'],
+  ['projects',   'Projects',     'folder'],
 ];
 
 let activeRoute = 'overview';
@@ -724,72 +740,80 @@ async function renderDashboard(root) {
 }
 
 /* ───────────────────────────────────────────────────────────
-   SCHEDULE — weekly grid
+   SCHEDULE — list view using real server schema
    ─────────────────────────────────────────────────────────── */
 async function renderSchedule(root) {
   const events = await apiGet('/api/events');
-  const hours = ['08','09','10','11','12','13','14','15','16','17'];
-  const days = ['Mon 18','Tue 19','Wed 20','Thu 21','Fri 22'];
-  const colorMap = { navy:{bg:'var(--navy-900)',fg:'#fff'}, gold:{bg:'var(--gold-600)',fg:'#fff'}, info:{bg:'var(--status-info-tint)',fg:'#075985'}, warn:{bg:'var(--status-warn-tint)',fg:'#92400e'} };
+  const now = new Date();
+  const upcoming = events
+    .filter(e => e.start_time)
+    .sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
 
   root.innerHTML = `
     <div class="p-page-head">
       <div>
         <h1 class="p-h1">Schedule</h1>
-        <p class="p-h1-sub">Week of March 18 · weekly grid · ${events.length} events</p>
+        <p class="p-h1-sub">${upcoming.length} upcoming event${upcoming.length===1?'':'s'}</p>
       </div>
       <div class="p-actions">
-        <button class="btn-ghost-sm">← Prev</button>
-        <button class="btn-ghost-sm">Today</button>
-        <button class="btn-ghost-sm">Next →</button>
-        <button class="btn-primary-sm" id="newEvent">+ New booking</button>
+        <button class="btn-primary-sm" id="newEvent">+ New event</button>
       </div>
     </div>
-
-    <div class="p-cal">
-      <div class="p-cal-head">
-        <div></div>
-        ${days.map(d => `<div class="p-cal-day-h">${escHtml(d)}</div>`).join('')}
-      </div>
-      <div class="p-cal-body">
-        <div class="p-cal-hours">
-          ${hours.map(h => `<div class="p-cal-hour">${h}:00</div>`).join('')}
-        </div>
-        ${days.map((d, di) => `
-          <div class="p-cal-col">
-            ${hours.map(()=>`<div class="p-cal-cell"></div>`).join('')}
-            ${events.filter(e=>e.day===di).map(e=>{
-              const c = colorMap[e.color] || colorMap.navy;
-              return `<div class="p-cal-event" data-id="${e.id}" style="top:${(e.start_hour-8)*46}px;height:${e.duration_hours*46-4}px;background:${c.bg};color:${c.fg}">
-                <div class="p-cal-ev-title">${escHtml(e.title)}</div>
-                <div class="p-cal-ev-room">${escHtml(e.room||'')}</div>
-              </div>`;
-            }).join('')}
+    <div class="p-card" id="schedTable">
+      ${upcoming.length ? upcoming.map(e => `
+        <div class="p-slot">
+          <div class="p-slot-time">${new Date(e.start_time).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+          <div style="flex:1;">
+            <div class="p-slot-title">${escHtml(e.title)}</div>
+            <div class="p-slot-room">${fmtDT(e.start_time)}${e.end_time?' → '+fmtDT(e.end_time):''} · ${escHtml(e.location||'')}</div>
           </div>
-        `).join('')}
-      </div>
+          <span class="p-tag p-tag-outline">${escHtml(e.event_type||'event')}</span>
+          <div class="row-actions">
+            <button data-ev-edit="${e.id}">Edit</button>
+            <button class="danger" data-ev-del="${e.id}">Delete</button>
+          </div>
+        </div>`).join('') : '<div class="empty">No upcoming events.</div>'}
     </div>
   `;
-  $('#newEvent').onclick = () => modal('New booking', 'Add an event to the weekly schedule.', `
-    <label>Title</label><input id="m_title" placeholder="Boiling rig · run 4">
-    <label>Day</label>
-    <select id="m_day">
-      <option value="0">Monday</option><option value="1">Tuesday</option>
-      <option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option>
-    </select>
-    <label>Start hour (24h)</label><input id="m_start" type="number" min="8" max="17" value="9">
-    <label>Duration (hours)</label><input id="m_dur" type="number" min="1" max="10" value="1">
-    <label>Room</label><input id="m_room" placeholder="Lab A">
-    <label>Color</label>
-    <select id="m_color"><option value="navy">Navy</option><option value="gold">Gold</option><option value="info">Info (blue)</option><option value="warn">Warning (amber)</option></select>
-  `, async (mb) => {
-    await apiPost('/api/events', {
-      title: $('#m_title', mb).value, day: +$('#m_day', mb).value,
-      start_hour: +$('#m_start', mb).value, duration_hours: +$('#m_dur', mb).value,
-      room: $('#m_room', mb).value, color: $('#m_color', mb).value
-    });
+
+  root.querySelectorAll('[data-ev-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('Delete this event?')) return;
+    await apiDel('/api/events/'+b.dataset.evDel);
     navigate('schedule');
   });
+  root.querySelectorAll('[data-ev-edit]').forEach(b => b.onclick = () => {
+    const ev = events.find(x => x.id == b.dataset.evEdit);
+    openEventModal(ev);
+  });
+
+  function openEventModal(ev) {
+    const isNew = !ev;
+    ev = ev || {};
+    modal(isNew ? 'New event' : 'Edit event', '', `
+      <label>Title</label><input id="m_title" value="${escHtml(ev.title||'')}" placeholder="e.g. Boiling rig run">
+      <label>Type</label>
+      <select id="m_type">
+        ${['meeting','seminar','reservation','other'].map(t=>`<option value="${t}"${(ev.event_type||'meeting')===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <label>Start</label><input id="m_start" type="datetime-local" value="${ev.start_time?ev.start_time.slice(0,16):''}">
+      <label>End (optional)</label><input id="m_end" type="datetime-local" value="${ev.end_time?ev.end_time.slice(0,16):''}">
+      <label>Location</label><input id="m_loc" value="${escHtml(ev.location||'')}">
+    `, async (mb) => {
+      const body = {
+        title: $('#m_title',mb).value.trim(),
+        event_type: $('#m_type',mb).value,
+        start_time: $('#m_start',mb).value,
+        end_time: $('#m_end',mb).value || null,
+        location: $('#m_loc',mb).value
+      };
+      if (!body.title || !body.start_time) throw new Error('Title and start time are required');
+      if (isNew) await apiPost('/api/events', body);
+      else await apiPut('/api/events/'+ev.id, body);
+      navigate('schedule');
+    });
+  }
+
+  $('#newEvent').onclick = () => openEventModal(null);
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -840,7 +864,7 @@ async function renderTasks(root) {
     card.onclick = async () => {
       const t = tasks.find(x => x.id == card.dataset.id);
       if (!t) return;
-      modal('Edit task', '', `
+      const bg = modal('Edit task', '', `
         <label>Title</label><input id="m_title" value="${escHtml(t.title)}">
         <label>Assignee</label><input id="m_who" value="${escHtml(t.assignee||'')}">
         <label>Tag</label>
@@ -862,17 +886,15 @@ async function renderTasks(root) {
         });
         navigate('tasks');
       });
-      // hook delete
-      setTimeout(() => {
-        const delBtn = document.querySelector('#m_del');
-        if (delBtn) delBtn.onclick = async (e) => {
-          e.preventDefault();
-          if (!confirm('Delete this task?')) return;
-          await apiDel('/api/tasks/'+t.id);
-          document.querySelectorAll('.modal-bg').forEach(m=>m.remove());
-          navigate('tasks');
-        };
-      }, 50);
+      // hook delete button directly on the returned modal element
+      const delBtn = bg.querySelector('#m_del');
+      if (delBtn) delBtn.onclick = async (e) => {
+        e.preventDefault();
+        if (!confirm('Delete this task?')) return;
+        await apiDel('/api/tasks/'+t.id);
+        bg.remove();
+        navigate('tasks');
+      };
     };
   });
 
@@ -982,7 +1004,7 @@ async function renderMeetings(root) {
    INVENTORY — tabs + table
    ─────────────────────────────────────────────────────────── */
 let _invLab = 'A';
-async function renderInventory(root) {
+async function renderInventory(root, embedded=false) {
   const items = await apiGet('/api/inventory');
   const labA = items.filter(i => i.lab==='A');
   const labB = items.filter(i => i.lab==='B');
@@ -992,7 +1014,7 @@ async function renderInventory(root) {
   const low = list.filter(i => stateOf(i)!=='ok').length;
 
   root.innerHTML = `
-    <div class="p-page-head">
+    ${!embedded ? `<div class="p-page-head">
       <div>
         <h1 class="p-h1">Inventory</h1>
         <p class="p-h1-sub">Tracked across two lab spaces · ${low} item${low===1?'':'s'} need attention</p>
@@ -1001,7 +1023,9 @@ async function renderInventory(root) {
         <button class="btn-ghost-sm">Export CSV</button>
         <button class="btn-primary-sm" id="newInv">+ Add item</button>
       </div>
-    </div>
+    </div>` : `<div class="p-inv-toolbar" style="justify-content:flex-end;">
+      <button class="btn-primary-sm" id="newInv">+ Add item</button>
+    </div>`}
 
     <div class="p-tabs">
       <button class="p-tab${_invLab==='A'?' active':''}" data-lab="A">Lab A · Tolentine 344 <span class="p-tab-count">${labA.length}</span></button>
@@ -1207,7 +1231,7 @@ async function renderAdmin(root) {
   else if (_adminTab === 'research') renderResearchTab(body);
   else if (_adminTab === 'people') renderPeopleTab(body, people);
   else if (_adminTab === 'facilities') renderFacilitiesTab(body);
-  else if (_adminTab === 'inventory') renderInventory(body);
+  else if (_adminTab === 'inventory') renderInventory(body, true);
   else if (_adminTab === 'hero') renderHeroTab(body);
   else if (_adminTab === 'gallery') renderGalleryTab(body);
   else if (_adminTab === 'sponsors') renderSponsorsTab(body);
@@ -1217,42 +1241,7 @@ async function renderAdmin(root) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-function renderMembersTab(body, people) {
-  body.innerHTML = `
-    <div class="p-inv-toolbar">
-      <div class="p-inv-search"><i data-lucide="search" class="p-inv-search-i"></i>
-        <input class="p-inv-input" id="memSearch" placeholder="Search members…"></div>
-    </div>
-    <div class="p-inv-table" id="memTable">
-      <div class="p-inv-row p-inv-head">
-        <div style="flex:2 1 260px">Member</div>
-        <div style="flex:1 1 140px">Role</div>
-        <div style="flex:1 1 120px">Category</div>
-        <div style="flex:0 0 80px;text-align:right"></div>
-      </div>
-      ${people.map((m,i) => `
-        <div class="p-inv-row">
-          <div style="flex:2 1 260px;display:flex;align-items:center;gap:12px">
-            <div class="p-task-av" style="width:32px;height:32px;font-size:12px;background:${i%2?'var(--navy-700)':'var(--gold-600)'}">${escHtml(initials(m.name))}</div>
-            <div><div class="p-inv-name">${escHtml(m.name)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(m.email||'')}</div></div>
-          </div>
-          <div style="flex:1 1 140px"><span class="p-tag p-tag-outline">${escHtml(m.role||'')}</span></div>
-          <div style="flex:1 1 120px;font-size:12px;color:var(--fg-3)">${escHtml(m.category||'')}</div>
-          <div style="flex:0 0 80px;text-align:right" class="row-actions">
-            <button class="danger" data-del="${m.id}">Delete</button>
-          </div>
-        </div>`).join('')}
-    </div>
-  `;
-  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
-    if (!confirm('Remove this person?')) return;
-    await apiDel('/api/people/'+b.dataset.del); renderAdmin($('#mainContent'));
-  });
-  $('#memSearch').oninput = (e)=> {
-    const q = e.target.value.toLowerCase();
-    body.querySelectorAll('#memTable .p-inv-row:not(.p-inv-head)').forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(q)?'':'none'; });
-  };
-}
+
 
 function renderNewsTab(body, news) {
   body.innerHTML = `
@@ -1766,7 +1755,7 @@ async function renderOverview(root){
   } catch(e){ console.error(e); }
 }
 
-const ROUTES = { overview: renderOverview, content: renderAdmin };
+const ROUTES = { overview: renderOverview, content: renderAdmin, schedule: renderSchedule, tasks: renderTasks, meetings: renderMeetings, inventory: renderInventory, projects: renderProjects };
 
 async function doLogout() {
   await fetch('/admin/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
