@@ -2,3 +2,25 @@ node_modules/
 *.db
 uploads/
 *.log
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+
+# Windows metadata
+desktop.ini
+Thumbs.db
+
+# Legacy Adobe Edge Animate artefacts
+*.edge
+*_edge.css
+*_edge.js
+edge_includes/
+
+# Legacy FrontPage / SharePoint server extensions
+_vti_cnf/
+_vti_pvt/
+
+# Legacy tool project files
+*.cpf
