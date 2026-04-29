@@ -831,6 +831,8 @@ function requireRole(...roles) {
 
 // Convenience: admin or professor (anyone who can manage the lab)
 const requireStaff = requireRole('admin', 'professor');
+// Convenience: admin, professor, or moderator (can post news, photos)
+const requireModerator = requireRole('admin', 'professor', 'moderator');
 
 /**
  * Truncate a user-supplied string to `max` characters.
@@ -945,20 +947,20 @@ app.get('/api/news', apiReadLimiter, (req, res) => {
   res.json(news);
 });
 
-app.post('/api/news', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.post('/api/news', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
   const { title, content, date, image_url, slug } = req.body;
   if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
   const result = db.prepare('INSERT INTO news (title, content, date, image_url, slug) VALUES (?, ?, ?, ?, ?)').run(str(title,500), str(content,20000), date, str(image_url,500), str(slug,200));
   res.json({ id: result.lastInsertRowid, title, content, date });
 });
 
-app.put('/api/news/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.put('/api/news/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
   const { title, content, date, image_url, slug } = req.body;
   db.prepare('UPDATE news SET title=?, content=?, date=?, image_url=?, slug=? WHERE id=?').run(str(title,500), str(content,20000), date, str(image_url,500), str(slug,200), req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/news/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.delete('/api/news/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM news WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -1093,7 +1095,7 @@ app.get('/api/gallery', apiReadLimiter, (req, res) => {
   res.json(photos);
 });
 
-app.post('/api/gallery', uploadRateLimiter, requireStaff, requireCsrf, (req, res) => {
+app.post('/api/gallery', uploadRateLimiter, requireModerator, requireCsrf, (req, res) => {
   photoUpload.single('photo')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message || 'Upload error' });
     if (!req.file) return res.status(400).json({ error: 'No image file provided' });
@@ -1105,7 +1107,7 @@ app.post('/api/gallery', uploadRateLimiter, requireStaff, requireCsrf, (req, res
   });
 });
 
-app.delete('/api/gallery/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.delete('/api/gallery/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
   const photo = db.prepare('SELECT * FROM gallery WHERE id=?').get(req.params.id);
   if (!photo) return res.status(404).json({ error: 'Not found' });
   db.prepare('DELETE FROM gallery WHERE id=?').run(req.params.id);
@@ -1123,7 +1125,7 @@ app.get('/api/hero-slides', apiReadLimiter, (req, res) => {
   res.json(slides);
 });
 
-app.post('/api/hero-slides', uploadRateLimiter, requireStaff, requireCsrf, (req, res) => {
+app.post('/api/hero-slides', uploadRateLimiter, requireModerator, requireCsrf, (req, res) => {
   photoUpload.single('photo')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message || 'Upload error' });
     if (!req.file) return res.status(400).json({ error: 'No image file provided' });
@@ -1136,13 +1138,13 @@ app.post('/api/hero-slides', uploadRateLimiter, requireStaff, requireCsrf, (req,
   });
 });
 
-app.put('/api/hero-slides/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.put('/api/hero-slides/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
   const { title, caption, sort_order } = req.body;
   db.prepare('UPDATE hero_slides SET title=?, caption=?, sort_order=? WHERE id=?').run(title || '', caption || '', sort_order || 0, req.params.id);
   res.json({ success: true });
 });
 
-app.delete('/api/hero-slides/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.delete('/api/hero-slides/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
   const slide = db.prepare('SELECT * FROM hero_slides WHERE id=?').get(req.params.id);
   if (!slide) return res.status(404).json({ error: 'Not found' });
   db.prepare('DELETE FROM hero_slides WHERE id=?').run(req.params.id);
@@ -1193,7 +1195,7 @@ app.delete('/api/facilities/:id', apiWriteLimiter, requireStaff, requireCsrf, (r
 // EVENTS — schedule entries (meetings, seminars, reservations) used by /platform Schedule
 app.get('/api/events', apiReadLimiter, (req, res) => {
   try {
-    res.json(db.prepare('SELECT * FROM events ORDER BY COALESCE(start_time, ""), id').all());
+    res.json(db.prepare("SELECT * FROM events ORDER BY COALESCE(start_time, ''), id").all());
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/events', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -1248,8 +1250,12 @@ app.get('/api/tasks', apiReadLimiter, (req, res) => {
 app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Missing title' });
+  // Only professors and admins can assign tasks to other people; everyone else self-assigns
+  const role = req.session.role || 'student';
+  const canAssignOthers = (role === 'admin' || role === 'professor');
+  const effectiveAssignee = canAssignOthers ? (assignee_user_id || null) : (req.session.userId || null);
   const result = db.prepare('INSERT INTO tasks (title, description, assignee_user_id, created_by_user_id, priority, due_date, status, tag, sort_order) VALUES (?,?,?,?,?,?,?,?,?)')
-    .run(str(title,500), str(description,5000), assignee_user_id || null, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
+    .run(str(title,500), str(description,5000), effectiveAssignee, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
   // Email notification — alert the assignee if different from creator
   if (assignee_user_id && Number(assignee_user_id) !== req.session.userId) {
     const assignee = db.prepare('SELECT name, email FROM users WHERE id=?').get(assignee_user_id);
@@ -1279,10 +1285,13 @@ app.put('/api/tasks/bulk', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
 });
 app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
+  const role = req.session.role || 'student';
+  const canAssignOthers = (role === 'admin' || role === 'professor');
   const sets = [], params = [];
   if (title !== undefined)            { sets.push('title=?');            params.push(str(title,500)); }
   if (description !== undefined)      { sets.push('description=?');      params.push(str(description,5000)); }
-  if (assignee_user_id !== undefined) { sets.push('assignee_user_id=?'); params.push(assignee_user_id || null); }
+  // Only professors and admins can reassign tasks to other people
+  if (assignee_user_id !== undefined && canAssignOthers) { sets.push('assignee_user_id=?'); params.push(assignee_user_id || null); }
   if (priority !== undefined)         { sets.push('priority=?');         params.push(priority || 'normal'); }
   if (due_date !== undefined)         { sets.push('due_date=?');         params.push(due_date || ''); }
   if (status !== undefined)           { sets.push('status=?');           params.push(status || 'todo'); }
@@ -1301,10 +1310,10 @@ app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, re
 // MEETINGS — group meetings, seminars and announcements
 app.get('/api/meetings', apiReadLimiter, (req, res) => {
   try {
-    res.json(db.prepare('SELECT * FROM meetings ORDER BY COALESCE(scheduled_at, ""), sort_order, id').all());
+    res.json(db.prepare("SELECT * FROM meetings ORDER BY COALESCE(scheduled_at, ''), sort_order, id").all());
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/meetings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+app.post('/api/meetings', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   try {
     const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
     if (!title) return res.status(400).json({ error: 'Title required' });
@@ -1546,6 +1555,14 @@ app.delete('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, re
     ['lab_a_room', 'Tolentine 344'],
     ['lab_b_name', 'Lab B'],
     ['lab_b_room', 'Mendel 270'],
+    ['research_section_title', 'Research Areas'],
+    ['research_eyebrow', 'Six pillars · updated quarterly'],
+    ['research_page_title', 'Six pillars of inquiry'],
+    ['research_page_intro', 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage. Click any area to see active projects and publications.'],
+    ['people_page_title', 'Our people'],
+    ['people_page_intro', 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'],
+    ['facilities_page_title', 'Lab facilities & instruments'],
+    ['facilities_page_intro', 'Click any facility to see photos, the full description, and any documentation we have on it.'],
   ];
   const ins = db.prepare('INSERT OR IGNORE INTO app_settings (key, value) VALUES (?,?)');
   for (const [k, v] of defaults) ins.run(k, v);
@@ -1556,9 +1573,17 @@ app.get('/api/settings', apiReadLimiter, requireAuth, (req, res) => {
   for (const r of rows) out[r.key] = r.value;
   res.json(out);
 });
+// Public subset of settings (no auth required) — exposes only page-content keys for the public website
+app.get('/api/site-settings', apiReadLimiter, (req, res) => {
+  const publicKeys = ['research_section_title','research_eyebrow','research_page_title','research_page_intro','people_page_title','people_page_intro','facilities_page_title','facilities_page_intro'];
+  const rows = db.prepare('SELECT key, value FROM app_settings').all();
+  const out = {};
+  for (const r of rows) { if (publicKeys.includes(r.key)) out[r.key] = r.value; }
+  res.json(out);
+});
 app.put('/api/settings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const ups = db.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?,?)');
-  const update = db.transaction((pairs) => { for (const [k, v] of pairs) ups.run(String(k).slice(0,100), String(v||'').slice(0,300)); });
+  const update = db.transaction((pairs) => { for (const [k, v] of pairs) ups.run(String(k).slice(0,100), String(v||'').slice(0,2000)); });
   update(Object.entries(req.body || {}));
   res.json({ success: true });
 });

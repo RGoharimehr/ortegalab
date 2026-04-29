@@ -122,18 +122,18 @@ a:hover { color: var(--gold-700); }
 .w-research { background: #fff; }
 .w-research-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
 .w-research-list { border-top: 1px solid var(--border-1); }
-.w-research-row { display: grid; grid-template-columns: 40px 1fr 20px; gap: 12px; align-items: start; padding: 13px 4px; border-bottom: 1px solid var(--border-1); text-decoration: none; color: inherit; cursor: pointer; transition: padding-left .2s ease, background .2s ease; }
-.w-research-row:hover, .w-research-row.is-hover { padding-left: 14px; background: linear-gradient(90deg, rgba(200,162,74,.06) 0%, transparent 80%); }
-.w-research-num { font-family: var(--font-sans); font-size: 17px; font-weight: 800; color: var(--gold-600); line-height: 1; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.w-research-row { display: grid; grid-template-columns: 1fr 20px; gap: 12px; align-items: start; padding: 13px 4px; border-bottom: 1px solid var(--border-1); text-decoration: none; color: inherit; cursor: pointer; transition: padding-left .2s ease, background .2s ease, border-left .2s ease; border-left: 3px solid transparent; }
+.w-research-row:hover, .w-research-row.is-hover { padding-left: 14px; background: linear-gradient(90deg, rgba(200,162,74,.06) 0%, transparent 80%); border-left-color: var(--gold-500); }
 .w-research-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--navy-900); margin: 0 0 3px; letter-spacing: -.015em; line-height: 1.25; }
 .w-research-desc { font-size: 12px; color: var(--fg-3); line-height: 1.5; margin: 0 0 5px; }
 .w-research-meta { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-4); }
 .w-research-arrow { color: var(--fg-4); font-size: 16px; align-self: center; transition: transform .2s ease, color .2s ease; }
 .w-research-row:hover .w-research-arrow, .w-research-row.is-hover .w-research-arrow { color: var(--gold-700); transform: translateX(4px); }
 .w-research-peek { position: sticky; top: 80px; }
-.w-research-peek-frame { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 4/3; background: var(--navy-900); box-shadow: var(--shadow-md); }
+.w-research-peek-frame { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 4/3; background: var(--navy-900); box-shadow: var(--shadow-md); transition: box-shadow .3s ease, transform .3s ease; }
+.w-research-peek-frame.is-row-hovered { box-shadow: 0 0 0 3px var(--gold-500), 0 8px 32px rgba(0,0,0,.3); transform: scale(1.015); }
 .w-research-peek-img { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transform: scale(1.05); transition: opacity .5s ease, transform .6s ease; }
-.w-research-peek-img.is-active { opacity: .8; transform: scale(1); }
+.w-research-peek-img.is-active { opacity: 1; transform: scale(1); }
 .w-research-peek-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,.1) 0%, rgba(15,23,42,.85) 100%); }
 .w-research-peek-label { position: absolute; left: 24px; right: 24px; bottom: 22px; color: #fff; z-index: 2; }
 .w-research-peek-num { font-size: 11px; font-weight: 800; color: var(--gold-500); letter-spacing: .14em; text-transform: uppercase; }
@@ -263,7 +263,7 @@ a:hover { color: var(--gold-700); }
 /* Facilities — clickable cards */
 .w-fac-card { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; }
 .w-fac-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.w-fac-img { height: 200px; background: var(--gray-100) center/cover no-repeat; }
+.w-fac-img { aspect-ratio: 3/2; height: auto; background: var(--gray-100) center/cover no-repeat; }
 .w-fac-img-empty { background: linear-gradient(135deg, var(--navy-700), var(--navy-900)); }
 .w-fac-body { padding: 22px; }
 .w-fac-title { font-size: 18px; font-weight: 700; color: var(--navy-900); margin: 0 0 8px; letter-spacing: -.01em; }
@@ -513,12 +513,17 @@ function ResearchGrid(rows) {
     h('div', { class: 'w-research-peek-img' + (i === 0 ? ' is-active' : ''),
                style: { backgroundImage: `url(${a.img})` }, 'data-idx': i })
   );
-  const labelNum   = h('div', { class: 'w-research-peek-num' }, areas[0].n);
   const labelTitle = h('div', { class: 'w-research-peek-title' }, areas[0].title);
+  const peekFrame = h('div', { class: 'w-research-peek-frame' },
+    ...peekImgs,
+    h('div', { class: 'w-research-peek-overlay' }),
+    h('div', { class: 'w-research-peek-label' }, labelTitle),
+  );
+
   const setHover = (i) => {
     hover = i;
     peekImgs.forEach((el, idx) => el.classList.toggle('is-active', idx === i));
-    labelNum.textContent = areas[i].n;
+    peekFrame.classList.add('is-row-hovered');
     labelTitle.textContent = areas[i].title;
     rowEls.forEach((el, idx) => el.classList.toggle('is-hover', idx === i));
   };
@@ -531,7 +536,6 @@ function ResearchGrid(rows) {
       onmouseenter: () => setHover(i),
       onfocus: () => setHover(i),
     },
-      h('span', { class: 'w-research-num' }, a.n),
       h('div', { class: 'w-research-copy' },
         h('h3', { class: 'w-research-title' }, a.title),
         h('p',  { class: 'w-research-desc' },  a.desc),
@@ -541,24 +545,19 @@ function ResearchGrid(rows) {
     )
   );
 
+  const s = DATA.settings || {};
   return h('section', { class: 'w-section w-research' },
     h('div', { class: 'max-w' },
       h('div', { class: 'w-sh', style: { marginBottom: '32px' } },
         h('div', { class: 'w-sh-inner' },
           h('div', { class: 'w-sh-bar' }),
-          h('h2',  { class: 'w-sh-title' }, 'Research Areas'),
+          h('h2',  { class: 'w-sh-title' }, s.research_section_title || 'Research Areas'),
         ),
-        h('div', { class: 'w-research-eyebrow' }, 'Six pillars · updated quarterly'),
+        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Six pillars · updated quarterly'),
       ),
       h('div', { class: 'w-research-layout' },
         h('div', { class: 'w-research-list' }, ...rowEls),
-        h('div', { class: 'w-research-peek' },
-          h('div', { class: 'w-research-peek-frame' },
-            ...peekImgs,
-            h('div', { class: 'w-research-peek-overlay' }),
-            h('div', { class: 'w-research-peek-label' }, labelNum, labelTitle),
-          )
-        )
+        h('div', { class: 'w-research-peek' }, peekFrame),
       )
     )
   );
@@ -733,10 +732,10 @@ function Footer() {
 }
 
 /* ---- Cached data ---- */
-let DATA = { news: null, pubs: null, people: null, research: null, gallery: null, sponsors: null, hero: null };
+let DATA = { news: null, pubs: null, people: null, research: null, gallery: null, sponsors: null, hero: null, settings: {} };
 
 async function loadAll() {
-  const [news, pubs, people, research, gallery, sponsors, hero, facilities, apps] = await Promise.all([
+  const [news, pubs, people, research, gallery, sponsors, hero, facilities, apps, settings] = await Promise.all([
     getJSON('/api/news'),
     getJSON('/api/publications'),
     getJSON('/api/people'),
@@ -746,8 +745,9 @@ async function loadAll() {
     getJSON('/api/hero-slides'),
     getJSON('/api/facilities'),
     getJSON('/api/apps'),
+    getJSON('/api/site-settings'),
   ]);
-  DATA = { news, pubs, people, research, gallery, sponsors, hero, facilities, apps };
+  DATA = { news, pubs, people, research, gallery, sponsors, hero, facilities, apps, settings: settings || {} };
 }
 
 /* ---- Pages ---- */
@@ -780,11 +780,12 @@ function PageResearch() {
         )
       )
     : [h('div', { class: 'w-empty' }, 'No research areas yet.')];
+  const s = DATA.settings || {};
   return h('section', { class: 'w-page' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'Research'),
-      h('h1',  { class: 'w-page-title' }, 'Six pillars of inquiry'),
-      h('p',   { class: 'w-page-intro' }, 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage. Click any area to see active projects and publications.'),
+      h('h1',  { class: 'w-page-title' }, s.research_page_title || 'Six pillars of inquiry'),
+      h('p',   { class: 'w-page-intro' }, s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage. Click any area to see active projects and publications.'),
       h('div', { class: 'w-grid-3' }, ...cards)
     )
   );
@@ -825,8 +826,8 @@ function PagePeople() {
   return h('section', { class: 'w-page' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'People'),
-      h('h1',  { class: 'w-page-title' }, 'Lab members'),
-      h('p',   { class: 'w-page-intro' }, 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'),
+      h('h1',  { class: 'w-page-title' }, (DATA.settings||{}).people_page_title || 'Lab members'),
+      h('p',   { class: 'w-page-intro' }, (DATA.settings||{}).people_page_intro || 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'),
       sections.length ? sections : h('div', { class: 'w-empty' }, 'Roster is being updated.')
     )
   );
@@ -896,11 +897,12 @@ function PagePublications() {
 
 function PageFacilities() {
   const facs = DATA.facilities || [];
+  const s = DATA.settings || {};
   return h('section', { class: 'w-page' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'Facilities'),
-      h('h1',  { class: 'w-page-title' }, 'Lab facilities & instruments'),
-      h('p',   { class: 'w-page-intro' }, 'Click any facility to see photos, the full description, and any documentation we have on it.'),
+      h('h1',  { class: 'w-page-title' }, s.facilities_page_title || 'Lab facilities & instruments'),
+      h('p',   { class: 'w-page-intro' }, s.facilities_page_intro || 'Click any facility to see photos, the full description, and any documentation we have on it.'),
       facs.length
         ? h('div', { class: 'w-grid-2' },
             ...facs.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },

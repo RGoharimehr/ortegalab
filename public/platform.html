@@ -519,17 +519,17 @@ html[data-theme="dark"], html[style*="color-scheme: dark"] { color-scheme: dark;
 
 /* Shared dark overrides applied via a .dm class added to body by JS */
 body.dm {
-  --bg-1: #10151f;
-  --bg-2: #161c2a;
-  --bg-3: #1e2636;
+  --bg-1: #080c14;
+  --bg-2: #0d1220;
+  --bg-3: #131a2e;
   --fg-1: #e8edf5;
   --fg-2: #b0bbd0;
   --fg-3: #7a8aa0;
   --fg-4: #556070;
-  --border-1: #253047;
-  --border-2: #2e3d56;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.5);
+  --border-1: #1e2a42;
+  --border-2: #253352;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.65);
   background: var(--bg-2);
   color: var(--fg-1);
 }
@@ -779,7 +779,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <p class="p-h1-sub">Group meetings, seminars and announcements from the PI.</p>
         </div>
         <div class="p-actions">
-          <button class="btn-primary-sm staff-only hidden" id="addMeetingBtn">+ Add meeting</button>
+          <button class="btn-primary-sm" id="addMeetingBtn">+ Add meeting</button>
         </div>
       </div>
       <div class="p-meet-list" id="meetList"></div>
@@ -912,6 +912,25 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <div id="profEquip"></div>
         </div>
       </div>
+      <div class="p-card" style="margin-top:18px;">
+        <div class="p-card-head"><div class="p-card-title">Personal settings</div></div>
+        <div style="padding:14px 0;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <div style="font-weight:600;font-size:14px;">Dark mode</div>
+              <div style="font-size:12px;color:var(--fg-3);">Switch between light and dark interface.</div>
+            </div>
+            <button class="btn-ghost-sm" id="profDmToggle">Toggle</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <div style="font-weight:600;font-size:14px;">Change password</div>
+              <div style="font-size:12px;color:var(--fg-3);">Update your login credentials.</div>
+            </div>
+            <button class="btn-ghost-sm" id="profChPwBtn">Change</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Lab members (staff only) -->
@@ -1009,7 +1028,7 @@ function showApp(){
   $('#userName').textContent = ME.name || ME.username;
   $('#userRole').textContent = (ME.role || 'member').toUpperCase();
   $('#userAv').textContent = initials(ME.name || ME.username);
-  if(ME.role === 'admin' || ME.role === 'professor'){
+  if(ME.role === 'admin' || ME.role === 'professor' || ME.role === 'moderator'){
     $$('.staff-only').forEach(el => el.classList.remove('hidden'));
   }
   goRoute('dashboard');
@@ -1305,8 +1324,9 @@ document.addEventListener('click', async e => {
 
 async function openTaskModal(t){
   const isEdit = !!(t && t.id);
+  const canAssign = ME.role === 'admin' || ME.role === 'professor';
   let users = [];
-  try { users = await api('/api/users'); } catch(e){ users = []; }
+  if(canAssign) try { users = await api('/api/users'); } catch(e){ users = []; }
   modal(`<h2>${isEdit?'Edit task':'New task'}</h2>
     <label>Title<input id="tTitle" value="${escapeHTML(t?.title||'')}"></label>
     <label>Description<textarea id="tDesc">${escapeHTML(t?.description||'')}</textarea></label>
@@ -1317,9 +1337,9 @@ async function openTaskModal(t){
       ${['todo','in_progress','blocked','done'].map(p=>`<option value="${p}" ${(t?.status||'todo')===p?'selected':''}>${p.replace('_',' ')}</option>`).join('')}
     </select></label>
     <label>Due date<input id="tDue" type="date" value="${t?.due_date?t.due_date.slice(0,10):''}"></label>
-    <label>Assigned to<select id="tAss"><option value="">—</option>
+    ${canAssign ? `<label>Assigned to<select id="tAss"><option value="">—</option>
       ${users.map(u=>`<option value="${u.id}" ${t?.assignee_user_id===u.id?'selected':''}>${escapeHTML(u.name||u.username)}</option>`).join('')}
-    </select></label>`,
+    </select></label>` : ''}`,
     async () => {
       const body = {
         title: $('#tTitle').value.trim(),
@@ -1327,7 +1347,7 @@ async function openTaskModal(t){
         priority: $('#tPri').value,
         status: $('#tSt').value,
         due_date: $('#tDue').value || null,
-        assignee_user_id: $('#tAss').value ? Number($('#tAss').value) : null
+        assignee_user_id: canAssign && $('#tAss') ? (Number($('#tAss').value) || null) : null
       };
       if(!body.title) throw new Error('Title required');
       if(isEdit) await api('/api/tasks/'+t.id,{method:'PUT', body});
@@ -1819,6 +1839,24 @@ $('#profEditBtn').addEventListener('click', () => {
       $('#userName').textContent = ME.name || ME.username;
       $('#userAv').textContent = initials(ME.name||ME.username);
       loadProfile();
+    });
+});
+$('#profDmToggle').addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dm');
+  localStorage.setItem('latfs-theme', isDark ? 'dark' : 'light');
+});
+$('#profChPwBtn').addEventListener('click', () => {
+  modal(`<h2>Change password</h2>
+    <label>Current password<input id="cpCur" type="password" autocomplete="current-password"></label>
+    <label>New password<input id="cpNew" type="password" autocomplete="new-password"></label>
+    <label>Confirm new password<input id="cpConf" type="password" autocomplete="new-password"></label>`,
+    async () => {
+      const cur = $('#cpCur').value, np = $('#cpNew').value, conf = $('#cpConf').value;
+      if(!cur || !np) throw new Error('All fields are required');
+      if(np !== conf) throw new Error('New passwords do not match');
+      if(np.length < 8) throw new Error('New password must be at least 8 characters');
+      await api('/api/me/password', {method:'PUT', body:{current_password: cur, new_password: np}});
+      alert('Password changed successfully.');
     });
 });
 
