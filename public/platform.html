@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LATFS Platform</title>
+<link rel="canonical" href="https://latfs.villanova.edu/platform">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -423,6 +424,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-issue-card { background:#fff; border:1px solid var(--border-1); border-radius:10px; padding:14px; margin-bottom:10px; box-shadow: var(--shadow-xs); }
 .p-issue-card.priority-high { border-left: 4px solid var(--status-alert); }
 .p-issue-card.priority-medium { border-left: 4px solid var(--status-warn); }
+.p-issue-card.priority-normal { border-left: 4px solid var(--status-warn); }
 .p-issue-card.priority-low { border-left: 4px solid var(--status-info); }
 .p-issue-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
 .p-issue-title { font-weight:700; color:var(--navy-900); font-size:14px; }
@@ -459,6 +461,118 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-log-note { color:var(--fg-3); font-style:italic; }
 .p-banner { background: var(--gold-100); border:1px solid var(--gold-300); color: var(--gold-900); padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
 
+/* ---- PI Director summary panel ---- */
+.pi-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-bottom:18px; }
+.pi-stat { background:#fff; border:1px solid var(--border-1); border-radius:var(--radius-lg); padding:16px 18px; }
+.pi-stat-num { font-size:2rem; font-weight:900; color:var(--navy-900); line-height:1; }
+.pi-stat-lbl { font-size:11px; color:var(--fg-3); text-transform:uppercase; letter-spacing:.07em; margin-top:4px; }
+.pi-stat.warn .pi-stat-num { color:var(--status-warn); }
+.pi-stat.alert .pi-stat-num { color:var(--status-alert); }
+.pi-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-1); font-size:13px; }
+.pi-row:last-child { border-bottom:none; }
+.pi-badge { font-size:11px; font-weight:700; padding:2px 7px; border-radius:var(--radius-pill); background:var(--status-warn-tint); color:var(--status-warn); }
+.pi-badge.high { background:var(--status-alert-tint); color:var(--status-alert); }
+.pi-badge.resolved { background:var(--status-ok-tint); color:var(--status-ok); }
+
+/* ---- Mobile / responsive ---- */
+/* Hamburger button — hidden on desktop */
+.p-hamburger { display:none; background:none; border:none; cursor:pointer; padding:8px; color:#fff; }
+.p-hamburger svg { display:block; }
+
+/* Mobile overlay (darkens main when sidebar is open) */
+.p-sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:199; }
+.p-sidebar-overlay.open { display:block; }
+
+@media (max-width: 768px) {
+  .p-app { display: block; position: relative; }
+  .p-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+    width: 260px; transform: translateX(-100%);
+    transition: transform 240ms var(--ease-out);
+    overflow-y: auto;
+  }
+  .p-sidebar.open { transform: translateX(0); }
+  .p-main { padding: 16px; }
+  /* Topbar — shows on mobile, hidden on desktop */
+  .p-topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy-900); color: #fff;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; margin: -16px -16px 16px;
+  }
+  .p-topbar-title { font-weight: 800; font-size: 14px; color: #fff; flex: 1; }
+  .p-hamburger { display: block; }
+  /* Stack grid cards on mobile */
+  .p-grid-2, .p-grid-3 { grid-template-columns: 1fr; }
+  .p-kanban { flex-direction: column; }
+  .p-page-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .pi-grid { grid-template-columns: repeat(2, 1fr); }
+  .p-inv-row { flex-wrap: wrap; gap: 4px; }
+  .p-inv-head { display: none; }
+}
+@media (min-width: 769px) {
+  .p-topbar { display: none; }
+}
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+/* Toggle by adding data-theme="dark" to <html>; also respects OS preference  */
+@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { --_dm: 1; } }
+html[data-theme="dark"] { --_dm: 1; }
+html[data-theme="dark"], html[style*="color-scheme: dark"] { color-scheme: dark; }
+
+/* When dark mode is active, remap the design tokens */
+html[data-theme="dark"] body,
+@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) body { } }
+
+/* Shared dark overrides applied via a .dm class added to body by JS */
+body.dm {
+  --bg-1: #10151f;
+  --bg-2: #161c2a;
+  --bg-3: #1e2636;
+  --fg-1: #e8edf5;
+  --fg-2: #b0bbd0;
+  --fg-3: #7a8aa0;
+  --fg-4: #556070;
+  --border-1: #253047;
+  --border-2: #2e3d56;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.5);
+  background: var(--bg-2);
+  color: var(--fg-1);
+}
+body.dm .p-card, body.dm .p-stat-card { background: var(--bg-3); border-color: var(--border-1); }
+body.dm .p-tbl th { background: var(--bg-3); color: var(--fg-2); }
+body.dm .p-tbl td { border-color: var(--border-1); color: var(--fg-1); }
+body.dm .p-kanban-col { background: var(--bg-3); border-color: var(--border-1); }
+body.dm .p-inv-row { background: var(--bg-3); border-color: var(--border-1); }
+body.dm .p-task-card { background: var(--bg-1); border-color: var(--border-2); }
+body.dm input, body.dm select, body.dm textarea { background: var(--bg-3); color: var(--fg-1); border-color: var(--border-2); }
+body.dm .p-modal-bg .p-modal { background: var(--bg-2); }
+
+/* Notification badge on nav items */
+.p-nav-badge {
+  margin-left: auto;
+  background: var(--status-alert);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+.p-nav-badge:empty { display: none; }
+
+/* Dark mode toggle button */
+.p-dm-toggle {
+  background: none; border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.7);
+  border-radius: var(--radius-sm); padding: 4px 10px; font-size: 11px; cursor: pointer;
+  margin-top: 8px; width: 100%;
+}
+.p-dm-toggle:hover { background: rgba(255,255,255,.07); color: #fff; }
+
 </style>
 </head>
 <body>
@@ -479,7 +593,10 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 
 <!-- App shell -->
 <div class="p-app hidden" id="appShell">
-  <aside class="p-sidebar">
+  <!-- Mobile sidebar overlay -->
+  <div class="p-sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="p-sidebar" id="sidebar">
     <div class="p-brand">
       <div class="p-brand-mark">L</div>
       <div>
@@ -494,7 +611,8 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
       <button class="p-nav-item" data-route="tasks"><span>Tasks</span></button>
       <button class="p-nav-item" data-route="meetings"><span>Meetings</span></button>
       <button class="p-nav-item" data-route="equipment"><span>Equipment</span></button>
-      <button class="p-nav-item" data-route="issues"><span>Issues / Requests</span></button>
+      <button class="p-nav-item" data-route="inventory"><span>Inventory</span></button>
+      <button class="p-nav-item" data-route="issues"><span>Issues / Requests</span><span class="p-nav-badge" id="issuesBadge"></span></button>
       <button class="p-nav-item" data-route="profile"><span>My Profile</span></button>
     </nav>
 
@@ -511,10 +629,20 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
         <div class="p-user-role" id="userRole">—</div>
       </div>
       <button class="p-logout" id="logoutBtn">Logout</button>
+      <button class="p-dm-toggle" id="dmToggle" title="Toggle dark mode">☀ / ☾ Dark mode</button>
     </div>
   </aside>
 
   <main class="p-main">
+    <!-- Mobile top bar (hidden on desktop via CSS) -->
+    <div class="p-topbar">
+      <button class="p-hamburger" id="hamburgerBtn" aria-label="Open menu">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="p-topbar-title">LATFS Platform</div>
+    </div>
 
     <!-- Dashboard -->
     <section class="p-section active" data-section="dashboard">
@@ -558,9 +686,45 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
           <div id="dashIssues"><div class="empty">No open issues.</div></div>
         </div>
       </div>
+      <!-- Staff-only PI overview panel (inserted below personal cards) -->
+      <div id="piPanel" class="staff-only hidden" style="margin-top:18px;">
+        <div class="p-page-head" style="margin-bottom:12px;">
+          <div>
+            <div class="eyebrow" style="color:var(--gold-700);">Director view</div>
+            <h2 class="p-h1" style="font-size:1.1rem;">Lab-wide overview</h2>
+          </div>
+        </div>
+        <div class="pi-grid" id="piStats"></div>
+        <div class="p-grid-2">
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Open issues (high priority first)</div>
+              <button class="w-link-gold" onclick="goRoute('issues')">View all →</button>
+            </div>
+            <div id="piIssues"><div class="empty">Loading…</div></div>
+          </div>
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Equipment in use</div>
+              <button class="w-link-gold" onclick="goRoute('equipment')">View all →</button>
+            </div>
+            <div id="piEquip"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+        <div class="p-grid-2" style="margin-top:18px;">
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Overdue tasks</div>
+              <button class="w-link-gold" onclick="goRoute('tasks')">View all →</button>
+            </div>
+            <div id="piOverdue"><div class="empty">Loading…</div></div>
+          </div>
+          <div class="p-card">
+            <div class="p-card-head"><div class="p-card-title">Upcoming events</div>
+              <button class="w-link-gold" onclick="goRoute('schedule')">View all →</button>
+            </div>
+            <div id="piEvents"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+      </div>
     </section>
-
-    <!-- Schedule -->
     <section class="p-section" data-section="schedule">
       <div class="p-page-head">
         <div>
@@ -573,6 +737,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
             <button class="active" data-scope="mine">Mine</button>
             <button data-scope="all">All</button>
           </div>
+          <a class="btn-ghost-sm" href="/api/events/calendar.ics" download="latfs-schedule.ics" title="Subscribe / download .ics for Google, Apple, or Outlook Calendar">⬇ .ics</a>
           <button class="btn-primary-sm" id="addEventBtn">+ Add event</button>
         </div>
       </div>
@@ -671,7 +836,43 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
           <button class="btn-primary-sm" id="addIssueBtn">+ Report issue</button>
         </div>
       </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <input id="issueSearch" placeholder="Search issues…" style="flex:2;min-width:180px;padding:7px 10px;border:1px solid var(--border-2);border-radius:var(--radius-sm);font-size:13px;">
+        <select id="issueCatFilter" style="flex:1;min-width:130px;padding:7px 10px;border:1px solid var(--border-2);border-radius:var(--radius-sm);font-size:13px;">
+          <option value="">All categories</option>
+          <option value="equipment">Equipment</option>
+          <option value="supplies">Supplies</option>
+          <option value="facility">Facility</option>
+          <option value="safety">Safety</option>
+          <option value="other">Other</option>
+        </select>
+        <select id="issuePriFilter" style="flex:1;min-width:120px;padding:7px 10px;border:1px solid var(--border-2);border-radius:var(--radius-sm);font-size:13px;">
+          <option value="">All priorities</option>
+          <option value="high">High</option>
+          <option value="normal">Normal</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
       <div id="issueList"></div>
+    </section>
+
+    <!-- Inventory -->
+    <section class="p-section" data-section="inventory">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Lab supplies</div>
+          <h1 class="p-h1">Inventory</h1>
+          <p class="p-h1-sub">Track consumables, chemicals, reagents and supplies.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm staff-only hidden" id="addInvBtn">+ Add item</button>
+        </div>
+      </div>
+      <div class="p-inv-toolbar">
+        <div class="p-inv-search"><input class="p-inv-input" id="invSearch" placeholder="Search items…"></div>
+        <select class="p-inv-select" id="invLab"><option value="">All labs</option></select>
+      </div>
+      <div id="invList"></div>
     </section>
 
     <!-- Profile -->
@@ -755,6 +956,10 @@ async function api(path, opts={}){
   return data;
 }
 
+/** Unwrap paginated list responses { total, rows } → plain array.
+ *  Falls back gracefully for endpoints that still return an array directly. */
+function unwrap(res){ return Array.isArray(res) ? res : (res && res.rows ? res.rows : []); }
+
 /* ---------- Auth ---------- */
 async function checkAuth(){
   try {
@@ -804,6 +1009,24 @@ function showApp(){
   loadDashboard();
 }
 
+/* ---------- Mobile sidebar (hamburger) ---------- */
+function openSidebar(){
+  $('#sidebar').classList.add('open');
+  $('#sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar(){
+  $('#sidebar').classList.remove('open');
+  $('#sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+$('#hamburgerBtn').addEventListener('click', openSidebar);
+$('#sidebarOverlay').addEventListener('click', closeSidebar);
+// Close sidebar when nav item is clicked on mobile
+document.addEventListener('click', e => {
+  if(e.target.closest('.p-nav-item') && window.innerWidth <= 768) closeSidebar();
+});
+
 /* ---------- Routing ---------- */
 function goRoute(name){
   $$('.p-section').forEach(s => s.classList.toggle('active', s.dataset.section === name));
@@ -813,6 +1036,7 @@ function goRoute(name){
   if(name === 'tasks') loadTasks();
   if(name === 'meetings') loadMeetings();
   if(name === 'equipment') loadEquipment();
+  if(name === 'inventory') loadInventory();
   if(name === 'issues') loadIssues();
   if(name === 'profile') loadProfile();
   if(name === 'people-admin') loadUsers();
@@ -860,30 +1084,78 @@ async function loadDashboard(){
   } catch(e){ $('#dashMeetings').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
   // equipment checked out to me
   try {
-    const eq = await api('/api/equipment');
-    const mine = eq.filter(x => x.checked_out_user_id === ME.id);
+    const eq = unwrap(await api('/api/equipment'));
+    const mine = eq.filter(x => x.current_user_id === ME.id);
     $('#stMyEq').textContent = mine.length;
     $('#dashEquip').innerHTML = mine.length ? mine.map(x => `
       <div class="p-task">
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(x.name)}</div>
-          <div class="p-task-due">Tag ${escapeHTML(x.tag||'—')} · since ${fmtDT(x.checked_out_at)}</div>
+          <div class="p-task-due">SKU ${escapeHTML(x.sku||'—')} · since ${fmtDT(x.last_used_at)}</div>
         </div>
         <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
       </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
   } catch(e){ $('#dashEquip').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
   // issues
   try {
-    const issues = await api('/api/issues?status=open');
+    const issues = unwrap(await api('/api/issues?status=open'));
+    // Keep sidebar badge in sync
+    const badge = $('#issuesBadge');
+    if(badge) badge.textContent = issues.length || '';
     $('#dashIssues').innerHTML = issues.length ? issues.slice(0,5).map(it => `
       <div class="p-task">
         <div class="p-dot" style="background: ${it.priority==='high'?'var(--status-alert)':it.priority==='medium'?'var(--status-warn)':'var(--status-info)'};"></div>
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(it.title)}</div>
-          <div class="p-task-due">${escapeHTML(it.category)} · ${escapeHTML(it.created_by_name||'')}</div>
+          <div class="p-task-due">${escapeHTML(it.category)} · ${escapeHTML(it.reporter_name||'')}</div>
         </div>
       </div>`).join('') : '<div class="empty">No open issues.</div>';
   } catch(e){ $('#dashIssues').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  // PI panel — only for staff
+  if(ME.role === 'admin' || ME.role === 'professor') loadPIDashboard();
+}
+
+/* ---------- PI / Director dashboard ---------- */
+async function loadPIDashboard(){
+  try {
+    const d = await api('/api/dashboard/pi');
+    $('#piStats').innerHTML = [
+      { label:'Lab members', val: d.totalMembers, cls:'' },
+      { label:'Open issues', val: d.openIssues, cls: d.openIssues > 0 ? 'warn' : '' },
+      { label:'High-priority issues', val: d.highIssues, cls: d.highIssues > 0 ? 'alert' : '' },
+      { label:'Equipment in use', val: d.equipmentInUse, cls:'' },
+      { label:'Overdue tasks', val: d.overdueTasks, cls: d.overdueTasks > 0 ? 'warn' : '' },
+    ].map(s => `<div class="pi-stat ${s.cls}"><div class="pi-stat-num">${s.val}</div><div class="pi-stat-lbl">${s.label}</div></div>`).join('');
+
+    $('#piIssues').innerHTML = d.recentIssues.length ? d.recentIssues.map(it => `
+      <div class="pi-row">
+        <span class="pi-badge ${it.priority==='high'?'high':''}">${escapeHTML(it.priority)}</span>
+        <span style="flex:1;">${escapeHTML(it.title)}</span>
+        <span style="color:var(--fg-3);font-size:12px;">${escapeHTML(it.reporter_name||'')}</span>
+      </div>`).join('') : '<div class="empty">No open issues.</div>';
+
+    $('#piEquip').innerHTML = d.checkedOutEq.length ? d.checkedOutEq.map(e => `
+      <div class="pi-row">
+        <span style="flex:1;font-weight:600;">${escapeHTML(e.name)}</span>
+        <span style="color:var(--fg-3);font-size:12px;">${escapeHTML(e.held_by||'—')}</span>
+        <span style="color:var(--fg-4);font-size:11px;margin-left:6px;">${e.last_used_at?fmtDT(e.last_used_at):''}</span>
+      </div>`).join('') : '<div class="empty">No equipment checked out.</div>';
+
+    $('#piOverdue').innerHTML = d.overdueTasksList.length ? d.overdueTasksList.map(t => `
+      <div class="pi-row">
+        <span style="flex:1;">${escapeHTML(t.title)}</span>
+        <span style="color:var(--status-alert);font-size:12px;font-weight:600;">${escapeHTML(t.due_date||'')}</span>
+        <span style="color:var(--fg-3);font-size:12px;margin-left:6px;">${escapeHTML(t.assignee_name||'—')}</span>
+      </div>`).join('') : '<div class="empty">No overdue tasks.</div>';
+
+    $('#piEvents').innerHTML = d.upcomingEvents.length ? d.upcomingEvents.map(ev => `
+      <div class="pi-row">
+        <span style="flex:1;">${escapeHTML(ev.title)}</span>
+        <span style="color:var(--fg-3);font-size:12px;">${fmtDT(ev.start_time)}</span>
+      </div>`).join('') : '<div class="empty">No upcoming events.</div>';
+  } catch(e){
+    $('#piStats').innerHTML = `<div class="p-banner">Could not load director overview: ${escapeHTML(e.message)}</div>`;
+  }
 }
 
 document.addEventListener('click', async e => {
@@ -1149,34 +1421,34 @@ function openMeetingModal(m){
 let EQ_CAT='', EQ_STATUS='', EQ_QUERY='';
 async function loadEquipment(){
   try {
-    const eq = await api('/api/equipment');
+    const eq = unwrap(await api('/api/equipment'));
     let filtered = eq;
     if(EQ_CAT) filtered = filtered.filter(x => x.category === EQ_CAT);
     if(EQ_STATUS) filtered = filtered.filter(x => x.status === EQ_STATUS);
     if(EQ_QUERY){
       const q = EQ_QUERY.toLowerCase();
-      filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(q) || (x.tag||'').toLowerCase().includes(q));
+      filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q));
     }
     const list = $('#eqList');
     if(!filtered.length){ list.innerHTML='<div class="empty">No equipment matches.</div>'; return; }
     list.innerHTML = filtered.map(x => {
       const statusCls = x.status==='available' ? 'p-eq-status-available'
-                       : x.status==='checked_out' ? 'p-eq-status-out'
+                       : x.status==='in_use' ? 'p-eq-status-out'
                        : x.status==='broken' ? 'p-eq-status-broken'
                        : 'p-eq-status-maint';
       return `<div class="p-inv-row">
         <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div>
           <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.location||'')}</div>
         </div>
-        <div style="flex:1;"><span class="p-mono">${escapeHTML(x.tag||'—')}</span></div>
+        <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
         <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.category||'')}</div>
-        <div style="flex:1;font-size:12px;">${x.last_user_name?escapeHTML(x.last_user_name):'<span style="color:var(--fg-4);">never</span>'}<br>
+        <div style="flex:1;font-size:12px;">${x.last_used_user_name?escapeHTML(x.last_used_user_name):'<span style="color:var(--fg-4);">never</span>'}<br>
           <span style="font-size:11px;color:var(--fg-4);">${x.last_used_at?fmtDT(x.last_used_at):''}</span></div>
         <div style="flex:1;"><span class="${statusCls}">${escapeHTML((x.status||'').replace('_',' '))}</span></div>
         <div style="width:160px; display:flex; gap:6px; flex-wrap:wrap;">
           ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="checkout" data-eq-id="${x.id}">Check out</button>` : ''}
-          ${x.status==='checked_out' && x.checked_out_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
-          ${(ME.role==='admin'||ME.role==='professor') && x.status==='checked_out' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
+          ${x.status==='in_use' && x.current_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
+          ${(ME.role==='admin'||ME.role==='professor') && x.status==='in_use' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
           <button class="btn-ghost-sm" data-eq-action="log" data-eq-id="${x.id}">Log</button>
           ${(ME.role==='admin'||ME.role==='professor') ? `<button class="btn-ghost-sm" data-eq-action="edit" data-eq-id="${x.id}">Edit</button>` : ''}
         </div>
@@ -1207,9 +1479,9 @@ document.addEventListener('click', async e => {
   } else if(action==='log'){
     try {
       const log = await api('/api/equipment/'+id+'/log');
-      const eq = (await api('/api/equipment')).find(x => x.id == id);
+      const eq = (unwrap(await api('/api/equipment'))).find(x => x.id == id);
       modal(`<h2>${escapeHTML(eq?.name||'Equipment')} — usage log</h2>
-        <p style="font-size:12px;color:var(--fg-3);">Tag ${escapeHTML(eq?.tag||'—')}</p>
+        <p style="font-size:12px;color:var(--fg-3);">SKU ${escapeHTML(eq?.sku||'—')}</p>
         ${log.length ? log.map(l => `
           <div class="p-log-row">
             <span class="p-log-when">${fmtDT(l.action_at)}</span>
@@ -1220,7 +1492,7 @@ document.addEventListener('click', async e => {
         null, '', 'Close');
     } catch(err){ alert(err.message); }
   } else if(action==='edit'){
-    try { const eq = (await api('/api/equipment')).find(x=>x.id==id); openEquipModal(eq); }
+    try { const eq = (unwrap(await api('/api/equipment'))).find(x=>x.id==id); openEquipModal(eq); }
     catch(err){ alert(err.message); }
   }
 });
@@ -1229,19 +1501,19 @@ function openEquipModal(eq){
   const isEdit = !!eq;
   modal(`<h2>${isEdit?'Edit':'New'} equipment</h2>
     <label>Name<input id="eqName" value="${escapeHTML(eq?.name||'')}"></label>
-    <label>Tag / asset #<input id="eqTag" value="${escapeHTML(eq?.tag||'')}"></label>
+    <label>SKU / asset #<input id="eqTag" value="${escapeHTML(eq?.sku||'')}"></label>
     <label>Category<select id="eqCat">
       ${['rig','instrument','supply','tool'].map(c=>`<option value="${c}" ${eq?.category===c?'selected':''}>${c}</option>`).join('')}
     </select></label>
     <label>Location<input id="eqLoc" value="${escapeHTML(eq?.location||'')}"></label>
     <label>Status<select id="eqSt">
-      ${['available','checked_out','broken','maintenance'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
+      ${['available','in_use','maintenance','broken'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
     </select></label>
     <label>Notes<textarea id="eqNotes">${escapeHTML(eq?.notes||'')}</textarea></label>`,
     async () => {
       const body = {
         name: $('#eqName').value.trim(),
-        tag: $('#eqTag').value,
+        sku: $('#eqTag').value,
         category: $('#eqCat').value,
         location: $('#eqLoc').value,
         status: $('#eqSt').value,
@@ -1263,12 +1535,114 @@ function openEquipModal(eq){
   }
 }
 
+/* ---------- Inventory ---------- */
+let INV_LAB = '', INV_QUERY = '';
+async function loadInventory(){
+  try {
+    let items = unwrap(await api('/api/inventory'));
+    // populate lab filter
+    const labs = [...new Set(items.map(x=>x.lab||'').filter(Boolean))];
+    const sel = $('#invLab');
+    const cur = INV_LAB || sel.value;
+    sel.innerHTML = '<option value="">All labs</option>' + labs.map(l=>`<option value="${l}" ${l===cur?'selected':''}>${escapeHTML(l)}</option>`).join('');
+    // apply filters
+    if(INV_LAB) items = items.filter(x => (x.lab||'') === INV_LAB);
+    if(INV_QUERY){
+      const q = INV_QUERY.toLowerCase();
+      items = items.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q) || (x.lab||'').toLowerCase().includes(q));
+    }
+    const isStaff = ME.role==='admin' || ME.role==='professor';
+    if(!items.length){ $('#invList').innerHTML='<div class="empty">No inventory items match.</div>'; return; }
+    $('#invList').innerHTML = `
+      <div class="p-inv-table">
+        <div class="p-inv-row p-inv-head">
+          <div style="flex:2;">Item</div><div style="flex:1;">SKU</div><div style="flex:1;">Lab</div>
+          <div style="flex:1;">Qty</div><div style="width:80px;"></div>
+        </div>
+        ${items.map(x => {
+          const pct = x.min_qty > 0 ? Math.min(100, Math.round((x.qty/x.min_qty)*100)) : 100;
+          const fillColor = x.qty <= 0 ? 'var(--status-alert)' : x.qty < x.min_qty ? 'var(--status-warn)' : 'var(--status-ok)';
+          return `<div class="p-inv-row">
+            <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div><div class="p-inv-cat">${escapeHTML(x.category||'')}</div></div>
+            <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
+            <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.lab||'—')}</div>
+            <div style="flex:1;">
+              <div><span class="p-qty-num">${x.qty}</span> <span class="p-qty-min">/ min ${x.min_qty}</span></div>
+              <div class="p-qty-bar"><div class="p-qty-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+            </div>
+            <div style="width:80px;">
+              ${isStaff ? `<button class="btn-ghost-sm" data-inv-edit="${x.id}">Edit</button>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    $('#invList').querySelectorAll('[data-inv-edit]').forEach(b => b.addEventListener('click', async () => {
+      const it = items.find(x => x.id == b.dataset.invEdit); if(it) openInvModal(it);
+    }));
+  } catch(e){ $('#invList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+
+$('#invSearch').addEventListener('input', e => { INV_QUERY = e.target.value; loadInventory(); });
+$('#invLab').addEventListener('change', e => { INV_LAB = e.target.value; loadInventory(); });
+$('#addInvBtn').addEventListener('click', () => openInvModal());
+
+function openInvModal(it){
+  const isEdit = !!it;
+  modal(`<h2>${isEdit?'Edit inventory item':'Add inventory item'}</h2>
+    <label>Name<input id="ivName" value="${escapeHTML(it?.name||'')}"></label>
+    <label>SKU / part # (required, unique)<input id="ivSku" value="${escapeHTML(it?.sku||'')}" placeholder="SN-LAT-00000"></label>
+    <label>Category<input id="ivCat" value="${escapeHTML(it?.category||'')}" placeholder="Sensors / Hardware / Consumables / Fluids…"></label>
+    <label>Lab<select id="ivLab">
+      <option value="A" ${it?.lab==='A'||!it?'selected':''}>Lab A</option>
+      <option value="B" ${it?.lab==='B'?'selected':''}>Lab B</option>
+    </select></label>
+    <label>Qty on hand<input id="ivQty" type="number" value="${it?.qty??0}" min="0"></label>
+    <label>Min qty (reorder threshold)<input id="ivMin" type="number" value="${it?.min_qty??1}" min="0"></label>`,
+    async () => {
+      const body = {
+        name: $('#ivName').value.trim(),
+        sku: $('#ivSku').value.trim(),
+        category: $('#ivCat').value,
+        lab: $('#ivLab').value,
+        qty: Number($('#ivQty').value)||0,
+        min_qty: Number($('#ivMin').value)||0,
+        sort_order: it?.sort_order||0
+      };
+      if(!body.name) throw new Error('Name required');
+      if(!body.sku) throw new Error('SKU required');
+      if(isEdit) await api('/api/inventory/'+it.id,{method:'PUT', body});
+      else await api('/api/inventory',{method:'POST', body});
+      loadInventory();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delInv">Delete</button>` : ''
+  );
+  if(isEdit){
+    $('#delInv').addEventListener('click', async () => {
+      if(!confirm('Delete this item?')) return;
+      try { await api('/api/inventory/'+it.id,{method:'DELETE'}); closeModal(); loadInventory(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
 /* ---------- Issues ---------- */
 let ISSUE_FILTER='open';
 async function loadIssues(){
   try {
-    const params = ISSUE_FILTER==='open' ? '?status=open' : '';
-    const issues = await api('/api/issues'+params);
+    const q = ($('#issueSearch')||{}).value || '';
+    const cat = ($('#issueCatFilter')||{}).value || '';
+    const pri = ($('#issuePriFilter')||{}).value || '';
+    const qs = new URLSearchParams();
+    if(ISSUE_FILTER==='open') qs.set('status','open');
+    if(q) qs.set('query', q);
+    if(cat) qs.set('category', cat);
+    if(pri) qs.set('priority', pri);
+    const issues = unwrap(await api('/api/issues?' + qs.toString()));
+    // Update sidebar badge
+    if(ISSUE_FILTER==='open' && !q && !cat && !pri){
+      const badge = $('#issuesBadge');
+      if(badge) badge.textContent = issues.length || '';
+    }
     if(!issues.length){ $('#issueList').innerHTML='<div class="empty">No issues to show.</div>'; return; }
     $('#issueList').innerHTML = issues.map(it => `
       <div class="p-issue-card priority-${escapeHTML(it.priority||'medium')}">
@@ -1281,11 +1655,17 @@ async function loadIssues(){
           <button class="btn-ghost-sm" data-issue-id="${it.id}" data-act="open">Open</button>
         </div>
         <div class="p-issue-title">${escapeHTML(it.title)}</div>
-        <div class="p-issue-body">${escapeHTML(it.description||'').slice(0,200)}${(it.description||'').length>200?'…':''}</div>
-        <div class="p-issue-meta">Reported by ${escapeHTML(it.created_by_name||it.created_by_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
+        ${(body => `<div class="p-issue-body">${escapeHTML(body.slice(0,200))}${body.length>200?'…':''}</div>`)(it.body||'')}
+        <div class="p-issue-meta">Reported by ${escapeHTML(it.reporter_name||it.reporter_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
       </div>`).join('');
   } catch(e){ $('#issueList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
 }
+// Debounced search input
+let _issueDebounce;
+function onIssueSearch(){ clearTimeout(_issueDebounce); _issueDebounce = setTimeout(loadIssues, 300); }
+document.addEventListener('input', e => {
+  if(e.target.id==='issueSearch' || e.target.id==='issueCatFilter' || e.target.id==='issuePriFilter') onIssueSearch();
+});
 $('#issueFilter').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
   $$('#issueFilter button').forEach(x=>x.classList.toggle('active', x===b));
@@ -1295,7 +1675,7 @@ $('#addIssueBtn').addEventListener('click', () => openIssueModal());
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-issue-id][data-act="open"]'); if(!b) return;
   try {
-    const issues = await api('/api/issues');
+    const issues = unwrap(await api('/api/issues'));
     const it = issues.find(x => x.id == b.dataset.issueId);
     if(it) openIssueDetail(it);
   } catch(err){ alert(err.message); }
@@ -1303,7 +1683,7 @@ document.addEventListener('click', async e => {
 
 async function openIssueModal(){
   let equipment=[];
-  try { equipment = await api('/api/equipment'); } catch(e){}
+  try { equipment = unwrap(await api('/api/equipment')); } catch(e){}
   modal(`<h2>Report an issue or request</h2>
     <label>Title<input id="iTitle" placeholder="Short summary…"></label>
     <label>Category<select id="iCat">
@@ -1314,11 +1694,11 @@ async function openIssueModal(){
     </select></label>
     <label>Priority<select id="iPri">
       <option value="low">Low</option>
-      <option value="medium" selected>Medium</option>
+      <option value="normal" selected>Normal</option>
       <option value="high">High</option>
     </select></label>
     <label>Related equipment (optional)<select id="iEq"><option value="">—</option>
-      ${equipment.map(e=>`<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.tag||'')})</option>`).join('')}
+      ${equipment.map(e=>`<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.sku||'')})</option>`).join('')}
     </select></label>
     <label>Description<textarea id="iDesc" placeholder="What happened? What's needed?"></textarea></label>`,
     async () => {
@@ -1326,8 +1706,8 @@ async function openIssueModal(){
         title: $('#iTitle').value.trim(),
         category: $('#iCat').value,
         priority: $('#iPri').value,
-        equipment_id: $('#iEq').value || null,
-        description: $('#iDesc').value
+        related_equipment_id: $('#iEq').value || null,
+        body: $('#iDesc').value
       };
       if(!body.title) throw new Error('Title required');
       await api('/api/issues',{method:'POST', body});
@@ -1340,8 +1720,8 @@ async function openIssueDetail(it){
   try { comments = await api('/api/issues/'+it.id+'/comments'); } catch(e){}
   const isStaff = ME.role==='admin' || ME.role==='professor';
   modal(`<h2>${escapeHTML(it.title)}</h2>
-    <div class="p-issue-meta">${escapeHTML(it.category)} · ${escapeHTML(it.priority||'')} · reported by ${escapeHTML(it.created_by_name||'?')} on ${fmtDT(it.created_at)}</div>
-    <div class="p-issue-body" style="margin-top:12px;">${escapeHTML(it.description||'')}</div>
+    <div class="p-issue-meta">${escapeHTML(it.category)} · ${escapeHTML(it.priority||'')} · reported by ${escapeHTML(it.reporter_name||'?')} on ${fmtDT(it.created_at)}</div>
+    <div class="p-issue-body" style="margin-top:12px;">${escapeHTML(it.body||'')}</div>
     ${isStaff?`<label>Status<select id="iStatus">
       ${['open','in_progress','resolved'].map(s=>`<option value="${s}" ${it.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
     </select></label>`:''}
@@ -1403,13 +1783,13 @@ async function loadProfile(){
       </div>`).join('') : '<div class="empty">No open tasks.</div>';
   } catch(e){ $('#profTasks').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
   try {
-    const eq = await api('/api/equipment');
-    const mine = eq.filter(x => x.checked_out_user_id === ME.id);
+    const eq = unwrap(await api('/api/equipment'));
+    const mine = eq.filter(x => x.current_user_id === ME.id);
     $('#profEquip').innerHTML = mine.length ? mine.map(x=>`
       <div class="p-task">
         <div style="flex:1;">
           <div class="p-task-title">${escapeHTML(x.name)}</div>
-          <div class="p-task-due">Tag ${escapeHTML(x.tag||'—')} · since ${fmtDT(x.checked_out_at)}</div>
+          <div class="p-task-due">SKU ${escapeHTML(x.sku||'—')} · since ${fmtDT(x.last_used_at)}</div>
         </div>
         <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
       </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
@@ -1508,16 +1888,20 @@ function modal(bodyHTML, onSave, extraFootHTML='', saveLabel='Save'){
 }
 function closeModal(){ $('#modalMount').innerHTML=''; }
 
+/* ---------- Dark mode ---------- */
+(function(){
+  const saved = localStorage.getItem('latfs-theme');
+  if(saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+    document.body.classList.add('dm');
+  }
+})();
+$('#dmToggle').addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dm');
+  localStorage.setItem('latfs-theme', isDark ? 'dark' : 'light');
+});
+
 /* ---------- Boot ---------- */
 $('#loginForm').addEventListener('submit', doLogin);
-$('#logoutBtn').addEventListener('click', doLogout);
-(async function boot(){
-  if(await checkAuth()) showApp();
-})();
-</script>
-</body>
-</html>
-submit', doLogin);
 $('#logoutBtn').addEventListener('click', doLogout);
 (async function boot(){
   if(await checkAuth()) showApp();
