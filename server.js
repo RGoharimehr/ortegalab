@@ -1571,8 +1571,8 @@ app.post('/api/reset-password', passwordResetLimiter, (req, res) => {
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
 
 // ── Admin: database backup download ─────────────────────────────────────────
-app.get('/api/admin/backup', apiReadLimiter, requireStaff, (req, res) => {
-  const backupPath = path.join('/tmp', `latfs-backup-${Date.now()}.db`);
+app.get('/api/admin/backup', adminOpLimiter, requireStaff, (req, res) => {
+  const backupPath = path.join(os.tmpdir(), `latfs-backup-${Date.now()}.db`);
   try {
     db.backup(backupPath)
       .then(() => {
