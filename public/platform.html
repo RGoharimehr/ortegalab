@@ -515,13 +515,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 }
 /* ── Dark mode ────────────────────────────────────────────────────────────── */
 /* Toggle by adding data-theme="dark" to <html>; also respects OS preference  */
-@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { --_dm: 1; } }
-html[data-theme="dark"] { --_dm: 1; }
 html[data-theme="dark"], html[style*="color-scheme: dark"] { color-scheme: dark; }
-
-/* When dark mode is active, remap the design tokens */
-html[data-theme="dark"] body,
-@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) body { } }
 
 /* Shared dark overrides applied via a .dm class added to body by JS */
 body.dm {
@@ -629,8 +623,8 @@ body.dm .p-modal-bg .p-modal { background: var(--bg-2); }
         <div class="p-user-role" id="userRole">—</div>
       </div>
       <button class="p-logout" id="logoutBtn">Logout</button>
-      <button class="p-dm-toggle" id="dmToggle" title="Toggle dark mode">☀ / ☾ Dark mode</button>
     </div>
+    <button class="p-dm-toggle" id="dmToggle" title="Toggle dark mode">☀ / ☾ Dark mode</button>
   </aside>
 
   <main class="p-main">
@@ -802,7 +796,7 @@ body.dm .p-modal-bg .p-modal { background: var(--bg-2); }
         <select class="p-inv-select" id="eqStatus">
           <option value="">Any status</option>
           <option value="available">Available</option>
-          <option value="checked_out">Checked out</option>
+          <option value="in_use">Checked out</option>
           <option value="broken">Broken</option>
           <option value="maintenance">Maintenance</option>
         </select>
@@ -1223,7 +1217,7 @@ function openEventModal(ev){
     <label>Start<input id="evStart" type="datetime-local" value="${ev?.start_time?ev.start_time.slice(0,16):''}"></label>
     <label>End<input id="evEnd" type="datetime-local" value="${ev?.end_time?ev.end_time.slice(0,16):''}"></label>
     <label>Location<input id="evLoc" value="${escapeHTML(ev?.location||'')}"></label>
-    <label>Visibility<select id="evVis"><option value="public">Public</option><option value="private">Private (just me)</option></select></label>`,
+    <label>Visibility<select id="evVis"><option value="public" ${ev?.visibility!=='private'?'selected':''}>Public</option><option value="private" ${ev?.visibility==='private'?'selected':''}>Private (just me)</option></select></label>`,
     async () => {
       const body = {
         title: $('#evTitle').value.trim(),
@@ -1687,9 +1681,10 @@ async function openIssueModal(){
   modal(`<h2>Report an issue or request</h2>
     <label>Title<input id="iTitle" placeholder="Short summary…"></label>
     <label>Category<select id="iCat">
-      <option value="broken">Broken equipment</option>
-      <option value="supply">Supply needed</option>
-      <option value="facility">Facility issue</option>
+      <option value="equipment">Equipment</option>
+      <option value="supplies">Supplies</option>
+      <option value="facility">Facility</option>
+      <option value="safety">Safety</option>
       <option value="other">Other</option>
     </select></label>
     <label>Priority<select id="iPri">

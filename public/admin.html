@@ -418,7 +418,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 <body>
 
 <!-- Login gate -->
-<div id="loginScreen" class="login-screen" style="display:none">
+<div id="loginScreen" class="login-screen" style="display:flex">
   <div class="login-card">
     <h1>LATFS Website Admin</h1>
     <p>Sign in to manage the website.</p>
@@ -529,6 +529,7 @@ async function checkAuth() {
     if (data.loggedIn) {
       CSRF = data.csrfToken || '';
       SESSION_USER.name = data.name || data.username;
+      SESSION_USER.role = data.role || 'admin';
       SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
       SESSION_USER.initials = initials(SESSION_USER.name);
       return true;
@@ -547,6 +548,7 @@ async function doLogin(user, pass) {
   const data = await r.json();
   CSRF = data.csrfToken || '';
   SESSION_USER.name = data.name || data.username;
+  SESSION_USER.role = data.role || 'admin';
   SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
   SESSION_USER.initials = initials(SESSION_USER.name);
   return true;
@@ -1783,19 +1785,20 @@ async function boot() {
       $('#appShell').style.display = 'flex';
       $('#userInitials').textContent = SESSION_USER.initials;
       $('#userName').textContent = SESSION_USER.name;
+      $('#userRole').textContent = SESSION_USER.role;
       navigate('overview');
     } catch(err) { $('#lErr').textContent = err.message; }
   };
   $('#logoutBtn').onclick = doLogout;
   const ok = await checkAuth();
   if (ok) {
+    $('#loginScreen').style.display = 'none';
     $('#appShell').style.display = 'flex';
     $('#userInitials').textContent = SESSION_USER.initials;
     $('#userName').textContent = SESSION_USER.name;
+    $('#userRole').textContent = SESSION_USER.role;
     renderNav();
     navigate('overview');
-  } else {
-    $('#loginScreen').style.display = 'flex';
   }
   if (window.lucide) window.lucide.createIcons();
 }
