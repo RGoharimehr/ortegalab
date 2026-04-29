@@ -10,6 +10,8 @@ const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { authenticator } = require('otplib');
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -682,6 +684,77 @@ try {
   `);
 } catch(e) { console.error('password_reset_tokens migration error:', e.message); }
 
+// ── Advanced auth & inventory tables ────────────────────────────────────────
+try {
+  db.exec(`
+    -- TOTP / 2FA secrets per user
+    CREATE TABLE IF NOT EXISTS totp_secrets (
+      user_id   INTEGER PRIMARY KEY,
+      secret    TEXT NOT NULL,
+      enabled   INTEGER DEFAULT 0,
+      enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Login audit log
+    CREATE TABLE IF NOT EXISTS login_events (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER,
+      username   TEXT,
+      success    INTEGER NOT NULL,          -- 1 = success, 0 = failure
+      reason     TEXT DEFAULT '',           -- '' | 'bad_password' | 'locked' | '2fa_required' | '2fa_bad'
+      ip         TEXT DEFAULT '',
+      user_agent TEXT DEFAULT '',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Suppliers catalogue for inventory items
+    CREATE TABLE IF NOT EXISTS suppliers (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      name        TEXT NOT NULL,
+      contact     TEXT DEFAULT '',
+      email       TEXT DEFAULT '',
+      phone       TEXT DEFAULT '',
+      website_url TEXT DEFAULT '',
+      notes       TEXT DEFAULT '',
+      created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Inventory adjustment / transaction log
+    CREATE TABLE IF NOT EXISTS inventory_adjustments (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      inventory_id INTEGER NOT NULL,
+      user_id      INTEGER,
+      delta        INTEGER NOT NULL,         -- positive = added, negative = removed
+      qty_before   INTEGER NOT NULL,
+      qty_after    INTEGER NOT NULL,
+      reason       TEXT DEFAULT '',
+      created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+} catch(e) {
+  if (!e.message.includes('duplicate column')) console.error('Advanced tables migration error:', e.message);
+}
+
+// Advanced column migrations (safe to re-run — errors for duplicate columns are silently ignored)
+const advancedMigrations = [
+  // Users — lockout + TOTP flag + last-login tracking
+  "ALTER TABLE users ADD COLUMN failed_attempts INTEGER DEFAULT 0",
+  "ALTER TABLE users ADD COLUMN locked_until DATETIME",
+  "ALTER TABLE users ADD COLUMN totp_enabled INTEGER DEFAULT 0",
+  "ALTER TABLE users ADD COLUMN last_login_at DATETIME",
+  "ALTER TABLE users ADD COLUMN last_login_ip TEXT DEFAULT ''",
+  // Inventory — unit of measure, supplier FK, reorder URL
+  "ALTER TABLE inventory ADD COLUMN unit TEXT DEFAULT 'each'",
+  "ALTER TABLE inventory ADD COLUMN supplier_id INTEGER",
+  "ALTER TABLE inventory ADD COLUMN reorder_url TEXT DEFAULT ''",
+  "ALTER TABLE inventory ADD COLUMN notes TEXT DEFAULT ''",
+];
+for (const sql of advancedMigrations) {
+  try { db.exec(sql); } catch(e) {
+    if (!e.message.includes('duplicate column name')) console.error('Advanced migration error:', e.message);
+  }
+}
+
 // Middleware
 // Security headers (helmet) — Content Security Policy is intentionally disabled because the
 // admin and platform SPAs use inline scripts and styles. All other helmet protections are active
@@ -765,17 +838,83 @@ function str(v, max) {
 
 // Admin auth routes
 app.post('/admin/login', authLimiter, (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, totp_code, remember_me } = req.body;
+  const ip = req.ip || req.socket.remoteAddress || '';
+  const ua = req.headers['user-agent'] || '';
+
+  const logEvent = (userId, uname, success, reason) => {
+    try {
+      db.prepare('INSERT INTO login_events (user_id, username, success, reason, ip, user_agent) VALUES (?,?,?,?,?,?)')
+        .run(userId || null, uname || '', success ? 1 : 0, reason, ip, ua.slice(0, 500));
+    } catch(_) {}
+  };
+
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-  if (user && bcrypt.compareSync(password, user.password)) {
-    req.session.userId = user.id;
-    req.session.username = user.username;
-    req.session.role = user.role || 'student';
-    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
-    res.json({ success: true, username: user.username, name: user.name || '', role: user.role || 'student', csrfToken: req.session.csrfToken });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
+
+  // Unknown user — generic error (prevent enumeration)
+  if (!user || !user.active) {
+    logEvent(null, username, false, 'bad_password');
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
+
+  // Account lockout check
+  if (user.locked_until) {
+    const lockedUntil = new Date(user.locked_until);
+    if (lockedUntil > new Date()) {
+      logEvent(user.id, username, false, 'locked');
+      const secsLeft = Math.ceil((lockedUntil - Date.now()) / 1000);
+      return res.status(429).json({ error: `Account locked. Try again in ${secsLeft} seconds.` });
+    } else {
+      // Lock expired — reset
+      db.prepare('UPDATE users SET failed_attempts=0, locked_until=NULL WHERE id=?').run(user.id);
+    }
+  }
+
+  if (!bcrypt.compareSync(password, user.password)) {
+    // Increment failed attempts — lock after 10
+    const newAttempts = (user.failed_attempts || 0) + 1;
+    if (newAttempts >= 10) {
+      const lockUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
+      db.prepare('UPDATE users SET failed_attempts=?, locked_until=? WHERE id=?').run(newAttempts, lockUntil, user.id);
+      logEvent(user.id, username, false, 'bad_password');
+      return res.status(429).json({ error: 'Too many failed attempts. Account locked for 30 minutes.' });
+    }
+    db.prepare('UPDATE users SET failed_attempts=? WHERE id=?').run(newAttempts, user.id);
+    logEvent(user.id, username, false, 'bad_password');
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  // Password correct — check 2FA if enabled
+  if (user.totp_enabled) {
+    if (!totp_code) {
+      // Signal to the client that 2FA is required (password was correct)
+      logEvent(user.id, username, false, '2fa_required');
+      return res.status(200).json({ totp_required: true });
+    }
+    const totpRow = db.prepare('SELECT secret FROM totp_secrets WHERE user_id=? AND enabled=1').get(user.id);
+    if (!totpRow || !authenticator.check(String(totp_code), totpRow.secret)) {
+      const newAttempts = (user.failed_attempts || 0) + 1;
+      db.prepare('UPDATE users SET failed_attempts=? WHERE id=?').run(newAttempts, user.id);
+      logEvent(user.id, username, false, '2fa_bad');
+      return res.status(401).json({ error: 'Invalid two-factor code' });
+    }
+  }
+
+  // ── Successful login ──
+  db.prepare('UPDATE users SET failed_attempts=0, locked_until=NULL, last_login_at=CURRENT_TIMESTAMP, last_login_ip=? WHERE id=?').run(ip, user.id);
+  logEvent(user.id, username, true, '');
+
+  req.session.userId = user.id;
+  req.session.username = user.username;
+  req.session.role = user.role || 'student';
+  req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+
+  // Remember Me — extend session lifetime to 30 days
+  if (remember_me) {
+    req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+  }
+
+  res.json({ success: true, username: user.username, name: user.name || '', role: user.role || 'student', csrfToken: req.session.csrfToken });
 });
 
 app.post('/admin/logout', (req, res) => {
@@ -1176,34 +1315,173 @@ app.delete('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 });
 
 // INVENTORY
+// CSV export — must be before parameterised routes to avoid conflict
+app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT i.id, i.lab, i.sku, i.name, i.category, i.qty, i.min_qty, i.unit,
+           i.reorder_url, i.notes, s.name AS supplier_name, i.created_at
+    FROM inventory i
+    LEFT JOIN suppliers s ON s.id = i.supplier_id
+    ORDER BY i.lab, i.sort_order, i.id
+  `).all();
+  const header = ['id','lab','sku','name','category','qty','min_qty','unit','reorder_url','notes','supplier','created_at'];
+  const csvEscape = v => {
+    const s = String(v == null ? '' : v);
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [header.join(',')];
+  for (const r of rows) {
+    lines.push([r.id, r.lab, r.sku, r.name, r.category, r.qty, r.min_qty, r.unit || 'each',
+                r.reorder_url, r.notes, r.supplier_name, r.created_at].map(csvEscape).join(','));
+  }
+  const csv = lines.join('\r\n');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="inventory-${new Date().toISOString().slice(0,10)}.csv"`);
+  res.send(csv);
+});
+
 app.get('/api/inventory', apiReadLimiter, (req, res) => {
-  const { page, limit } = req.query;
+  const { page, limit, search, category, lab, low_stock } = req.query;
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
-  const total = db.prepare('SELECT COUNT(*) as n FROM inventory').get().n;
-  const rows = db.prepare('SELECT * FROM inventory ORDER BY lab, sort_order, id LIMIT ? OFFSET ?').all(pageSize, (pageNum - 1) * pageSize);
+  const pageSize = Math.min(500, Math.max(1, parseInt(limit, 10) || 200));
+  const conditions = [], params = [];
+  if (lab)      { conditions.push('i.lab=?');                       params.push(lab); }
+  if (category) { conditions.push('i.category=?');                  params.push(category); }
+  if (low_stock === '1') conditions.push('i.qty <= i.min_qty');
+  if (search)   { conditions.push('(i.name LIKE ? OR i.sku LIKE ?)'); params.push(`%${search}%`, `%${search}%`); }
+  const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+  const baseSql = `FROM inventory i LEFT JOIN suppliers s ON s.id=i.supplier_id ${where}`;
+  const total = db.prepare(`SELECT COUNT(*) as n ${baseSql}`).get(...params).n;
+  const rows  = db.prepare(`
+    SELECT i.*, s.name AS supplier_name, s.website_url AS supplier_url
+    ${baseSql}
+    ORDER BY i.lab, i.sort_order, i.id LIMIT ? OFFSET ?
+  `).all(...params, pageSize, (pageNum - 1) * pageSize);
   res.json({ total, page: pageNum, limit: pageSize, rows });
 });
+
 app.post('/api/inventory', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  const { lab, sku, name, category, qty, min_qty, sort_order } = req.body;
+  const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order } = req.body;
   if (!sku || !name) return res.status(400).json({ error: 'Missing fields' });
   try {
-    const result = db.prepare('INSERT INTO inventory (lab, sku, name, category, qty, min_qty, sort_order) VALUES (?,?,?,?,?,?,?)')
-      .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, sort_order || 0);
+    const result = db.prepare('INSERT INTO inventory (lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+      .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0);
+    // Log initial stock as an adjustment
+    if ((qty || 0) > 0) {
+      db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
+        .run(result.lastInsertRowid, req.session.userId || null, qty || 0, 0, qty || 0, 'initial stock');
+    }
     res.json({ id: result.lastInsertRowid });
   } catch(e) {
     if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'SKU already exists' });
     res.status(500).json({ error: e.message });
   }
 });
+
 app.put('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  const { lab, sku, name, category, qty, min_qty, sort_order } = req.body;
-  db.prepare('UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, sort_order=? WHERE id=?')
-    .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, sort_order || 0, req.params.id);
+  const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order, adjustment_reason } = req.body;
+  const existing = db.prepare('SELECT qty, min_qty FROM inventory WHERE id=?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'not found' });
+
+  db.prepare('UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, unit=?, supplier_id=?, reorder_url=?, notes=?, sort_order=? WHERE id=?')
+    .run(lab || 'A', sku, name, category || '', qty ?? existing.qty, min_qty ?? existing.min_qty,
+         unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0, req.params.id);
+
+  // Log qty change if qty changed
+  const newQty = qty ?? existing.qty;
+  const delta = newQty - existing.qty;
+  if (delta !== 0) {
+    db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
+      .run(req.params.id, req.session.userId || null, delta, existing.qty, newQty, adjustment_reason || '');
+    // Low-stock email alert
+    const minQ = min_qty ?? existing.min_qty;
+    if (newQty <= minQ && newQty < existing.qty) {
+      const item = db.prepare('SELECT name, sku FROM inventory WHERE id=?').get(req.params.id);
+      const staff = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active!=0").all();
+      const emails = staff.map(u => u.email).filter(Boolean);
+      if (emails.length && item) {
+        sendMail(emails, `[LATFS] Low stock alert: ${item.name}`,
+          `Inventory item "${item.name}" (SKU: ${item.sku}) is at or below its minimum quantity.\n\nCurrent qty: ${newQty} (min: ${minQ})\n\nLog in to the LATFS Platform to reorder.\n`);
+      }
+    }
+  }
   res.json({ success: true });
 });
+
 app.delete('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM inventory WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// Inventory adjustment log
+app.get('/api/inventory/:id/log', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT a.*, u.username, u.name AS user_name
+    FROM inventory_adjustments a
+    LEFT JOIN users u ON u.id = a.user_id
+    WHERE a.inventory_id=? ORDER BY a.id DESC LIMIT 200
+  `).all(req.params.id);
+  res.json(rows);
+});
+
+// Batch quantity adjust — POST /api/inventory/batch-adjust
+// Body: { adjustments: [{ id, delta, reason }] }
+app.post('/api/inventory/batch-adjust', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { adjustments } = req.body;
+  if (!Array.isArray(adjustments) || adjustments.length === 0) {
+    return res.status(400).json({ error: 'adjustments array required' });
+  }
+  const results = [];
+  const batchTx = db.transaction(() => {
+    for (const adj of adjustments) {
+      const id = parseInt(adj.id, 10);
+      const delta = parseInt(adj.delta, 10);
+      if (!id || isNaN(delta) || delta === 0) continue;
+      const item = db.prepare('SELECT id, qty, min_qty, name, sku FROM inventory WHERE id=?').get(id);
+      if (!item) { results.push({ id, error: 'not found' }); continue; }
+      const newQty = Math.max(0, item.qty + delta);
+      db.prepare('UPDATE inventory SET qty=? WHERE id=?').run(newQty, id);
+      db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
+        .run(id, req.session.userId || null, newQty - item.qty, item.qty, newQty, adj.reason || 'batch adjust');
+      // Low-stock email alert
+      if (newQty <= item.min_qty && newQty < item.qty) {
+        const staff = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active!=0").all();
+        const emails = staff.map(u => u.email).filter(Boolean);
+        if (emails.length) {
+          sendMail(emails, `[LATFS] Low stock alert: ${item.name}`,
+            `Inventory item "${item.name}" (SKU: ${item.sku}) is at or below its minimum quantity.\n\nCurrent qty: ${newQty} (min: ${item.min_qty})\n`);
+        }
+      }
+      results.push({ id, qty_before: item.qty, qty_after: newQty, delta: newQty - item.qty });
+    }
+  });
+  try {
+    batchTx();
+    res.json({ success: true, results });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Suppliers ────────────────────────────────────────────────────────────────
+app.get('/api/suppliers', apiReadLimiter, requireAuth, (req, res) => {
+  res.json(db.prepare('SELECT * FROM suppliers ORDER BY name').all());
+});
+app.post('/api/suppliers', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { name, contact, email, phone, website_url, notes } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const r = db.prepare('INSERT INTO suppliers (name, contact, email, phone, website_url, notes) VALUES (?,?,?,?,?,?)')
+    .run(name, contact || '', email || '', phone || '', website_url || '', notes || '');
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/suppliers/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { name, contact, email, phone, website_url, notes } = req.body;
+  db.prepare('UPDATE suppliers SET name=?, contact=?, email=?, phone=?, website_url=?, notes=? WHERE id=?')
+    .run(name, contact || '', email || '', phone || '', website_url || '', notes || '', req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/suppliers/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM suppliers WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
 
@@ -1262,12 +1540,108 @@ app.delete('/api/projects/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 // ---- Self / current user ----
 app.get('/api/me', apiReadLimiter, (req, res) => {
   if (!req.session || !req.session.userId) return res.status(401).json({ error: 'Auth required' });
-  const u = db.prepare('SELECT id, username, name, role, email, person_id FROM users WHERE id=?').get(req.session.userId);
+  const u = db.prepare('SELECT id, username, name, role, email, person_id, totp_enabled, last_login_at, last_login_ip FROM users WHERE id=?').get(req.session.userId);
   if (!u) return res.status(401).json({ error: 'Auth required' });
   if (!req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
   }
   res.json({ loggedIn: true, ...u, csrfToken: req.session.csrfToken });
+});
+
+// Self-service: update own display name / email
+app.put('/api/me/profile', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { name, email } = req.body;
+  const sets = [], params = [];
+  if (name !== undefined)  { sets.push('name=?');  params.push(String(name).slice(0, 200)); }
+  if (email !== undefined) { sets.push('email=?'); params.push(String(email).slice(0, 200).toLowerCase().trim()); }
+  if (!sets.length) return res.json({ success: true });
+  params.push(req.session.userId);
+  db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
+  res.json({ success: true });
+});
+
+// Self-service: change own password
+app.put('/api/me/password', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password) return res.status(400).json({ error: 'current_password and new_password required' });
+  if (new_password.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+  const user = db.prepare('SELECT password FROM users WHERE id=?').get(req.session.userId);
+  if (!user || !bcrypt.compareSync(current_password, user.password)) {
+    return res.status(401).json({ error: 'Current password is incorrect' });
+  }
+  const hash = bcrypt.hashSync(new_password, 12);
+  db.prepare('UPDATE users SET password=?, failed_attempts=0, locked_until=NULL WHERE id=?').run(hash, req.session.userId);
+  res.json({ success: true });
+});
+
+// ── TOTP / 2FA endpoints ─────────────────────────────────────────────────────
+
+// Begin TOTP enrollment: generate a new secret and return a QR code URI
+app.post('/api/me/totp/setup', apiWriteLimiter, requireAuth, requireCsrf, async (req, res) => {
+  try {
+    const user = db.prepare('SELECT username, email FROM users WHERE id=?').get(req.session.userId);
+    const secret = authenticator.generateSecret(20);
+    const label = encodeURIComponent((user.email || user.username) + ' (LATFS)');
+    const issuer = 'LATFS';
+    const otpauth = authenticator.keyuri(user.email || user.username, issuer, secret);
+    const qrDataUrl = await QRCode.toDataURL(otpauth);
+    // Store secret as pending (enabled=0) — becomes active after first verify
+    db.prepare('INSERT INTO totp_secrets (user_id, secret, enabled) VALUES (?,?,0) ON CONFLICT(user_id) DO UPDATE SET secret=excluded.secret, enabled=0')
+      .run(req.session.userId, secret);
+    res.json({ secret, otpauth, qr: qrDataUrl });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Verify a TOTP code and activate 2FA for the account
+app.post('/api/me/totp/verify', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'code required' });
+  const row = db.prepare('SELECT secret FROM totp_secrets WHERE user_id=?').get(req.session.userId);
+  if (!row) return res.status(400).json({ error: 'No TOTP setup in progress. Call /api/me/totp/setup first.' });
+  if (!authenticator.check(String(code), row.secret)) {
+    return res.status(400).json({ error: 'Invalid code — check your authenticator app and try again' });
+  }
+  db.prepare('UPDATE totp_secrets SET enabled=1, enrolled_at=CURRENT_TIMESTAMP WHERE user_id=?').run(req.session.userId);
+  db.prepare('UPDATE users SET totp_enabled=1 WHERE id=?').run(req.session.userId);
+  res.json({ success: true, message: '2FA enabled successfully' });
+});
+
+// Disable TOTP — requires current password for safety
+app.delete('/api/me/totp', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'password required to disable 2FA' });
+  const user = db.prepare('SELECT password FROM users WHERE id=?').get(req.session.userId);
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
+  db.prepare('DELETE FROM totp_secrets WHERE user_id=?').run(req.session.userId);
+  db.prepare('UPDATE users SET totp_enabled=0 WHERE id=?').run(req.session.userId);
+  res.json({ success: true, message: '2FA disabled' });
+});
+
+// ── Admin: login audit log ───────────────────────────────────────────────────
+app.get('/api/admin/login-events', apiReadLimiter, requireStaff, (req, res) => {
+  const { page, limit, user_id } = req.query;
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const pageSize = Math.min(500, Math.max(1, parseInt(limit, 10) || 100));
+  let sql = 'SELECT l.*, u.name AS user_name FROM login_events l LEFT JOIN users u ON u.id=l.user_id';
+  const params = [];
+  if (user_id) { sql += ' WHERE l.user_id=?'; params.push(user_id); }
+  sql += ' ORDER BY l.id DESC LIMIT ? OFFSET ?';
+  params.push(pageSize, (pageNum - 1) * pageSize);
+  const rows = db.prepare(sql).all(...params);
+  const total = user_id
+    ? db.prepare('SELECT COUNT(*) as n FROM login_events WHERE user_id=?').get(user_id).n
+    : db.prepare('SELECT COUNT(*) as n FROM login_events').get().n;
+  res.json({ total, page: pageNum, limit: pageSize, rows });
+});
+
+// Admin: unlock a locked user account
+app.post('/api/admin/users/:id/unlock', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('UPDATE users SET failed_attempts=0, locked_until=NULL WHERE id=?').run(req.params.id);
+  res.json({ success: true });
 });
 
 // ---- Users (admin/professor manage; everyone can list lightweight roster for assignment) ----
