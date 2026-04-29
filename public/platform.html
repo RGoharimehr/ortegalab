@@ -589,11 +589,28 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
   <form class="login-card" id="loginForm">
     <h1 class="display-serif">LATFS Platform</h1>
     <p>Sign in with your lab account.<br><span style="color:var(--fg-4); font-size:11px;">No account? Ask the lab director / professor — they create accounts in <strong>Lab Members</strong>.</span></p>
-    <label for="loginUser">Username</label>
-    <input id="loginUser" name="username" autocomplete="username" autofocus>
-    <label for="loginPass">Password</label>
-    <input id="loginPass" name="password" type="password" autocomplete="current-password">
-    <button type="submit">Sign in</button>
+    <!-- Step 1: username + password -->
+    <div id="loginStep1">
+      <label for="loginUser">Username</label>
+      <input id="loginUser" name="username" autocomplete="username" autofocus>
+      <label for="loginPass">Password</label>
+      <input id="loginPass" name="password" type="password" autocomplete="current-password">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px;font-weight:400;">
+        <input type="checkbox" id="loginRemember" style="width:auto;margin:0;">
+        <span style="font-size:12px;">Remember me for 30 days</span>
+      </label>
+    </div>
+    <!-- Step 2: TOTP (shown when server returns totp_required) -->
+    <div id="loginStep2" style="display:none;">
+      <div style="font-size:13px;color:var(--fg-2);margin:4px 0 12px;padding:10px 12px;background:var(--bg-2);border-radius:var(--radius-sm);border-left:3px solid var(--gold-600);">
+        🔐 Two-factor authentication required.<br>
+        <span style="font-size:11px;color:var(--fg-4);">Enter the 6-digit code from your authenticator app, or a backup code (format&nbsp;<code>XXXXX-XXXXX</code>).</span>
+      </div>
+      <label for="loginTotp">Authentication code</label>
+      <input id="loginTotp" name="totp_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="000000 or XXXXX-XXXXX" maxlength="11">
+      <button type="button" class="p-link" id="loginBackBtn" style="font-size:12px;color:var(--fg-3);background:none;border:none;cursor:pointer;margin-top:6px;padding:0;text-align:left;">← Back to sign-in</button>
+    </div>
+    <button type="submit" id="loginSubmitBtn">Sign in</button>
     <div class="err" id="loginErr"></div>
   </form>
 </div>
@@ -931,6 +948,10 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           </div>
         </div>
       </div>
+      <div class="p-card" style="margin-top:18px;">
+        <div class="p-card-head"><div class="p-card-title">Two-factor authentication (2FA)</div></div>
+        <div id="twoFaCard" style="padding:4px 0;font-size:13px;color:var(--fg-3);">Loading…</div>
+      </div>
     </section>
 
     <!-- Lab members (staff only) -->
@@ -998,18 +1019,49 @@ async function checkAuth(){
   }
 }
 
+let _loginState = { step: 1, username: '', password: '', rememberMe: false };
+
+function _resetLoginForm() {
+  _loginState = { step: 1, username: '', password: '', rememberMe: false };
+  $('#loginStep1').style.display = '';
+  $('#loginStep2').style.display = 'none';
+  $('#loginTotp').value = '';
+  $('#loginSubmitBtn').textContent = 'Sign in';
+  $('#loginUser').focus();
+}
+
 async function doLogin(ev){
   ev.preventDefault();
-  const u = $('#loginUser').value.trim();
-  const p = $('#loginPass').value;
   $('#loginErr').textContent = '';
   try {
+    let body;
+    if (_loginState.step === 1) {
+      _loginState.username  = $('#loginUser').value.trim();
+      _loginState.password  = $('#loginPass').value;
+      _loginState.rememberMe = $('#loginRemember').checked;
+      if (!_loginState.username || !_loginState.password) {
+        $('#loginErr').textContent = 'Username and password are required'; return;
+      }
+      body = { username: _loginState.username, password: _loginState.password, remember_me: _loginState.rememberMe };
+    } else {
+      body = { username: _loginState.username, password: _loginState.password,
+               totp_code: $('#loginTotp').value.trim(), remember_me: _loginState.rememberMe };
+    }
     const r = await fetch('/admin/login', {
       method:'POST', credentials:'same-origin',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ username:u, password:p })
+      body: JSON.stringify(body)
     });
     const data = await r.json();
+    // Server signals TOTP is required — switch to step 2
+    if (data.totp_required) {
+      _loginState.step = 2;
+      $('#loginStep1').style.display = 'none';
+      $('#loginStep2').style.display = '';
+      $('#loginSubmitBtn').textContent = 'Verify';
+      $('#loginTotp').focus();
+      return;
+    }
     if(!r.ok || !data.success){ $('#loginErr').textContent = data.error || 'Login failed'; return; }
     CSRF = data.csrfToken;
     ME = { username:data.username, name:data.name||data.username, role:data.role||'student', csrfToken: data.csrfToken };
@@ -1909,6 +1961,80 @@ async function loadProfile(){
         <button class="btn-ghost-sm" data-checkin-id="${x.id}">Return</button>
       </div>`).join('') : '<div class="empty">Nothing checked out.</div>';
   } catch(e){ $('#profEquip').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  loadTwoFaCard();
+}
+
+async function loadTwoFaCard(){
+  const card = $('#twoFaCard');
+  if(!card) return;
+  try {
+    const me = await api('/api/me');
+    if(me.totp_enabled){
+      const bcResp = await api('/api/me/totp/backup-codes').catch(()=>({ remaining: '?' }));
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border-1);">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--status-ok);">✔ 2FA is enabled</div>
+            <div style="font-size:12px;color:var(--fg-3);">Backup codes remaining: <strong>${bcResp.remaining}</strong></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ghost-sm" id="regenCodesBtn">New backup codes</button>
+            <button class="btn-ghost-sm" style="color:#dc2626;" id="disable2faBtn">Disable 2FA</button>
+          </div>
+        </div>`;
+      $('#regenCodesBtn').addEventListener('click', async () => {
+        if(!confirm('Generate 10 new backup codes? Your old codes will stop working.')) return;
+        try {
+          const r = await api('/api/me/totp/backup-codes', {method:'POST', body:{}});
+          showBackupCodes(r.backup_codes);
+          loadTwoFaCard();
+        } catch(e){ alert(e.message); }
+      });
+      $('#disable2faBtn').addEventListener('click', () => {
+        modal(`<h2>Disable two-factor authentication</h2>
+          <p style="font-size:13px;color:var(--fg-3);">Enter your current password to confirm.</p>
+          <label>Password<input id="dis2faPw" type="password" autocomplete="current-password"></label>`,
+          async () => {
+            await api('/api/me/totp', {method:'DELETE', body:{password:$('#dis2faPw').value}});
+            loadTwoFaCard();
+          });
+      });
+    } else {
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--fg-2);">2FA is not enabled</div>
+            <div style="font-size:12px;color:var(--fg-3);">Add an extra layer of security with an authenticator app (Google Authenticator, Authy, etc.).</div>
+          </div>
+          <button class="btn-ghost-sm" id="enable2faBtn">Enable 2FA</button>
+        </div>`;
+      $('#enable2faBtn').addEventListener('click', async () => {
+        try {
+          const setup = await api('/api/me/totp/setup', {method:'POST', body:{}});
+          modal(`<h2>Enable two-factor authentication</h2>
+            <p style="font-size:13px;color:var(--fg-3);">Scan the QR code with your authenticator app, then enter the 6-digit code to confirm.</p>
+            <div style="text-align:center;margin:12px 0;"><img src="${escapeHTML(setup.qr)}" style="width:180px;height:180px;border:1px solid var(--border-1);border-radius:var(--radius-sm);"></div>
+            <details style="margin-bottom:12px;"><summary style="font-size:11px;color:var(--fg-4);cursor:pointer;">Manual entry key</summary><code style="font-size:12px;user-select:all;">${escapeHTML(setup.secret)}</code></details>
+            <label>6-digit code<input id="totpVerify" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code"></label>`,
+            async () => {
+              const result = await api('/api/me/totp/verify', {method:'POST', body:{code:$('#totpVerify').value}});
+              showBackupCodes(result.backup_codes);
+              loadTwoFaCard();
+            });
+        } catch(e){ alert(e.message); }
+      });
+    }
+  } catch(e){ card.innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+
+function showBackupCodes(codes){
+  modal(`<h2>Your backup codes</h2>
+    <p style="font-size:13px;color:var(--fg-3);">Save these codes somewhere safe. Each code can only be used <strong>once</strong>. You can use them instead of your authenticator app if you lose access.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0;font-family:monospace;font-size:14px;">
+      ${(codes||[]).map(c=>`<div style="padding:8px;background:var(--bg-2);border-radius:var(--radius-sm);text-align:center;">${escapeHTML(c)}</div>`).join('')}
+    </div>
+    <p style="font-size:11px;color:var(--status-alert);">These codes will not be shown again. Copy or print them now.</p>`,
+    null, '', 'Close');
 }
 $('#profEditBtn').addEventListener('click', () => {
   modal(`<h2>Edit my details</h2>
@@ -1931,13 +2057,13 @@ $('#profDmToggle').addEventListener('click', () => {
 $('#profChPwBtn').addEventListener('click', () => {
   modal(`<h2>Change password</h2>
     <label>Current password<input id="cpCur" type="password" autocomplete="current-password"></label>
-    <label>New password<input id="cpNew" type="password" autocomplete="new-password"></label>
+    <label>New password (min 12 chars)<input id="cpNew" type="password" autocomplete="new-password"></label>
     <label>Confirm new password<input id="cpConf" type="password" autocomplete="new-password"></label>`,
     async () => {
       const cur = $('#cpCur').value, np = $('#cpNew').value, conf = $('#cpConf').value;
       if(!cur || !np) throw new Error('All fields are required');
       if(np !== conf) throw new Error('New passwords do not match');
-      if(np.length < 8) throw new Error('New password must be at least 8 characters');
+      if(np.length < 12) throw new Error('New password must be at least 12 characters');
       await api('/api/me/password', {method:'PUT', body:{current_password: cur, new_password: np}});
       alert('Password changed successfully.');
     });
@@ -1970,7 +2096,7 @@ document.addEventListener('click', async e => {
   const pw = e.target.closest('[data-user-pw]');
   const dl = e.target.closest('[data-user-del]');
   if(ed){ try { const u=(await api('/api/users')).find(x=>x.id==ed.dataset.userEdit); if(u) openUserModal(u); } catch(err){ alert(err.message); } }
-  if(pw){ const np = prompt('New password (min 8 chars):'); if(!np||np.length<8){ alert('Min 8 characters'); return; }
+  if(pw){ const np = prompt('New password (min 12 chars):'); if(!np||np.length<12){ alert('Min 12 characters'); return; }
     try { await api('/api/users/'+pw.dataset.userPw,{method:'PUT', body:{password:np}}); alert('Password reset'); } catch(err){ alert(err.message); } }
   if(dl){ if(!confirm('Disable this account?')) return;
     try { await api('/api/users/'+dl.dataset.userDel,{method:'DELETE'}); loadUsers(); } catch(err){ alert(err.message); } }
@@ -1984,7 +2110,7 @@ function openUserModal(u){
     <label>Role<select id="uRole">
       ${['admin','professor','postdoc','student'].map(r=>`<option value="${r}" ${u?.role===r?'selected':''}>${r}</option>`).join('')}
     </select></label>
-    ${!isEdit?`<label>Initial password (min 8)<input id="uPw" type="text" value=""></label>`:''}`,
+    ${!isEdit?`<label>Initial password (min 12)<input id="uPw" type="text" value=""></label>`:''}`,
     async () => {
       const body = {
         username: $('#uUsr').value.trim(),
@@ -1992,7 +2118,7 @@ function openUserModal(u){
         email: $('#uEmail').value.trim(),
         role: $('#uRole').value
       };
-      if(!isEdit){ body.password = $('#uPw').value; if(!body.password||body.password.length<8) throw new Error('Password >= 8 chars'); }
+      if(!isEdit){ body.password = $('#uPw').value; if(!body.password||body.password.length<12) throw new Error('Password >= 12 chars'); }
       if(isEdit) await api('/api/users/'+u.id,{method:'PUT', body});
       else await api('/api/users',{method:'POST', body});
       loadUsers();
@@ -2035,6 +2161,7 @@ $('#dmToggle').addEventListener('click', () => {
 
 /* ---------- Boot ---------- */
 $('#loginForm').addEventListener('submit', doLogin);
+$('#loginBackBtn').addEventListener('click', () => { $('#loginErr').textContent = ''; _resetLoginForm(); });
 $('#logoutBtn').addEventListener('click', doLogout);
 (async function boot(){
   if(await checkAuth()) showApp();

@@ -700,6 +700,15 @@ try {
       enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- TOTP one-time backup codes (hashed; 10 per user; regenerated on demand)
+    CREATE TABLE IF NOT EXISTS totp_backup_codes (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER NOT NULL REFERENCES users(id),
+      code_hash  TEXT NOT NULL,
+      used       INTEGER DEFAULT 0,
+      used_at    DATETIME
+    );
+
     -- Login audit log
     CREATE TABLE IF NOT EXISTS login_events (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -899,7 +908,25 @@ app.post('/admin/login', authLimiter, (req, res) => {
       return res.status(200).json({ totp_required: true });
     }
     const totpRow = db.prepare('SELECT secret FROM totp_secrets WHERE user_id=? AND enabled=1').get(user.id);
-    if (!totpRow || !authenticator.check(String(totp_code), totpRow.secret)) {
+    const codeStr = String(totp_code).trim();
+
+    // Check TOTP code first
+    let twoFaOk = totpRow && authenticator.check(codeStr, totpRow.secret);
+
+    // If TOTP didn't match, try one-time backup codes
+    if (!twoFaOk) {
+      const cleanCode = codeStr.replace(/-/g, '').toUpperCase();
+      const unusedCodes = db.prepare('SELECT id, code_hash FROM totp_backup_codes WHERE user_id=? AND used=0').all(user.id);
+      for (const bc of unusedCodes) {
+        if (bcrypt.compareSync(cleanCode, bc.code_hash)) {
+          db.prepare('UPDATE totp_backup_codes SET used=1, used_at=CURRENT_TIMESTAMP WHERE id=?').run(bc.id);
+          twoFaOk = true;
+          break;
+        }
+      }
+    }
+
+    if (!twoFaOk) {
       const newAttempts = (user.failed_attempts || 0) + 1;
       db.prepare('UPDATE users SET failed_attempts=? WHERE id=?').run(newAttempts, user.id);
       logEvent(user.id, username, false, '2fa_bad');
@@ -911,17 +938,31 @@ app.post('/admin/login', authLimiter, (req, res) => {
   db.prepare('UPDATE users SET failed_attempts=0, locked_until=NULL, last_login_at=CURRENT_TIMESTAMP, last_login_ip=? WHERE id=?').run(ip, user.id);
   logEvent(user.id, username, true, '');
 
-  req.session.userId = user.id;
-  req.session.username = user.username;
-  req.session.role = user.role || 'student';
-  req.session.csrfToken = crypto.randomBytes(32).toString('hex');
-
-  // Remember Me — extend session lifetime to 30 days
-  if (remember_me) {
-    req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+  // New-IP email notification (fire-and-forget)
+  if (mailer && user.email && user.last_login_ip && user.last_login_ip !== ip) {
+    sendMail(user.email,
+      'New sign-in to your LATFS account from a different location',
+      `Hi ${user.name || user.username},\n\nA sign-in to your LATFS account was detected from a new IP address.\n\nIP address : ${ip}\nTime       : ${new Date().toUTCString()}\nBrowser    : ${ua.slice(0, 200)}\n\nIf this was you, no action is needed.\nIf this was NOT you, contact your lab administrator immediately and change your password.\n\n— LATFS Security`);
   }
 
-  res.json({ success: true, username: user.username, name: user.name || '', role: user.role || 'student', csrfToken: req.session.csrfToken });
+  // ── Prevent session fixation: regenerate session ID before committing identity ──
+  req.session.regenerate((err) => {
+    if (err) return res.status(500).json({ error: 'Session error — please try again' });
+    req.session.userId    = user.id;
+    req.session.username  = user.username;
+    req.session.role      = user.role || 'student';
+    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+
+    // Remember Me — extend session lifetime to 30 days
+    if (remember_me) {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+    }
+
+    req.session.save((saveErr) => {
+      if (saveErr) return res.status(500).json({ error: 'Session error — please try again' });
+      res.json({ success: true, username: user.username, name: user.name || '', role: user.role || 'student', csrfToken: req.session.csrfToken });
+    });
+  });
 });
 
 app.post('/admin/logout', (req, res) => {
@@ -1647,7 +1688,7 @@ app.put('/api/me/profile', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
 app.put('/api/me/password', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { current_password, new_password } = req.body;
   if (!current_password || !new_password) return res.status(400).json({ error: 'current_password and new_password required' });
-  if (new_password.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+  if (new_password.length < 12) return res.status(400).json({ error: 'New password must be at least 12 characters' });
   const user = db.prepare('SELECT password FROM users WHERE id=?').get(req.session.userId);
   if (!user || !bcrypt.compareSync(current_password, user.password)) {
     return res.status(401).json({ error: 'Current password is incorrect' });
@@ -1658,6 +1699,27 @@ app.put('/api/me/password', apiWriteLimiter, requireAuth, requireCsrf, (req, res
 });
 
 // ── TOTP / 2FA endpoints ─────────────────────────────────────────────────────
+
+/**
+ * Generate N one-time backup codes, store hashed versions in the DB,
+ * and return the plaintext codes (shown to the user exactly once).
+ * Format: XXXXX-XXXXX (10 uppercase hex chars split with a dash)
+ */
+function generateAndStoreBackupCodes(userId) {
+  db.prepare('DELETE FROM totp_backup_codes WHERE user_id=?').run(userId);
+  const plaintext = [];
+  const insert = db.prepare('INSERT INTO totp_backup_codes (user_id, code_hash) VALUES (?,?)');
+  const insertAll = db.transaction(() => {
+    for (let i = 0; i < 10; i++) {
+      const raw = crypto.randomBytes(5).toString('hex').toUpperCase(); // 10 hex chars
+      const code = raw.slice(0, 5) + '-' + raw.slice(5);              // XXXXX-XXXXX
+      insert.run(userId, bcrypt.hashSync(raw, 10));                    // store without dash
+      plaintext.push(code);
+    }
+  });
+  insertAll();
+  return plaintext;
+}
 
 // Begin TOTP enrollment: generate a new secret and return a QR code URI
 app.post('/api/me/totp/setup', apiWriteLimiter, requireAuth, requireCsrf, async (req, res) => {
@@ -1688,7 +1750,22 @@ app.post('/api/me/totp/verify', apiWriteLimiter, requireAuth, requireCsrf, (req,
   }
   db.prepare('UPDATE totp_secrets SET enabled=1, enrolled_at=CURRENT_TIMESTAMP WHERE user_id=?').run(req.session.userId);
   db.prepare('UPDATE users SET totp_enabled=1 WHERE id=?').run(req.session.userId);
-  res.json({ success: true, message: '2FA enabled successfully' });
+  const backupCodes = generateAndStoreBackupCodes(req.session.userId);
+  res.json({ success: true, message: '2FA enabled successfully', backup_codes: backupCodes });
+});
+
+// Regenerate backup codes (user must be authenticated and have TOTP enabled)
+app.post('/api/me/totp/backup-codes', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const user = db.prepare('SELECT totp_enabled FROM users WHERE id=?').get(req.session.userId);
+  if (!user || !user.totp_enabled) return res.status(400).json({ error: '2FA must be enabled before managing backup codes' });
+  const backupCodes = generateAndStoreBackupCodes(req.session.userId);
+  res.json({ backup_codes: backupCodes });
+});
+
+// Count remaining (unused) backup codes for the current user
+app.get('/api/me/totp/backup-codes', apiReadLimiter, requireAuth, (req, res) => {
+  const count = db.prepare('SELECT COUNT(*) as n FROM totp_backup_codes WHERE user_id=? AND used=0').get(req.session.userId);
+  res.json({ remaining: count ? count.n : 0 });
 });
 
 // Disable TOTP — requires current password for safety
@@ -1700,6 +1777,7 @@ app.delete('/api/me/totp', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
     return res.status(401).json({ error: 'Incorrect password' });
   }
   db.prepare('DELETE FROM totp_secrets WHERE user_id=?').run(req.session.userId);
+  db.prepare('DELETE FROM totp_backup_codes WHERE user_id=?').run(req.session.userId);
   db.prepare('UPDATE users SET totp_enabled=0 WHERE id=?').run(req.session.userId);
   res.json({ success: true, message: '2FA disabled' });
 });
@@ -1735,8 +1813,9 @@ app.get('/api/users', apiReadLimiter, requireAuth, (req, res) => {
 app.post('/api/users', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { username, password, name, role, email } = req.body;
   if (!username || !password || !role) return res.status(400).json({ error: 'username, password, role required' });
+  if (password.length < 12) return res.status(400).json({ error: 'Password must be at least 12 characters' });
   if (db.prepare('SELECT 1 FROM users WHERE username=?').get(username)) return res.status(409).json({ error: 'username exists' });
-  const hash = bcrypt.hashSync(password, 10);
+  const hash = bcrypt.hashSync(password, 12);
   const r = db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
     .run(username, hash, name || '', role, email || '');
   res.json({ id: r.lastInsertRowid });
@@ -1748,7 +1827,7 @@ app.put('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res)
   if (role !== undefined)   { sets.push('role=?');   params.push(role); }
   if (email !== undefined)  { sets.push('email=?');  params.push(email); }
   if (active !== undefined) { sets.push('active=?'); params.push(active ? 1 : 0); }
-  if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, 10)); }
+  if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, 12)); }
   if (!sets.length) return res.json({ success: true });
   params.push(req.params.id);
   db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);

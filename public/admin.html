@@ -433,11 +433,28 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
     <h1>LATFS Website Admin</h1>
     <p>Sign in to manage the website.</p>
     <form id="loginForm">
-      <label>Username</label>
-      <input id="lUser" type="text" autocomplete="username" required>
-      <label>Password</label>
-      <input id="lPass" type="password" autocomplete="current-password" required>
-      <button type="submit">Sign in</button>
+      <!-- Step 1: credentials -->
+      <div id="adminStep1">
+        <label>Username</label>
+        <input id="lUser" type="text" autocomplete="username" required>
+        <label>Password</label>
+        <input id="lPass" type="password" autocomplete="current-password" required>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px;font-weight:400;">
+          <input type="checkbox" id="adminRemember" style="width:auto;margin:0;">
+          <span style="font-size:12px;">Remember me for 30 days</span>
+        </label>
+      </div>
+      <!-- Step 2: TOTP (shown when server returns totp_required) -->
+      <div id="adminStep2" style="display:none;">
+        <div style="font-size:13px;color:var(--fg-2);margin:4px 0 12px;padding:10px 12px;background:var(--bg-2,#f5f5f5);border-radius:6px;border-left:3px solid #b8982a;">
+          🔐 Two-factor authentication required.<br>
+          <span style="font-size:11px;color:#888;">Enter the 6-digit code from your authenticator app, or a backup code (format <code>XXXXX-XXXXX</code>).</span>
+        </div>
+        <label>Authentication code</label>
+        <input id="lTotp" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="000000 or XXXXX-XXXXX" maxlength="11">
+        <button type="button" id="adminBackBtn" style="font-size:12px;color:#888;background:none;border:none;cursor:pointer;margin-top:6px;padding:0;text-align:left;">← Back</button>
+      </div>
+      <button type="submit" id="adminSubmitBtn">Sign in</button>
       <div class="err" id="lErr"></div>
     </form>
   </div>
@@ -552,21 +569,35 @@ async function checkAuth() {
   } catch(e) { console.error('auth check failed', e); }
   return false;
 }
-async function doLogin(user, pass) {
+let _adminLoginState = { step: 1, username: '', password: '', rememberMe: false };
+
+function _resetAdminLogin() {
+  _adminLoginState = { step: 1, username: '', password: '', rememberMe: false };
+  $('#adminStep1').style.display = '';
+  $('#adminStep2').style.display = 'none';
+  $('#lTotp').value = '';
+  $('#adminSubmitBtn').textContent = 'Sign in';
+  $('#lUser').focus();
+}
+
+async function doLogin(user, pass, totpCode, rememberMe) {
+  const body = { username: user, password: pass, remember_me: rememberMe };
+  if (totpCode) body.totp_code = totpCode;
   const r = await fetch('/admin/login', {
     method:'POST',
     credentials:'same-origin',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ username:user, password:pass })
+    body: JSON.stringify(body)
   });
-  if (!r.ok) throw new Error((await r.json()).error || 'Login failed');
   const data = await r.json();
+  if (data.totp_required) return data; // caller handles step transition
+  if (!r.ok) throw new Error(data.error || 'Login failed');
   CSRF = data.csrfToken || '';
   SESSION_USER.name = data.name || data.username;
   SESSION_USER.role = data.role || 'admin';
   SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
   SESSION_USER.initials = initials(SESSION_USER.name);
-  return true;
+  return data;
 }
 
 /* ── Sidebar nav ───────────────────────────────────────── */
@@ -1885,6 +1916,7 @@ const ROUTES = { overview: renderOverview, content: renderAdmin, schedule: rende
 async function doLogout() {
   await fetch('/admin/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
   CSRF = '';
+  _resetAdminLogin();
   $('#appShell').style.display = 'none';
   $('#loginScreen').style.display = 'flex';
 }
@@ -1894,15 +1926,33 @@ async function boot() {
     e.preventDefault();
     $('#lErr').textContent = '';
     try {
-      await doLogin($('#lUser').value, $('#lPass').value);
+      let result;
+      if (_adminLoginState.step === 1) {
+        _adminLoginState.username  = $('#lUser').value;
+        _adminLoginState.password  = $('#lPass').value;
+        _adminLoginState.rememberMe = $('#adminRemember').checked;
+        result = await doLogin(_adminLoginState.username, _adminLoginState.password, null, _adminLoginState.rememberMe);
+      } else {
+        result = await doLogin(_adminLoginState.username, _adminLoginState.password, $('#lTotp').value.trim(), _adminLoginState.rememberMe);
+      }
+      if (result && result.totp_required) {
+        _adminLoginState.step = 2;
+        $('#adminStep1').style.display = 'none';
+        $('#adminStep2').style.display = '';
+        $('#adminSubmitBtn').textContent = 'Verify';
+        $('#lTotp').focus();
+        return;
+      }
       $('#loginScreen').style.display = 'none';
       $('#appShell').style.display = 'flex';
       $('#userInitials').textContent = SESSION_USER.initials;
       $('#userName').textContent = SESSION_USER.name;
       $('#userRole').textContent = SESSION_USER.role;
+      renderNav();
       navigate('overview');
     } catch(err) { $('#lErr').textContent = err.message; }
   };
+  $('#adminBackBtn').onclick = () => { $('#lErr').textContent = ''; _resetAdminLogin(); };
   $('#logoutBtn').onclick = doLogout;
   const ok = await checkAuth();
   if (ok) {
