@@ -1563,6 +1563,16 @@ app.delete('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, re
     ['people_page_intro', 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'],
     ['facilities_page_title', 'Lab facilities & instruments'],
     ['facilities_page_intro', 'Click any facility to see photos, the full description, and any documentation we have on it.'],
+    // Platform section subtitles (editable by staff)
+    ['platform_schedule_sub', 'Calendar of meetings, sessions and reservations.'],
+    ['platform_tasks_sub', 'Drag-style kanban (open / in progress / blocked / done).'],
+    ['platform_meetings_sub', 'Group meetings, seminars and announcements from the PI.'],
+    ['platform_equipment_sub', 'Check items out and check them back in. Last-user is tracked.'],
+    ['platform_issues_sub', 'Report broken equipment, request supplies, flag facility issues.'],
+    ['platform_inventory_sub', 'Track consumables, chemicals, reagents and supplies.'],
+    ['platform_profile_sub', 'Your details, assigned tasks and equipment.'],
+    ['platform_members_sub', 'Manage accounts. Only admins / professors can edit.'],
+    ['platform_dashboard_sub', "Here is today's snapshot."],
   ];
   const ins = db.prepare('INSERT OR IGNORE INTO app_settings (key, value) VALUES (?,?)');
   for (const [k, v] of defaults) ins.run(k, v);

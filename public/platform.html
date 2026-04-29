@@ -757,7 +757,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Tasks</div>
           <h1 class="p-h1">Tasks</h1>
-          <p class="p-h1-sub">Drag-style kanban (open / in progress / blocked / done).</p>
+          <p class="p-h1-sub" id="tasksSub">Drag-style kanban (open / in progress / blocked / done).</p>
         </div>
         <div class="p-actions">
           <div class="p-toggle" id="taskScope">
@@ -776,7 +776,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Meetings & announcements</div>
           <h1 class="p-h1">Meetings</h1>
-          <p class="p-h1-sub">Group meetings, seminars and announcements from the PI.</p>
+          <p class="p-h1-sub" id="meetingsSub">Group meetings, seminars and announcements from the PI.</p>
         </div>
         <div class="p-actions">
           <button class="btn-primary-sm" id="addMeetingBtn">+ Add meeting</button>
@@ -791,7 +791,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Equipment & supplies</div>
           <h1 class="p-h1">Equipment</h1>
-          <p class="p-h1-sub">Check items out and check them back in. Last-user is tracked.</p>
+          <p class="p-h1-sub" id="equipmentSub">Check items out and check them back in. Last-user is tracked.</p>
         </div>
         <div class="p-actions">
           <button class="btn-primary-sm staff-only hidden" id="addEquipBtn">+ Add item</button>
@@ -833,7 +833,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Issues & requests</div>
           <h1 class="p-h1">Issues board</h1>
-          <p class="p-h1-sub">Report broken equipment, request supplies, flag facility issues.</p>
+          <p class="p-h1-sub" id="issuesSub">Report broken equipment, request supplies, flag facility issues.</p>
         </div>
         <div class="p-actions">
           <div class="p-toggle" id="issueFilter">
@@ -869,7 +869,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Lab supplies</div>
           <h1 class="p-h1">Inventory</h1>
-          <p class="p-h1-sub">Track consumables, chemicals, reagents and supplies.</p>
+          <p class="p-h1-sub" id="inventorySub">Track consumables, chemicals, reagents and supplies.</p>
         </div>
         <div class="p-actions">
           <button class="btn-primary-sm staff-only hidden" id="addInvBtn">+ Add item</button>
@@ -888,7 +888,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">My profile</div>
           <h1 class="p-h1">Profile</h1>
-          <p class="p-h1-sub">Your details, assigned tasks and equipment.</p>
+          <p class="p-h1-sub" id="profileSub">Your details, assigned tasks and equipment.</p>
         </div>
       </div>
       <div class="p-profile-card">
@@ -939,7 +939,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Staff</div>
           <h1 class="p-h1">Lab members</h1>
-          <p class="p-h1-sub">Manage accounts. Only admins / professors can edit.</p>
+          <p class="p-h1-sub" id="membersSub">Manage accounts. Only admins / professors can edit.</p>
         </div>
         <div class="p-actions">
           <button class="btn-primary-sm" id="addUserBtn">+ Add member</button>
@@ -1031,6 +1031,19 @@ function showApp(){
   if(ME.role === 'admin' || ME.role === 'professor' || ME.role === 'moderator'){
     $$('.staff-only').forEach(el => el.classList.remove('hidden'));
   }
+  // Load editable section subtitles from settings
+  api('/api/settings').then(s => {
+    const apply = (id, key) => { const el = document.getElementById(id); if(el && s[key]) el.textContent = s[key]; };
+    apply('dashSub',      'platform_dashboard_sub');
+    apply('schedSub',     'platform_schedule_sub');
+    apply('tasksSub',     'platform_tasks_sub');
+    apply('meetingsSub',  'platform_meetings_sub');
+    apply('equipmentSub', 'platform_equipment_sub');
+    apply('issuesSub',    'platform_issues_sub');
+    apply('inventorySub', 'platform_inventory_sub');
+    apply('profileSub',   'platform_profile_sub');
+    apply('membersSub',   'platform_members_sub');
+  }).catch(()=>{});
   goRoute('dashboard');
   loadDashboard();
 }
@@ -1197,33 +1210,99 @@ document.addEventListener('click', async e => {
 let SCHED_SCOPE = 'mine';
 async function loadSchedule(){
   try {
-    const events = await api('/api/events');
     const now = new Date();
-    const filtered = (SCHED_SCOPE === 'mine')
-      ? events.filter(ev => ev.owner_user_id === ME.id || (ev.attendees||'').includes(ME.username))
-      : events;
-    const upcoming = filtered.filter(ev => new Date(ev.start_time) >= now)
-      .sort((a,b)=> new Date(a.start_time)-new Date(b.start_time));
+    // Fetch events, meetings and tasks in parallel
+    const [events, meetings, tasks] = await Promise.all([
+      api('/api/events'),
+      api('/api/meetings').catch(()=>[]),
+      api('/api/tasks/full?all=1').catch(()=>[]),
+    ]);
+
+    // Normalise events
+    const evItems = events
+      .filter(ev => ev.start_time)
+      .map(ev => ({
+        _type: 'event',
+        _id: ev.id,
+        _owner: ev.owner_user_id,
+        _attendees: ev.attendees || '',
+        sortKey: ev.start_time,
+        date: ev.start_time,
+        title: ev.title,
+        subtitle: `${fmtDT(ev.start_time)}${ev.end_time?' → '+fmtDT(ev.end_time):''}${ev.location?' · '+ev.location:''}`,
+        badge: ev.event_type || 'event',
+        badgeColor: 'var(--navy-700)',
+        canEdit: (ev.owner_user_id===ME.id) || ME.role==='admin' || ME.role==='professor',
+      }));
+
+    // Normalise meetings (from the meetings table)
+    const meetItems = meetings
+      .filter(m => m.scheduled_at)
+      .map(m => ({
+        _type: 'meeting',
+        _id: m.id,
+        _owner: null,
+        _attendees: '',
+        sortKey: m.scheduled_at,
+        date: m.scheduled_at,
+        title: m.title,
+        subtitle: `${fmtDT(m.scheduled_at)}${m.location?' · '+m.location:''}`,
+        badge: m.meeting_type || 'meeting',
+        badgeColor: 'var(--gold-700)',
+        canEdit: ME.role==='admin' || ME.role==='professor' || ME.role==='moderator',
+      }));
+
+    // Normalise task deadlines
+    const deadlineItems = tasks
+      .filter(t => t.due_date && t.status !== 'done')
+      .map(t => ({
+        _type: 'deadline',
+        _id: t.id,
+        _owner: t.assignee_user_id,
+        _attendees: '',
+        sortKey: t.due_date,
+        date: t.due_date,
+        title: t.title,
+        subtitle: `Due ${fmtDate(t.due_date)}${t.assignee_name?' · '+t.assignee_name:''}`,
+        badge: 'deadline',
+        badgeColor: 'var(--status-alert)',
+        canEdit: false,
+      }));
+
+    // Merge + filter by scope
+    let all = [...evItems, ...meetItems, ...deadlineItems];
+    if(SCHED_SCOPE === 'mine'){
+      all = all.filter(item => {
+        if(item._type === 'event') return item._owner === ME.id || item._attendees.includes(ME.username);
+        if(item._type === 'deadline') return item._owner === ME.id;
+        return true; // meetings always visible to all
+      });
+    }
+
+    // Sort by date, upcoming only
+    const upcoming = all
+      .filter(item => new Date(item.date) >= now)
+      .sort((a,b) => new Date(a.sortKey) - new Date(b.sortKey));
+
     if(!upcoming.length){ $('#schedList').innerHTML = '<div class="empty">No upcoming events.</div>'; return; }
-    $('#schedList').innerHTML = upcoming.map(ev => {
-      const canEdit = (ev.owner_user_id===ME.id) || ME.role==='admin' || ME.role==='professor';
-      return `
+    $('#schedList').innerHTML = upcoming.map(item => `
       <div class="p-slot">
-        <div class="p-slot-time">${new Date(ev.start_time).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+        <div class="p-slot-time">${new Date(item.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
         <div style="flex:1;">
-          <div class="p-slot-title">${escapeHTML(ev.title)}</div>
-          <div class="p-slot-room">${fmtDT(ev.start_time)} → ${ev.end_time?fmtDT(ev.end_time):''} · ${escapeHTML(ev.location||'')}</div>
+          <div class="p-slot-title">${escapeHTML(item.title)}</div>
+          <div class="p-slot-room">${escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="p-slot-tag" style="background: var(--navy-700);">${escapeHTML(ev.event_type||'event')}</div>
-        ${canEdit ? `<button class="btn-ghost-sm" data-event-edit="${ev.id}">Edit</button>
-        <button class="btn-ghost-sm" data-event-del="${ev.id}">Delete</button>` : ''}
-      </div>`;
-    }).join('');
+        <div class="p-slot-tag" style="background:${item.badgeColor};">${escapeHTML(item.badge)}</div>
+        ${item._type === 'event' && item.canEdit ? `<button class="btn-ghost-sm" data-event-edit="${item._id}">Edit</button>
+        <button class="btn-ghost-sm" data-event-del="${item._id}">Delete</button>` : ''}
+        ${item._type === 'meeting' && item.canEdit ? `<button class="btn-ghost-sm" data-meet-edit="${item._id}">Edit</button>` : ''}
+      </div>`).join('');
   } catch(e){ $('#schedList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
 }
 document.addEventListener('click', async e => {
   const ed = e.target.closest('[data-event-edit]');
   const dl = e.target.closest('[data-event-del]');
+  const med = e.target.closest('[data-meet-edit]');
   if(ed){
     try { const ev = (await api('/api/events')).find(x => x.id == ed.dataset.eventEdit); if(ev) openEventModal(ev); }
     catch(err){ alert(err.message); }
@@ -1231,6 +1310,10 @@ document.addEventListener('click', async e => {
   if(dl){
     if(!confirm('Delete this event?')) return;
     try { await api('/api/events/'+dl.dataset.eventDel, {method:'DELETE'}); loadSchedule(); loadDashboard(); }
+    catch(err){ alert(err.message); }
+  }
+  if(med){
+    try { const m = (await api('/api/meetings')).find(x => x.id == med.dataset.meetEdit); if(m) openMeetingModal(m); }
     catch(err){ alert(err.message); }
   }
 });
