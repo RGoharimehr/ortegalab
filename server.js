@@ -2049,14 +2049,6 @@ app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
-  const rows = db.prepare(`
-    SELECT l.*, u.username, u.name AS user_name
-    FROM equipment_log l LEFT JOIN users u ON u.id = l.user_id
-    WHERE l.equipment_id=? ORDER BY l.id DESC LIMIT 100`).all(req.params.id);
-  res.json(rows);
-});
-
 // ── Equipment reservations ───────────────────────────────────────────────────
 app.get('/api/equipment/reservations', apiReadLimiter, requireAuth, (req, res) => {
   const { equipment_id, user_id, upcoming } = req.query;
@@ -2276,15 +2268,16 @@ app.delete('/api/lab-notebooks/:id', apiWriteLimiter, requireAuth, requireCsrf, 
 
 // ── Training & certification records ─────────────────────────────────────────
 app.get('/api/training', apiReadLimiter, requireAuth, (req, res) => {
-  const { user_id, equipment_id, expiring_soon } = req.query;
+  const { user_id, equipment_id, training_type, expiring_soon } = req.query;
   let sql = `SELECT t.*, u.name AS user_name, u.username,
     e.name AS equipment_name
     FROM training_records t
     JOIN users u ON u.id=t.user_id
     LEFT JOIN equipment e ON e.id=t.equipment_id WHERE 1=1`;
   const params = [];
-  if (user_id)      { sql += ' AND t.user_id=?';      params.push(user_id); }
-  if (equipment_id) { sql += ' AND t.equipment_id=?'; params.push(equipment_id); }
+  if (user_id)      { sql += ' AND t.user_id=?';        params.push(user_id); }
+  if (equipment_id) { sql += ' AND t.equipment_id=?';   params.push(equipment_id); }
+  if (training_type){ sql += ' AND t.training_type=?';  params.push(training_type); }
   if (expiring_soon === '1') {
     sql += " AND t.expires_at IS NOT NULL AND date(t.expires_at) <= date('now','+60 days')";
   }

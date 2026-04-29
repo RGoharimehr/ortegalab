@@ -1077,7 +1077,7 @@ function initials(name){ if(!name) return '??'; return name.trim().split(/\s+/).
 async function api(path, opts={}){
   const o = Object.assign({ credentials:'same-origin', headers:{} }, opts);
   if(o.body && typeof o.body !== 'string') { o.body = JSON.stringify(o.body); o.headers['Content-Type']='application/json'; }
-  if(['POST','PUT','DELETE'].includes((o.method||'GET').toUpperCase()) && CSRF) o.headers['x-csrf-token'] = CSRF;
+  if(['POST','PUT','PATCH','DELETE'].includes((o.method||'GET').toUpperCase()) && CSRF) o.headers['x-csrf-token'] = CSRF;
   const r = await fetch(path, o);
   const ct = r.headers.get('content-type') || '';
   const data = ct.includes('application/json') ? await r.json() : await r.text();
