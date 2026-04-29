@@ -315,6 +315,11 @@ db.exec(`
     published INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+  );
 `);
 
 // Migrations: add new columns to existing databases (errors for duplicate columns are expected and ignored)
@@ -1192,8 +1197,9 @@ app.get('/api/events', apiReadLimiter, (req, res) => {
 app.post('/api/events', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, event_type, start_time, end_time, location, visibility, attendees } = req.body;
   if (!title || !start_time) return res.status(400).json({ error: 'Title and start time are required' });
-  const result = db.prepare('INSERT INTO events (title, event_type, start_time, end_time, location, visibility, attendees, owner_user_id) VALUES (?,?,?,?,?,?,?,?)')
-    .run(title, event_type || 'meeting', start_time, end_time || '', location || '', visibility || 'public', attendees || '', req.session.userId || null);
+  // day/start_hour/duration_hours are legacy NOT NULL columns retained for schema compatibility; new records use start_time/end_time
+  const result = db.prepare('INSERT INTO events (title, event_type, start_time, end_time, location, visibility, attendees, owner_user_id, day, start_hour, duration_hours) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+    .run(title, event_type || 'meeting', start_time, end_time || '', location || '', visibility || 'public', attendees || '', req.session.userId || null, 0, 0, 0);
   res.json({ id: result.lastInsertRowid });
 });
 app.put('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
@@ -1291,8 +1297,9 @@ app.get('/api/meetings', apiReadLimiter, (req, res) => {
 app.post('/api/meetings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Title required' });
-  const result = db.prepare('INSERT INTO meetings (title, meeting_type, scheduled_at, location, description, sort_order) VALUES (?,?,?,?,?,?)')
-    .run(str(title,300), meeting_type || 'group', scheduled_at || '', str(location,300), str(description,5000), sort_order || 0);
+  // day_label/time_label are legacy NOT NULL columns retained for schema compatibility; new records use scheduled_at
+  const result = db.prepare('INSERT INTO meetings (title, meeting_type, scheduled_at, location, description, sort_order, day_label, time_label) VALUES (?,?,?,?,?,?,?,?)')
+    .run(str(title,300), meeting_type || 'group', scheduled_at || '', str(location,300), str(description,5000), sort_order || 0, '', '');
   res.json({ id: result.lastInsertRowid });
 });
 app.put('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1512,6 +1519,31 @@ app.put('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) 
 });
 app.delete('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM apps WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// APP SETTINGS — simple key-value store for site-level config (lab names, etc.)
+// Seed defaults on first run
+(function seedSettings(){
+  const defaults = [
+    ['lab_a_name', 'Lab A'],
+    ['lab_a_room', 'Tolentine 344'],
+    ['lab_b_name', 'Lab B'],
+    ['lab_b_room', 'Mendel 270'],
+  ];
+  const ins = db.prepare('INSERT OR IGNORE INTO app_settings (key, value) VALUES (?,?)');
+  for (const [k, v] of defaults) ins.run(k, v);
+})();
+app.get('/api/settings', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare('SELECT key, value FROM app_settings').all();
+  const out = {};
+  for (const r of rows) out[r.key] = r.value;
+  res.json(out);
+});
+app.put('/api/settings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const ups = db.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?,?)');
+  const update = db.transaction((pairs) => { for (const [k, v] of pairs) ups.run(String(k).slice(0,100), String(v||'').slice(0,300)); });
+  update(Object.entries(req.body || {}));
   res.json({ success: true });
 });
 
