@@ -744,6 +744,81 @@ try {
       reason       TEXT DEFAULT '',
       created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- ── Equipment reservations (book in advance) ─────────────────────────────
+    CREATE TABLE IF NOT EXISTS equipment_reservations (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      equipment_id  INTEGER NOT NULL REFERENCES equipment(id),
+      user_id       INTEGER NOT NULL REFERENCES users(id),
+      start_at      DATETIME NOT NULL,
+      end_at        DATETIME NOT NULL,
+      purpose       TEXT DEFAULT '',
+      status        TEXT DEFAULT 'pending',  -- pending | approved | denied | cancelled | completed
+      notes         TEXT DEFAULT '',
+      approved_by   INTEGER,
+      created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- ── Equipment maintenance / calibration records ───────────────────────────
+    CREATE TABLE IF NOT EXISTS equipment_maintenance (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      equipment_id  INTEGER NOT NULL REFERENCES equipment(id),
+      maint_type    TEXT NOT NULL DEFAULT 'maintenance',  -- maintenance | calibration | repair | inspection
+      scheduled_at  DATETIME,
+      completed_at  DATETIME,
+      performed_by  TEXT DEFAULT '',
+      cost          REAL,
+      notes         TEXT DEFAULT '',
+      next_due_at   DATETIME,
+      created_by    INTEGER,
+      created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- ── Sample registry ───────────────────────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS sample_registry (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      name           TEXT NOT NULL,
+      sample_type    TEXT DEFAULT 'other',   -- solid | liquid | gas | biological | chemical | other
+      location       TEXT DEFAULT '',        -- shelf, freezer, cabinet
+      project_id     INTEGER,
+      created_by_id  INTEGER,
+      status         TEXT DEFAULT 'active',  -- active | depleted | disposed | archived
+      expiry_date    DATE,
+      qty            REAL DEFAULT 0,
+      unit           TEXT DEFAULT 'unit',
+      description    TEXT DEFAULT '',
+      notes          TEXT DEFAULT '',
+      created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- ── Digital lab notebooks ─────────────────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS lab_notebooks (
+      id               INTEGER PRIMARY KEY AUTOINCREMENT,
+      title            TEXT NOT NULL,
+      user_id          INTEGER NOT NULL,
+      project_id       INTEGER,
+      experiment_date  DATE NOT NULL,
+      content          TEXT DEFAULT '',  -- plain text / markdown
+      tags             TEXT DEFAULT '',  -- comma-separated
+      status           TEXT DEFAULT 'draft',  -- draft | complete | reviewed
+      created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at       DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- ── Training & certification records ─────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS training_records (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id        INTEGER NOT NULL REFERENCES users(id),
+      equipment_id   INTEGER REFERENCES equipment(id),
+      training_type  TEXT DEFAULT 'equipment',  -- equipment | safety | chemical | lab | other
+      training_name  TEXT NOT NULL,
+      completed_at   DATE NOT NULL,
+      expires_at     DATE,
+      certified_by   TEXT DEFAULT '',
+      notes          TEXT DEFAULT '',
+      created_at     DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 } catch(e) {
   if (!e.message.includes('duplicate column')) console.error('Advanced tables migration error:', e.message);
@@ -757,11 +832,26 @@ const advancedMigrations = [
   "ALTER TABLE users ADD COLUMN totp_enabled INTEGER DEFAULT 0",
   "ALTER TABLE users ADD COLUMN last_login_at DATETIME",
   "ALTER TABLE users ADD COLUMN last_login_ip TEXT DEFAULT ''",
-  // Inventory — unit of measure, supplier FK, reorder URL
+  // Inventory — unit of measure, supplier FK, reorder URL, chemical safety, expiry, location
   "ALTER TABLE inventory ADD COLUMN unit TEXT DEFAULT 'each'",
   "ALTER TABLE inventory ADD COLUMN supplier_id INTEGER",
   "ALTER TABLE inventory ADD COLUMN reorder_url TEXT DEFAULT ''",
   "ALTER TABLE inventory ADD COLUMN notes TEXT DEFAULT ''",
+  "ALTER TABLE inventory ADD COLUMN expiry_date DATE",
+  "ALTER TABLE inventory ADD COLUMN location TEXT DEFAULT ''",
+  "ALTER TABLE inventory ADD COLUMN chemical_cas TEXT DEFAULT ''",
+  "ALTER TABLE inventory ADD COLUMN hazard_class TEXT DEFAULT ''",
+  "ALTER TABLE inventory ADD COLUMN sds_url TEXT DEFAULT ''",
+  // Equipment — rich asset metadata + maintenance / calibration tracking
+  "ALTER TABLE equipment ADD COLUMN manufacturer TEXT DEFAULT ''",
+  "ALTER TABLE equipment ADD COLUMN model TEXT DEFAULT ''",
+  "ALTER TABLE equipment ADD COLUMN serial_number TEXT DEFAULT ''",
+  "ALTER TABLE equipment ADD COLUMN purchase_date DATE",
+  "ALTER TABLE equipment ADD COLUMN maintenance_interval_days INTEGER DEFAULT 0",
+  "ALTER TABLE equipment ADD COLUMN last_maintained_at DATETIME",
+  "ALTER TABLE equipment ADD COLUMN next_maintenance_at DATETIME",
+  "ALTER TABLE equipment ADD COLUMN last_calibrated_at DATETIME",
+  "ALTER TABLE equipment ADD COLUMN next_calibration_at DATETIME",
 ];
 for (const sql of advancedMigrations) {
   try { db.exec(sql); } catch(e) {
@@ -1434,12 +1524,17 @@ app.get('/api/inventory', apiReadLimiter, (req, res) => {
 });
 
 app.post('/api/inventory', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order } = req.body;
+  const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order,
+          expiry_date, location, chemical_cas, hazard_class, sds_url } = req.body;
   if (!sku || !name) return res.status(400).json({ error: 'Missing fields' });
   try {
-    const result = db.prepare('INSERT INTO inventory (lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
-      .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0);
-    // Log initial stock as an adjustment
+    const result = db.prepare(`INSERT INTO inventory
+      (lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order,
+       expiry_date, location, chemical_cas, hazard_class, sds_url)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, unit || 'each',
+           supplier_id || null, reorder_url || '', notes || '', sort_order || 0,
+           expiry_date || null, location || '', chemical_cas || '', hazard_class || '', sds_url || '');
     if ((qty || 0) > 0) {
       db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
         .run(result.lastInsertRowid, req.session.userId || null, qty || 0, 0, qty || 0, 'initial stock');
@@ -1452,13 +1547,18 @@ app.post('/api/inventory', apiWriteLimiter, requireStaff, requireCsrf, (req, res
 });
 
 app.put('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order, adjustment_reason } = req.body;
+  const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order,
+          adjustment_reason, expiry_date, location, chemical_cas, hazard_class, sds_url } = req.body;
   const existing = db.prepare('SELECT qty, min_qty FROM inventory WHERE id=?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'not found' });
 
-  db.prepare('UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, unit=?, supplier_id=?, reorder_url=?, notes=?, sort_order=? WHERE id=?')
+  db.prepare(`UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, unit=?,
+    supplier_id=?, reorder_url=?, notes=?, sort_order=?,
+    expiry_date=?, location=?, chemical_cas=?, hazard_class=?, sds_url=? WHERE id=?`)
     .run(lab || 'A', sku, name, category || '', qty ?? existing.qty, min_qty ?? existing.min_qty,
-         unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0, req.params.id);
+         unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0,
+         expiry_date || null, location || '', chemical_cas || '', hazard_class || '', sds_url || '',
+         req.params.id);
 
   // Log qty change if qty changed
   const newQty = qty ?? existing.qty;
@@ -1495,6 +1595,27 @@ app.get('/api/inventory/:id/log', apiReadLimiter, requireAuth, (req, res) => {
     WHERE a.inventory_id=? ORDER BY a.id DESC LIMIT 200
   `).all(req.params.id);
   res.json(rows);
+});
+
+// Quick quantity adjust — PATCH /api/inventory/:id/adjust { delta, reason }
+app.patch('/api/inventory/:id/adjust', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const delta = parseInt(req.body.delta, 10);
+  if (isNaN(delta) || delta === 0) return res.status(400).json({ error: 'delta required' });
+  const item = db.prepare('SELECT id, qty, min_qty, name, sku FROM inventory WHERE id=?').get(req.params.id);
+  if (!item) return res.status(404).json({ error: 'not found' });
+  const newQty = Math.max(0, item.qty + delta);
+  db.prepare('UPDATE inventory SET qty=? WHERE id=?').run(newQty, item.id);
+  db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
+    .run(item.id, req.session.userId || null, newQty - item.qty, item.qty, newQty, req.body.reason || '');
+  if (newQty <= item.min_qty && newQty < item.qty) {
+    const staff = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active!=0").all();
+    const emails = staff.map(u => u.email).filter(Boolean);
+    if (emails.length) {
+      sendMail(emails, `[LATFS] Low stock alert: ${item.name}`,
+        `Inventory item "${item.name}" (SKU: ${item.sku}) dropped to ${newQty} (min: ${item.min_qty}).\n`);
+    }
+  }
+  res.json({ success: true, qty: newQty });
 });
 
 // Batch quantity adjust — POST /api/inventory/batch-adjust
@@ -1856,16 +1977,31 @@ app.get('/api/equipment', apiReadLimiter, (req, res) => {
   res.json({ total, page: pageNum, limit: pageSize, rows });
 });
 app.post('/api/equipment', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  const { name, sku, category, location, status, notes, sort_order } = req.body;
+  const { name, sku, category, location, status, notes, sort_order,
+          manufacturer, model, serial_number, purchase_date, maintenance_interval_days,
+          last_calibrated_at, next_calibration_at } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
-  const r = db.prepare('INSERT INTO equipment (name, sku, category, location, status, notes, sort_order) VALUES (?,?,?,?,?,?,?)')
-    .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0);
+  const r = db.prepare(`INSERT INTO equipment
+    (name, sku, category, location, status, notes, sort_order,
+     manufacturer, model, serial_number, purchase_date, maintenance_interval_days,
+     last_calibrated_at, next_calibration_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0,
+         manufacturer || '', model || '', serial_number || '', purchase_date || null,
+         maintenance_interval_days || 0, last_calibrated_at || null, next_calibration_at || null);
   res.json({ id: r.lastInsertRowid });
 });
 app.put('/api/equipment/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  const { name, sku, category, location, status, notes, sort_order } = req.body;
-  db.prepare('UPDATE equipment SET name=?, sku=?, category=?, location=?, status=?, notes=?, sort_order=? WHERE id=?')
-    .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0, req.params.id);
+  const { name, sku, category, location, status, notes, sort_order,
+          manufacturer, model, serial_number, purchase_date, maintenance_interval_days,
+          last_maintained_at, next_maintenance_at, last_calibrated_at, next_calibration_at } = req.body;
+  db.prepare(`UPDATE equipment SET name=?, sku=?, category=?, location=?, status=?, notes=?, sort_order=?,
+    manufacturer=?, model=?, serial_number=?, purchase_date=?, maintenance_interval_days=?,
+    last_maintained_at=?, next_maintenance_at=?, last_calibrated_at=?, next_calibration_at=? WHERE id=?`)
+    .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0,
+         manufacturer || '', model || '', serial_number || '', purchase_date || null,
+         maintenance_interval_days || 0, last_maintained_at || null, next_maintenance_at || null,
+         last_calibrated_at || null, next_calibration_at || null, req.params.id);
   res.json({ success: true });
 });
 app.delete('/api/equipment/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1910,6 +2046,271 @@ app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
     FROM equipment_log l LEFT JOIN users u ON u.id = l.user_id
     WHERE l.equipment_id=? ORDER BY l.id DESC LIMIT 100`).all(req.params.id);
   res.json(rows);
+});
+
+app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT l.*, u.username, u.name AS user_name
+    FROM equipment_log l LEFT JOIN users u ON u.id = l.user_id
+    WHERE l.equipment_id=? ORDER BY l.id DESC LIMIT 100`).all(req.params.id);
+  res.json(rows);
+});
+
+// ── Equipment reservations ───────────────────────────────────────────────────
+app.get('/api/equipment/reservations', apiReadLimiter, requireAuth, (req, res) => {
+  const { equipment_id, user_id, upcoming } = req.query;
+  let sql = `SELECT r.*, u.name AS user_name, u.username,
+    e.name AS equipment_name, e.sku AS equipment_sku
+    FROM equipment_reservations r
+    JOIN users u ON u.id = r.user_id
+    JOIN equipment e ON e.id = r.equipment_id WHERE 1=1`;
+  const params = [];
+  if (equipment_id) { sql += ' AND r.equipment_id=?'; params.push(equipment_id); }
+  if (user_id)      { sql += ' AND r.user_id=?';      params.push(user_id); }
+  if (upcoming === '1') { sql += " AND r.end_at >= datetime('now') AND r.status NOT IN ('cancelled','denied')"; }
+  sql += ' ORDER BY r.start_at DESC LIMIT 200';
+  res.json(db.prepare(sql).all(...params));
+});
+app.get('/api/equipment/:id/reservations', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare(`SELECT r.*, u.name AS user_name, u.username
+    FROM equipment_reservations r JOIN users u ON u.id=r.user_id
+    WHERE r.equipment_id=? ORDER BY r.start_at DESC LIMIT 100`).all(req.params.id);
+  res.json(rows);
+});
+app.post('/api/equipment/:id/reservations', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { start_at, end_at, purpose, notes } = req.body;
+  if (!start_at || !end_at) return res.status(400).json({ error: 'start_at and end_at required' });
+  const eq = db.prepare('SELECT id FROM equipment WHERE id=?').get(req.params.id);
+  if (!eq) return res.status(404).json({ error: 'equipment not found' });
+  // Conflict check: overlapping approved/pending reservations
+  const conflict = db.prepare(`SELECT id FROM equipment_reservations WHERE equipment_id=?
+    AND status IN ('pending','approved')
+    AND start_at < ? AND end_at > ?`).get(req.params.id, end_at, start_at);
+  if (conflict) return res.status(409).json({ error: 'Time slot conflicts with an existing reservation' });
+  const r = db.prepare(`INSERT INTO equipment_reservations
+    (equipment_id, user_id, start_at, end_at, purpose, notes, status)
+    VALUES (?,?,?,?,?,?,?)`)
+    .run(req.params.id, req.session.userId, start_at, end_at, purpose || '', notes || '', 'pending');
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/equipment/reservations/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const resv = db.prepare('SELECT * FROM equipment_reservations WHERE id=?').get(req.params.id);
+  if (!resv) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  const isStaff = role === 'admin' || role === 'professor';
+  const isOwner = resv.user_id === req.session.userId;
+  // Only staff can approve/deny; owner or staff can cancel
+  const { status, notes, start_at, end_at, purpose } = req.body;
+  if ((status === 'approved' || status === 'denied') && !isStaff)
+    return res.status(403).json({ error: 'Only staff can approve or deny reservations' });
+  if (status === 'cancelled' && !isOwner && !isStaff)
+    return res.status(403).json({ error: 'Only the requestor or staff can cancel' });
+  const sets = [], params = [];
+  if (status)   { sets.push('status=?');   params.push(status); }
+  if (notes !== undefined) { sets.push('notes=?'); params.push(notes); }
+  if (start_at) { sets.push('start_at=?'); params.push(start_at); }
+  if (end_at)   { sets.push('end_at=?');   params.push(end_at); }
+  if (purpose !== undefined) { sets.push('purpose=?'); params.push(purpose); }
+  if (status === 'approved') { sets.push('approved_by=?'); params.push(req.session.userId); }
+  if (!sets.length) return res.json({ success: true });
+  params.push(req.params.id);
+  db.prepare(`UPDATE equipment_reservations SET ${sets.join(', ')} WHERE id=?`).run(...params);
+  res.json({ success: true });
+});
+app.delete('/api/equipment/reservations/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const resv = db.prepare('SELECT user_id FROM equipment_reservations WHERE id=?').get(req.params.id);
+  if (!resv) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  if (resv.user_id !== req.session.userId && role !== 'admin' && role !== 'professor')
+    return res.status(403).json({ error: 'Forbidden' });
+  db.prepare('DELETE FROM equipment_reservations WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// ── Equipment maintenance records ────────────────────────────────────────────
+app.get('/api/equipment/:id/maintenance', apiReadLimiter, requireAuth, (req, res) => {
+  const rows = db.prepare(`SELECT m.*, u.name AS created_by_name
+    FROM equipment_maintenance m LEFT JOIN users u ON u.id=m.created_by
+    WHERE m.equipment_id=? ORDER BY m.id DESC LIMIT 100`).all(req.params.id);
+  res.json(rows);
+});
+app.post('/api/equipment/:id/maintenance', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { maint_type, scheduled_at, completed_at, performed_by, cost, notes, next_due_at } = req.body;
+  if (!maint_type) return res.status(400).json({ error: 'maint_type required' });
+  const r = db.prepare(`INSERT INTO equipment_maintenance
+    (equipment_id, maint_type, scheduled_at, completed_at, performed_by, cost, notes, next_due_at, created_by)
+    VALUES (?,?,?,?,?,?,?,?,?)`)
+    .run(req.params.id, maint_type, scheduled_at || null, completed_at || null,
+         performed_by || '', cost || null, notes || '', next_due_at || null, req.session.userId);
+  // Update equipment last_maintained_at / next_maintenance_at if this is a completed maintenance
+  if (completed_at && (maint_type === 'maintenance' || maint_type === 'repair')) {
+    db.prepare('UPDATE equipment SET last_maintained_at=?, next_maintenance_at=? WHERE id=?')
+      .run(completed_at, next_due_at || null, req.params.id);
+  }
+  if (completed_at && maint_type === 'calibration') {
+    db.prepare('UPDATE equipment SET last_calibrated_at=?, next_calibration_at=? WHERE id=?')
+      .run(completed_at, next_due_at || null, req.params.id);
+  }
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/equipment/maintenance/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { maint_type, scheduled_at, completed_at, performed_by, cost, notes, next_due_at } = req.body;
+  db.prepare(`UPDATE equipment_maintenance SET maint_type=?, scheduled_at=?, completed_at=?,
+    performed_by=?, cost=?, notes=?, next_due_at=? WHERE id=?`)
+    .run(maint_type, scheduled_at || null, completed_at || null,
+         performed_by || '', cost || null, notes || '', next_due_at || null, req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/equipment/maintenance/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM equipment_maintenance WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// ── Sample registry ───────────────────────────────────────────────────────────
+app.get('/api/samples', apiReadLimiter, requireAuth, (req, res) => {
+  const { status, project_id, search } = req.query;
+  let sql = `SELECT s.*, u.name AS created_by_name, p.title AS project_title
+    FROM sample_registry s
+    LEFT JOIN users u ON u.id = s.created_by_id
+    LEFT JOIN projects p ON p.id = s.project_id WHERE 1=1`;
+  const params = [];
+  if (status)     { sql += ' AND s.status=?';     params.push(status); }
+  if (project_id) { sql += ' AND s.project_id=?'; params.push(project_id); }
+  if (search) {
+    sql += ' AND (s.name LIKE ? OR s.location LIKE ? OR s.sample_type LIKE ?)';
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+  sql += ' ORDER BY s.created_at DESC LIMIT 500';
+  res.json(db.prepare(sql).all(...params));
+});
+app.post('/api/samples', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { name, sample_type, location, project_id, status, expiry_date, qty, unit, description, notes } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const r = db.prepare(`INSERT INTO sample_registry
+    (name, sample_type, location, project_id, created_by_id, status, expiry_date, qty, unit, description, notes)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(str(name,300), sample_type || 'other', location || '', project_id || null, req.session.userId,
+         status || 'active', expiry_date || null, qty || 0, unit || 'unit', description || '', notes || '');
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/samples/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const smpl = db.prepare('SELECT created_by_id FROM sample_registry WHERE id=?').get(req.params.id);
+  if (!smpl) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  if (smpl.created_by_id !== req.session.userId && role !== 'admin' && role !== 'professor')
+    return res.status(403).json({ error: 'Forbidden' });
+  const { name, sample_type, location, project_id, status, expiry_date, qty, unit, description, notes } = req.body;
+  db.prepare(`UPDATE sample_registry SET name=?, sample_type=?, location=?, project_id=?,
+    status=?, expiry_date=?, qty=?, unit=?, description=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+    .run(str(name,300), sample_type || 'other', location || '', project_id || null,
+         status || 'active', expiry_date || null, qty || 0, unit || 'unit', description || '', notes || '', req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/samples/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM sample_registry WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// ── Digital lab notebooks ─────────────────────────────────────────────────────
+app.get('/api/lab-notebooks', apiReadLimiter, requireAuth, (req, res) => {
+  const { mine, project_id, search } = req.query;
+  const role = req.session.role || 'student';
+  let sql = `SELECT n.*, u.name AS author_name, p.title AS project_title
+    FROM lab_notebooks n
+    LEFT JOIN users u ON u.id=n.user_id
+    LEFT JOIN projects p ON p.id=n.project_id WHERE 1=1`;
+  const params = [];
+  // Non-staff can only see their own entries
+  if (mine === '1' || (role !== 'admin' && role !== 'professor')) {
+    sql += ' AND n.user_id=?'; params.push(req.session.userId);
+  }
+  if (project_id) { sql += ' AND n.project_id=?'; params.push(project_id); }
+  if (search) {
+    sql += ' AND (n.title LIKE ? OR n.content LIKE ? OR n.tags LIKE ?)';
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+  sql += ' ORDER BY n.experiment_date DESC, n.id DESC LIMIT 200';
+  res.json(db.prepare(sql).all(...params));
+});
+app.get('/api/lab-notebooks/:id', apiReadLimiter, requireAuth, (req, res) => {
+  const n = db.prepare(`SELECT n.*, u.name AS author_name, p.title AS project_title
+    FROM lab_notebooks n LEFT JOIN users u ON u.id=n.user_id LEFT JOIN projects p ON p.id=n.project_id
+    WHERE n.id=?`).get(req.params.id);
+  if (!n) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  if (n.user_id !== req.session.userId && role !== 'admin' && role !== 'professor')
+    return res.status(403).json({ error: 'Forbidden' });
+  res.json(n);
+});
+app.post('/api/lab-notebooks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const { title, project_id, experiment_date, content, tags, status } = req.body;
+  if (!title || !experiment_date) return res.status(400).json({ error: 'title and experiment_date required' });
+  const r = db.prepare(`INSERT INTO lab_notebooks (title, user_id, project_id, experiment_date, content, tags, status)
+    VALUES (?,?,?,?,?,?,?)`)
+    .run(str(title,500), req.session.userId, project_id || null, experiment_date,
+         content || '', tags || '', status || 'draft');
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/lab-notebooks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const n = db.prepare('SELECT user_id FROM lab_notebooks WHERE id=?').get(req.params.id);
+  if (!n) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  if (n.user_id !== req.session.userId && role !== 'admin' && role !== 'professor')
+    return res.status(403).json({ error: 'Forbidden' });
+  const { title, project_id, experiment_date, content, tags, status } = req.body;
+  db.prepare(`UPDATE lab_notebooks SET title=?, project_id=?, experiment_date=?, content=?, tags=?,
+    status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+    .run(str(title,500), project_id || null, experiment_date, content || '', tags || '', status || 'draft', req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/lab-notebooks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const n = db.prepare('SELECT user_id FROM lab_notebooks WHERE id=?').get(req.params.id);
+  if (!n) return res.status(404).json({ error: 'not found' });
+  const role = req.session.role || 'student';
+  if (n.user_id !== req.session.userId && role !== 'admin' && role !== 'professor')
+    return res.status(403).json({ error: 'Forbidden' });
+  db.prepare('DELETE FROM lab_notebooks WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// ── Training & certification records ─────────────────────────────────────────
+app.get('/api/training', apiReadLimiter, requireAuth, (req, res) => {
+  const { user_id, equipment_id, expiring_soon } = req.query;
+  let sql = `SELECT t.*, u.name AS user_name, u.username,
+    e.name AS equipment_name
+    FROM training_records t
+    JOIN users u ON u.id=t.user_id
+    LEFT JOIN equipment e ON e.id=t.equipment_id WHERE 1=1`;
+  const params = [];
+  if (user_id)      { sql += ' AND t.user_id=?';      params.push(user_id); }
+  if (equipment_id) { sql += ' AND t.equipment_id=?'; params.push(equipment_id); }
+  if (expiring_soon === '1') {
+    sql += " AND t.expires_at IS NOT NULL AND date(t.expires_at) <= date('now','+60 days')";
+  }
+  sql += ' ORDER BY t.completed_at DESC LIMIT 500';
+  res.json(db.prepare(sql).all(...params));
+});
+app.post('/api/training', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { user_id, equipment_id, training_type, training_name, completed_at, expires_at, certified_by, notes } = req.body;
+  if (!user_id || !training_name || !completed_at) return res.status(400).json({ error: 'user_id, training_name, completed_at required' });
+  const r = db.prepare(`INSERT INTO training_records
+    (user_id, equipment_id, training_type, training_name, completed_at, expires_at, certified_by, notes)
+    VALUES (?,?,?,?,?,?,?,?)`)
+    .run(user_id, equipment_id || null, training_type || 'equipment', str(training_name,300),
+         completed_at, expires_at || null, certified_by || '', notes || '');
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/training/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { user_id, equipment_id, training_type, training_name, completed_at, expires_at, certified_by, notes } = req.body;
+  db.prepare(`UPDATE training_records SET user_id=?, equipment_id=?, training_type=?, training_name=?,
+    completed_at=?, expires_at=?, certified_by=?, notes=? WHERE id=?`)
+    .run(user_id, equipment_id || null, training_type || 'equipment', str(training_name,300),
+         completed_at, expires_at || null, certified_by || '', notes || '', req.params.id);
+  res.json({ success: true });
+});
+app.delete('/api/training/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  db.prepare('DELETE FROM training_records WHERE id=?').run(req.params.id);
+  res.json({ success: true });
 });
 
 // ---- Issues ----

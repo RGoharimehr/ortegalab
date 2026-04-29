@@ -637,6 +637,9 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
       <button class="p-nav-item" data-route="equipment"><span>Equipment</span></button>
       <button class="p-nav-item" data-route="inventory"><span>Inventory</span></button>
       <button class="p-nav-item" data-route="issues"><span>Issues / Requests</span><span class="p-nav-badge" id="issuesBadge"></span></button>
+      <button class="p-nav-item" data-route="samples"><span>Samples</span></button>
+      <button class="p-nav-item" data-route="lab-notebook"><span>Lab Notebook</span></button>
+      <button class="p-nav-item" data-route="training"><span>Training &amp; Certs</span></button>
       <button class="p-nav-item" data-route="profile"><span>My Profile</span></button>
     </nav>
 
@@ -806,11 +809,12 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
     <section class="p-section" data-section="equipment">
       <div class="p-page-head">
         <div>
-          <div class="eyebrow" style="color:var(--gold-700);">Equipment & supplies</div>
+          <div class="eyebrow" style="color:var(--gold-700);">Equipment &amp; supplies</div>
           <h1 class="p-h1">Equipment</h1>
           <p class="p-h1-sub" id="equipmentSub">Check items out and check them back in. Last-user is tracked.</p>
         </div>
         <div class="p-actions">
+          <button class="btn-ghost-sm" id="myResvBtn">My reservations</button>
           <button class="btn-primary-sm staff-only hidden" id="addEquipBtn">+ Add item</button>
         </div>
       </div>
@@ -838,7 +842,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <div style="flex:1;">Category</div>
           <div style="flex:1;">Last used by</div>
           <div style="flex:1;">Status</div>
-          <div style="width:160px;">Actions</div>
+          <div style="width:200px;">Actions</div>
         </div>
         <div id="eqList"></div>
       </div>
@@ -889,12 +893,20 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <p class="p-h1-sub" id="inventorySub">Track consumables, chemicals, reagents and supplies.</p>
         </div>
         <div class="p-actions">
+          <a class="btn-ghost-sm" href="/api/inventory/export.csv" download>⬇ CSV</a>
           <button class="btn-primary-sm staff-only hidden" id="addInvBtn">+ Add item</button>
         </div>
       </div>
       <div class="p-inv-toolbar">
         <div class="p-inv-search"><input class="p-inv-input" id="invSearch" placeholder="Search items…"></div>
         <select class="p-inv-select" id="invLab"><option value="">All labs</option></select>
+        <select class="p-inv-select" id="invCatFilter"><option value="">All categories</option></select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;">
+          <input type="checkbox" id="invLowStock" style="width:auto;"> Low stock only
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;">
+          <input type="checkbox" id="invExpiring" style="width:auto;"> Expiring ≤30 days
+        </label>
       </div>
       <div id="invList"></div>
     </section>
@@ -952,6 +964,76 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div class="p-card-head"><div class="p-card-title">Two-factor authentication (2FA)</div></div>
         <div id="twoFaCard" style="padding:4px 0;font-size:13px;color:var(--fg-3);">Loading…</div>
       </div>
+    </section>
+
+    <!-- Samples -->
+    <section class="p-section" data-section="samples">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Lab management</div>
+          <h1 class="p-h1">Sample Registry</h1>
+          <p class="p-h1-sub">Track physical samples — chemicals, biological, and research specimens.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm" id="addSampleBtn">+ New sample</button>
+        </div>
+      </div>
+      <div class="p-inv-toolbar">
+        <div class="p-inv-search"><input class="p-inv-input" id="sampleSearch" placeholder="Search samples…"></div>
+        <select class="p-inv-select" id="sampleStatus">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="depleted">Depleted</option>
+          <option value="disposed">Disposed</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+      <div id="sampleList" class="p-inv-table"></div>
+    </section>
+
+    <!-- Lab Notebook -->
+    <section class="p-section" data-section="lab-notebook">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Lab management</div>
+          <h1 class="p-h1">Lab Notebook</h1>
+          <p class="p-h1-sub">Digital experiment log — record, search and review your lab entries.</p>
+        </div>
+        <div class="p-actions">
+          <input class="p-inv-input" id="notebookSearch" placeholder="Search entries…" style="width:200px;">
+          <button class="btn-primary-sm" id="addNotebookBtn">+ New entry</button>
+        </div>
+      </div>
+      <div id="notebookList"></div>
+    </section>
+
+    <!-- Training & Certifications -->
+    <section class="p-section" data-section="training">
+      <div class="p-page-head">
+        <div>
+          <div class="eyebrow" style="color:var(--gold-700);">Lab management</div>
+          <h1 class="p-h1">Training &amp; Certifications</h1>
+          <p class="p-h1-sub">Track who is trained and certified for each piece of equipment.</p>
+        </div>
+        <div class="p-actions">
+          <button class="btn-primary-sm staff-only hidden" id="addTrainingBtn">+ Add record</button>
+        </div>
+      </div>
+      <div class="p-inv-toolbar">
+        <select class="p-inv-select" id="trainingUserFilter"><option value="">All members</option></select>
+        <select class="p-inv-select" id="trainingTypeFilter">
+          <option value="">All types</option>
+          <option value="equipment">Equipment</option>
+          <option value="safety">Safety</option>
+          <option value="chemical">Chemical</option>
+          <option value="lab">Lab procedures</option>
+          <option value="other">Other</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;">
+          <input type="checkbox" id="trainingExpiringFilter" style="width:auto;"> Expiring soon
+        </label>
+      </div>
+      <div id="trainingList" class="p-inv-table"></div>
     </section>
 
     <!-- Lab members (staff only) -->
@@ -1122,14 +1204,17 @@ document.addEventListener('click', e => {
 function goRoute(name){
   $$('.p-section').forEach(s => s.classList.toggle('active', s.dataset.section === name));
   $$('.p-nav-item').forEach(b => b.classList.toggle('active', b.dataset.route === name));
-  if(name === 'dashboard') loadDashboard();
-  if(name === 'schedule') loadSchedule();
-  if(name === 'tasks') loadTasks();
-  if(name === 'meetings') loadMeetings();
-  if(name === 'equipment') loadEquipment();
-  if(name === 'inventory') loadInventory();
-  if(name === 'issues') loadIssues();
-  if(name === 'profile') loadProfile();
+  if(name === 'dashboard')    loadDashboard();
+  if(name === 'schedule')     loadSchedule();
+  if(name === 'tasks')        loadTasks();
+  if(name === 'meetings')     loadMeetings();
+  if(name === 'equipment')    loadEquipment();
+  if(name === 'inventory')    loadInventory();
+  if(name === 'issues')       loadIssues();
+  if(name === 'samples')      loadSamples();
+  if(name === 'lab-notebook') loadNotebook();
+  if(name === 'training')     loadTraining();
+  if(name === 'profile')      loadProfile();
   if(name === 'people-admin') loadUsers();
 }
 
@@ -1585,11 +1670,29 @@ function openMeetingModal(m){
 
 /* ---------- Equipment ---------- */
 let EQ_CAT='', EQ_STATUS='', EQ_QUERY='';
+
+function _eqMaintBadge(x){
+  const today = new Date(); today.setHours(0,0,0,0);
+  if(x.next_maintenance_at){
+    const due = new Date(x.next_maintenance_at);
+    const days = Math.round((due-today)/(86400000));
+    if(days < 0)  return `<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">⚠ Maint overdue</span>`;
+    if(days <= 14) return `<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;margin-left:4px;">Maint due ${days}d</span>`;
+  }
+  if(x.next_calibration_at){
+    const due = new Date(x.next_calibration_at);
+    const days = Math.round((due-today)/(86400000));
+    if(days < 0)  return `<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">⚠ Cal overdue</span>`;
+    if(days <= 14) return `<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;margin-left:4px;">Cal due ${days}d</span>`;
+  }
+  return '';
+}
+
 async function loadEquipment(){
   try {
     const eq = unwrap(await api('/api/equipment'));
     let filtered = eq;
-    if(EQ_CAT) filtered = filtered.filter(x => x.category === EQ_CAT);
+    if(EQ_CAT)    filtered = filtered.filter(x => x.category === EQ_CAT);
     if(EQ_STATUS) filtered = filtered.filter(x => x.status === EQ_STATUS);
     if(EQ_QUERY){
       const q = EQ_QUERY.toLowerCase();
@@ -1597,26 +1700,30 @@ async function loadEquipment(){
     }
     const list = $('#eqList');
     if(!filtered.length){ list.innerHTML='<div class="empty">No equipment matches.</div>'; return; }
+    const isStaff = ME.role==='admin' || ME.role==='professor';
     list.innerHTML = filtered.map(x => {
       const statusCls = x.status==='available' ? 'p-eq-status-available'
                        : x.status==='in_use' ? 'p-eq-status-out'
                        : x.status==='broken' ? 'p-eq-status-broken'
                        : 'p-eq-status-maint';
       return `<div class="p-inv-row">
-        <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div>
-          <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.location||'')}</div>
+        <div style="flex:2;">
+          <div class="p-inv-name">${escapeHTML(x.name)}${_eqMaintBadge(x)}</div>
+          <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.location||'')}${x.manufacturer?` · ${escapeHTML(x.manufacturer)}`:''}</div>
         </div>
         <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
         <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.category||'')}</div>
         <div style="flex:1;font-size:12px;">${x.last_used_user_name?escapeHTML(x.last_used_user_name):'<span style="color:var(--fg-4);">never</span>'}<br>
           <span style="font-size:11px;color:var(--fg-4);">${x.last_used_at?fmtDT(x.last_used_at):''}</span></div>
         <div style="flex:1;"><span class="${statusCls}">${escapeHTML((x.status||'').replace('_',' '))}</span></div>
-        <div style="width:160px; display:flex; gap:6px; flex-wrap:wrap;">
+        <div style="width:200px; display:flex; gap:5px; flex-wrap:wrap;">
           ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="checkout" data-eq-id="${x.id}">Check out</button>` : ''}
+          ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="reserve"  data-eq-id="${x.id}">Reserve</button>` : ''}
           ${x.status==='in_use' && x.current_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
-          ${(ME.role==='admin'||ME.role==='professor') && x.status==='in_use' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
-          <button class="btn-ghost-sm" data-eq-action="log" data-eq-id="${x.id}">Log</button>
-          ${(ME.role==='admin'||ME.role==='professor') ? `<button class="btn-ghost-sm" data-eq-action="edit" data-eq-id="${x.id}">Edit</button>` : ''}
+          ${isStaff && x.status==='in_use' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
+          <button class="btn-ghost-sm" data-eq-action="log" data-eq-id="${x.id}">History</button>
+          ${isStaff ? `<button class="btn-ghost-sm" data-eq-action="maint" data-eq-id="${x.id}">Maint.</button>` : ''}
+          ${isStaff ? `<button class="btn-ghost-sm" data-eq-action="edit" data-eq-id="${x.id}">Edit</button>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -1630,6 +1737,27 @@ $('#eqTabs').addEventListener('click', e => {
 $('#eqStatus').addEventListener('change', e => { EQ_STATUS = e.target.value; loadEquipment(); });
 $('#eqSearch').addEventListener('input', e => { EQ_QUERY = e.target.value; loadEquipment(); });
 $('#addEquipBtn').addEventListener('click', () => openEquipModal());
+$('#myResvBtn').addEventListener('click', async () => {
+  try {
+    const resvs = await api(`/api/equipment/reservations?user_id=${ME.id}&upcoming=1`);
+    modal(`<h2>My equipment reservations</h2>
+      ${resvs.length ? resvs.map(r=>`
+        <div class="p-log-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:8px 0;">
+          <div style="font-weight:600;">${escapeHTML(r.equipment_name)}</div>
+          <div style="font-size:12px;color:var(--fg-3);">${fmtDate(r.start_at)} → ${fmtDate(r.end_at)}</div>
+          <div style="font-size:12px;">${escapeHTML(r.purpose||'—')}</div>
+          <span class="p-tag-sm p-tag-outline">${escapeHTML(r.status)}</span>
+          ${r.status==='pending'||r.status==='approved' ? `<button class="btn-ghost-sm" data-resv-cancel="${r.id}" style="margin-top:2px;">Cancel</button>` : ''}
+        </div>`).join('') : '<div class="empty">No upcoming reservations.</div>'}`,
+      null, '', 'Close');
+    document.querySelectorAll('[data-resv-cancel]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try { await api(`/api/equipment/reservations/${btn.dataset.resvCancel}`,{method:'PUT',body:{status:'cancelled'}}); closeModal(); loadEquipment(); }
+        catch(err){ alert(err.message); }
+      });
+    });
+  } catch(err){ alert(err.message); }
+});
 
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-eq-action]'); if(!b) return;
@@ -1642,26 +1770,119 @@ document.addEventListener('click', async e => {
     const note = prompt('Optional return note:')||'';
     try { await api('/api/equipment/'+id+'/checkin',{method:'POST', body:{note}}); loadEquipment(); loadDashboard(); }
     catch(err){ alert(err.message); }
+  } else if(action==='reserve'){
+    const today = new Date().toISOString().slice(0,16);
+    modal(`<h2>Reserve equipment</h2>
+      <label>Start date/time<input id="resvStart" type="datetime-local" value="${today}"></label>
+      <label>End date/time<input id="resvEnd"   type="datetime-local"></label>
+      <label>Purpose<input id="resvPurpose" placeholder="e.g. Experiment XYZ"></label>`,
+      async () => {
+        const s = $('#resvStart').value, en = $('#resvEnd').value;
+        if(!s||!en) throw new Error('Start and end are required');
+        if(s >= en) throw new Error('End must be after start');
+        await api(`/api/equipment/${id}/reservations`,{method:'POST', body:{start_at:s, end_at:en, purpose:$('#resvPurpose').value}});
+        alert('Reservation requested. A staff member will approve it.');
+      });
   } else if(action==='log'){
     try {
-      const log = await api('/api/equipment/'+id+'/log');
-      const eq = (unwrap(await api('/api/equipment'))).find(x => x.id == id);
-      modal(`<h2>${escapeHTML(eq?.name||'Equipment')} — usage log</h2>
-        <p style="font-size:12px;color:var(--fg-3);">SKU ${escapeHTML(eq?.sku||'—')}</p>
-        ${log.length ? log.map(l => `
-          <div class="p-log-row">
-            <span class="p-log-when">${fmtDT(l.action_at)}</span>
+      const [log, maint, resvs, eq] = await Promise.all([
+        api('/api/equipment/'+id+'/log'),
+        api('/api/equipment/'+id+'/maintenance'),
+        api('/api/equipment/'+id+'/reservations'),
+        api('/api/equipment').then(r => unwrap(r).find(x => x.id == id))
+      ]);
+      const isStaff = ME.role==='admin'||ME.role==='professor';
+      modal(`<h2>${escapeHTML(eq?.name||'Equipment')} — history</h2>
+        <p style="font-size:12px;color:var(--fg-3);">SKU ${escapeHTML(eq?.sku||'—')} · ${escapeHTML(eq?.manufacturer||'')} ${escapeHTML(eq?.model||'')}</p>
+        <div class="p-tabs" style="margin-bottom:12px;">
+          <button class="p-tab active" data-htab="usage">Usage log</button>
+          <button class="p-tab" data-htab="maint">Maintenance</button>
+          <button class="p-tab" data-htab="resvs">Reservations</button>
+        </div>
+        <div id="htUsage">
+          ${log.length ? log.map(l=>`<div class="p-log-row">
+            <span class="p-log-when">${fmtDT(l.started_at||l.created_at)}</span>
             <span class="p-log-act ${l.action}">${escapeHTML(l.action)}</span>
             <span class="p-log-who">${escapeHTML(l.user_name||l.username||'?')}</span>
             <span class="p-log-note">${escapeHTML(l.note||'')}</span>
-          </div>`).join('') : '<div class="empty">No usage history.</div>'}`,
+          </div>`).join('') : '<div class="empty">No usage history.</div>'}
+        </div>
+        <div id="htMaint" style="display:none;">
+          ${isStaff ? `<button class="btn-ghost-sm" id="addMaintBtn" style="margin-bottom:10px;">+ Add maintenance record</button>` : ''}
+          ${maint.length ? maint.map(m=>`<div class="p-log-row">
+            <span class="p-log-when">${fmtDate(m.completed_at||m.scheduled_at)}</span>
+            <span class="p-log-act">${escapeHTML(m.maint_type)}</span>
+            <span class="p-log-who">${escapeHTML(m.performed_by||'—')}</span>
+            <span class="p-log-note">${escapeHTML(m.notes||'')}${m.next_due_at?' · Next: '+fmtDate(m.next_due_at):''}</span>
+          </div>`).join('') : '<div class="empty">No maintenance records.</div>'}
+        </div>
+        <div id="htResvs" style="display:none;">
+          ${resvs.length ? resvs.map(r=>`<div class="p-log-row">
+            <span class="p-log-when">${fmtDate(r.start_at)}</span>
+            <span class="p-log-act">${escapeHTML(r.status)}</span>
+            <span class="p-log-who">${escapeHTML(r.user_name||r.username||'?')}</span>
+            <span class="p-log-note">${escapeHTML(r.purpose||'')}
+              ${isStaff && r.status==='pending' ? `<button class="btn-ghost-sm" data-approve-resv="${r.id}">✓ Approve</button> <button class="btn-ghost-sm" data-deny-resv="${r.id}">✗ Deny</button>` : ''}
+            </span>
+          </div>`).join('') : '<div class="empty">No reservations.</div>'}
+        </div>`,
         null, '', 'Close');
+      // Tab switching
+      document.querySelectorAll('[data-htab]').forEach(t => t.addEventListener('click', () => {
+        document.querySelectorAll('[data-htab]').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById('htUsage').style.display = t.dataset.htab==='usage'?'':'none';
+        document.getElementById('htMaint').style.display = t.dataset.htab==='maint'?'':'none';
+        document.getElementById('htResvs').style.display = t.dataset.htab==='resvs'?'':'none';
+      }));
+      // Approve/deny reservations (staff)
+      document.querySelectorAll('[data-approve-resv],[data-deny-resv]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const rid = btn.dataset.approveResv || btn.dataset.denyResv;
+          const st  = btn.dataset.approveResv ? 'approved' : 'denied';
+          try { await api(`/api/equipment/reservations/${rid}`,{method:'PUT',body:{status:st}}); closeModal(); loadEquipment(); }
+          catch(err){ alert(err.message); }
+        });
+      });
+      // Add maintenance record
+      const addMaintBtn = document.getElementById('addMaintBtn');
+      if(addMaintBtn) addMaintBtn.addEventListener('click', () => openMaintModal(id));
     } catch(err){ alert(err.message); }
+  } else if(action==='maint'){
+    openMaintModal(id);
   } else if(action==='edit'){
     try { const eq = (unwrap(await api('/api/equipment'))).find(x=>x.id==id); openEquipModal(eq); }
     catch(err){ alert(err.message); }
   }
 });
+
+function openMaintModal(equipId, rec){
+  const today = new Date().toISOString().slice(0,10);
+  modal(`<h2>${rec?'Edit':'Add'} maintenance record</h2>
+    <label>Type<select id="mType">
+      ${['maintenance','calibration','repair','inspection'].map(t=>`<option value="${t}" ${rec?.maint_type===t?'selected':''}>${t}</option>`).join('')}
+    </select></label>
+    <label>Scheduled date<input id="mSched" type="date" value="${rec?.scheduled_at?.slice(0,10)||''}"></label>
+    <label>Completed date<input id="mComp" type="date" value="${rec?.completed_at?.slice(0,10)||today}"></label>
+    <label>Performed by<input id="mPerf" value="${escapeHTML(rec?.performed_by||'')}"></label>
+    <label>Cost (USD)<input id="mCost" type="number" step="0.01" value="${rec?.cost||''}"></label>
+    <label>Next due date<input id="mNextDue" type="date" value="${rec?.next_due_at?.slice(0,10)||''}"></label>
+    <label>Notes<textarea id="mNotes">${escapeHTML(rec?.notes||'')}</textarea></label>`,
+    async () => {
+      const body = {
+        maint_type: $('#mType').value,
+        scheduled_at: $('#mSched').value||null,
+        completed_at: $('#mComp').value||null,
+        performed_by: $('#mPerf').value,
+        cost: Number($('#mCost').value)||null,
+        next_due_at: $('#mNextDue').value||null,
+        notes: $('#mNotes').value
+      };
+      if(rec) await api(`/api/equipment/maintenance/${rec.id}`,{method:'PUT',body});
+      else    await api(`/api/equipment/${equipId}/maintenance`,{method:'POST',body});
+      loadEquipment();
+    });
+}
 
 function openEquipModal(eq){
   const isEdit = !!eq;
@@ -1672,6 +1893,13 @@ function openEquipModal(eq){
       ${['rig','instrument','supply','tool'].map(c=>`<option value="${c}" ${eq?.category===c?'selected':''}>${c}</option>`).join('')}
     </select></label>
     <label>Location<input id="eqLoc" value="${escapeHTML(eq?.location||'')}"></label>
+    <label>Manufacturer<input id="eqMfr" value="${escapeHTML(eq?.manufacturer||'')}"></label>
+    <label>Model<input id="eqModel" value="${escapeHTML(eq?.model||'')}"></label>
+    <label>Serial number<input id="eqSerial" value="${escapeHTML(eq?.serial_number||'')}"></label>
+    <label>Purchase date<input id="eqPurch" type="date" value="${eq?.purchase_date||''}"></label>
+    <label>Maintenance interval (days, 0=none)<input id="eqMaintInt" type="number" min="0" value="${eq?.maintenance_interval_days||0}"></label>
+    <label>Last calibrated<input id="eqCalLast" type="date" value="${eq?.last_calibrated_at?.slice(0,10)||''}"></label>
+    <label>Next calibration due<input id="eqCalNext" type="date" value="${eq?.next_calibration_at?.slice(0,10)||''}"></label>
     <label>Status<select id="eqSt">
       ${['available','in_use','maintenance','broken'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
     </select></label>
@@ -1682,6 +1910,13 @@ function openEquipModal(eq){
         sku: $('#eqTag').value,
         category: $('#eqCat').value,
         location: $('#eqLoc').value,
+        manufacturer: $('#eqMfr').value,
+        model: $('#eqModel').value,
+        serial_number: $('#eqSerial').value,
+        purchase_date: $('#eqPurch').value||null,
+        maintenance_interval_days: Number($('#eqMaintInt').value)||0,
+        last_calibrated_at: $('#eqCalLast').value||null,
+        next_calibration_at: $('#eqCalNext').value||null,
         status: $('#eqSt').value,
         notes: $('#eqNotes').value
       };
@@ -1702,46 +1937,125 @@ function openEquipModal(eq){
 }
 
 /* ---------- Inventory ---------- */
-let INV_LAB = '', INV_QUERY = '';
+let INV_LAB = '', INV_QUERY = '', INV_CAT = '', INV_LOW_STOCK = false, INV_EXPIRING = false;
+
+function _expiryBadge(expiry_date){
+  if(!expiry_date) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const exp   = new Date(expiry_date);
+  const days  = Math.round((exp - today) / 86400000);
+  if(days < 0)   return `<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;">Expired</span>`;
+  if(days <= 30) return `<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;">Exp ${days}d</span>`;
+  return `<span style="font-size:10px;color:var(--fg-4);">Exp ${fmtDate(expiry_date)}</span>`;
+}
+
+function _hazardBadge(h, sds){
+  if(!h && !sds) return '';
+  const icon = { 'flammable':'🔥','corrosive':'⚗','toxic':'☠','explosive':'💥','oxidizer':'🌀','irritant':'⚠','environmental':'🌿' }[h?.toLowerCase()] || '⚠';
+  const badges = [];
+  if(h)   badges.push(`<span title="Hazard: ${escapeHTML(h)}" style="font-size:11px;cursor:default;">${icon} ${escapeHTML(h)}</span>`);
+  if(sds) badges.push(`<a href="${escapeHTML(sds)}" target="_blank" style="font-size:11px;color:var(--gold-700);" title="Safety Data Sheet">SDS ↗</a>`);
+  return `<span style="display:inline-flex;gap:6px;">${badges.join('')}</span>`;
+}
+
 async function loadInventory(){
   try {
     let items = unwrap(await api('/api/inventory'));
     // populate lab filter
     const labs = [...new Set(items.map(x=>x.lab||'').filter(Boolean))];
     const sel = $('#invLab');
-    const cur = INV_LAB || sel.value;
-    sel.innerHTML = '<option value="">All labs</option>' + labs.map(l=>`<option value="${l}" ${l===cur?'selected':''}>${escapeHTML(l)}</option>`).join('');
+    const curLab = INV_LAB || sel.value;
+    sel.innerHTML = '<option value="">All labs</option>' + labs.map(l=>`<option value="${l}" ${l===curLab?'selected':''}>${escapeHTML(l)}</option>`).join('');
+    // populate category filter
+    const cats = [...new Set(items.map(x=>x.category||'').filter(Boolean))].sort();
+    const catSel = $('#invCatFilter');
+    const curCat = INV_CAT || catSel.value;
+    catSel.innerHTML = '<option value="">All categories</option>' + cats.map(c=>`<option value="${c}" ${c===curCat?'selected':''}>${escapeHTML(c)}</option>`).join('');
     // apply filters
-    if(INV_LAB) items = items.filter(x => (x.lab||'') === INV_LAB);
+    if(INV_LAB)   items = items.filter(x => (x.lab||'') === INV_LAB);
+    if(INV_CAT)   items = items.filter(x => (x.category||'') === INV_CAT);
+    if(INV_LOW_STOCK) items = items.filter(x => x.qty <= x.min_qty);
+    if(INV_EXPIRING){
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() + 30);
+      items = items.filter(x => x.expiry_date && new Date(x.expiry_date) <= cutoff);
+    }
     if(INV_QUERY){
       const q = INV_QUERY.toLowerCase();
-      items = items.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q) || (x.lab||'').toLowerCase().includes(q));
+      items = items.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q) || (x.lab||'').toLowerCase().includes(q) || (x.supplier_name||'').toLowerCase().includes(q));
     }
     const isStaff = ME.role==='admin' || ME.role==='professor';
     if(!items.length){ $('#invList').innerHTML='<div class="empty">No inventory items match.</div>'; return; }
     $('#invList').innerHTML = `
       <div class="p-inv-table">
         <div class="p-inv-row p-inv-head">
-          <div style="flex:2;">Item</div><div style="flex:1;">SKU</div><div style="flex:1;">Lab</div>
-          <div style="flex:1;">Qty</div><div style="width:80px;"></div>
+          <div style="flex:2.5;">Item</div>
+          <div style="flex:1;">SKU · Lab</div>
+          <div style="flex:1.5;">Qty</div>
+          <div style="width:130px;"></div>
         </div>
         ${items.map(x => {
           const pct = x.min_qty > 0 ? Math.min(100, Math.round((x.qty/x.min_qty)*100)) : 100;
           const fillColor = x.qty <= 0 ? 'var(--status-alert)' : x.qty < x.min_qty ? 'var(--status-warn)' : 'var(--status-ok)';
           return `<div class="p-inv-row">
-            <div style="flex:2;"><div class="p-inv-name">${escapeHTML(x.name)}</div><div class="p-inv-cat">${escapeHTML(x.category||'')}</div></div>
-            <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
-            <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.lab||'—')}</div>
+            <div style="flex:2.5;">
+              <div class="p-inv-name">${escapeHTML(x.name)}</div>
+              <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.category||'')}${x.supplier_name?` · ${escapeHTML(x.supplier_name)}`:''}</div>
+              <div style="margin-top:2px;display:flex;gap:6px;align-items:center;">
+                ${_hazardBadge(x.hazard_class, x.sds_url)}
+                ${_expiryBadge(x.expiry_date)}
+              </div>
+            </div>
             <div style="flex:1;">
-              <div><span class="p-qty-num">${x.qty}</span> <span class="p-qty-min">/ min ${x.min_qty}</span></div>
+              <div><span class="p-mono" style="font-size:12px;">${escapeHTML(x.sku||'—')}</span></div>
+              <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.lab||'—')}${x.location?' · '+escapeHTML(x.location):''}</div>
+            </div>
+            <div style="flex:1.5;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <button class="btn-ghost-sm" data-inv-adj="${x.id}" data-adj-delta="-1" title="Decrease by 1" style="padding:2px 6px;min-width:22px;">−</button>
+                <span class="p-qty-num">${x.qty}</span>
+                <span class="p-qty-min" style="font-size:11px;"> ${escapeHTML(x.unit||'each')}</span>
+                <button class="btn-ghost-sm" data-inv-adj="${x.id}" data-adj-delta="1"  title="Increase by 1" style="padding:2px 6px;min-width:22px;">+</button>
+              </div>
+              <div style="font-size:11px;color:var(--fg-4);">min ${x.min_qty} ${escapeHTML(x.unit||'each')}</div>
               <div class="p-qty-bar"><div class="p-qty-fill" style="width:${pct}%;background:${fillColor};"></div></div>
             </div>
-            <div style="width:80px;">
+            <div style="width:130px;display:flex;gap:4px;flex-wrap:wrap;">
+              <button class="btn-ghost-sm" data-inv-log="${x.id}">Log</button>
               ${isStaff ? `<button class="btn-ghost-sm" data-inv-edit="${x.id}">Edit</button>` : ''}
+              ${x.reorder_url ? `<a class="btn-ghost-sm" href="${escapeHTML(x.reorder_url)}" target="_blank">Order</a>` : ''}
             </div>
           </div>`;
         }).join('')}
       </div>`;
+    // Wire ± adjust buttons
+    $('#invList').querySelectorAll('[data-inv-adj]').forEach(b => b.addEventListener('click', async () => {
+      const delta = parseInt(b.dataset.adjDelta, 10);
+      const reason = delta < 0 ? (prompt('Reason for decrease (optional):')||'manual adjust') : 'manual adjust';
+      try {
+        const res = await api(`/api/inventory/${b.dataset.invAdj}/adjust`, {method:'PATCH', body:{delta, reason}});
+        // Update qty in place
+        const numEl = b.closest('.p-inv-row').querySelector('.p-qty-num');
+        if(numEl) numEl.textContent = res.qty;
+        loadInventory(); // refresh to update bar colours and min display
+      } catch(err){ alert(err.message); }
+    }));
+    // Wire log buttons
+    $('#invList').querySelectorAll('[data-inv-log]').forEach(b => b.addEventListener('click', async () => {
+      const it = items.find(x => x.id == b.dataset.invLog); if(!it) return;
+      try {
+        const log = await api(`/api/inventory/${it.id}/log`);
+        modal(`<h2>${escapeHTML(it.name)} — adjustment log</h2>
+          <p style="font-size:12px;color:var(--fg-3);">SKU ${escapeHTML(it.sku||'—')} · Current qty: ${it.qty} ${escapeHTML(it.unit||'each')}</p>
+          ${log.length ? log.map(l=>`<div class="p-log-row">
+            <span class="p-log-when">${fmtDT(l.created_at)}</span>
+            <span class="p-log-act" style="color:${l.delta>=0?'var(--status-ok)':'var(--status-alert)'}">${l.delta>=0?'+':''}${l.delta}</span>
+            <span class="p-log-who">${escapeHTML(l.user_name||l.username||'?')}</span>
+            <span class="p-log-note">${escapeHTML(l.reason||'')} → ${l.qty_after}</span>
+          </div>`).join('') : '<div class="empty">No adjustment history.</div>'}`,
+          null, '', 'Close');
+      } catch(err){ alert(err.message); }
+    }));
+    // Wire edit buttons
     $('#invList').querySelectorAll('[data-inv-edit]').forEach(b => b.addEventListener('click', async () => {
       const it = items.find(x => x.id == b.dataset.invEdit); if(it) openInvModal(it);
     }));
@@ -1750,28 +2064,54 @@ async function loadInventory(){
 
 $('#invSearch').addEventListener('input', e => { INV_QUERY = e.target.value; loadInventory(); });
 $('#invLab').addEventListener('change', e => { INV_LAB = e.target.value; loadInventory(); });
+$('#invCatFilter').addEventListener('change', e => { INV_CAT = e.target.value; loadInventory(); });
+$('#invLowStock').addEventListener('change', e => { INV_LOW_STOCK = e.target.checked; loadInventory(); });
+$('#invExpiring').addEventListener('change', e => { INV_EXPIRING = e.target.checked; loadInventory(); });
 $('#addInvBtn').addEventListener('click', () => openInvModal());
 
-function openInvModal(it){
+async function openInvModal(it){
   const isEdit = !!it;
+  let suppliers = [];
+  try { suppliers = await api('/api/suppliers'); } catch(_){}
   modal(`<h2>${isEdit?'Edit inventory item':'Add inventory item'}</h2>
     <label>Name<input id="ivName" value="${escapeHTML(it?.name||'')}"></label>
     <label>SKU / part # (required, unique)<input id="ivSku" value="${escapeHTML(it?.sku||'')}" placeholder="SN-LAT-00000"></label>
-    <label>Category<input id="ivCat" value="${escapeHTML(it?.category||'')}" placeholder="Sensors / Hardware / Consumables / Fluids…"></label>
+    <label>Category<input id="ivCat" value="${escapeHTML(it?.category||'')}" placeholder="Chemicals / Consumables / Hardware…"></label>
     <label>Lab<select id="ivLab">
       <option value="A" ${it?.lab==='A'||!it?'selected':''}>Lab A</option>
       <option value="B" ${it?.lab==='B'?'selected':''}>Lab B</option>
     </select></label>
+    <label>Location (shelf / cabinet)<input id="ivLoc" value="${escapeHTML(it?.location||'')}" placeholder="e.g. Shelf B3, Fridge 2"></label>
     <label>Qty on hand<input id="ivQty" type="number" value="${it?.qty??0}" min="0"></label>
-    <label>Min qty (reorder threshold)<input id="ivMin" type="number" value="${it?.min_qty??1}" min="0"></label>`,
+    <label>Min qty (reorder threshold)<input id="ivMin" type="number" value="${it?.min_qty??1}" min="0"></label>
+    <label>Unit<input id="ivUnit" value="${escapeHTML(it?.unit||'each')}" placeholder="each / mL / g / box…"></label>
+    <label>Supplier<select id="ivSupplier">
+      <option value="">— none —</option>
+      ${suppliers.map(s=>`<option value="${s.id}" ${it?.supplier_id==s.id?'selected':''}>${escapeHTML(s.name)}</option>`).join('')}
+    </select></label>
+    <label>Reorder URL<input id="ivReorder" type="url" value="${escapeHTML(it?.reorder_url||'')}" placeholder="https://…"></label>
+    <label>Expiry date<input id="ivExpiry" type="date" value="${it?.expiry_date||''}"></label>
+    <label>Chemical CAS # (optional)<input id="ivCas" value="${escapeHTML(it?.chemical_cas||'')}" placeholder="e.g. 7732-18-5"></label>
+    <label>Hazard class<input id="ivHazard" value="${escapeHTML(it?.hazard_class||'')}" placeholder="flammable / corrosive / toxic…"></label>
+    <label>SDS URL<input id="ivSds" type="url" value="${escapeHTML(it?.sds_url||'')}" placeholder="https://…"></label>
+    <label>Notes<textarea id="ivNotes">${escapeHTML(it?.notes||'')}</textarea></label>`,
     async () => {
       const body = {
         name: $('#ivName').value.trim(),
         sku: $('#ivSku').value.trim(),
         category: $('#ivCat').value,
         lab: $('#ivLab').value,
+        location: $('#ivLoc').value,
         qty: Number($('#ivQty').value)||0,
         min_qty: Number($('#ivMin').value)||0,
+        unit: $('#ivUnit').value||'each',
+        supplier_id: $('#ivSupplier').value||null,
+        reorder_url: $('#ivReorder').value,
+        expiry_date: $('#ivExpiry').value||null,
+        chemical_cas: $('#ivCas').value,
+        hazard_class: $('#ivHazard').value,
+        sds_url: $('#ivSds').value,
+        notes: $('#ivNotes').value,
         sort_order: it?.sort_order||0
       };
       if(!body.name) throw new Error('Name required');
@@ -1789,6 +2129,254 @@ function openInvModal(it){
       catch(err){ alert(err.message); }
     });
   }
+}
+
+/* ---------- Samples ---------- */
+let SAMPLE_QUERY='', SAMPLE_STATUS='';
+async function loadSamples(){
+  try {
+    const qs = new URLSearchParams();
+    if(SAMPLE_STATUS) qs.set('status', SAMPLE_STATUS);
+    if(SAMPLE_QUERY)  qs.set('search', SAMPLE_QUERY);
+    const items = await api('/api/samples?'+qs);
+    if(!items.length){ $('#sampleList').innerHTML='<div class="empty">No samples found.</div>'; return; }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const isStaff = ME.role==='admin'||ME.role==='professor';
+    $('#sampleList').innerHTML = `
+      <div class="p-inv-row p-inv-head">
+        <div style="flex:2;">Sample</div>
+        <div style="flex:1;">Type · Location</div>
+        <div style="flex:1;">Qty</div>
+        <div style="flex:1;">Expiry</div>
+        <div style="width:100px;"></div>
+      </div>
+      ${items.map(s=>{
+        const exp = s.expiry_date ? new Date(s.expiry_date) : null;
+        const days = exp ? Math.round((exp-today)/86400000) : null;
+        const expStyle = days===null ? '' : days<0 ? 'color:#dc2626;font-weight:600;' : days<=30 ? 'color:#c2410c;' : 'color:var(--fg-3);';
+        return `<div class="p-inv-row">
+          <div style="flex:2;">
+            <div class="p-inv-name">${escapeHTML(s.name)}</div>
+            <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(s.project_title||'')} · ${escapeHTML(s.created_by_name||'?')}</div>
+          </div>
+          <div style="flex:1;font-size:12px;">${escapeHTML(s.sample_type||'—')}<br><span style="font-size:11px;color:var(--fg-4);">${escapeHTML(s.location||'')}</span></div>
+          <div style="flex:1;font-size:13px;">${s.qty} ${escapeHTML(s.unit||'')}</div>
+          <div style="flex:1;font-size:12px;${expStyle}">${s.expiry_date ? (days<0 ? `Expired ${fmtDate(s.expiry_date)}` : `${fmtDate(s.expiry_date)}`) : '—'}</div>
+          <div style="width:100px;display:flex;gap:4px;">
+            <button class="btn-ghost-sm" data-sample-edit="${s.id}">Edit</button>
+            ${isStaff?`<button class="btn-ghost-sm" data-sample-del="${s.id}">Del</button>`:''}
+          </div>
+        </div>`;
+      }).join('')}`;
+    $('#sampleList').querySelectorAll('[data-sample-edit]').forEach(b=>b.addEventListener('click',()=>{
+      const s=items.find(x=>x.id==b.dataset.sampleEdit); if(s) openSampleModal(s);
+    }));
+    $('#sampleList').querySelectorAll('[data-sample-del]').forEach(b=>b.addEventListener('click',async()=>{
+      if(!confirm('Delete this sample?')) return;
+      try { await api(`/api/samples/${b.dataset.sampleDel}`,{method:'DELETE'}); loadSamples(); }
+      catch(err){ alert(err.message); }
+    }));
+  } catch(e){ $('#sampleList').innerHTML=`<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#sampleSearch').addEventListener('input', e=>{ SAMPLE_QUERY=e.target.value; loadSamples(); });
+$('#sampleStatus').addEventListener('change', e=>{ SAMPLE_STATUS=e.target.value; loadSamples(); });
+$('#addSampleBtn').addEventListener('click', ()=>openSampleModal());
+
+async function openSampleModal(s){
+  const isEdit=!!s;
+  let projs=[];
+  try { projs = await api('/api/projects'); } catch(_){}
+  modal(`<h2>${isEdit?'Edit sample':'New sample'}</h2>
+    <label>Name<input id="smName" value="${escapeHTML(s?.name||'')}"></label>
+    <label>Type<select id="smType">
+      ${['solid','liquid','gas','biological','chemical','other'].map(t=>`<option value="${t}" ${s?.sample_type===t?'selected':''}>${t}</option>`).join('')}
+    </select></label>
+    <label>Location (freezer / shelf / cabinet)<input id="smLoc" value="${escapeHTML(s?.location||'')}"></label>
+    <label>Project<select id="smProj"><option value="">— none —</option>${projs.map(p=>`<option value="${p.id}" ${s?.project_id==p.id?'selected':''}>${escapeHTML(p.title)}</option>`).join('')}</select></label>
+    <label>Qty<input id="smQty" type="number" step="0.001" value="${s?.qty??1}"></label>
+    <label>Unit<input id="smUnit" value="${escapeHTML(s?.unit||'mL')}" placeholder="mL / g / vial…"></label>
+    <label>Expiry date<input id="smExp" type="date" value="${s?.expiry_date||''}"></label>
+    <label>Status<select id="smSt">
+      ${['active','depleted','disposed','archived'].map(t=>`<option value="${t}" ${s?.status===t?'selected':''}>${t}</option>`).join('')}
+    </select></label>
+    <label>Description<textarea id="smDesc">${escapeHTML(s?.description||'')}</textarea></label>`,
+    async()=>{
+      const body={name:$('#smName').value.trim(), sample_type:$('#smType').value, location:$('#smLoc').value,
+        project_id:$('#smProj').value||null, qty:Number($('#smQty').value)||0, unit:$('#smUnit').value||'mL',
+        expiry_date:$('#smExp').value||null, status:$('#smSt').value, description:$('#smDesc').value};
+      if(!body.name) throw new Error('Name required');
+      if(isEdit) await api('/api/samples/'+s.id,{method:'PUT',body});
+      else await api('/api/samples',{method:'POST',body});
+      loadSamples();
+    });
+}
+
+/* ---------- Lab Notebook ---------- */
+let NOTEBOOK_QUERY='';
+async function loadNotebook(){
+  try {
+    const isStaff = ME.role==='admin'||ME.role==='professor';
+    const qs = new URLSearchParams();
+    if(!isStaff) qs.set('mine','1');
+    if(NOTEBOOK_QUERY) qs.set('search',NOTEBOOK_QUERY);
+    const entries = await api('/api/lab-notebooks?'+qs);
+    if(!entries.length){ $('#notebookList').innerHTML='<div class="empty">No notebook entries found.</div>'; return; }
+    const STATUS_COLOR = {draft:'var(--fg-4)', complete:'var(--status-ok)', reviewed:'var(--gold-700)'};
+    $('#notebookList').innerHTML = entries.map(n=>`
+      <div class="p-card" style="margin-bottom:12px;cursor:pointer;" data-nb-open="${n.id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div style="font-weight:600;font-size:15px;">${escapeHTML(n.title)}</div>
+            <div style="font-size:12px;color:var(--fg-3);margin-top:2px;">
+              ${fmtDate(n.experiment_date)} · ${escapeHTML(n.author_name||'?')}
+              ${n.project_title?`· ${escapeHTML(n.project_title)}`:''}
+            </div>
+            ${n.tags?`<div style="margin-top:4px;">${n.tags.split(',').map(t=>`<span style="font-size:11px;background:var(--bg-2);padding:2px 6px;border-radius:10px;margin-right:4px;">${escapeHTML(t.trim())}</span>`).join('')}</div>`:''}
+          </div>
+          <span style="font-size:11px;color:${STATUS_COLOR[n.status]||'var(--fg-4)'};">${escapeHTML(n.status)}</span>
+        </div>
+        <div style="margin-top:8px;font-size:13px;color:var(--fg-3);white-space:pre-wrap;max-height:60px;overflow:hidden;">${escapeHTML((n.content||'').slice(0,200))}${(n.content||'').length>200?'…':''}</div>
+      </div>`).join('');
+    $('#notebookList').querySelectorAll('[data-nb-open]').forEach(card=>{
+      card.addEventListener('click', async()=>{
+        const n = entries.find(x=>x.id==card.dataset.nbOpen); if(!n) return;
+        openNotebookModal(n);
+      });
+    });
+  } catch(e){ $('#notebookList').innerHTML=`<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#notebookSearch').addEventListener('input', e=>{ NOTEBOOK_QUERY=e.target.value; loadNotebook(); });
+$('#addNotebookBtn').addEventListener('click', ()=>openNotebookModal());
+
+async function openNotebookModal(n){
+  const isEdit=!!n;
+  const today = new Date().toISOString().slice(0,10);
+  let projs=[];
+  try { projs = await api('/api/projects'); } catch(_){}
+  modal(`<h2>${isEdit?'Edit entry':'New notebook entry'}</h2>
+    <label>Title<input id="nbTitle" value="${escapeHTML(n?.title||'')}"></label>
+    <label>Experiment date<input id="nbDate" type="date" value="${n?.experiment_date||today}"></label>
+    <label>Project<select id="nbProj"><option value="">— none —</option>${projs.map(p=>`<option value="${p.id}" ${n?.project_id==p.id?'selected':''}>${escapeHTML(p.title)}</option>`).join('')}</select></label>
+    <label>Tags (comma-separated)<input id="nbTags" value="${escapeHTML(n?.tags||'')}" placeholder="protocol, measurement, synthesis…"></label>
+    <label>Status<select id="nbSt">
+      ${['draft','complete','reviewed'].map(t=>`<option value="${t}" ${n?.status===t?'selected':''}>${t}</option>`).join('')}
+    </select></label>
+    <label>Notes / observations<textarea id="nbContent" style="min-height:160px;">${escapeHTML(n?.content||'')}</textarea></label>`,
+    async()=>{
+      const body={title:$('#nbTitle').value.trim(), experiment_date:$('#nbDate').value,
+        project_id:$('#nbProj').value||null, tags:$('#nbTags').value,
+        status:$('#nbSt').value, content:$('#nbContent').value};
+      if(!body.title||!body.experiment_date) throw new Error('Title and date required');
+      if(isEdit) await api('/api/lab-notebooks/'+n.id,{method:'PUT',body});
+      else await api('/api/lab-notebooks',{method:'POST',body});
+      loadNotebook();
+    },
+    isEdit ? `<button type="button" class="p-bigbtn danger" id="delNb">Delete</button>` : '');
+  if(isEdit){
+    $('#delNb').addEventListener('click', async()=>{
+      if(!confirm('Delete this notebook entry?')) return;
+      try { await api('/api/lab-notebooks/'+n.id,{method:'DELETE'}); closeModal(); loadNotebook(); }
+      catch(err){ alert(err.message); }
+    });
+  }
+}
+
+/* ---------- Training & Certifications ---------- */
+let TRAINING_USER='', TRAINING_TYPE='', TRAINING_EXPIRING=false;
+async function loadTraining(){
+  try {
+    // populate user filter
+    let users=[];
+    try { users = await api('/api/users'); } catch(_){}
+    const uSel = $('#trainingUserFilter');
+    const curU = TRAINING_USER || uSel.value;
+    uSel.innerHTML = '<option value="">All members</option>' + users.map(u=>`<option value="${u.id}" ${u.id==curU?'selected':''}>${escapeHTML(u.name||u.username)}</option>`).join('');
+
+    const qs = new URLSearchParams();
+    if(TRAINING_USER) qs.set('user_id', TRAINING_USER);
+    if(TRAINING_TYPE) qs.set('training_type', TRAINING_TYPE);
+    if(TRAINING_EXPIRING) qs.set('expiring_soon','1');
+    const records = await api('/api/training?'+qs);
+    const isStaff = ME.role==='admin'||ME.role==='professor';
+    const today = new Date(); today.setHours(0,0,0,0);
+    if(!records.length){ $('#trainingList').innerHTML='<div class="empty">No training records found.</div>'; return; }
+    $('#trainingList').innerHTML = `
+      <div class="p-inv-row p-inv-head">
+        <div style="flex:2;">Training / Certification</div>
+        <div style="flex:1;">Member</div>
+        <div style="flex:1;">Equipment</div>
+        <div style="flex:1;">Completed · Expires</div>
+        ${isStaff?'<div style="width:80px;"></div>':''}
+      </div>
+      ${records.map(r=>{
+        const exp = r.expires_at ? new Date(r.expires_at) : null;
+        const days = exp ? Math.round((exp-today)/86400000) : null;
+        const expStyle = days===null ? '' : days<0 ? 'color:#dc2626;font-weight:600;' : days<=60 ? 'color:#c2410c;' : '';
+        return `<div class="p-inv-row">
+          <div style="flex:2;">
+            <div class="p-inv-name">${escapeHTML(r.training_name)}</div>
+            <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(r.training_type)}${r.certified_by?` · cert. by ${escapeHTML(r.certified_by)}`:''}</div>
+          </div>
+          <div style="flex:1;font-size:13px;">${escapeHTML(r.user_name||r.username||'?')}</div>
+          <div style="flex:1;font-size:12px;color:var(--fg-3);">${escapeHTML(r.equipment_name||'—')}</div>
+          <div style="flex:1;font-size:12px;">
+            <div>${fmtDate(r.completed_at)}</div>
+            <div style="${expStyle}">${r.expires_at ? (days<0?`⚠ Expired ${fmtDate(r.expires_at)}`:`Exp ${fmtDate(r.expires_at)}`) : 'No expiry'}</div>
+          </div>
+          ${isStaff?`<div style="width:80px;display:flex;gap:4px;">
+            <button class="btn-ghost-sm" data-tr-edit="${r.id}">Edit</button>
+            <button class="btn-ghost-sm" data-tr-del="${r.id}">Del</button>
+          </div>`:''}
+        </div>`;
+      }).join('')}`;
+    if(isStaff){
+      $('#trainingList').querySelectorAll('[data-tr-edit]').forEach(b=>b.addEventListener('click',()=>{
+        const r=records.find(x=>x.id==b.dataset.trEdit); if(r) openTrainingModal(r);
+      }));
+      $('#trainingList').querySelectorAll('[data-tr-del]').forEach(b=>b.addEventListener('click',async()=>{
+        if(!confirm('Delete this record?')) return;
+        try { await api(`/api/training/${b.dataset.trDel}`,{method:'DELETE'}); loadTraining(); }
+        catch(err){ alert(err.message); }
+      }));
+    }
+  } catch(e){ $('#trainingList').innerHTML=`<div class="empty">${escapeHTML(e.message)}</div>`; }
+}
+$('#trainingUserFilter').addEventListener('change', e=>{ TRAINING_USER=e.target.value; loadTraining(); });
+$('#trainingTypeFilter').addEventListener('change', e=>{ TRAINING_TYPE=e.target.value; loadTraining(); });
+$('#trainingExpiringFilter').addEventListener('change', e=>{ TRAINING_EXPIRING=e.target.checked; loadTraining(); });
+$('#addTrainingBtn').addEventListener('click', ()=>openTrainingModal());
+
+async function openTrainingModal(r){
+  const isEdit=!!r;
+  let users=[], equip=[];
+  try { [users, equip] = await Promise.all([api('/api/users'), api('/api/equipment').then(unwrap)]); } catch(_){}
+  modal(`<h2>${isEdit?'Edit':'Add'} training record</h2>
+    <label>Member<select id="trUser">
+      <option value="">— select —</option>
+      ${users.map(u=>`<option value="${u.id}" ${r?.user_id==u.id?'selected':''}>${escapeHTML(u.name||u.username)}</option>`).join('')}
+    </select></label>
+    <label>Training name<input id="trName" value="${escapeHTML(r?.training_name||'')}"></label>
+    <label>Type<select id="trType">
+      ${['equipment','safety','chemical','lab','other'].map(t=>`<option value="${t}" ${r?.training_type===t?'selected':''}>${t}</option>`).join('')}
+    </select></label>
+    <label>Related equipment (optional)<select id="trEquip">
+      <option value="">— none —</option>
+      ${equip.map(e=>`<option value="${e.id}" ${r?.equipment_id==e.id?'selected':''}>${escapeHTML(e.name)}</option>`).join('')}
+    </select></label>
+    <label>Completed date<input id="trComp" type="date" value="${r?.completed_at||''}"></label>
+    <label>Expiry date<input id="trExp" type="date" value="${r?.expires_at||''}"></label>
+    <label>Certified by<input id="trCert" value="${escapeHTML(r?.certified_by||'')}"></label>
+    <label>Notes<textarea id="trNotes">${escapeHTML(r?.notes||'')}</textarea></label>`,
+    async()=>{
+      const body={user_id:$('#trUser').value, training_name:$('#trName').value.trim(),
+        training_type:$('#trType').value, equipment_id:$('#trEquip').value||null,
+        completed_at:$('#trComp').value, expires_at:$('#trExp').value||null,
+        certified_by:$('#trCert').value, notes:$('#trNotes').value};
+      if(!body.user_id||!body.training_name||!body.completed_at) throw new Error('Member, name, and date required');
+      if(isEdit) await api('/api/training/'+r.id,{method:'PUT',body});
+      else await api('/api/training',{method:'POST',body});
+      loadTraining();
+    });
 }
 
 /* ---------- Issues ---------- */
