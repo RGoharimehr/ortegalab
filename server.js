@@ -1,6 +1,7 @@
 const express = require('express');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
+const BCRYPT_ROUNDS = 12;
 const helmet = require('helmet');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
@@ -1814,7 +1815,7 @@ app.put('/api/me/password', apiWriteLimiter, requireAuth, requireCsrf, (req, res
   if (!user || !bcrypt.compareSync(current_password, user.password)) {
     return res.status(401).json({ error: 'Current password is incorrect' });
   }
-  const hash = bcrypt.hashSync(new_password, 12);
+  const hash = bcrypt.hashSync(new_password, BCRYPT_ROUNDS);
   db.prepare('UPDATE users SET password=?, failed_attempts=0, locked_until=NULL WHERE id=?').run(hash, req.session.userId);
   res.json({ success: true });
 });
@@ -1936,7 +1937,7 @@ app.post('/api/users', apiWriteLimiter, requireStaff, requireCsrf, (req, res) =>
   if (!username || !password || !role) return res.status(400).json({ error: 'username, password, role required' });
   if (password.length < 12) return res.status(400).json({ error: 'Password must be at least 12 characters' });
   if (db.prepare('SELECT 1 FROM users WHERE username=?').get(username)) return res.status(409).json({ error: 'username exists' });
-  const hash = bcrypt.hashSync(password, 12);
+  const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
   const r = db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
     .run(username, hash, name || '', role, email || '');
   res.json({ id: r.lastInsertRowid });
@@ -1948,7 +1949,7 @@ app.put('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res)
   if (role !== undefined)   { sets.push('role=?');   params.push(role); }
   if (email !== undefined)  { sets.push('email=?');  params.push(email); }
   if (active !== undefined) { sets.push('active=?'); params.push(active ? 1 : 0); }
-  if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, 12)); }
+  if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, BCRYPT_ROUNDS)); }
   if (!sets.length) return res.json({ success: true });
   params.push(req.params.id);
   db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
