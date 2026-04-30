@@ -2684,8 +2684,20 @@ document.addEventListener('click', async e => {
   const pw = e.target.closest('[data-user-pw]');
   const dl = e.target.closest('[data-user-del]');
   if(ed){ try { const u=(await api('/api/users')).find(x=>x.id==ed.dataset.userEdit); if(u) openUserModal(u); } catch(err){ alert(err.message); } }
-  if(pw){ const np = prompt('New password (min 12 chars):'); if(!np||np.length<12){ alert('Min 12 characters'); return; }
-    try { await api('/api/users/'+pw.dataset.userPw,{method:'PUT', body:{password:np}}); alert('Password reset'); } catch(err){ alert(err.message); } }
+  if(pw){
+    const userId = pw.dataset.userPw;
+    modal(`<h2>Reset password</h2>
+      <label>New password (min 12 chars)<input id="pwNew" type="password" autocomplete="new-password" minlength="12" placeholder="Minimum 12 characters"></label>
+      <label>Confirm new password<input id="pwConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password"></label>`,
+      async () => {
+        const np = $('#pwNew').value;
+        const nc = $('#pwConfirm').value;
+        if(!np || np.length < 12) throw new Error('Password must be at least 12 characters');
+        if(np !== nc) throw new Error('Passwords do not match');
+        await api('/api/users/'+userId,{method:'PUT', body:{password:np}});
+        alert('Password reset successfully');
+      });
+  }
   if(dl){ if(!confirm('Disable this account?')) return;
     try { await api('/api/users/'+dl.dataset.userDel,{method:'DELETE'}); loadUsers(); } catch(err){ alert(err.message); } }
 });
