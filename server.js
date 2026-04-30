@@ -906,7 +906,7 @@ const BLOCKED_ROOT_PATHS = new Set([
 app.use((req, res, next) => {
   const first = req.path.split('/').filter(Boolean)[0] || '';
   if (BLOCKED_ROOT_PATHS.has(first)) return res.status(404).end();
-  if (first === 'node_modules' || first === 'uploads' || first === 'src') return res.status(404).end();
+  if (first === 'node_modules' || first === 'src') return res.status(404).end();
   // Block dotfiles (e.g. .env, .gitignore) — express dotfiles:'deny' also handles this below
   if (first.startsWith('.')) return res.status(404).end();
   next();

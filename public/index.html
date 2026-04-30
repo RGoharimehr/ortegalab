@@ -862,7 +862,7 @@ function PagePublications() {
   const pubs = DATA.pubs || [];
   const byYear = {};
   pubs.forEach(p => { const y = p.year || 'n.d.'; (byYear[y] ||= []).push(p); });
-  const years = Object.keys(byYear).sort((a, b) => String(b).locCompare(String(a)));
+  const years = Object.keys(byYear).sort((a, b) => String(b).localeCompare(String(a)));
   return h('section', { class: 'w-page' },
     h('div', { class: 'max-w' },
       h('div', { class: 'eyebrow' }, 'Publications'),
