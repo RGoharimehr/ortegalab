@@ -300,6 +300,202 @@ a:hover { color: var(--gold-700); }
   .w-section { padding: 36px 0; }
   .w-gallery-slide { flex-basis: 320px; height: 220px; }
 }
+
+/* ============================================================
+   LATFS UI v2 — harmonised type, colour & component upgrades
+   ============================================================ */
+
+/* ── Interior page banner ───────────────────────────────── */
+.w-page-banner {
+  background: linear-gradient(160deg, var(--navy-950) 0%, var(--navy-800) 100%);
+  padding: 72px 0 60px;
+  border-bottom: 2px solid rgba(184,145,42,.3);
+}
+.w-page-banner .eyebrow {
+  color: var(--gold-400);
+  display: block;
+  margin-bottom: 16px;
+  font-size: var(--text-xs);
+  letter-spacing: .14em;
+}
+.w-page-banner-title {
+  color: #fff;
+  font-size: clamp(1.85rem, 4vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+  margin: 0 0 18px;
+}
+.w-page-banner-intro {
+  color: rgba(255,255,255,.6);
+  font-size: var(--text-lg);
+  line-height: 1.72;
+  max-width: 640px;
+  margin: 0;
+}
+
+/* ── Content area below the banner ─────────────────────── */
+.w-page-content { padding: 56px 0; min-height: 36vh; background: var(--bg-2); }
+.w-page-content.on-white { background: #fff; }
+
+/* ── People grid ────────────────────────────────────────── */
+.w-people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  gap: 20px;
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+/* ── Person card v2 ─────────────────────────────────────── */
+.w-person-v2 {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(15,23,42,.06);
+  transition: box-shadow .22s var(--ease-out), transform .22s var(--ease-out), border-color .2s;
+  cursor: pointer;
+  text-align: center;
+}
+.w-person-v2:hover {
+  box-shadow: 0 10px 30px rgba(15,23,42,.13);
+  transform: translateY(-3px);
+  border-color: var(--gold-300);
+}
+
+/* ── Avatar ring ────────────────────────────────────────── */
+.w-avatar {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  margin: 22px auto 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2.5px solid var(--border-1);
+  transition: border-color .22s;
+}
+.w-person-v2:hover .w-avatar { border-color: var(--gold-400); }
+.w-avatar-photo {
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--gray-200);
+}
+.w-avatar-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em;
+  color: rgba(255,255,255,.92);
+  text-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+
+/* ── Person card text slots ─────────────────────────────── */
+.w-pv2-name { font-size: var(--text-sm); font-weight: 700; color: var(--navy-900); margin: 0 0 3px; padding: 0 12px; line-height: 1.3; }
+.w-pv2-role { font-size: 12px; color: var(--fg-3); margin: 0 0 10px; padding: 0 10px; line-height: 1.4; }
+.w-pv2-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--gold-100); color: var(--gold-900);
+  border: 1px solid rgba(184,145,42,.2);
+  margin-bottom: 16px;
+}
+
+/* ── Research cards v2 (Research page) ──────────────────── */
+.w-rc {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(15,23,42,.05);
+  transition: box-shadow .2s var(--ease-out), border-color .2s, transform .2s var(--ease-out);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.w-rc:hover {
+  box-shadow: 0 8px 26px rgba(15,23,42,.12);
+  border-color: var(--gold-300);
+  transform: translateY(-2px);
+}
+.w-rc-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  border-radius: var(--radius-md);
+  background: var(--navy-900); color: var(--gold-400);
+  font-size: 10px; font-weight: 800; letter-spacing: .06em;
+  flex-shrink: 0; align-self: flex-start;
+}
+.w-rc-title { font-size: var(--text-base); font-weight: 700; color: var(--navy-900); line-height: 1.3; letter-spacing: -.01em; }
+.w-rc-desc  { font-size: var(--text-sm); color: var(--fg-2); line-height: 1.62; }
+
+/* ── Icon cards (Join, Contact) ─────────────────────────── */
+.w-icon-card {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(15,23,42,.06);
+  transition: box-shadow .2s var(--ease-out), transform .2s var(--ease-out);
+}
+.w-icon-card:hover { box-shadow: 0 8px 26px rgba(15,23,42,.1); transform: translateY(-2px); }
+.w-icon-card-icon { font-size: 28px; margin-bottom: 14px; display: block; line-height: 1; }
+.w-icon-card h3 { color: var(--navy-900); font-size: var(--text-base); font-weight: 700; margin: 0 0 8px; letter-spacing: -.01em; }
+.w-icon-card p  { color: var(--fg-2); font-size: var(--text-sm); line-height: 1.65; margin: 0; }
+
+/* ── Person detail v2 ───────────────────────────────────── */
+.w-person-detail-v2 {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 16px;
+  padding: 36px;
+  max-width: 680px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.w-person-detail-v2 .w-avatar { width: 120px; height: 120px; border-width: 3px; border-color: var(--border-2); }
+.w-person-detail-v2 .w-avatar-text { font-size: 2rem; }
+.w-pdetail-name { font-size: 1.5rem; font-weight: 800; color: var(--navy-900); letter-spacing: -.025em; margin: 0 0 6px; }
+.w-pdetail-sub  { color: var(--fg-3); font-size: var(--text-sm); margin: 0 0 22px; }
+.w-pdetail-bio  { font-size: var(--text-sm); color: var(--fg-2); line-height: 1.78; white-space: pre-wrap; text-align: left; padding-top: 20px; border-top: 1px solid var(--border-1); }
+.w-pdetail-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-1); }
+.w-pdetail-links a {
+  background: var(--bg-1); border: 1px solid var(--border-1);
+  padding: 6px 16px; border-radius: 999px;
+  font-size: 12px; color: var(--navy-900); text-decoration: none; font-weight: 600;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.w-pdetail-links a:hover { background: var(--gold-100); border-color: var(--gold-300); color: var(--gold-900); }
+
+/* ── Back link v2 ───────────────────────────────────────── */
+.w-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--gold-700); cursor: pointer; text-decoration: none;
+  margin-bottom: 28px;
+  transition: color .15s;
+}
+.w-back:hover { color: var(--gold-900); }
+
+/* ── Improved empty / loading states ───────────────────── */
+.w-empty   { padding: 52px 0; color: var(--fg-4); font-size: var(--text-sm); text-align: center; }
+.w-loading { padding: 52px 0; color: var(--fg-4); font-size: var(--text-sm); font-style: italic; text-align: center; }
+
+/* ── Focus rings ────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 3px; border-radius: var(--radius-xs); }
+
+/* ── Responsive v2 ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .w-people-grid { grid-template-columns: repeat(auto-fill, 180px); gap: 16px; }
+  .w-page-banner { padding: 52px 0 44px; }
+}
+@media (max-width: 600px) {
+  .w-people-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .w-page-banner { padding: 40px 0 36px; }
+  .w-page-banner-title { font-size: 1.6rem; }
+  .w-page-content { padding: 36px 0; }
+}
 </style>
 </head>
 <body>
@@ -333,6 +529,18 @@ const RES = {
   spE3s:      '/assets/sponsors/e3s.svg',
   spVillanova:'/assets/sponsors/villanova.svg',
 };
+
+/* ---- Avatar helpers ---- */
+const AVATAR_GRADS = [
+  'linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%)',
+  'linear-gradient(135deg,#7a5e15 0%,#b8912a 100%)',
+  'linear-gradient(135deg,#162041 0%,#4a6fa5 100%)',
+  'linear-gradient(135deg,#2d4a78 0%,#0f172a 100%)',
+  'linear-gradient(135deg,#9a7820 0%,#d4a942 100%)',
+  'linear-gradient(135deg,#1e3a5f 0%,#2d4a78 100%)',
+];
+function avatarGrad(name) { return AVATAR_GRADS[((name || '').charCodeAt(0) || 65) % AVATAR_GRADS.length]; }
+function getInitials(name) { return (name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(''); }
 
 /* ---- DOM helper ---- */
 function h(tag, attrs, ...kids) {
@@ -481,6 +689,16 @@ function SectionHeader(title, action) {
   return action
     ? h('div', { class: 'w-sh' }, inner, h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' →'))
     : h('div', { class: 'w-sh' }, inner);
+}
+
+function PageBanner(eyebrow, title, intro) {
+  return h('div', { class: 'w-page-banner' },
+    h('div', { class: 'max-w' },
+      h('span', { class: 'eyebrow' }, eyebrow),
+      h('h1',   { class: 'w-page-banner-title' }, title),
+      intro ? h('p', { class: 'w-page-banner-intro' }, intro) : null,
+    )
+  );
 }
 
 function ResearchGrid(rows) {
@@ -771,22 +989,23 @@ function Home() {
 
 function PageResearch() {
   const items = (DATA.research && DATA.research.length) ? DATA.research : [];
+  const s = DATA.settings || {};
   const cards = items.length
     ? items.map((r, i) =>
-        h('div', { class: 'w-card' },
-          h('div', { class: 'eyebrow' }, String(i+1).padStart(2,'0')),
-          h('h3', null, r.title || r.name || ''),
-          h('p', null, r.summary || r.description || r.desc || ''),
+        h('div', { class: 'w-rc' },
+          h('div', { class: 'w-rc-badge' }, String(i+1).padStart(2,'0')),
+          h('div', { class: 'w-rc-title' }, r.title || r.name || ''),
+          h('p',   { class: 'w-rc-desc'  }, r.summary || r.description || r.desc || ''),
         )
       )
     : [h('div', { class: 'w-empty' }, 'No research areas yet.')];
-  const s = DATA.settings || {};
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'Research'),
-      h('h1',  { class: 'w-page-title' }, s.research_page_title || 'Six pillars of inquiry'),
-      h('p',   { class: 'w-page-intro' }, s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage. Click any area to see active projects and publications.'),
-      h('div', { class: 'w-grid-3' }, ...cards)
+  return h('div', null,
+    PageBanner('Research', s.research_page_title || 'Six pillars of inquiry',
+      s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-grid-3' }, ...cards)
+      )
     )
   );
 }
@@ -809,50 +1028,73 @@ function PagePeople() {
     if (!ours.length) return null;
     return h('div', { class: 'w-page-section' },
       h('h2', null, label),
-      h('div', { class: 'w-people-row' },
-        ...ours.map(p =>
-          h('div', { class: 'w-person', onclick: () => go('person/' + p.id) },
-            h('div', { class: 'w-person-img', style: p.photo_url ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' } : {} }),
-            h('div', { class: 'w-person-body' },
-              h('div', { class: 'w-person-name' }, p.name || ''),
-              h('div', { class: 'w-person-role' }, p.role || ''),
-              h('div', { class: 'w-person-cat' }, label),
-            )
-          )
-        )
+      h('div', { class: 'w-people-grid' },
+        ...ours.map(p => {
+          const inits = getInitials(p.name);
+          const grad  = avatarGrad(p.name);
+          return h('div', { class: 'w-person-v2', onclick: () => go('person/' + p.id) },
+            h('div', { class: 'w-avatar' },
+              h('div', { class: 'w-avatar-photo', style: p.photo_url
+                ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' }
+                : { background: grad } }),
+              p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+            ),
+            h('div', { class: 'w-pv2-name' }, p.name || ''),
+            h('div', { class: 'w-pv2-role' }, p.role || ''),
+            h('span', { class: 'w-pv2-badge' }, label),
+          );
+        })
       )
     );
   }).filter(Boolean);
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'People'),
-      h('h1',  { class: 'w-page-title' }, (DATA.settings||{}).people_page_title || 'Lab members'),
-      h('p',   { class: 'w-page-intro' }, (DATA.settings||{}).people_page_intro || 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'),
-      sections.length ? sections : h('div', { class: 'w-empty' }, 'Roster is being updated.')
+  const s = DATA.settings || {};
+  return h('div', null,
+    PageBanner('People', s.people_page_title || 'Lab members',
+      s.people_page_intro || 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        sections.length ? sections : h('div', { class: 'w-empty' }, 'Roster is being updated.')
+      )
     )
   );
 }
 
 function PagePersonDetail(id) {
   const p = (DATA.people || []).find(x => String(x.id) === String(id));
-  if (!p) return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('a', { class: 'w-back-link', onclick: () => go('people') }, '← Back to People'),
-      h('div', { class: 'w-empty' }, 'Person not found.')
-    ));
+  if (!p) return h('div', null,
+    PageBanner('People', 'Person not found', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('people') }, '← Back to People'),
+        h('div', { class: 'w-empty' }, 'Person not found.')
+      )
+    )
+  );
+  const inits = getInitials(p.name);
+  const grad  = avatarGrad(p.name);
   const links = [];
   if (p.email)        links.push(h('a', { href: 'mailto:' + p.email }, 'Email'));
   if (p.linkedin_url) links.push(h('a', { href: p.linkedin_url, target: '_blank', rel: 'noopener' }, 'LinkedIn'));
-  if (p.website_url)  links.push(h('a', { href: p.website_url, target: '_blank', rel: 'noopener' }, 'Website'));
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('a', { class: 'w-back-link', onclick: () => go('people') }, '← Back to People'),
-      h('div', { class: 'w-person-detail' },
-        h('div', { class: 'w-person-detail-img', style: p.photo_url ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' } : {} }),
-        h('h2', null, p.name || ''),
-        h('div', { class: 'sub' }, [p.role, p.category].filter(Boolean).join(' · ')),
-        p.bio ? h('div', { class: 'bio' }, p.bio) : h('div', { class: 'bio', style: { color: 'var(--fg-4)' } }, 'Biography coming soon.'),
-        links.length ? h('div', { class: 'links' }, ...links) : null,
+  if (p.website_url)  links.push(h('a', { href: p.website_url,  target: '_blank', rel: 'noopener' }, 'Website'));
+  return h('div', null,
+    PageBanner(p.role || 'People', p.name || '', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('people') }, '← Back to People'),
+        h('div', { class: 'w-person-detail-v2' },
+          h('div', { class: 'w-avatar' },
+            h('div', { class: 'w-avatar-photo', style: p.photo_url
+              ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' }
+              : { background: grad } }),
+            p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+          ),
+          h('h2', { class: 'w-pdetail-name' }, p.name || ''),
+          h('div', { class: 'w-pdetail-sub' }, [p.role, p.category].filter(Boolean).join(' · ')),
+          p.bio
+            ? h('div', { class: 'w-pdetail-bio' }, p.bio)
+            : h('div', { class: 'w-pdetail-bio', style: { color: 'var(--fg-4)', fontStyle: 'italic' } }, 'Biography coming soon.'),
+          links.length ? h('div', { class: 'w-pdetail-links' }, ...links) : null,
+        )
       )
     )
   );
@@ -863,34 +1105,35 @@ function PagePublications() {
   const byYear = {};
   pubs.forEach(p => { const y = p.year || 'n.d.'; (byYear[y] ||= []).push(p); });
   const years = Object.keys(byYear).sort((a, b) => String(b).localeCompare(String(a)));
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'Publications'),
-      h('h1',  { class: 'w-page-title' }, 'Selected publications'),
-      h('p',   { class: 'w-page-intro' }, 'Peer-reviewed journal articles, conference proceedings, and invited talks. Reach out for any preprint not linked here.'),
-      ...(years.length ? years.map(y =>
-        h('div', { class: 'w-page-section' },
-          h('h2', null, y === 'n.d.' ? 'Other' : y),
-          h('div', { class: 'w-pub-list' }, ...byYear[y].map(p =>
-            h('article', { class: 'w-pub-row2' },
-              h('div', { class: 'w-pub-left' },
-                h('div', { class: 'w-pub-yr' }, String(p.year || '')),
-                h('div', { class: 'w-pub-spine' })
-              ),
-              h('div', { class: 'w-pub-mid' },
-                h('div', { class: 'w-pub-title2 display-serif' }, p.title || ''),
-                h('div', { class: 'w-pub-authors' }, p.authors || ''),
-                h('div', { class: 'w-pub-venue' }, p.venue || ''),
-              ),
-              h('div', { class: 'w-pub-right' },
-                p.pdf_url ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null,
-                p.doi_url ? h('a', { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' }, 'DOI') : null,
-                p.ris_url ? h('a', { class: 'w-pub-btn ghost', href: p.ris_url, target: '_blank', rel: 'noopener' }, 'Cite') : null,
+  return h('div', null,
+    PageBanner('Publications', 'Selected publications',
+      'Peer-reviewed journal articles, conference proceedings, and invited talks. Reach out for any preprint not linked here.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        ...(years.length ? years.map(y =>
+          h('div', { class: 'w-page-section' },
+            h('h2', null, y === 'n.d.' ? 'Other' : y),
+            h('div', { class: 'w-pub-list' }, ...byYear[y].map(p =>
+              h('article', { class: 'w-pub-row2' },
+                h('div', { class: 'w-pub-left' },
+                  h('div', { class: 'w-pub-yr' }, String(p.year || '')),
+                  h('div', { class: 'w-pub-spine' })
+                ),
+                h('div', { class: 'w-pub-mid' },
+                  h('div', { class: 'w-pub-title2 display-serif' }, p.title || ''),
+                  h('div', { class: 'w-pub-authors' }, p.authors || ''),
+                  h('div', { class: 'w-pub-venue' }, p.venue || ''),
+                ),
+                h('div', { class: 'w-pub-right' },
+                  p.pdf_url ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null,
+                  p.doi_url ? h('a', { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' }, 'DOI') : null,
+                  p.ris_url ? h('a', { class: 'w-pub-btn ghost', href: p.ris_url, target: '_blank', rel: 'noopener' }, 'Cite') : null,
+                )
               )
-            )
-          ))
-        )
-      ) : [h('div', { class: 'w-empty' }, 'Publication list is being updated.')])
+            ))
+          )
+        ) : [h('div', { class: 'w-empty' }, 'Publication list is being updated.')])
+      )
     )
   );
 }
@@ -898,48 +1141,56 @@ function PagePublications() {
 function PageFacilities() {
   const facs = DATA.facilities || [];
   const s = DATA.settings || {};
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'Facilities'),
-      h('h1',  { class: 'w-page-title' }, s.facilities_page_title || 'Lab facilities & instruments'),
-      h('p',   { class: 'w-page-intro' }, s.facilities_page_intro || 'Click any facility to see photos, the full description, and any documentation we have on it.'),
-      facs.length
-        ? h('div', { class: 'w-grid-2' },
-            ...facs.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },
-              f.photo_url ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } }) : h('div', { class: 'w-fac-img w-fac-img-empty' }),
-              h('div', { class: 'w-fac-body' },
-                h('h3', { class: 'w-fac-title' }, f.name || ''),
-                h('p',  { class: 'w-fac-desc' }, (f.description || '').slice(0, 220) + ((f.description||'').length>220?'…':'')),
-                h('span', { class: 'w-fac-cta' }, 'View facility →')
-              )
-            )))
-        : h('div', { class: 'w-empty' }, 'Facilities will be listed here.')
+  return h('div', null,
+    PageBanner('Facilities', s.facilities_page_title || 'Lab facilities & instruments',
+      s.facilities_page_intro || 'Click any facility to see photos, the full description, and any documentation we have on it.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        facs.length
+          ? h('div', { class: 'w-grid-2' },
+              ...facs.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },
+                f.photo_url
+                  ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } })
+                  : h('div', { class: 'w-fac-img w-fac-img-empty' }),
+                h('div', { class: 'w-fac-body' },
+                  h('h3',  { class: 'w-fac-title' }, f.name || ''),
+                  h('p',   { class: 'w-fac-desc'  }, (f.description || '').slice(0, 220) + ((f.description||'').length > 220 ? '…' : '')),
+                  h('span', { class: 'w-fac-cta'  }, 'View facility →')
+                )
+              )))
+          : h('div', { class: 'w-empty' }, 'Facilities will be listed here.')
+      )
     )
   );
 }
 
 function PageFacilityDetail(id) {
   const f = (DATA.facilities || []).find(x => String(x.id) === String(id));
-  if (!f) return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('a', { class: 'w-back-link', onclick: () => go('facilities') }, '← Back to Facilities'),
-      h('div', { class: 'w-empty' }, 'Facility not found.')
-    ));
+  if (!f) return h('div', null,
+    PageBanner('Facilities', 'Facility not found', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('facilities') }, '← Back to Facilities'),
+        h('div', { class: 'w-empty' }, 'Facility not found.')
+      )
+    )
+  );
   const docs = [];
   if (f.doc_url) docs.push(h('a', { class: 'w-doc-link', href: f.doc_url, target: '_blank', rel: 'noopener' },
     h('span', { class: 'w-doc-icon' }, '📄'),
     h('span', { class: 'w-doc-name' }, f.doc_name || 'Documentation'),
-    h('span', { class: 'w-doc-sub' }, 'Open file')
+    h('span', { class: 'w-doc-sub' },  'Open file')
   ));
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('a', { class: 'w-back-link', onclick: () => go('facilities') }, '← Back to Facilities'),
-      h('article', { class: 'w-fac-detail' },
-        h('div', { class: 'eyebrow' }, 'Facility'),
-        h('h1', { class: 'w-page-title', style: { margin: '6px 0 16px' } }, f.name || ''),
-        f.photo_url ? h('img', { src: f.photo_url, alt: '', class: 'w-fac-detail-img' }) : null,
-        h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
-        docs.length ? h('div', { class: 'w-page-section' }, h('h2', null, 'Documentation'), ...docs) : null,
+  return h('div', null,
+    PageBanner('Facility', f.name || '', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('facilities') }, '← Back to Facilities'),
+        h('article', { class: 'w-fac-detail' },
+          f.photo_url ? h('img', { src: f.photo_url, alt: '', class: 'w-fac-detail-img' }) : null,
+          h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
+          docs.length ? h('div', { class: 'w-page-section' }, h('h2', null, 'Documentation'), ...docs) : null,
+        )
       )
     )
   );
@@ -947,21 +1198,22 @@ function PageFacilityDetail(id) {
 
 function PageApps() {
   const apps = DATA.apps || [];
-  return h('section', { class: 'w-page alt' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'Apps'),
-      h('h1',  { class: 'w-page-title' }, 'Lab apps & calculators'),
-      h('p',   { class: 'w-page-intro' }, 'Browser-based mini-applications produced by the lab — calculators, regime maps, and interactive teaching tools tied to our research.'),
-      apps.length
-        ? h('div', { class: 'w-grid-2' },
-            ...apps.map(a => h('div', { class: 'w-card' },
-              h('h3', null, a.title || ''),
-              h('p',  null, a.summary || a.description || ''),
-              a.url
-                ? h('a', { class: 'btn-ghost', href: a.url, target: '_blank', rel: 'noopener', style: { marginTop: '12px', display: 'inline-block' } }, 'Open app →')
-                : h('span', { class: 'eyebrow', style: { marginTop: '12px', display: 'inline-block', color: 'var(--fg-4)' } }, 'Coming soon'),
-            )))
-        : h('div', { class: 'w-empty' }, 'No apps published yet.')
+  return h('div', null,
+    PageBanner('Apps', 'Lab apps & calculators',
+      'Browser-based mini-applications produced by the lab — calculators, regime maps, and interactive teaching tools tied to our research.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        apps.length
+          ? h('div', { class: 'w-grid-2' },
+              ...apps.map(a => h('div', { class: 'w-card' },
+                h('h3', null, a.title || ''),
+                h('p',  null, a.summary || a.description || ''),
+                a.url
+                  ? h('a', { class: 'btn-ghost', href: a.url, target: '_blank', rel: 'noopener', style: { marginTop: '12px', display: 'inline-block' } }, 'Open app →')
+                  : h('span', { class: 'eyebrow', style: { marginTop: '12px', display: 'inline-block', color: 'var(--fg-4)' } }, 'Coming soon'),
+              )))
+          : h('div', { class: 'w-empty' }, 'No apps published yet.')
+      )
     )
   );
 }
@@ -977,71 +1229,96 @@ function fmtNewsDate(when) {
 
 function PageNews() {
   const news = DATA.news || [];
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'News'),
-      h('h1',  { class: 'w-page-title' }, 'Updates from the lab'),
-      h('p',   { class: 'w-page-intro' }, 'New papers, awards, and milestones. Click any item to read the full story.'),
-      news.length
-        ? h('div', { class: 'w-news-stack', style: { gap: '14px' } },
-            ...news.map(n => h('article', { class: 'w-news-card', onclick: () => go('news/' + n.id), style: { cursor: 'pointer' } },
-              n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
-              h('div', { class: 'w-news-body-wrap' },
-                h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
-                h('h3',  { class: 'w-news-title' }, n.title || ''),
-                h('p',   { class: 'w-news-body' }, (n.content || n.body || n.summary || '').slice(0, 220) + ((n.content||'').length>220?'…':'')),
-              )
-            )))
-        : h('div', { class: 'w-empty' }, 'No news yet — check back soon.')
+  return h('div', null,
+    PageBanner('News', 'Updates from the lab',
+      'New papers, awards, and milestones. Click any item to read the full story.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        news.length
+          ? h('div', { class: 'w-news-stack', style: { gap: '14px' } },
+              ...news.map(n => h('article', { class: 'w-news-card', onclick: () => go('news/' + n.id), style: { cursor: 'pointer' } },
+                n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
+                h('div', { class: 'w-news-body-wrap' },
+                  h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
+                  h('h3',  { class: 'w-news-title' }, n.title || ''),
+                  h('p',   { class: 'w-news-body' }, (n.content || n.body || n.summary || '').slice(0, 220) + ((n.content||'').length > 220 ? '…' : '')),
+                )
+              )))
+          : h('div', { class: 'w-empty' }, 'No news yet — check back soon.')
+      )
     )
   );
 }
 
 function PageNewsDetail(id) {
   const n = (DATA.news || []).find(x => String(x.id) === String(id));
-  if (!n) return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('a', { class: 'w-back-link', onclick: () => go('news') }, '← Back to News'),
-      h('div', { class: 'w-empty' }, 'News item not found.')
-    ));
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('a', { class: 'w-back-link', onclick: () => go('news') }, '← Back to News'),
-      h('article', { class: 'w-news-detail' },
-        h('div', { class: 'eyebrow' }, fmtNewsDate(n.date)),
-        h('h1', { class: 'w-page-title', style: { margin: '6px 0 18px' } }, n.title || ''),
-        n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
-        h('div', { class: 'w-news-body-rich' }, n.content || n.body || ''),
+  if (!n) return h('div', null,
+    PageBanner('News', 'Not found', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('news') }, '← Back to News'),
+        h('div', { class: 'w-empty' }, 'News item not found.')
+      )
+    )
+  );
+  return h('div', null,
+    PageBanner(fmtNewsDate(n.date || n.published_at || n.created_at), n.title || '', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('news') }, '← Back to News'),
+        h('article', { class: 'w-news-detail' },
+          n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
+          h('div', { class: 'w-news-body-rich' }, n.content || n.body || ''),
+        )
       )
     )
   );
 }
 
 function PageJoin() {
-  return h('section', { class: 'w-page alt' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'Join'),
-      h('h1',  { class: 'w-page-title' }, 'Work with LATFS'),
-      h('p',   { class: 'w-page-intro' }, 'We welcome motivated graduate, undergraduate, and visiting researchers. Funded positions are announced on the news page.'),
-      h('div', { class: 'w-grid-2' },
-        h('div', { class: 'w-card' }, h('h3', null, 'Prospective PhD students'), h('p',  null, 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.')),
-        h('div', { class: 'w-card' }, h('h3', null, 'MS / Undergraduate'), h('p',  null, 'Course-based research projects available. Contact the lab to discuss what you would like to learn.')),
-        h('div', { class: 'w-card' }, h('h3', null, 'Industry collaboration'), h('p',  null, 'We partner with industry on directed research, often through the NSF E³S Center. Reach out for membership and project framing.')),
-        h('div', { class: 'w-card' }, h('h3', null, 'Visiting scholars'), h('p',  null, 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.'))
+  const cards = [
+    { icon: '🎓', title: 'Prospective PhD students', body: 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.' },
+    { icon: '📐', title: 'MS / Undergraduate', body: 'Course-based research projects available. Contact the lab to discuss what you would like to learn.' },
+    { icon: '🏭', title: 'Industry collaboration', body: 'We partner with industry on directed research, often through the NSF E³S Center. Reach out for membership and project framing.' },
+    { icon: '✈️', title: 'Visiting scholars', body: 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.' },
+  ];
+  return h('div', null,
+    PageBanner('Join', 'Work with LATFS',
+      'We welcome motivated graduate, undergraduate, and visiting researchers. Funded positions are announced on the news page.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-grid-2' },
+          ...cards.map(c =>
+            h('div', { class: 'w-icon-card' },
+              h('span', { class: 'w-icon-card-icon' }, c.icon),
+              h('h3', null, c.title),
+              h('p',  null, c.body),
+            )
+          )
+        )
       )
     )
   );
 }
 
 function PageContact() {
-  return h('section', { class: 'w-page' },
-    h('div', { class: 'max-w' },
-      h('div', { class: 'eyebrow' }, 'Contact'),
-      h('h1',  { class: 'w-page-title' }, 'Get in touch'),
-      h('p',   { class: 'w-page-intro' }, 'For research collaborations, prospective student inquiries, and press, the fastest route is email.'),
-      h('div', { class: 'w-grid-2' },
-        h('div', { class: 'w-card' }, h('h3', null, 'Director'), h('p',  null, 'Dr. Alfonso Ortega', h('br'), 'aortega@villanova.edu', h('br'), '+1 (610) 519-4996')),
-        h('div', { class: 'w-card' }, h('h3', null, 'Mailing address'), h('p',  null, 'Tolentine Hall 344', h('br'), 'Villanova University', h('br'), '800 Lancaster Avenue', h('br'), 'Villanova, PA 19085'))
+  return h('div', null,
+    PageBanner('Contact', 'Get in touch',
+      'For research collaborations, prospective student inquiries, and press, the fastest route is email.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-grid-2' },
+          h('div', { class: 'w-icon-card' },
+            h('span', { class: 'w-icon-card-icon' }, '👤'),
+            h('h3', null, 'Director'),
+            h('p',  null, 'Dr. Alfonso Ortega', h('br'), 'aortega@villanova.edu', h('br'), '+1 (610) 519-4996'),
+          ),
+          h('div', { class: 'w-icon-card' },
+            h('span', { class: 'w-icon-card-icon' }, '🏛️'),
+            h('h3', null, 'Mailing address'),
+            h('p',  null, 'Tolentine Hall 344', h('br'), 'Villanova University', h('br'), '800 Lancaster Avenue', h('br'), 'Villanova, PA 19085'),
+          ),
+        )
       )
     )
   );
