@@ -896,6 +896,23 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve legacy ortegalab website files from the repo root (HTML, CSS, JS, images).
+// A blocklist middleware runs first so that sensitive server files are never exposed.
+const BLOCKED_ROOT_PATHS = new Set([
+  'server.js', 'package.json', 'package-lock.json',
+  'latfs.db', 'Dockerfile', 'docker-compose.yml',
+  'README', 'README.md', 'tailwind.config.js', 'license.txt',
+]);
+app.use((req, res, next) => {
+  const first = req.path.split('/').filter(Boolean)[0] || '';
+  if (BLOCKED_ROOT_PATHS.has(first)) return res.status(404).end();
+  if (first === 'node_modules' || first === 'uploads' || first === 'src') return res.status(404).end();
+  // Block dotfiles (e.g. .env, .gitignore) — express dotfiles:'deny' also handles this below
+  if (first.startsWith('.')) return res.status(404).end();
+  next();
+});
+app.use(express.static(__dirname, { dotfiles: 'deny' }));
+
 // Rate limiters
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
 const apiWriteLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });

@@ -1914,7 +1914,7 @@ async function renderOverview(root){
 const ROUTES = { overview: renderOverview, content: renderAdmin, schedule: renderSchedule, tasks: renderTasks, meetings: renderMeetings, inventory: renderInventory, projects: renderProjects };
 
 async function doLogout() {
-  await fetch('/admin/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  await fetch('/admin/logout',{method:'POST',credentials:'same-origin', headers:{'x-csrf-token': CSRF||''}}).catch(()=>{});
   CSRF = '';
   _resetAdminLogin();
   $('#appShell').style.display = 'none';
