@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LATFS · Laboratory for Advanced Thermal & Fluid Systems</title>
-<meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University · two-phase flow, microchannel cooling, energy-efficient electronic systems.">
+<title>LATFS Â· Laboratory for Advanced Thermal & Fluid Systems</title>
+<meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University Â· two-phase flow, microchannel cooling, energy-efficient electronic systems.">
 <link rel="canonical" href="https://latfs.villanova.edu/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="LATFS · Villanova University">
-<meta property="og:title" content="LATFS · Laboratory for Advanced Thermal & Fluid Systems">
-<meta property="og:description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University — research in two-phase flow, microchannel cooling, and energy-efficient electronic systems.">
+<meta property="og:site_name" content="LATFS Â· Villanova University">
+<meta property="og:title" content="LATFS Â· Laboratory for Advanced Thermal & Fluid Systems">
+<meta property="og:description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University â€” research in two-phase flow, microchannel cooling, and energy-efficient electronic systems.">
 <meta property="og:url" content="https://latfs.villanova.edu/">
 <meta property="og:image" content="https://latfs.villanova.edu/assets/og-cover.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="LATFS · Laboratory for Advanced Thermal & Fluid Systems">
+<meta name="twitter:title" content="LATFS Â· Laboratory for Advanced Thermal & Fluid Systems">
 <meta name="twitter:description" content="Research in two-phase flow, microchannel cooling, and energy-efficient electronic systems at Villanova University.">
 <meta name="twitter:image" content="https://latfs.villanova.edu/assets/og-cover.png">
-<link rel="icon" href="/assets/favicon.gif">
+<link rel="icon" href="./assets/favicon.gif">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   LATFS Design System — synced with website-ui-kit
+   LATFS Design System â€” synced with website-ui-kit
    ============================================================ */
 :root {
   --navy-950:#080f24; --navy-900:#0f172a; --navy-800:#162041; --navy-700:#1e3a5f;
@@ -45,7 +45,7 @@
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
   --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px; --space-20:80px;
   --font-sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  --font-display:'Fraunces','Iowan Old Style',Georgia,serif;
+  --font-display:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem;
   --text-xl:1.25rem; --text-2xl:1.5rem; --text-3xl:1.875rem; --text-4xl:2.25rem; --text-5xl:3rem; --text-6xl:3.75rem;
@@ -54,8 +54,17 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg-2); }
+html, body { margin: 0; background: var(--bg-2); overflow-x: hidden; }
 body { font-family: var(--font-sans); font-size: var(--text-base); line-height: 1.6; color: var(--fg-1); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body[data-theme="navy-copper"] {
+  --gold-900:#6d381b;
+  --gold-700:#8f4b26;
+  --gold-600:#ad6032;
+  --gold-500:#cb7544;
+  --gold-300:#ebb08b;
+  --gold-100:#fff0e7;
+  --gold-50:#fff7f2;
+}
 h1, h2, h3, h4 { color: var(--fg-1); margin: 0; }
 p { margin: 0; color: var(--fg-2); }
 a { color: var(--navy-700); text-decoration: none; transition: color var(--dur-fast) var(--ease-out); }
@@ -67,14 +76,13 @@ a:hover { color: var(--gold-700); }
 /* Nav */
 .w-nav { background: var(--navy-900); position: sticky; top: 0; z-index: 30; border-bottom: 1px solid rgba(255,255,255,.06); }
 .w-nav-inner { max-width: min(1480px, 94vw); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; }
-.w-brand { display: flex; align-items: center; cursor: pointer; gap: 10px; }
-.w-brand-img { height: 38px; width: auto; display: block; }
-.w-brand-text { color: #fff; font-weight: 800; letter-spacing: -.01em; font-size: 14px; }
-.w-brand-text small { display: block; font-weight: 500; color: rgba(255,255,255,.55); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-top: 1px; }
-.w-nav-links { display: flex; gap: 2px; }
-.w-nav-link { color: rgba(255,255,255,.65); font-size: 13px; font-weight: 500; padding: 8px 12px; border-radius: 4px; cursor: pointer; position: relative; transition: color .15s; user-select: none; }
-.w-nav-signin { color: #fff; background: var(--gold-600); font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 6px; margin-left: 12px; text-decoration: none; letter-spacing: .04em; text-transform: uppercase; transition: background .15s; }
-.w-nav-signin:hover { background: var(--gold-700); color: #fff; }
+.w-brand { display: flex; align-items: center; cursor: pointer; gap: 0; }
+.w-brand-img { height: 42px; width: auto; max-width: 58px; object-fit: contain; display: block; }
+.w-brand-text { display: none; }
+.w-nav-links { display: flex; gap: 0; }
+.w-nav-link { color: rgba(255,255,255,.65); font-size: 12.5px; font-weight: 500; padding: 8px 10px; border-radius: 4px; cursor: pointer; position: relative; transition: color .15s; user-select: none; white-space: nowrap; }
+.w-nav-signin { color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; margin-left: 12px; text-decoration: none; letter-spacing: 0; text-transform: none; transition: background .15s, border-color .15s; }
+.w-nav-signin:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.24); color: #fff; }
 .w-nav-link:hover { color: #fff; }
 .w-nav-link.active { color: #fff; }
 .w-nav-link.active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -2px; height: 2px; background: var(--gold-600); border-radius: 1px; }
@@ -88,10 +96,12 @@ a:hover { color: var(--gold-700); }
 .w-hero-grain { position: absolute; inset: 0; opacity: .08; pointer-events: none; mix-blend-mode: overlay;
   background-image: radial-gradient(rgba(255,255,255,.4) 1px, transparent 1px); background-size: 3px 3px; }
 .w-hero-content { position: relative; z-index: 2; max-width: min(1480px, 94vw); margin: 0 auto; padding: 96px 24px 24px; min-height: 460px; display: flex; flex-direction: column; justify-content: center; }
-.w-hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.78); margin-bottom: 18px; }
-.w-hero-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gold-500); box-shadow: 0 0 0 3px rgba(212,169,66,.18); }
+.w-hero-eyebrow,
+.w-hero-dot,
+.w-hero-panel,
+.w-banner-aside { display: none !important; }
 .w-hero-title { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin: 8px 0 0; max-width: 880px; color: #fff; }
-.w-amp { font-family: var(--font-display); font-weight: 500; font-style: italic; color: var(--gold-300); padding: 0 .04em; }
+.w-amp { font-family: inherit; font-weight: inherit; font-style: normal; color: inherit; padding: 0; }
 
 .w-hero-footer { position: relative; z-index: 2; max-width: min(1480px, 94vw); margin: 0 auto; padding: 0 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .w-hero-metrics { display: flex; gap: 38px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14); width: 100%; }
@@ -120,18 +130,20 @@ a:hover { color: var(--gold-700); }
 
 /* Research */
 .w-research { background: #fff; }
-.w-research-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
-.w-research-list { border-top: 1px solid var(--border-1); }
-.w-research-row { display: grid; grid-template-columns: 1fr 20px; gap: 12px; align-items: start; padding: 13px 4px; border-bottom: 1px solid var(--border-1); text-decoration: none; color: inherit; cursor: pointer; transition: padding-left .2s ease, background .2s ease, border-left .2s ease; border-left: 3px solid transparent; }
-.w-research-row:hover, .w-research-row.is-hover { padding-left: 14px; background: linear-gradient(90deg, rgba(200,162,74,.06) 0%, transparent 80%); border-left-color: var(--gold-500); }
+.w-research-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 1.06fr); gap: 28px; align-items: start; overflow: visible; }
+.w-research-list { position: relative; min-width: 0; border-top: 1px solid var(--border-1); overflow: visible; z-index: 2; padding-right: 0; }
+.w-research-row { position: relative; display: block; padding: 18px 20px 18px 18px; border-bottom: 1px solid var(--border-1); text-decoration: none; color: inherit; cursor: pointer; transition: background .2s ease, box-shadow .24s ease, border-color .24s ease, transform .24s ease; border-left: 4px solid transparent; border-radius: 22px; margin-right: 0; overflow: visible; background: linear-gradient(180deg, rgba(255,255,255,.995), rgba(255,255,255,.985)); }
+.w-research-row::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; background: linear-gradient(90deg, rgba(212,169,66,.09) 0%, rgba(255,255,255,0) 58%); transition: opacity .24s ease; }
+.w-research-row::after { display: none; }
+.w-research-row:hover, .w-research-row.is-hover { border-left-color: var(--gold-500); box-shadow: 0 18px 32px rgba(15,23,42,.08), 0 0 0 1px rgba(212,169,66,.18); transform: translateY(-1px); z-index: 3; }
+.w-research-row:hover::before, .w-research-row.is-hover::before { opacity: 1; }
 .w-research-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--navy-900); margin: 0 0 3px; letter-spacing: -.015em; line-height: 1.25; }
 .w-research-desc { font-size: 12px; color: var(--fg-3); line-height: 1.5; margin: 0 0 5px; }
 .w-research-meta { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-4); }
-.w-research-arrow { color: var(--fg-4); font-size: 16px; align-self: center; transition: transform .2s ease, color .2s ease; }
-.w-research-row:hover .w-research-arrow, .w-research-row.is-hover .w-research-arrow { color: var(--gold-700); transform: translateX(4px); }
-.w-research-peek { position: sticky; top: 80px; }
-.w-research-peek-frame { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 4/3; background: var(--navy-900); box-shadow: var(--shadow-md); transition: box-shadow .3s ease, transform .3s ease; }
-.w-research-peek-frame.is-row-hovered { box-shadow: 0 0 0 3px var(--gold-500), 0 8px 32px rgba(0,0,0,.3); transform: scale(1.015); }
+.w-research-peek { position: sticky; top: 80px; margin-left: 0; padding-left: 0; min-width: 0; z-index: 1; }
+.w-research-peek-frame { position: relative; border-radius: 30px; overflow: hidden; aspect-ratio: 4/3; background: var(--navy-900); box-shadow: 0 0 0 1px rgba(212,169,66,.24), 0 24px 48px rgba(15,23,42,.18), 0 0 32px rgba(247,236,203,.18); transition: box-shadow .3s ease; }
+.w-research-peek-frame::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, rgba(212,169,66,.3) 0%, rgba(232,201,114,.16) 12%, rgba(255,255,255,0) 30%), radial-gradient(circle at 0% 50%, rgba(212,169,66,.22) 0%, rgba(247,236,203,.14) 18%, rgba(255,255,255,0) 42%); z-index: 0; pointer-events: none; }
+.w-research-peek-frame.is-row-hovered { box-shadow: 0 0 0 1px rgba(212,169,66,.38), 0 0 42px rgba(247,236,203,.24), 0 30px 58px rgba(15,23,42,.22); }
 .w-research-peek-img { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transform: scale(1.05); transition: opacity .5s ease, transform .6s ease; }
 .w-research-peek-img.is-active { opacity: 1; transform: scale(1); }
 .w-research-peek-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,.1) 0%, rgba(15,23,42,.85) 100%); }
@@ -155,39 +167,59 @@ a:hover { color: var(--gold-700); }
 .btn-ghost:hover { border-color: var(--gold-600); color: var(--gold-700); }
 .btn-primary { background: var(--gold-600); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
 .btn-primary:hover { background: var(--gold-700); }
+.w-app-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.w-app-modal-bg { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 18px; z-index: 60; }
+.w-app-modal { width: min(1120px, 96vw); height: min(82vh, 760px); background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(15,23,42,.28); display: grid; grid-template-rows: auto 1fr; }
+.w-app-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--border-1); background: linear-gradient(180deg, rgba(248,250,252,.96) 0%, rgba(255,255,255,.98) 100%); }
+.w-app-modal-copy { min-width: 0; }
+.w-app-modal-copy h3 { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--navy-900); letter-spacing: -.02em; }
+.w-app-modal-copy p { margin: 4px 0 0; font-size: 13px; color: var(--fg-3); }
+.w-app-modal-head .btn-ghost { white-space: nowrap; }
+.w-app-frame { width: 100%; height: 100%; border: 0; background: #fff; }
 
 /* Photo gallery */
 .w-gallery { background: var(--bg-2); padding: 48px 0 64px; }
 .w-gallery-nav { display: flex; gap: 6px; }
 .w-gallery-arrow { width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid var(--border-1); color: var(--navy-900); font-size: 22px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, background .15s; }
 .w-gallery-arrow:hover { border-color: var(--gold-600); color: var(--gold-700); background: var(--gold-50); }
-.w-gallery-strip { display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: 4px 0 14px; scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
-.w-gallery-strip::-webkit-scrollbar { height: 6px; }
-.w-gallery-strip::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
-.w-gallery-slide { flex: 0 0 520px; height: 320px; position: relative; border-radius: 12px; overflow: hidden; scroll-snap-align: start; background: var(--navy-900); box-shadow: var(--shadow-xs); text-decoration: none; transition: box-shadow .2s var(--ease-out); }
+.w-gallery-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 4px 0 0; }
+.w-gallery-slide { min-width: 0; height: 320px; position: relative; border: 0; border-radius: 18px; overflow: hidden; background: var(--navy-900); box-shadow: var(--shadow-xs); text-decoration: none; text-align: left; cursor: pointer; transition: box-shadow .2s var(--ease-out), transform .2s ease; }
 .w-gallery-slide:hover { box-shadow: var(--shadow-md); }
+.w-gallery-slide:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 3px; }
 .w-gallery-slide img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s var(--ease-out); }
 .w-gallery-slide:hover img { transform: scale(1.04); }
 .w-gallery-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0) 50%, rgba(15,23,42,.92) 100%); }
 .w-gallery-meta { position: absolute; left: 18px; right: 18px; bottom: 14px; color: #fff; }
 .w-gallery-cat { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-300); margin-bottom: 4px; }
 .w-gallery-title { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.w-gallery-sub { font-size: 12px; color: var(--fg-3); margin-top: 4px; }
+.w-lightbox-bg { position: fixed; inset: 0; z-index: 90; background: rgba(7,12,26,.82); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.w-lightbox { width: min(1120px, 94vw); max-height: 90vh; border-radius: 22px; overflow: hidden; background: var(--navy-900); border: 1px solid rgba(255,255,255,.18); box-shadow: 0 28px 90px rgba(0,0,0,.42); position: relative; }
+.w-lightbox-img { width: 100%; max-height: 76vh; display: block; object-fit: contain; background: #020617; }
+.w-lightbox-meta { padding: 16px 20px 18px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.w-lightbox-meta strong { display: block; font-size: 18px; }
+.w-lightbox-meta span { display: block; margin-top: 3px; font-size: 12px; color: rgba(255,255,255,.62); text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+.w-lightbox-close { border: 1px solid rgba(255,255,255,.26); background: rgba(255,255,255,.08); color: #fff; border-radius: 999px; padding: 9px 14px; font-weight: 800; cursor: pointer; }
 
-/* Marquee — sponsors */
+/* Marquee â€” sponsors */
 .w-marquee-wrap { overflow: hidden; padding: 20px 0; }
 .w-marquee { display: flex; gap: 56px; align-items: center; animation: w-scroll 38s linear infinite; padding: 0 28px; width: max-content; }
 .w-marquee:hover { animation-play-state: paused; }
-.w-sponsor-logo { flex-shrink: 0; height: 52px; width: auto; max-width: 170px; object-fit: contain; filter: opacity(.85); transition: filter .25s ease; }
+.w-sponsor-logo { flex-shrink: 0; height: 88px; width: auto; max-width: 320px; object-fit: contain; filter: opacity(.9); transition: filter .25s ease; }
 .w-sponsor-logo:hover { filter: opacity(1); }
 
 /* Footer */
 .w-footer { background: var(--navy-900); color: rgba(255,255,255,.7); }
 .w-footer-anchor { padding: 28px 24px 22px; border-bottom: 1px solid rgba(255,255,255,.08); text-align: center; }
 .w-anchor-label { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 14px; }
-.w-anchor-row { display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap; }
-.w-anchor-logo { height: 54px; width: auto; filter: invert(1) brightness(1.2); }
+.w-anchor-row { display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
+.w-anchor-logo-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; min-height: 82px; }
+.w-anchor-logo { height: 74px; width: auto; max-width: 420px; object-fit: contain; filter: none; background: transparent; border-radius: 0; padding: 0; box-shadow: none; }
+.w-anchor-logo.is-es2 { height: 76px; max-width: 380px; }
+.w-anchor-logo.is-nsf { height: 78px; max-width: 90px; }
+.w-anchor-logo.is-villanova { height: 102px; max-width: 460px; }
 .w-anchor-div { width: 1px; height: 40px; background: rgba(255,255,255,.12); }
-.w-foot-logo { height: 44px; width: auto; margin-bottom: 10px; filter: brightness(0) invert(1); }
+.w-foot-logo { height: 64px; width: auto; max-width: 290px; object-fit: contain; margin-bottom: 10px; filter: none; background: transparent; border-radius: 0; padding: 0; box-shadow: none; }
 .w-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; padding: 40px 24px; }
 .w-foot-sub { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.6); margin: 0; }
 .w-foot-h { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); margin: 0 0 10px; font-weight: 700; }
@@ -207,6 +239,11 @@ a:hover { color: var(--gold-700); }
 .w-card:hover { box-shadow: var(--shadow-md); }
 .w-card h3 { color: var(--navy-900); font-size: 16px; margin: 0 0 6px; font-weight: 700; }
 .w-card p { color: var(--fg-3); font-size: 13px; line-height: 1.55; margin: 0; }
+.w-download-title { display:flex; align-items:center; gap:14px; min-width:0; }
+.w-download-thumb { width:72px; height:56px; border-radius:12px; border:1px solid var(--border-1); background:var(--bg-1); object-fit:contain; padding:6px; flex:0 0 auto; }
+.w-download-fileicon { width:72px; height:56px; border-radius:12px; border:1px solid var(--border-1); background:linear-gradient(135deg,var(--navy-900),#27496f); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; letter-spacing:.08em; flex:0 0 auto; }
+.w-download-row .w-pub-left { align-self: center; justify-content: flex-start; }
+.w-download-row .w-pub-yr { font-size: 17px; line-height: 1.05; }
 .w-person { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; cursor: pointer; width: 200px; flex: 0 0 200px; text-align: center; }
 .w-person:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .w-person-img { width: 120px; height: 120px; border-radius: 50%; background: var(--gray-100) center/cover no-repeat; margin: 22px auto 12px; border: 3px solid #fff; box-shadow: var(--shadow-sm); }
@@ -231,23 +268,23 @@ a:hover { color: var(--gold-700); }
 .w-pub-row .w-pub-a { font-size: 12px; color: var(--fg-3); margin: 0; }
 .w-pub-row .w-pub-v { font-size: 11px; color: var(--fg-4); font-style: italic; margin-top: 2px; }
 
-/* Publications — polished */
+/* Publications â€” polished */
 .w-pub-list { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); }
-.w-pub-row2 { display: grid; grid-template-columns: 84px 1fr auto; gap: 22px; padding: 22px 22px; border-bottom: 1px solid var(--border-1); align-items: flex-start; transition: background .15s; }
+.w-pub-row2 { display: grid; grid-template-columns: 92px 1fr 96px; gap: 22px; padding: 22px 22px; border-bottom: 1px solid var(--border-1); align-items: center; transition: background .15s; }
 .w-pub-row2:last-child { border-bottom: none; }
 .w-pub-row2:hover { background: var(--gold-50); }
-.w-pub-left { position: relative; }
-.w-pub-yr { font-family: var(--font-display); font-weight: 600; color: var(--gold-700); font-size: 28px; line-height: 1; letter-spacing: -.02em; }
+.w-pub-left { position: relative; display: flex; align-items: center; min-height: 32px; }
+.w-pub-yr { font-family: var(--font-sans); font-weight: 800; color: var(--gold-700); font-size: 22px; line-height: 1; letter-spacing: -.03em; }
 .w-pub-title2 { font-size: 16px; font-weight: 600; color: var(--navy-900); margin: 0 0 6px; line-height: 1.35; letter-spacing: -.01em; }
 .w-pub-authors { font-size: 13px; color: var(--fg-2); margin: 0 0 4px; }
 .w-pub-venue { font-size: 12px; color: var(--gold-700); font-style: italic; }
-.w-pub-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-.w-pub-btn { background: var(--navy-900); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; transition: background .15s; }
+.w-pub-right { display: flex; flex-direction: column; gap: 7px; align-items: center; justify-content: center; align-self: center; }
+.w-pub-btn { background: var(--navy-900); color: #fff; min-width: 64px; min-height: 31px; padding: 6px 10px; border: 0; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; text-align: center; cursor: pointer; transition: background .15s; }
 .w-pub-btn:hover { background: var(--gold-700); color: #fff; }
 .w-pub-btn.ghost { background: #fff; color: var(--fg-2); border: 1px solid var(--border-1); }
 .w-pub-btn.ghost:hover { background: var(--bg-1); color: var(--gold-700); border-color: var(--gold-300); }
 
-/* News — with thumbnail */
+/* News â€” with thumbnail */
 .w-news-card { display: flex; gap: 18px; align-items: stretch; padding: 18px 20px; border: 1px solid var(--border-1); border-radius: 12px; background: #fff; transition: box-shadow .2s, transform .2s; }
 .w-news-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .w-news-thumb { width: 140px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--bg-1); }
@@ -260,7 +297,7 @@ a:hover { color: var(--gold-700); }
 .w-news-body-rich { font-size: 15px; color: var(--fg-2); line-height: 1.75; white-space: pre-wrap; }
 .w-news-body-rich a { color: var(--gold-700); text-decoration: underline; }
 
-/* Facilities — clickable cards */
+/* Facilities â€” clickable cards */
 .w-fac-card { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; }
 .w-fac-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .w-fac-img { aspect-ratio: 3/2; height: auto; background: var(--gray-100) center/cover no-repeat; }
@@ -283,29 +320,46 @@ a:hover { color: var(--gold-700); }
 .w-empty { padding: 28px 0; color: var(--fg-3); font-size: 13px; }
 .w-loading { padding: 28px 0; color: var(--fg-3); font-size: 13px; font-style: italic; }
 
+@media (max-width: 1180px) {
+  .w-nav-inner { gap: 18px; }
+  .w-brand-img { height: 36px; }
+  .w-nav-links { display: none; }
+  .w-nav-toggle { display: block; }
+  .w-nav-links.open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--navy-900); padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .w-nav-links.open .w-nav-signin { margin: 12px 0 0; display: inline-flex; align-self: flex-start; }
+  .w-hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .w-hero-copy { max-width: none; }
+  .w-hero-footer { gap: 20px; }
+  .w-hero-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .w-research-layout { grid-template-columns: 1fr; gap: 20px; }
+  .w-research-peek { position: relative; top: auto; }
+  .w-research-peek-frame { aspect-ratio: 16 / 10; }
+  .w-gallery-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 900px) {
   .w-research-layout { grid-template-columns: 1fr; }
-  .w-research-peek { display: none; }
+  .w-research-list { padding-right: 0; max-width: none; }
+  .w-research-row { margin-right: 0; border-radius: 18px; }
+  .w-research-row:hover, .w-research-row.is-hover { box-shadow: 0 14px 24px rgba(15,23,42,.07); }
+  .w-research-peek { display: none; margin-left: 0; padding-left: 0; }
   .w-two { grid-template-columns: 1fr; }
   .w-footer-grid { grid-template-columns: 1fr 1fr; }
   .w-grid-3 { grid-template-columns: repeat(2,1fr); }
-  .w-nav-links { display: none; }
-  .w-nav-toggle { display: block; }
-  .w-nav-links.open { display: flex; flex-direction: column; position: absolute; top: 56px; left: 0; right: 0; background: var(--navy-900); padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,.08); }
   .w-hero-metrics { gap: 22px; }
 }
 @media (max-width: 600px) {
   .w-grid-2, .w-grid-3 { grid-template-columns: 1fr; }
   .w-footer-grid { grid-template-columns: 1fr; gap: 24px; }
   .w-section { padding: 36px 0; }
+  .w-gallery-strip { grid-template-columns: 1fr; }
   .w-gallery-slide { flex-basis: 320px; height: 220px; }
 }
 
 /* ============================================================
-   LATFS UI v2 — harmonised type, colour & component upgrades
+   LATFS UI v2 â€” harmonised type, colour & component upgrades
    ============================================================ */
 
-/* ── Interior page banner ───────────────────────────────── */
+/* â”€â”€ Interior page banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-page-banner {
   background: linear-gradient(160deg, var(--navy-950) 0%, var(--navy-800) 100%);
   padding: 72px 0 60px;
@@ -334,49 +388,178 @@ a:hover { color: var(--gold-700); }
   margin: 0;
 }
 
-/* ── Content area below the banner ─────────────────────── */
+/* â”€â”€ Content area below the banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-page-content { padding: 56px 0; min-height: 36vh; background: var(--bg-2); }
 .w-page-content.on-white { background: #fff; }
 
-/* ── People grid ────────────────────────────────────────── */
-.w-people-grid {
+/* â”€â”€ Homepage quick links â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-quick-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 200px);
-  gap: 20px;
-  justify-content: flex-start;
-  margin-top: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
 }
-
-/* ── Person card v2 ─────────────────────────────────────── */
-.w-person-v2 {
+.w-quick-card {
   background: #fff;
   border: 1px solid var(--border-1);
   border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(15,23,42,.06);
-  transition: box-shadow .22s var(--ease-out), transform .22s var(--ease-out), border-color .2s;
+  padding: 18px;
+  box-shadow: var(--shadow-xs);
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s;
   cursor: pointer;
-  text-align: center;
 }
-.w-person-v2:hover {
-  box-shadow: 0 10px 30px rgba(15,23,42,.13);
-  transform: translateY(-3px);
+.w-quick-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
   border-color: var(--gold-300);
 }
+.w-quick-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-700);
+  margin-bottom: 10px;
+}
+.w-quick-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin: 0 0 4px;
+  letter-spacing: -.01em;
+}
+.w-quick-copy {
+  font-size: 13px;
+  color: var(--fg-3);
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.w-quick-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-2);
+}
 
-/* ── Avatar ring ────────────────────────────────────────── */
+/* â”€â”€ Discovery filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-filter-shell {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow-xs);
+  margin-bottom: 28px;
+}
+.w-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.w-filter-row + .w-filter-row { margin-top: 12px; }
+.w-filter-search {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 240px;
+}
+.w-filter-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fg-4);
+  font-size: 14px;
+  pointer-events: none;
+}
+.w-filter-input,
+.w-filter-select {
+  width: 100%;
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--fg-1);
+  font: inherit;
+  padding: 12px 14px;
+}
+.w-filter-input { padding-left: 38px; }
+.w-filter-input::placeholder { color: var(--fg-4); }
+.w-filter-input:focus,
+.w-filter-select:focus {
+  outline: none;
+  border-color: var(--gold-500);
+  box-shadow: 0 0 0 3px rgba(212,169,66,.16);
+}
+.w-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.w-filter-pill {
+  border: 1px solid var(--border-1);
+  background: #fff;
+  color: var(--fg-2);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.w-filter-pill:hover,
+.w-filter-pill.active {
+  background: var(--gold-50);
+  border-color: var(--gold-300);
+  color: var(--gold-900);
+}
+.w-filter-meta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--fg-3);
+}
+.w-results-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* â”€â”€ People grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 220px));
+  gap: 28px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* â”€â”€ Person card v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-person-v2 {
+  background: transparent;
+  border: 0;
+  border-radius: 18px;
+  overflow: visible;
+  box-shadow: none;
+  transition: transform .22s var(--ease-out);
+  cursor: pointer;
+  text-align: center;
+  padding: 8px 10px 14px;
+}
+.w-person-v2:hover {
+  transform: translateY(-3px);
+}
+
+/* â”€â”€ Avatar ring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-avatar {
   position: relative;
-  width: 88px;
-  height: 88px;
+  width: 148px;
+  height: 148px;
   border-radius: 50%;
-  margin: 22px auto 14px;
+  margin: 0 auto 16px;
   overflow: hidden;
   flex-shrink: 0;
-  border: 2.5px solid var(--border-1);
-  transition: border-color .22s;
+  border: 3px solid rgba(212,169,66,.18);
+  box-shadow: 0 14px 24px rgba(15,23,42,.1);
+  transition: border-color .22s, box-shadow .22s;
 }
-.w-person-v2:hover .w-avatar { border-color: var(--gold-400); }
+.w-person-v2:hover .w-avatar { border-color: var(--gold-400); box-shadow: 0 18px 28px rgba(15,23,42,.12); }
 .w-avatar-photo {
   width: 100%; height: 100%;
   background-size: cover;
@@ -391,7 +574,7 @@ a:hover { color: var(--gold-700); }
   text-shadow: 0 1px 4px rgba(0,0,0,.3);
 }
 
-/* ── Person card text slots ─────────────────────────────── */
+/* â”€â”€ Person card text slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-pv2-name { font-size: var(--text-sm); font-weight: 700; color: var(--navy-900); margin: 0 0 3px; padding: 0 12px; line-height: 1.3; }
 .w-pv2-role { font-size: 12px; color: var(--fg-3); margin: 0 0 10px; padding: 0 10px; line-height: 1.4; }
 .w-pv2-badge {
@@ -403,7 +586,7 @@ a:hover { color: var(--gold-700); }
   margin-bottom: 16px;
 }
 
-/* ── Research cards v2 (Research page) ──────────────────── */
+/* â”€â”€ Research cards v2 (Research page) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-rc {
   background: #fff;
   border: 1px solid var(--border-1);
@@ -418,18 +601,10 @@ a:hover { color: var(--gold-700); }
   border-color: var(--gold-300);
   transform: translateY(-2px);
 }
-.w-rc-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px;
-  border-radius: var(--radius-md);
-  background: var(--navy-900); color: var(--gold-400);
-  font-size: 10px; font-weight: 800; letter-spacing: .06em;
-  flex-shrink: 0; align-self: flex-start;
-}
 .w-rc-title { font-size: var(--text-base); font-weight: 700; color: var(--navy-900); line-height: 1.3; letter-spacing: -.01em; }
 .w-rc-desc  { font-size: var(--text-sm); color: var(--fg-2); line-height: 1.62; }
 
-/* ── Icon cards (Join, Contact) ─────────────────────────── */
+/* â”€â”€ Icon cards (Join, Contact) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-icon-card {
   background: #fff;
   border: 1px solid var(--border-1);
@@ -443,7 +618,7 @@ a:hover { color: var(--gold-700); }
 .w-icon-card h3 { color: var(--navy-900); font-size: var(--text-base); font-weight: 700; margin: 0 0 8px; letter-spacing: -.01em; }
 .w-icon-card p  { color: var(--fg-2); font-size: var(--text-sm); line-height: 1.65; margin: 0; }
 
-/* ── Person detail v2 ───────────────────────────────────── */
+/* â”€â”€ Person detail v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-person-detail-v2 {
   background: #fff;
   border: 1px solid var(--border-1);
@@ -468,7 +643,7 @@ a:hover { color: var(--gold-700); }
 }
 .w-pdetail-links a:hover { background: var(--gold-100); border-color: var(--gold-300); color: var(--gold-900); }
 
-/* ── Back link v2 ───────────────────────────────────────── */
+/* â”€â”€ Back link v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-back {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: var(--text-sm); font-weight: 600;
@@ -478,23 +653,152 @@ a:hover { color: var(--gold-700); }
 }
 .w-back:hover { color: var(--gold-900); }
 
-/* ── Improved empty / loading states ───────────────────── */
+/* â”€â”€ Improved empty / loading states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .w-empty   { padding: 52px 0; color: var(--fg-4); font-size: var(--text-sm); text-align: center; }
 .w-loading { padding: 52px 0; color: var(--fg-4); font-size: var(--text-sm); font-style: italic; text-align: center; }
 
-/* ── Focus rings ────────────────────────────────────────── */
+/* â”€â”€ Focus rings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :focus-visible { outline: 2px solid var(--gold-500); outline-offset: 3px; border-radius: var(--radius-xs); }
 
-/* ── Responsive v2 ──────────────────────────────────────── */
+/* â”€â”€ Responsive v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 900px) {
-  .w-people-grid { grid-template-columns: repeat(auto-fill, 180px); gap: 16px; }
+  .w-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .w-people-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 210px)); gap: 20px; }
   .w-page-banner { padding: 52px 0 44px; }
 }
 @media (max-width: 600px) {
-  .w-people-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .w-quick-grid { grid-template-columns: 1fr; }
+  .w-people-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 210px)); gap: 16px; }
   .w-page-banner { padding: 40px 0 36px; }
   .w-page-banner-title { font-size: 1.6rem; }
   .w-page-content { padding: 36px 0; }
+  .w-filter-shell { padding: 14px; }
+}
+
+/* 2026 polish pass */
+body {
+  background:
+    radial-gradient(circle at top left, rgba(212,169,66,.09), transparent 24%),
+    linear-gradient(180deg, #f8fafc 0%, #f3f6fa 100%);
+}
+.w-nav {
+  backdrop-filter: blur(18px);
+  background: rgba(8,15,36,.92);
+}
+.w-nav-inner {
+  height: 64px;
+}
+.w-nav-link,
+.w-nav-signin {
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.w-nav-link:hover,
+.w-nav-signin:hover {
+  transform: translateY(-1px);
+}
+.w-hero {
+  min-height: 640px;
+  background: linear-gradient(180deg, var(--navy-800), var(--navy-950));
+}
+.w-hero-content {
+  padding-top: 112px;
+  padding-bottom: 32px;
+}
+.w-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: end;
+}
+.w-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 760px;
+}
+.w-hero-title {
+  margin: 0;
+}
+.w-hero-lead {
+  max-width: 62ch;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  color: rgba(255,255,255,.72);
+  line-height: 1.72;
+}
+.w-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+.w-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.w-btn:hover {
+  transform: translateY(-1px);
+}
+.w-btn-primary {
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+  color: #fff;
+  box-shadow: 0 18px 30px rgba(184,145,42,.24);
+}
+.w-btn-secondary {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+.w-hero-footer {
+  padding-top: 0;
+}
+.w-hero-metrics {
+  padding-top: 20px;
+}
+.w-page-banner {
+  position: relative;
+  overflow: hidden;
+}
+.w-page-banner .max-w {
+  display: block;
+}
+.w-news-card,
+.w-fac-card,
+.w-pub-card,
+.w-card,
+.w-pub-list {
+  box-shadow: 0 16px 30px rgba(15,23,42,.05);
+}
+@media (max-width: 980px) {
+  .w-page-banner .max-w { display: block; }
+}
+@media (max-width: 760px) {
+  .w-nav-inner { height: 58px; }
+  .w-nav-links.open { top: 58px; }
+  .w-hero {
+    min-height: 0;
+  }
+  .w-hero-content {
+    padding-top: 92px;
+  }
+}
+@media (max-width: 600px) {
+  .w-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>
 </head>
@@ -503,31 +807,90 @@ a:hover { color: var(--gold-700); }
 
 <script>
 /* ============================================================
-   LATFS public website — vanilla JS port of the website-ui-kit
+   LATFS public website â€” vanilla JS port of the website-ui-kit
    ============================================================ */
+const IS_FILE_MODE = location.protocol === 'file:';
+const PLATFORM_URL = 'http://127.0.0.1:3000/platform';
+function platformHref() {
+  return IS_FILE_MODE ? PLATFORM_URL : '/platform';
+}
+
 const RES = {
-  logoColor:  '/assets/latfs-logo.svg',
-  latfsWhite: '/assets/latfs-logo-white.svg',
-  hero1:      '/assets/hero-1.png',
-  hero2:      '/assets/hero-2.png',
-  hero3:      '/assets/hero-3.png',
-  fac1:       '/assets/facility-1.png',
-  fac2:       '/assets/facility-2.png',
-  fac3:       '/assets/facility-3.png',
-  fac4:       '/assets/facility-4.png',
-  rDroplet:   '/assets/research-droplet.png',
-  rMini:      '/assets/research-minichannel.png',
-  rGeo:       '/assets/research-geothermal.png',
-  spIntel:    '/assets/sponsors/intel.svg',
-  spAmd:      '/assets/sponsors/amd.svg',
-  spHoneywell:'/assets/sponsors/honeywell.svg',
-  spRtx:      '/assets/sponsors/rtx.svg',
-  spTi:       '/assets/sponsors/ti.svg',
-  spSrc:      '/assets/sponsors/src.svg',
-  spNasa:     '/assets/sponsors/nasa.svg',
-  spDarpa:    '/assets/sponsors/darpa.svg',
-  spE3s:      '/assets/sponsors/e3s.svg',
-  spVillanova:'/assets/sponsors/villanova.svg',
+  logoColor:  './assets/site-logos/latfs-icon.png',
+  latfsWhite: './assets/site-logos/latfs-logo-white.png',
+  latfsMark:  './assets/site-logos/latfs-icon.png',
+  hero1:      './assets/hero-1.png',
+  hero2:      './assets/hero-2.png',
+  hero3:      './assets/hero-3.png',
+  fac1:       './assets/facility-1.png',
+  fac2:       './assets/facility-2.png',
+  fac3:       './assets/facility-3.png',
+  fac4:       './assets/facility-4.png',
+  rDroplet:   './assets/research-droplet.png',
+  rMini:      './assets/research-minichannel.png',
+  rGeo:       './assets/research-geothermal.png',
+  spIntel:    './assets/sponsors/intel.svg',
+  spAmd:      './assets/sponsors/amd.svg',
+  spHoneywell:'./assets/sponsors/honeywell.svg',
+  spRtx:      './assets/sponsors/rtx.svg',
+  spTi:       './assets/sponsors/ti.svg',
+  spSrc:      './assets/sponsors/src.svg',
+  spNasa:     './assets/sponsors/nasa.svg',
+  spDarpa:    './assets/sponsors/darpa.svg',
+  spNsf:      './assets/site-logos/nsf-logo.png',
+  spEs2:      './assets/site-logos/es2-official.svg',
+  spVillanova:'./assets/site-logos/villanova-engineering-white.png',
+};
+
+const FALLBACK_DATA = {
+  news: [
+    { id: 1, date: '2024-03-20', title: 'LATFS joins NSF E3S Center', body: 'Villanova and LATFS formally joined the NSF Industry/University Cooperative Research Center on Energy Efficient Electronic Systems.' },
+    { id: 2, date: '2024-02-14', title: 'Paper accepted at ITherm 2024', body: 'A new study on synthetic impinging jets and high-heat-flux cooling was accepted for presentation at ITherm 2024.' },
+    { id: 3, date: '2024-01-08', title: 'Two new PhD candidates welcomed', body: 'New graduate researchers joined the lab to work on boiling heat transfer and two-phase flow instabilities.' },
+  ],
+  pubs: [
+    { id: 1, year: 2024, title: 'Simulation of Two-Phase Flow and Heat Transfer in Mini- and Micro-Channels for Concentrating Photovoltaics Cooling', authors: 'A. Ortega, S. Kim, M. Reyes', venue: 'ASME ESFuelCell 2024' },
+    { id: 2, year: 2023, title: 'Droplet Impingement Dynamics on Heated Structured Surfaces', authors: 'M. Reyes, A. Ortega', venue: 'International Journal of Heat and Mass Transfer' },
+    { id: 3, year: 2022, title: 'Compact Liquid Cooling Architectures for High-Power Electronics', authors: 'A. Ortega, J. Patel, D. Hernandez', venue: 'IEEE Transactions on Components, Packaging and Manufacturing Technology' },
+  ],
+  people: [
+    { id: 1, name: 'Alejandro Ortega', role: 'Professor', category: 'director', active: true, email: 'aortega@villanova.edu', bio: 'Directs LATFS and leads research in boiling heat transfer, compact thermal systems, and laboratory-scale diagnostics.' },
+    { id: 2, name: 'Maya Reyes', role: 'PhD Candidate', category: 'phd', active: true, bio: 'Researches droplet impingement, high-speed imaging, and transient thermal measurements.' },
+    { id: 3, name: 'Daniel Hernandez', role: 'PhD Candidate', category: 'phd', active: true, bio: 'Works on two-phase flow instabilities and experimental methods for electronics cooling.' },
+    { id: 4, name: 'Sarah Kim', role: 'Postdoctoral Researcher', category: 'postdoc', active: true, bio: 'Focuses on compact heat exchangers, model validation, and instrumentation workflows.' },
+    { id: 5, name: 'Jordan Patel', role: 'Undergraduate Researcher', category: 'ug', active: true, bio: 'Supports rig assembly, test planning, and calibration across boiling and jet-flow projects.' },
+  ],
+  research: [
+    { id: 1, title: 'Two-Phase and Boiling Heat Transfer', summary: 'Boiling, condensation, and droplet impingement in mini- and micro-channels.', tag: '12 active projects - 8 publications', image_url: RES.rDroplet },
+    { id: 2, title: 'Microchannel Heat Exchangers', summary: 'Water-cooled silicon-carbide cold plates for high-flux electronics.', tag: 'Industry partnership - Intel, AMD', image_url: RES.rMini },
+    { id: 3, title: 'Energy Efficient Electronic Systems', summary: 'Thermal management for future computing and power-dense systems.', tag: 'NSF E3S Center', image_url: RES.hero2 },
+    { id: 4, title: 'Renewable and Geothermal Energy', summary: 'Underground storage, solar-thermal, and working-fluid characterization.', tag: 'DOE funded', image_url: RES.rGeo },
+    { id: 5, title: 'Jets and Complex Flow', summary: 'Synthetic and steady jets, vortex dynamics, and convective enhancement.', tag: 'Graduate research', image_url: RES.hero3 },
+    { id: 6, title: 'Experimental Techniques', summary: 'Precision instrumentation shared across all experimental rigs.', tag: 'PIV - IR - high-speed imaging', image_url: RES.fac1 },
+  ],
+  facilities: [
+    { id: 1, name: 'Flow-Boiling Test Rig', description: 'A configurable platform for boiling and condensation studies with optical access and temperature instrumentation.', photo_url: RES.fac1, doc_name: 'Rig overview' },
+    { id: 2, name: 'Optical Diagnostics Bench', description: 'Shared imaging and illumination station for high-speed flow visualization, PIV, and infrared thermography.', photo_url: RES.fac2, doc_name: 'Instrumentation notes' },
+  ],
+  apps: [
+    { id: 1, title: 'Pressure Drop Estimator', summary: 'A browser-based calculator for quick thermal-fluid design checks during lab meetings and coursework.' },
+  ],
+  downloads: [],
+  settings: {
+    site_theme: 'navy-gold',
+    research_page_title: 'Six pillars of inquiry',
+    research_page_intro: 'LATFS investigates the thermal and fluid mechanics of high-power-density systems, from boiling in microchannels to renewable thermal storage.',
+    people_page_title: 'Lab members',
+    people_page_intro: 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.',
+    facilities_page_title: 'Lab facilities and instruments',
+    facilities_page_intro: 'Preview the rigs, instruments, and supporting documentation that power the lab.',
+    downloads_page_title: 'Downloads',
+    downloads_page_intro: 'Access published PDFs, data sheets, forms, and other downloadable resources shared by the lab.',
+    hero_metric_research_label: 'Research areas',
+    hero_metric_publications_label: 'Publications',
+    hero_metric_people_label: 'Active members',
+    hero_metric_facilities_label: 'Facilities',
+  },
 };
 
 /* ---- Avatar helpers ---- */
@@ -573,13 +936,164 @@ const NAV = [
   ['people', 'People'],
   ['publications', 'Publications'],
   ['facilities', 'Facilities'],
+  ['gallery', 'Gallery'],
   ['apps', 'Apps'],
+  ['downloads', 'Downloads'],
   ['news', 'News'],
   ['join', 'Join'],
   ['contact', 'Contact'],
 ];
 
 let state = { route: 'home', heroSlides: [], heroIdx: 0, heroTimer: null, navOpen: false };
+
+function activePeopleRows(rows) {
+  return (rows || []).filter(p => (p.active === undefined ? true : !!p.active));
+}
+
+function formatMetricCount(value, fallback) {
+  const n = Number(value || 0);
+  if (!n) return fallback;
+  return n > 99 ? `${n}+` : String(n).padStart(2, '0');
+}
+
+function siteStats() {
+  return {
+    research: (DATA.research || []).length || 6,
+    publications: (DATA.pubs || []).length || 30,
+    people: activePeopleRows(DATA.people).length || 15,
+    facilities: (DATA.facilities || []).length || 2,
+    downloads: (DATA.downloads || []).length || 0,
+    news: (DATA.news || []).length || 0,
+  };
+}
+
+function heroMetricLabel(key, fallback) {
+  return ((DATA.settings || {})[`hero_metric_${key}_label`] || fallback || '').trim() || fallback;
+}
+
+function dedupePeople(rows) {
+  const merged = new Map();
+  [...(rows || [])].forEach(person => {
+    const key = String(person.email || person.name || person.id || '').trim().toLowerCase();
+    if (!key) return;
+    merged.set(key, Object.assign({}, merged.get(key) || {}, person));
+  });
+  return Array.from(merged.values());
+}
+
+function mergedPublicPeople(rows) {
+  const live = activePeopleRows(rows || []);
+  if (live.length >= 3) return live;
+  return dedupePeople([...(rows || []), ...FALLBACK_DATA.people]).filter(p => (p.active === undefined ? true : !!p.active));
+}
+
+function sponsorLogoSrc(src, name='') {
+  const raw = String(src || '').trim();
+  const file = raw.split('/').pop().toLowerCase();
+  const label = String(name || '').toLowerCase();
+  if (file.includes('nsf') || label.includes('nsf')) return RES.spNsf;
+  if (file.includes('es2') || file.includes('e3s') || label.includes('e3s') || label.includes('energy smart')) return RES.spEs2;
+  if (file.includes('villanova') || label.includes('villanova')) return RES.spVillanova;
+  if (file.includes('intel') || label.includes('intel')) return RES.spIntel;
+  if (file.includes('amd') || label.includes('amd')) return RES.spAmd;
+  if (file.includes('honeywell') || label.includes('honeywell')) return RES.spHoneywell;
+  if (file.includes('rtx') || file.includes('raytheon') || label.includes('raytheon') || label.includes('rtx')) return RES.spRtx;
+  if (file.includes('ti') || file.includes('texas') || label.includes('texas')) return RES.spTi;
+  if (file.includes('src') || label.includes('src')) return RES.spSrc;
+  if (file.includes('nasa') || label.includes('nasa')) return RES.spNasa;
+  if (file.includes('darpa') || label.includes('darpa')) return RES.spDarpa;
+  return raw || RES.spEs2;
+}
+
+function latestGalleryItems(gallery, limit=5) {
+  return (gallery || [])
+    .slice()
+    .sort((a, b) => Number(b.id || 0) - Number(a.id || 0))
+    .slice(0, limit);
+}
+
+function fileLabelFromUrl(url) {
+  const file = String(url || '').split('/').pop() || '';
+  return decodeURIComponent(file);
+}
+
+function assetUrl(url) {
+  const value = String(url || '').trim();
+  if (!value) return '';
+  if (/^(https?:|mailto:|tel:|data:|blob:)/i.test(value)) return value;
+  if (value.startsWith('/')) return value;
+  return '/' + value.replace(/^\.?\//, '');
+}
+
+function isImageDownload(item) {
+  const mime = String(item?.mime_type || '').toLowerCase();
+  const file = String(item?.file_url || '').toLowerCase();
+  return mime.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(file);
+}
+
+function fileKindLabel(item) {
+  const file = String(item?.file_url || '').split('?')[0];
+  const ext = (file.split('.').pop() || item?.category || 'file').slice(0, 4).toUpperCase();
+  return ext || 'FILE';
+}
+
+function fileSizeLabel(bytes) {
+  const size = Number(bytes || 0);
+  if (!size) return '';
+  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+  if (size >= 1024) return `${Math.round(size / 1024)} KB`;
+  return `${size} B`;
+}
+
+function matchesQuery(parts, query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return true;
+  return parts.filter(Boolean).join(' ').toLowerCase().includes(q);
+}
+
+function applySiteTheme(theme) {
+  const nextTheme = theme === 'navy-copper' ? 'navy-copper' : 'navy-gold';
+  document.body.dataset.theme = nextTheme;
+}
+
+function closeInlineApp() {
+  const current = document.querySelector('.w-app-modal-bg');
+  if (current) current.remove();
+  document.removeEventListener('keydown', closeInlineAppOnEscape);
+}
+
+function closeInlineAppOnEscape(e) {
+  if (e.key === 'Escape') closeInlineApp();
+}
+
+function openInlineApp(app) {
+  closeInlineApp();
+  const bg = h('div', { class: 'w-app-modal-bg', onclick: (e) => { if (e.target === bg) closeInlineApp(); } });
+  const frameMarkup = `<base href="${escapeHtml(location.origin + '/')}" />${app.embed_html || ''}`;
+  const frame = h('iframe', {
+    class: 'w-app-frame',
+    sandbox: 'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads',
+    srcdoc: frameMarkup,
+    title: app.title || 'Lab app'
+  });
+  bg.appendChild(
+    h('div', { class: 'w-app-modal' },
+      h('div', { class: 'w-app-modal-head' },
+        h('div', { class: 'w-app-modal-copy' },
+          h('h3', null, app.title || 'Lab app'),
+          h('p', null, app.summary || app.description || 'Inline lab tool')
+        ),
+        h('div', { class: 'w-app-actions', style: { marginTop: '0' } },
+          app.url ? h('a', { class: 'btn-ghost', href: app.url, target: '_blank', rel: 'noopener' }, 'Open link') : null,
+          h('button', { class: 'btn-ghost', type: 'button', onclick: closeInlineApp }, 'Close')
+        )
+      ),
+      frame
+    )
+  );
+  document.body.appendChild(bg);
+  document.addEventListener('keydown', closeInlineAppOnEscape);
+}
 
 function go(route) {
   state.route = route;
@@ -594,6 +1108,12 @@ window.addEventListener('hashchange', () => {
   if (r !== state.route) { state.route = r; render(); }
 });
 
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => render(), 120);
+});
+
 /* ---- Components ---- */
 function Nav() {
   const links = NAV.map(([id, label]) =>
@@ -603,16 +1123,15 @@ function Nav() {
     }, label)
   );
   const wrap = h('nav', { class: 'w-nav' },
-    h('div', { class: 'w-nav-inner' },
-      h('div', { class: 'w-brand', onclick: () => go('home') },
-        h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' }),
-        h('div', { class: 'w-brand-text' }, 'LATFS', h('small', null, 'Villanova University'))
-      ),
+      h('div', { class: 'w-nav-inner' },
+        h('div', { class: 'w-brand', onclick: () => go('home') },
+          h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' })
+        ),
       h('div', { class: 'w-nav-links' + (state.navOpen ? ' open' : '') },
         ...links,
-        h('a', { class: 'w-nav-signin', href: '/platform' }, 'Sign in')
+        h('a', { class: 'w-nav-signin', href: platformHref() }, 'Sign in')
       ),
-      h('button', { class: 'w-nav-toggle', 'aria-label': 'Menu', onclick: () => { state.navOpen = !state.navOpen; render(); } }, '☰')
+      h('button', { class: 'w-nav-toggle', 'aria-label': 'Menu', onclick: () => { state.navOpen = !state.navOpen; render(); } }, 'â˜°')
     )
   );
   return wrap;
@@ -624,6 +1143,16 @@ function Hero(slides) {
     { image_url: RES.hero3, title: '', subtitle: '' },
   ];
   state.heroSlides = usable;
+  const stats = siteStats();
+  const focusAreas = (DATA.research || [])
+    .map(item => item.title || item.name || '')
+    .filter(Boolean)
+    .slice(0, 3);
+  const highlightLines = focusAreas.length ? focusAreas : [
+    'Two-phase flow and boiling heat transfer',
+    'Compact thermal systems and electronics cooling',
+    'Diagnostics, instrumentation, and lab-built rigs',
+  ];
 
   const slideEls = usable.map((s, i) =>
     h('div', { class: 'w-hero-slide' + (i === state.heroIdx ? ' active' : ''),
@@ -639,11 +1168,10 @@ function Hero(slides) {
   );
 
   const metrics = h('div', { class: 'w-hero-metrics' },
-    metric('06', 'Research pillars'),
-    metric('30+', 'Publications'),
-    metric('15', 'Lab members'),
-    metric('02', 'Lab spaces'),
-    metric(null, 'NSF E3S Center Partner', true),
+    metric(formatMetricCount(stats.research, '06'), heroMetricLabel('research', 'Research areas')),
+    metric(formatMetricCount(stats.publications, '30+'), heroMetricLabel('publications', 'Publications')),
+    metric(formatMetricCount(stats.people, '15'), heroMetricLabel('people', 'Active members')),
+    metric(formatMetricCount(stats.facilities, '02'), heroMetricLabel('facilities', 'Facilities'))
   );
 
   const hero = h('section', { class: 'w-hero' },
@@ -651,11 +1179,34 @@ function Hero(slides) {
     h('div', { class: 'w-hero-overlay' }),
     h('div', { class: 'w-hero-grain' }),
     h('div', { class: 'w-hero-content' },
-      h('div', { class: 'w-hero-eyebrow' },
-        h('span', { class: 'w-hero-dot' }),
-        'Villanova University · Department of Mechanical Engineering'
-      ),
-      h('h1', { class: 'w-hero-title', html: 'Laboratory for Advanced<br>Thermal <span class="w-amp">&amp;</span> Fluid Systems' }),
+      h('div', { class: 'w-hero-grid' },
+        h('div', { class: 'w-hero-copy' },
+          h('div', { class: 'w-hero-eyebrow' },
+            h('span', { class: 'w-hero-dot' }),
+            'Villanova University Â· Department of Mechanical Engineering'
+          ),
+          h('h1', { class: 'w-hero-title', html: 'Laboratory for Advanced<br>Thermal <span class="w-amp">&amp;</span> Fluid Systems' }),
+          h('p', { class: 'w-hero-lead' }, 'LATFS studies boiling, compact thermal systems, and experimental fluid mechanics for high-power-density energy technologies through hands-on rigs, diagnostics, and modeling.'),
+          h('div', { class: 'w-hero-actions' },
+            h('button', { class: 'w-btn w-btn-primary', onclick: () => go('research') }, 'Explore research'),
+            h('button', { class: 'w-btn w-btn-secondary', onclick: () => go('people') }, 'Meet the team')
+          )
+        ),
+        h('aside', { class: 'w-hero-panel' },
+          h('div', { class: 'w-hero-panel-heading' }, 'Lab snapshot'),
+          h('div', { class: 'w-hero-panel-title' }, 'Hands-on thermal-fluid systems research'),
+          h('p', { class: 'w-hero-panel-copy' }, 'The lab connects instrumentation, analysis, and translational engineering across electronics cooling, two-phase flow, and energy systems.'),
+          h('div', { class: 'w-hero-panel-grid' },
+            heroMini(formatMetricCount(stats.publications, '30+'), 'Publications'),
+            heroMini(formatMetricCount(stats.people, '15'), 'Active members'),
+            heroMini(formatMetricCount(stats.facilities, '02'), 'Facilities'),
+            heroMini(stats.apps ? formatMetricCount(stats.apps, '01') : 'NSF', stats.apps ? 'Live apps' : 'Center partner')
+          ),
+          h('div', { class: 'w-hero-list' },
+            ...highlightLines.map(line => h('div', { class: 'w-hero-list-item' }, line))
+          )
+        )
+      )
     ),
     h('div', { class: 'w-hero-footer' },
       metrics,
@@ -663,6 +1214,12 @@ function Hero(slides) {
     ),
   );
   return hero;
+}
+function heroMini(num, label) {
+  return h('div', { class: 'w-hero-mini' },
+    h('div', { class: 'w-hero-mini-num' }, num),
+    h('div', { class: 'w-hero-mini-lbl' }, label)
+  );
 }
 function metric(num, label, badge) {
   return h('div', { class: 'w-metric' + (badge ? ' w-metric-badge' : '') },
@@ -687,29 +1244,233 @@ function SectionHeader(title, action) {
     h('h2', { class: 'w-sh-title' }, title),
   );
   return action
-    ? h('div', { class: 'w-sh' }, inner, h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' →'))
+    ? h('div', { class: 'w-sh' }, inner, h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' â†’'))
     : h('div', { class: 'w-sh' }, inner);
 }
 
 function PageBanner(eyebrow, title, intro) {
   return h('div', { class: 'w-page-banner' },
     h('div', { class: 'max-w' },
-      h('span', { class: 'eyebrow' }, eyebrow),
-      h('h1',   { class: 'w-page-banner-title' }, title),
-      intro ? h('p', { class: 'w-page-banner-intro' }, intro) : null,
+      h('div', { class: 'w-page-banner-copy' },
+        h('span', { class: 'eyebrow' }, eyebrow),
+        h('h1',   { class: 'w-page-banner-title' }, title),
+        intro ? h('p', { class: 'w-page-banner-intro' }, intro) : null
+      )
     )
+  );
+}
+function pageBannerSummary() {
+  const stats = siteStats();
+  const route = String(state.route || '');
+  if (route === 'people' || route.startsWith('person/')) {
+    return {
+      label: 'Lab roster',
+      note: 'Browse the people behind LATFS across faculty, graduate researchers, undergraduates, alumni, and collaborators.',
+      pills: [`${stats.people} profiles`, `${stats.publications} publications`],
+    };
+  }
+  if (route === 'publications') {
+    return {
+      label: 'Research output',
+      note: "Track papers, venues, and citation links from the lab's published work.",
+      pills: [`${stats.publications} publications`, `${stats.research} research areas`],
+    };
+  }
+  if (route === 'facilities' || route.startsWith('facility/')) {
+    return {
+      label: 'Lab infrastructure',
+      note: 'See the rigs, instruments, and supporting documentation that make the experiments possible.',
+      pills: [`${stats.facilities} facilities`, stats.apps ? `${stats.apps} live apps` : 'Tools and docs'],
+    };
+  }
+  if (route === 'news' || route.startsWith('news/')) {
+    return {
+      label: 'What is new',
+      note: 'Follow milestones, conference activity, awards, and day-to-day progress from the lab.',
+      pills: [`${(DATA.news || []).length} updates`, `${stats.people} active members`],
+    };
+  }
+  if (route === 'apps') {
+    return {
+      label: 'Interactive tools',
+      note: 'Use LATFS teaching and research tools without digging through internal resources.',
+      pills: [(DATA.apps || []).length ? `${(DATA.apps || []).length} apps` : 'Tools rolling out', `${stats.research} research pillars`],
+    };
+  }
+  if (route === 'gallery') {
+    return {
+      label: 'From the lab',
+      note: 'Browse lab photos, experimental setups, team activity, and recent gallery uploads.',
+      pills: [`${(DATA.gallery || []).length} photos`, `${stats.people} members`],
+    };
+  }
+  if (route === 'downloads') {
+    return {
+      label: 'Download library',
+      note: 'Published files, PDFs, office documents, media, and other downloadable resources from the lab.',
+      pills: [`${stats.downloads} downloads`, `${stats.publications} publications`],
+    };
+  }
+  return {
+    label: 'LATFS at a glance',
+    note: 'Experimental and computational work in thermal-fluid systems, anchored at Villanova and built for practical engineering impact.',
+    pills: [`${stats.research} research areas`, `${stats.people} members`],
+  };
+}
+
+function HomeQuickLinks() {
+  const stats = siteStats();
+  const cards = [
+    { route: 'people', kicker: 'People', title: 'Meet the lab', copy: 'Browse current researchers, collaborators, and alumni with clearer profiles.', meta: `${stats.people} active members` },
+    { route: 'publications', kicker: 'Outputs', title: 'Scan publications', copy: 'Jump straight into papers, venues, and citation links without digging.', meta: `${stats.publications} publications` },
+    { route: 'facilities', kicker: 'Infrastructure', title: 'See the facilities', copy: 'Preview the rigs, instruments, and documentation available in the lab.', meta: `${stats.facilities} facilities` },
+    { route: 'apps', kicker: 'Tools', title: 'Use lab apps', copy: 'Open interactive calculators and teaching tools tied to LATFS research.', meta: stats.apps ? `${stats.apps} live app${stats.apps === 1 ? '' : 's'}` : 'Apps coming online' },
+  ];
+  return h('section', { class: 'w-section', style: { paddingTop: '24px', paddingBottom: '0', background: 'var(--bg-2)' } },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-quick-grid' },
+        ...cards.map(card =>
+          h('article', { class: 'w-quick-card', onclick: () => go(card.route) },
+            h('div', { class: 'w-quick-kicker' }, card.kicker),
+            h('h3', { class: 'w-quick-title' }, card.title),
+            h('p', { class: 'w-quick-copy' }, card.copy),
+            h('div', { class: 'w-quick-meta' }, `${card.meta} â†’`)
+          )
+        )
+      )
+    )
+  );
+}
+
+const PEOPLE_GROUPS = [
+  ['director',     'Director'],
+  ['manager',      'Lab manager / assistant'],
+  ['faculty',      'Faculty & senior researchers'],
+  ['postdoc',      'Postdoctoral researchers'],
+  ['phd',          'PhD candidates'],
+  ['ms',           'MS students'],
+  ['ug',           'Undergraduate researchers'],
+  ['alumni',       'Alumni'],
+  ['collaborator', 'Collaborators'],
+];
+
+function renderPeopleSections(people) {
+  const sections = PEOPLE_GROUPS.map(([key, label]) => {
+    const ours = people.filter(p => (p.category || '').toLowerCase() === key);
+    if (!ours.length) return null;
+    return h('div', { class: 'w-page-section' },
+      h('h2', null, label),
+      h('div', { class: 'w-people-grid' },
+        ...ours.map(p => {
+          const inits = getInitials(p.name);
+          const grad  = avatarGrad(p.name);
+          return h('div', { class: 'w-person-v2', onclick: () => go('person/' + p.id) },
+            h('div', { class: 'w-avatar' },
+              h('div', { class: 'w-avatar-photo', style: p.photo_url
+                ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' }
+                : { background: grad } }),
+              p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+            ),
+            h('div', { class: 'w-pv2-name' }, p.name || ''),
+            h('div', { class: 'w-pv2-role' }, p.role || ''),
+            h('span', { class: 'w-pv2-badge' }, label),
+          );
+        })
+      )
+    );
+  }).filter(Boolean);
+  return sections.length ? sections : [h('div', { class: 'w-empty' }, 'No people match this search yet.')];
+}
+
+function publicationCitationText(p) {
+  return [p.authors, p.year ? `(${p.year}).` : '', p.title, p.venue].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function copyPublicationCitation(p) {
+  const text = publicationCitationText(p);
+  if (!text) return;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => alert('Citation copied to clipboard.'));
+  } else {
+    window.prompt('Copy citation', text);
+  }
+}
+
+function publicationButtons(p) {
+  return [
+    p.pdf_url ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF') : null,
+    p.doi_url ? h('a', { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' }, 'DOI') : null,
+    (p.citation_url || p.ris_url)
+      ? h('a', { class: 'w-pub-btn ghost', href: p.citation_url || p.ris_url, target: '_blank', rel: 'noopener' }, 'Cite')
+      : h('button', { class: 'w-pub-btn ghost', type: 'button', onclick: () => copyPublicationCitation(p) }, 'Cite')
+  ];
+}
+
+function renderPublicationSections(pubs) {
+  const byYear = {};
+  pubs.forEach(p => { const y = p.year || 'n.d.'; (byYear[y] ||= []).push(p); });
+  const years = Object.keys(byYear).sort((a, b) => String(b).localeCompare(String(a)));
+  if (!years.length) return [h('div', { class: 'w-empty' }, 'No publications match this search.')];
+  return years.map(y =>
+    h('div', { class: 'w-page-section' },
+      h('h2', null, y === 'n.d.' ? 'Other' : y),
+      h('div', { class: 'w-pub-list' }, ...byYear[y].map(p =>
+        h('article', { class: 'w-pub-row2' },
+          h('div', { class: 'w-pub-left' },
+            h('div', { class: 'w-pub-yr' }, String(p.year || '')),
+            h('div', { class: 'w-pub-spine' })
+          ),
+          h('div', { class: 'w-pub-mid' },
+            h('div', { class: 'w-pub-title2 display-serif' }, p.title || ''),
+            h('div', { class: 'w-pub-authors' }, p.authors || ''),
+            h('div', { class: 'w-pub-venue' }, p.venue || ''),
+          ),
+          h('div', { class: 'w-pub-right' }, ...publicationButtons(p))
+        )
+      ))
+    )
+  );
+}
+
+function renderFacilityCards(items) {
+  if (!items.length) return h('div', { class: 'w-empty' }, 'No facilities match this search.');
+  return h('div', { class: 'w-grid-2' },
+    ...items.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },
+      f.photo_url
+        ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } })
+        : h('div', { class: 'w-fac-img w-fac-img-empty' }),
+      h('div', { class: 'w-fac-body' },
+        h('h3',  { class: 'w-fac-title' }, f.name || ''),
+        h('p',   { class: 'w-fac-desc'  }, (f.description || '').slice(0, 220) + ((f.description||'').length > 220 ? 'â€¦' : '')),
+        h('span', { class: 'w-fac-cta'  }, f.doc_url ? 'View facility + docs â†’' : 'View facility â†’')
+      )
+    ))
+  );
+}
+
+function renderNewsCards(items) {
+  if (!items.length) return h('div', { class: 'w-empty' }, 'No news items match this search.');
+  return h('div', { class: 'w-news-stack', style: { gap: '14px' } },
+    ...items.map(n => h('article', { class: 'w-news-card', onclick: () => go('news/' + n.id), style: { cursor: 'pointer' } },
+      n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
+      h('div', { class: 'w-news-body-wrap' },
+        h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
+        h('h3',  { class: 'w-news-title' }, n.title || ''),
+        h('p',   { class: 'w-news-body' }, (n.content || n.body || n.summary || '').slice(0, 220) + (((n.content || n.body || n.summary || '').length > 220) ? 'â€¦' : '')),
+      )
+    ))
   );
 }
 
 function ResearchGrid(rows) {
   // Map server rows (from /api/research) into the kit's 6-pillar shape.
   const fallback = [
-    { n: '01', title: 'Two-Phase & Boiling Heat Transfer', meta: '12 active projects · 8 publications', desc: 'Boiling, condensation, and droplet impingement in mini- and micro-channels.', img: RES.rDroplet },
-    { n: '02', title: 'Microchannel Heat Exchangers', meta: 'Industry partnership · Intel, AMD', desc: 'Water-cooled silicon-carbide cold plates for high-flux electronics.', img: RES.rMini },
-    { n: '03', title: 'Energy Efficient Electronic Systems', meta: 'NSF E³S Center', desc: 'Thermal management for future computing — the Villanova node of the multi-university center.', img: RES.hero2 },
-    { n: '04', title: 'Renewable & Geothermal Energy', meta: 'DOE funded · 2022–2025', desc: 'Underground storage, solar-thermal, and working-fluid characterization.', img: RES.rGeo },
+    { n: '01', title: 'Two-Phase & Boiling Heat Transfer', meta: '12 active projects Â· 8 publications', desc: 'Boiling, condensation, and droplet impingement in mini- and micro-channels.', img: RES.rDroplet },
+    { n: '02', title: 'Microchannel Heat Exchangers', meta: 'Industry partnership Â· Intel, AMD', desc: 'Water-cooled silicon-carbide cold plates for high-flux electronics.', img: RES.rMini },
+    { n: '03', title: 'Energy Efficient Electronic Systems', meta: 'NSF EÂ³S Center', desc: 'Thermal management for future computing â€” the Villanova node of the multi-university center.', img: RES.hero2 },
+    { n: '04', title: 'Renewable & Geothermal Energy', meta: 'DOE funded Â· 2022â€“2025', desc: 'Underground storage, solar-thermal, and working-fluid characterization.', img: RES.rGeo },
     { n: '05', title: 'Jets & Complex Flow', meta: 'Graduate research', desc: 'Synthetic and steady jets, vortex dynamics, and convective enhancement.', img: RES.hero3 },
-    { n: '06', title: 'Experimental Techniques', meta: 'PIV · IR · high-speed imaging', desc: 'Precision instrumentation shared across all experimental rigs.', img: RES.fac1 },
+    { n: '06', title: 'Experimental Techniques', meta: 'PIV Â· IR Â· high-speed imaging', desc: 'Precision instrumentation shared across all experimental rigs.', img: RES.fac1 },
   ];
   let areas;
   if (Array.isArray(rows) && rows.length) {
@@ -759,7 +1520,6 @@ function ResearchGrid(rows) {
         h('p',  { class: 'w-research-desc' },  a.desc),
         h('div',{ class: 'w-research-meta' }, a.meta),
       ),
-      h('span', { class: 'w-research-arrow' }, '→'),
     )
   );
 
@@ -771,7 +1531,7 @@ function ResearchGrid(rows) {
           h('div', { class: 'w-sh-bar' }),
           h('h2',  { class: 'w-sh-title' }, s.research_section_title || 'Research Areas'),
         ),
-        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Six pillars · updated quarterly'),
+        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Six pillars Â· updated quarterly'),
       ),
       h('div', { class: 'w-research-layout' },
         h('div', { class: 'w-research-list' }, ...rowEls),
@@ -807,7 +1567,7 @@ function NewsList(news) {
         )
       )
     ),
-    h('button', { class: 'w-link-gold', style: { marginTop: '10px' }, onclick: () => go('news') }, 'View all news →')
+    h('button', { class: 'w-link-gold', style: { marginTop: '10px' }, onclick: () => go('news') }, 'View all news â†’')
   );
 }
 
@@ -815,19 +1575,19 @@ function FeaturedPub(pubs) {
   const top = (pubs && pubs.length) ? pubs[0] : {
     title: 'Simulation of Two-Phase Flow and Heat Transfer in Mini- and Micro-Channels for Concentrating Photovoltaics Cooling',
     authors: 'A. Ortega, S. Kim, M. Reyes',
-    venue: 'ASME ESFuelcell · 2024',
+    venue: 'ASME ESFuelcell Â· 2024',
     year: 2024,
   };
   return h('div', null,
     SectionHeader('Featured Publication'),
     h('div', { class: 'w-pub-card' },
-      h('div', { class: 'w-pub-year' }, String(top.year || '—')),
+      h('div', { class: 'w-pub-year' }, String(top.year || 'â€”')),
       h('h3',  { class: 'w-pub-title' }, top.title || ''),
       h('p',   { class: 'w-pub-authors' }, top.authors || ''),
       h('p',   { class: 'w-pub-venue' }, top.venue || ''),
       top.pdf_url
-        ? h('a', { class: 'btn-ghost', style: { marginTop: '8px', display: 'inline-block' }, href: top.pdf_url, target: '_blank' }, 'Download PDF ↓')
-        : h('button', { class: 'btn-ghost', style: { marginTop: '8px' } }, 'Download PDF ↓')
+        ? h('a', { class: 'btn-ghost', style: { marginTop: '8px', display: 'inline-block' }, href: top.pdf_url, target: '_blank' }, 'Download PDF â†“')
+        : h('span', { class: 'btn-ghost', style: { marginTop: '8px', display: 'inline-block', opacity: 0.7, cursor: 'default' }, 'aria-disabled': 'true', title: 'PDF not uploaded yet' }, 'PDF coming soon')
     )
   );
 }
@@ -876,8 +1636,8 @@ function PhotoGallery(gallery) {
           h('h2', { class: 'w-sh-title' }, 'From the Lab'),
         ),
         h('div', { class: 'w-gallery-nav' },
-          h('button', { class: 'w-gallery-arrow', 'aria-label': 'Previous', onclick: () => scroll(-1) }, '‹'),
-          h('button', { class: 'w-gallery-arrow', 'aria-label': 'Next',     onclick: () => scroll(1)  }, '›'),
+          h('button', { class: 'w-gallery-arrow', 'aria-label': 'Previous', onclick: () => scroll(-1) }, '<'),
+          h('button', { class: 'w-gallery-arrow', 'aria-label': 'Next',     onclick: () => scroll(1)  }, '>'),
         )
       ),
       strip
@@ -887,8 +1647,8 @@ function PhotoGallery(gallery) {
 
 function SponsorMarquee(sponsors) {
   const logos = (sponsors && sponsors.length)
-    ? sponsors.map(s => s.logo_url || s.image_url).filter(Boolean)
-    : [RES.spIntel, RES.spAmd, RES.spHoneywell, RES.spRtx, RES.spTi, RES.spSrc, RES.spNasa, RES.spDarpa];
+    ? sponsors.map(s => sponsorLogoSrc(s.logo_url || s.image_url, s.name)).filter(Boolean)
+    : [RES.spEs2, RES.spNsf, RES.spIntel, RES.spAmd, RES.spHoneywell, RES.spRtx, RES.spTi, RES.spSrc, RES.spNasa, RES.spDarpa];
   const doubled = [...logos, ...logos];
   return h('section', { class: 'w-section' },
     h('div', { class: 'max-w' },
@@ -907,31 +1667,40 @@ function Footer() {
     h('div', { class: 'max-w w-footer-anchor' },
       h('div', { class: 'w-anchor-label' }, 'Home institutions'),
       h('div', { class: 'w-anchor-row' },
-        h('img', { src: RES.spE3s, alt: 'NSF E3S Center', class: 'w-anchor-logo' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'http://www.es2.villanova.edu/', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spEs2, alt: 'ES2 Center for Energy-Smart Electronic Systems', class: 'w-anchor-logo is-es2' })
+        ),
         h('div', { class: 'w-anchor-div' }),
-        h('img', { src: RES.spVillanova, alt: 'Villanova University', class: 'w-anchor-logo' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www.nsf.gov/eng/iip/iucrc/home.jsp', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spNsf, alt: 'National Science Foundation', class: 'w-anchor-logo is-nsf' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www1.villanova.edu/university/engineering.html', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spVillanova, alt: 'Villanova University', class: 'w-anchor-logo is-villanova' })
+        ),
       )
     ),
     h('div', { class: 'max-w w-footer-grid' },
       h('div', null,
         h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
-        h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems · Villanova University · 800 Lancaster Ave, Villanova PA 19085'),
+        h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems - Villanova University - 800 Lancaster Ave, Villanova PA 19085'),
       ),
       h('div', null,
-        h('h4', { class: 'w-foot-h' }, 'Research'),
+        h('h4', { class: 'w-foot-h' }, 'Explore'),
         h('ul', null,
-          h('li', { onclick: () => go('research') }, 'Two-Phase Flow'),
-          h('li', { onclick: () => go('research') }, 'Microchannels'),
-          h('li', { onclick: () => go('research') }, 'Energy Technology'),
-          h('li', { onclick: () => go('facilities') }, 'Experimental Techniques'),
+          h('li', { onclick: () => go('research') }, 'Research'),
+          h('li', { onclick: () => go('people') }, 'People'),
+          h('li', { onclick: () => go('apps') }, 'Apps'),
+          h('li', { onclick: () => go('gallery') }, 'Gallery'),
+          h('li', { onclick: () => go('downloads') }, 'Downloads'),
         ),
       ),
       h('div', null,
-        h('h4', { class: 'w-foot-h' }, 'Lab'),
+        h('h4', { class: 'w-foot-h' }, 'Resources'),
         h('ul', null,
-          h('li', { onclick: () => go('people') }, 'People'),
           h('li', { onclick: () => go('publications') }, 'Publications'),
           h('li', { onclick: () => go('facilities') }, 'Facilities'),
+          h('li', { onclick: () => go('news') }, 'News'),
           h('li', { onclick: () => go('join') }, 'Join the lab'),
         ),
       ),
@@ -941,31 +1710,299 @@ function Footer() {
           h('li', null, 'aortega@villanova.edu'),
           h('li', null, '+1 (610) 519-4996'),
           h('li', null, 'Tolentine Hall 344'),
-          h('li', { onclick: () => location.href = '/admin' }, 'Lab Platform →'),
+          h('li', { onclick: () => go('contact') }, 'Contact page'),
         ),
       ),
     ),
-    h('div', { class: 'w-footer-bottom' }, '© 2024 LATFS · Villanova University · College of Engineering'),
+    h('div', { class: 'w-footer-bottom' }, '© 2026 LATFS - Villanova University - College of Engineering'),
+  );
+}
+
+function galleryEntries(gallery) {
+  return (gallery && gallery.length) ? gallery.map(g => ({
+    id: g.id,
+    src: g.image_url || g.src || RES.fac1,
+    cat: g.category || 'Lab life',
+    title: g.caption || g.title || 'Gallery image',
+  })) : [
+    { id: 1, src: RES.fac1, cat: 'Facilities', title: 'Lab overview' },
+    { id: 2, src: RES.rMini, cat: 'Research', title: 'Research equipment' },
+    { id: 3, src: RES.hero1, cat: 'Lab life', title: 'Experiments' },
+    { id: 4, src: RES.hero2, cat: 'Lab life', title: 'Team moment' },
+    { id: 5, src: RES.fac2, cat: 'Facilities', title: 'Diagnostics bench' },
+  ];
+}
+
+function HomeGalleryCarousel(gallery) {
+  const photos = latestGalleryItems(galleryEntries(gallery), 5);
+  let start = 0;
+  const strip = h('div', { class: 'w-gallery-strip' });
+  const visibleCount = () => {
+    if (window.innerWidth <= 760) return 1;
+    if (window.innerWidth <= 1180) return 2;
+    return 3;
+  };
+  const renderVisible = () => {
+    const count = Math.min(photos.length, visibleCount());
+    strip.replaceChildren(...Array.from({ length: count }, (_, idx) => {
+      const p = photos[(start + idx) % photos.length];
+      return h('button', { class: 'w-gallery-slide', type: 'button', onclick: () => go('gallery') },
+        h('img', { src: p.src, alt: p.title, loading: 'lazy' }),
+        h('div', { class: 'w-gallery-scrim' }),
+        h('div', { class: 'w-gallery-meta' },
+          h('div', { class: 'w-gallery-cat' }, p.cat),
+          h('div', { class: 'w-gallery-title' }, p.title),
+          h('div', { class: 'w-gallery-sub' }, 'Latest gallery upload')
+        )
+      );
+    }));
+  };
+  const rotate = (dir) => {
+    if (!photos.length) return;
+    start = (start + dir + photos.length) % photos.length;
+    renderVisible();
+  };
+  renderVisible();
+  return h('section', { class: 'w-section w-gallery' },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-sh', style: { marginBottom: '16px' } },
+        h('div', { class: 'w-sh-inner' },
+          h('div', { class: 'w-sh-bar' }),
+          h('h2', { class: 'w-sh-title' }, 'From the Lab')
+        ),
+        h('div', { class: 'w-gallery-nav' },
+          h('button', { class: 'w-gallery-arrow', type: 'button', 'aria-label': 'Previous', onclick: () => rotate(-1) }, '<'),
+          h('button', { class: 'w-gallery-arrow', type: 'button', 'aria-label': 'Next', onclick: () => rotate(1) }, '>')
+        )
+      ),
+      strip,
+      h('button', { class: 'w-link-gold', style: { marginTop: '14px' }, onclick: () => go('gallery') }, 'Open full gallery')
+    )
+  );
+}
+
+function renderPublicationTable(pubs) {
+  const ordered = (pubs || [])
+    .slice()
+    .sort((a, b) => Number(b.year || 0) - Number(a.year || 0) || String(a.title || '').localeCompare(String(b.title || '')));
+  if (!ordered.length) return [h('div', { class: 'w-empty' }, 'No publications match this search.')];
+  return [
+    h('div', { class: 'w-page-section' },
+      h('div', { class: 'w-pub-list' },
+        h('div', { class: 'w-pub-row2 w-pub-head' },
+          h('div', { class: 'w-pub-colhead' }, 'Year'),
+          h('div', { class: 'w-pub-colhead' }, 'Title'),
+          h('div', { class: 'w-pub-colhead w-pub-colhead-actions' }, 'Links')
+        ),
+        ...ordered.map(p =>
+          h('article', { class: 'w-pub-row2' },
+            h('div', { class: 'w-pub-left' },
+              h('div', { class: 'w-pub-yr' }, String(p.year || 'â€”'))
+            ),
+            h('div', { class: 'w-pub-mid' },
+              h('div', { class: 'w-pub-title2' }, p.title || ''),
+              h('div', { class: 'w-pub-authors' }, p.authors || ''),
+              h('div', { class: 'w-pub-venue' }, p.venue || '')
+            ),
+            h('div', { class: 'w-pub-right' }, ...publicationButtons(p))
+          )
+        )
+      )
+    )
+  ];
+}
+
+function openGalleryPreview(photo) {
+  const close = () => overlay.remove();
+  const overlay = h('div', {
+    class: 'w-lightbox-bg',
+    onclick: event => { if (event.target === overlay) close(); }
+  },
+    h('div', { class: 'w-lightbox', role: 'dialog', 'aria-modal': 'true', 'aria-label': photo.title || 'Gallery image' },
+      h('img', { class: 'w-lightbox-img', src: photo.src, alt: photo.title || 'Gallery image' }),
+      h('div', { class: 'w-lightbox-meta' },
+        h('div', null,
+          h('strong', null, photo.title || 'Gallery image'),
+          h('span', null, photo.cat || 'Lab photo')
+        ),
+        h('button', { class: 'w-lightbox-close', type: 'button', onclick: close }, 'Close')
+      )
+    )
+  );
+  document.body.appendChild(overlay);
+  const closeButton = overlay.querySelector('button');
+  closeButton && closeButton.focus();
+}
+
+function renderGalleryGrid(items) {
+  if (!items.length) return h('div', { class: 'w-empty' }, 'No gallery images published yet.');
+  return h('div', { class: 'w-gallery-strip is-gallery-page' },
+    ...items.map(p =>
+      h('button', { class: 'w-gallery-slide', type: 'button', onclick: () => openGalleryPreview(p) },
+        h('img', { src: p.src, alt: p.title, loading: 'lazy' }),
+        h('div', { class: 'w-gallery-scrim' }),
+        h('div', { class: 'w-gallery-meta' },
+          h('div', { class: 'w-gallery-cat' }, p.cat),
+          h('div', { class: 'w-gallery-title' }, p.title)
+        )
+      )
+    )
+  );
+}
+
+function renderDownloadList(items) {
+  if (!items.length) return [h('div', { class: 'w-empty' }, 'No downloads published yet.')];
+  return [
+    h('div', { class: 'w-page-section' },
+      h('div', { class: 'w-pub-list' },
+        ...items.map(item => {
+          const href = assetUrl(item.file_url);
+          const preview = isImageDownload(item)
+            ? h('img', { class: 'w-download-thumb', src: href, alt: item.title || item.name || 'Download preview' })
+            : h('div', { class: 'w-download-fileicon' }, fileKindLabel(item));
+          return h('article', { class: 'w-pub-row2 w-download-row' },
+            h('div', { class: 'w-pub-left' },
+              h('div', { class: 'w-pub-yr' }, (item.category || 'File').slice(0, 4).toUpperCase())
+            ),
+            h('div', { class: 'w-pub-mid' },
+              h('div', { class: 'w-download-title' },
+                preview,
+                h('div', null,
+                  h('div', { class: 'w-pub-title2' }, item.title || item.name || fileLabelFromUrl(item.file_url)),
+                  h('div', { class: 'w-pub-authors' }, item.description || 'Downloadable lab resource'),
+                  h('div', { class: 'w-pub-venue' }, [item.category, fileSizeLabel(item.file_size), item.mime_type].filter(Boolean).join(' - '))
+                )
+              )
+            ),
+            h('div', { class: 'w-pub-right' },
+              href
+                ? h('a', { class: 'w-pub-btn', href, target: '_blank', rel: 'noopener', download: fileLabelFromUrl(href) || '' }, 'Download')
+                : h('span', { class: 'w-pub-btn', style: { opacity: '.45', pointerEvents: 'none' } }, 'Unavailable')
+            )
+          );
+        })
+      )
+    )
+  ];
+}
+
+function PublicFooter() {
+  return h('footer', { class: 'w-footer' },
+    h('div', { class: 'max-w w-footer-anchor' },
+      h('div', { class: 'w-anchor-label' }, 'Home institutions'),
+      h('div', { class: 'w-anchor-row' },
+        h('a', { class: 'w-anchor-logo-link', href: 'http://www.es2.villanova.edu/', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spEs2, alt: 'ES2 Center for Energy-Smart Electronic Systems', class: 'w-anchor-logo is-es2' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www.nsf.gov/eng/iip/iucrc/home.jsp', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spNsf, alt: 'National Science Foundation', class: 'w-anchor-logo is-nsf' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www1.villanova.edu/university/engineering.html', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spVillanova, alt: 'Villanova University College of Engineering', class: 'w-anchor-logo is-villanova' })
+        )
+      )
+    ),
+    h('div', { class: 'max-w w-footer-grid' },
+      h('div', null,
+        h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
+        h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems - Villanova University - 800 Lancaster Ave, Villanova PA 19085')
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Explore'),
+        h('ul', null,
+          h('li', { onclick: () => go('research') }, 'Research'),
+          h('li', { onclick: () => go('people') }, 'People'),
+          h('li', { onclick: () => go('apps') }, 'Apps'),
+          h('li', { onclick: () => go('gallery') }, 'Gallery'),
+          h('li', { onclick: () => go('downloads') }, 'Downloads')
+        )
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Resources'),
+        h('ul', null,
+          h('li', { onclick: () => go('publications') }, 'Publications'),
+          h('li', { onclick: () => go('facilities') }, 'Facilities'),
+          h('li', { onclick: () => go('news') }, 'News'),
+          h('li', { onclick: () => go('join') }, 'Join the lab')
+        )
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Contact'),
+        h('ul', null,
+          h('li', null, 'aortega@villanova.edu'),
+          h('li', null, '+1 (610) 519-4996'),
+          h('li', null, 'Tolentine Hall 344'),
+          h('li', { onclick: () => go('contact') }, 'Contact page')
+        )
+      )
+    ),
+    h('div', { class: 'w-footer-bottom' }, '© 2026 LATFS - Villanova University - College of Engineering')
   );
 }
 
 /* ---- Cached data ---- */
-let DATA = { news: null, pubs: null, people: null, research: null, gallery: null, sponsors: null, hero: null, settings: {} };
+let DATA = {
+  news: FALLBACK_DATA.news,
+  pubs: FALLBACK_DATA.pubs,
+  people: FALLBACK_DATA.people,
+  research: FALLBACK_DATA.research,
+  gallery: null,
+  sponsors: null,
+  hero: null,
+  facilities: FALLBACK_DATA.facilities,
+  apps: FALLBACK_DATA.apps,
+  settings: FALLBACK_DATA.settings,
+};
+
+function pickRows(rows, fallback) {
+  return Array.isArray(rows) && rows.length ? rows : fallback;
+}
 
 async function loadAll() {
-  const [news, pubs, people, research, gallery, sponsors, hero, facilities, apps, settings] = await Promise.all([
+  if (IS_FILE_MODE) {
+    DATA = {
+      news: FALLBACK_DATA.news,
+      pubs: FALLBACK_DATA.pubs,
+      people: FALLBACK_DATA.people,
+      research: FALLBACK_DATA.research,
+      gallery: null,
+      sponsors: null,
+      hero: null,
+      facilities: FALLBACK_DATA.facilities,
+      apps: FALLBACK_DATA.apps,
+      downloads: FALLBACK_DATA.downloads,
+      settings: FALLBACK_DATA.settings,
+    };
+    return;
+  }
+  const [news, pubs, people, research, gallery, sponsors, hero, facilities, apps, downloads, settings] = await Promise.all([
     getJSON('/api/news'),
     getJSON('/api/publications'),
-    getJSON('/api/people'),
+    getJSON('/api/people/public'),
     getJSON('/api/research'),
     getJSON('/api/gallery'),
     getJSON('/api/sponsors'),
     getJSON('/api/hero-slides'),
     getJSON('/api/facilities'),
     getJSON('/api/apps'),
+    getJSON('/api/downloads'),
     getJSON('/api/site-settings'),
   ]);
-  DATA = { news, pubs, people, research, gallery, sponsors, hero, facilities, apps, settings: settings || {} };
+  DATA = {
+    news: pickRows(news, FALLBACK_DATA.news),
+    pubs: pickRows(pubs, FALLBACK_DATA.pubs),
+    people: pickRows(people, FALLBACK_DATA.people),
+    research: pickRows(research, FALLBACK_DATA.research),
+    gallery: gallery || null,
+    sponsors: sponsors || null,
+    hero: pickRows(hero, null),
+    facilities: pickRows(facilities, FALLBACK_DATA.facilities),
+    apps: pickRows(apps, FALLBACK_DATA.apps),
+    downloads: pickRows(downloads, FALLBACK_DATA.downloads),
+    settings: settings || FALLBACK_DATA.settings,
+  };
 }
 
 /* ---- Pages ---- */
@@ -981,7 +2018,7 @@ function Home() {
         )
       )
     ),
-    PhotoGallery(DATA.gallery),
+    HomeGalleryCarousel(DATA.gallery),
     SponsorMarquee(DATA.sponsors),
   );
   return homeBody;
@@ -993,7 +2030,6 @@ function PageResearch() {
   const cards = items.length
     ? items.map((r, i) =>
         h('div', { class: 'w-rc' },
-          h('div', { class: 'w-rc-badge' }, String(i+1).padStart(2,'0')),
           h('div', { class: 'w-rc-title' }, r.title || r.name || ''),
           h('p',   { class: 'w-rc-desc'  }, r.summary || r.description || r.desc || ''),
         )
@@ -1001,7 +2037,7 @@ function PageResearch() {
     : [h('div', { class: 'w-empty' }, 'No research areas yet.')];
   return h('div', null,
     PageBanner('Research', s.research_page_title || 'Six pillars of inquiry',
-      s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage.'),
+      s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems â€” from boiling in microchannels to renewable thermal storage.'),
     h('section', { class: 'w-page-content' },
       h('div', { class: 'max-w' },
         h('div', { class: 'w-grid-3' }, ...cards)
@@ -1011,61 +2047,65 @@ function PageResearch() {
 }
 
 function PagePeople() {
-  const people = DATA.people || [];
-  const groups = [
-    ['director',     'Director'],
-    ['manager',      'Lab manager / assistant'],
-    ['faculty',      'Faculty & senior researchers'],
-    ['postdoc',      'Postdoctoral researchers'],
-    ['phd',          'PhD candidates'],
-    ['ms',           'MS students'],
-    ['ug',           'Undergraduate researchers'],
-    ['alumni',       'Alumni'],
-    ['collaborator', 'Collaborators'],
-  ];
-  const sections = groups.map(([key, label]) => {
-    const ours = people.filter(p => (p.category || '').toLowerCase() === key && (p.active === undefined ? true : p.active));
-    if (!ours.length) return null;
-    return h('div', { class: 'w-page-section' },
-      h('h2', null, label),
-      h('div', { class: 'w-people-grid' },
-        ...ours.map(p => {
-          const inits = getInitials(p.name);
-          const grad  = avatarGrad(p.name);
-          return h('div', { class: 'w-person-v2', onclick: () => go('person/' + p.id) },
-            h('div', { class: 'w-avatar' },
-              h('div', { class: 'w-avatar-photo', style: p.photo_url
-                ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' }
-                : { background: grad } }),
-              p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
-            ),
-            h('div', { class: 'w-pv2-name' }, p.name || ''),
-            h('div', { class: 'w-pv2-role' }, p.role || ''),
-            h('span', { class: 'w-pv2-badge' }, label),
-          );
-        })
-      )
-    );
-  }).filter(Boolean);
+  const people = mergedPublicPeople(DATA.people);
+  let activeCategory = 'all';
   const s = DATA.settings || {};
+  const categoryCounts = [['all', 'All members', people.length], ...PEOPLE_GROUPS
+    .map(([key, label]) => [key, label, people.filter(p => (p.category || '').toLowerCase() === key).length])
+    .filter(([, , count]) => count)];
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search by name, role, or research area' });
+  const meta = h('div', { class: 'w-filter-meta' });
+  const pills = h('div', { class: 'w-filter-pills' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const filtered = people.filter(p => {
+      const inCategory = activeCategory === 'all' || (p.category || '').toLowerCase() === activeCategory;
+      return inCategory && matchesQuery([p.name, p.role, p.bio, p.category], query);
+    });
+    meta.textContent = `${filtered.length} member${filtered.length === 1 ? '' : 's'} shown`;
+    results.replaceChildren(...renderPeopleSections(filtered));
+    pills.querySelectorAll('.w-filter-pill').forEach(btn => btn.classList.toggle('active', btn.dataset.value === activeCategory));
+  };
+  categoryCounts.forEach(([value, label, count]) => {
+    const btn = h('button', {
+      class: 'w-filter-pill' + (value === activeCategory ? ' active' : ''),
+      type: 'button',
+      'data-value': value,
+      onclick: () => { activeCategory = value; applyFilters(); }
+    }, `${label} (${count})`);
+    pills.appendChild(btn);
+  });
+  searchInput.addEventListener('input', applyFilters);
+  applyFilters();
   return h('div', null,
     PageBanner('People', s.people_page_title || 'Lab members',
       s.people_page_intro || 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        sections.length ? sections : h('div', { class: 'w-empty' }, 'Roster is being updated.')
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            meta
+          ),
+          h('div', { class: 'w-filter-row' }, pills)
+        ),
+        results
       )
     )
   );
 }
 
 function PagePersonDetail(id) {
-  const p = (DATA.people || []).find(x => String(x.id) === String(id));
+  const p = mergedPublicPeople(DATA.people).find(x => String(x.id) === String(id));
   if (!p) return h('div', null,
     PageBanner('People', 'Person not found', ''),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        h('a', { class: 'w-back', onclick: () => go('people') }, '← Back to People'),
+        h('a', { class: 'w-back', onclick: () => go('people') }, 'â† Back to People'),
         h('div', { class: 'w-empty' }, 'Person not found.')
       )
     )
@@ -1080,7 +2120,7 @@ function PagePersonDetail(id) {
     PageBanner(p.role || 'People', p.name || '', ''),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        h('a', { class: 'w-back', onclick: () => go('people') }, '← Back to People'),
+        h('a', { class: 'w-back', onclick: () => go('people') }, 'â† Back to People'),
         h('div', { class: 'w-person-detail-v2' },
           h('div', { class: 'w-avatar' },
             h('div', { class: 'w-avatar-photo', style: p.photo_url
@@ -1089,7 +2129,7 @@ function PagePersonDetail(id) {
             p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
           ),
           h('h2', { class: 'w-pdetail-name' }, p.name || ''),
-          h('div', { class: 'w-pdetail-sub' }, [p.role, p.category].filter(Boolean).join(' · ')),
+          h('div', { class: 'w-pdetail-sub' }, [p.role, p.category].filter(Boolean).join(' Â· ')),
           p.bio
             ? h('div', { class: 'w-pdetail-bio' }, p.bio)
             : h('div', { class: 'w-pdetail-bio', style: { color: 'var(--fg-4)', fontStyle: 'italic' } }, 'Biography coming soon.'),
@@ -1102,37 +2142,42 @@ function PagePersonDetail(id) {
 
 function PagePublications() {
   const pubs = DATA.pubs || [];
-  const byYear = {};
-  pubs.forEach(p => { const y = p.year || 'n.d.'; (byYear[y] ||= []).push(p); });
-  const years = Object.keys(byYear).sort((a, b) => String(b).localeCompare(String(a)));
+  const yearOptions = ['all', ...Array.from(new Set(pubs.map(p => String(p.year || 'n.d.')))).sort((a, b) => String(b).localeCompare(String(a)))];
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search title, authors, or venue' });
+  const yearSelect = h('select', { class: 'w-filter-select' },
+    ...yearOptions.map(y => h('option', { value: y }, y === 'all' ? 'All years' : (y === 'n.d.' ? 'Other' : y)))
+  );
+  const meta = h('div', { class: 'w-filter-meta' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const year = yearSelect.value;
+    const filtered = pubs.filter(p => {
+      const matchesYear = year === 'all' || String(p.year || 'n.d.') === year;
+      return matchesYear && matchesQuery([p.title, p.authors, p.venue], query);
+    });
+    meta.textContent = `${filtered.length} publication${filtered.length === 1 ? '' : 's'} shown`;
+        results.replaceChildren(...renderPublicationTable(filtered));
+  };
+  searchInput.addEventListener('input', applyFilters);
+  yearSelect.addEventListener('change', applyFilters);
+  applyFilters();
   return h('div', null,
     PageBanner('Publications', 'Selected publications',
       'Peer-reviewed journal articles, conference proceedings, and invited talks. Reach out for any preprint not linked here.'),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        ...(years.length ? years.map(y =>
-          h('div', { class: 'w-page-section' },
-            h('h2', null, y === 'n.d.' ? 'Other' : y),
-            h('div', { class: 'w-pub-list' }, ...byYear[y].map(p =>
-              h('article', { class: 'w-pub-row2' },
-                h('div', { class: 'w-pub-left' },
-                  h('div', { class: 'w-pub-yr' }, String(p.year || '')),
-                  h('div', { class: 'w-pub-spine' })
-                ),
-                h('div', { class: 'w-pub-mid' },
-                  h('div', { class: 'w-pub-title2 display-serif' }, p.title || ''),
-                  h('div', { class: 'w-pub-authors' }, p.authors || ''),
-                  h('div', { class: 'w-pub-venue' }, p.venue || ''),
-                ),
-                h('div', { class: 'w-pub-right' },
-                  p.pdf_url ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null,
-                  p.doi_url ? h('a', { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' }, 'DOI') : null,
-                  p.ris_url ? h('a', { class: 'w-pub-btn ghost', href: p.ris_url, target: '_blank', rel: 'noopener' }, 'Cite') : null,
-                )
-              )
-            ))
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            yearSelect,
+            meta
           )
-        ) : [h('div', { class: 'w-empty' }, 'Publication list is being updated.')])
+        ),
+        results
       )
     )
   );
@@ -1141,24 +2186,54 @@ function PagePublications() {
 function PageFacilities() {
   const facs = DATA.facilities || [];
   const s = DATA.settings || {};
+  let docsOnly = false;
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search equipment, rigs, or documentation' });
+  const meta = h('div', { class: 'w-filter-meta' });
+  const pills = h('div', { class: 'w-filter-pills' });
+  const results = h('div', { class: 'w-results-stack' });
+  const pillDefs = [
+    ['all', 'All facilities'],
+    ['docs', 'With documentation'],
+  ];
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const filtered = facs.filter(f => {
+      const passesDocs = !docsOnly || !!f.doc_url;
+      return passesDocs && matchesQuery([f.name, f.description, f.content, f.doc_name], query);
+    });
+    meta.textContent = `${filtered.length} facilit${filtered.length === 1 ? 'y' : 'ies'} shown`;
+    results.replaceChildren(renderFacilityCards(filtered));
+    pills.querySelectorAll('.w-filter-pill').forEach(btn => {
+      const active = docsOnly ? btn.dataset.value === 'docs' : btn.dataset.value === 'all';
+      btn.classList.toggle('active', active);
+    });
+  };
+  pillDefs.forEach(([value, label]) => {
+    pills.appendChild(h('button', {
+      class: 'w-filter-pill' + (value === 'all' ? ' active' : ''),
+      type: 'button',
+      'data-value': value,
+      onclick: () => { docsOnly = value === 'docs'; applyFilters(); }
+    }, label));
+  });
+  searchInput.addEventListener('input', applyFilters);
+  applyFilters();
   return h('div', null,
     PageBanner('Facilities', s.facilities_page_title || 'Lab facilities & instruments',
       s.facilities_page_intro || 'Click any facility to see photos, the full description, and any documentation we have on it.'),
     h('section', { class: 'w-page-content' },
       h('div', { class: 'max-w' },
-        facs.length
-          ? h('div', { class: 'w-grid-2' },
-              ...facs.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },
-                f.photo_url
-                  ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } })
-                  : h('div', { class: 'w-fac-img w-fac-img-empty' }),
-                h('div', { class: 'w-fac-body' },
-                  h('h3',  { class: 'w-fac-title' }, f.name || ''),
-                  h('p',   { class: 'w-fac-desc'  }, (f.description || '').slice(0, 220) + ((f.description||'').length > 220 ? '…' : '')),
-                  h('span', { class: 'w-fac-cta'  }, 'View facility →')
-                )
-              )))
-          : h('div', { class: 'w-empty' }, 'Facilities will be listed here.')
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            meta
+          ),
+          h('div', { class: 'w-filter-row' }, pills)
+        ),
+        results
       )
     )
   );
@@ -1170,14 +2245,14 @@ function PageFacilityDetail(id) {
     PageBanner('Facilities', 'Facility not found', ''),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        h('a', { class: 'w-back', onclick: () => go('facilities') }, '← Back to Facilities'),
+        h('a', { class: 'w-back', onclick: () => go('facilities') }, 'â† Back to Facilities'),
         h('div', { class: 'w-empty' }, 'Facility not found.')
       )
     )
   );
   const docs = [];
   if (f.doc_url) docs.push(h('a', { class: 'w-doc-link', href: f.doc_url, target: '_blank', rel: 'noopener' },
-    h('span', { class: 'w-doc-icon' }, '📄'),
+    h('span', { class: 'w-doc-icon' }, 'ðŸ“„'),
     h('span', { class: 'w-doc-name' }, f.doc_name || 'Documentation'),
     h('span', { class: 'w-doc-sub' },  'Open file')
   ));
@@ -1185,7 +2260,7 @@ function PageFacilityDetail(id) {
     PageBanner('Facility', f.name || '', ''),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        h('a', { class: 'w-back', onclick: () => go('facilities') }, '← Back to Facilities'),
+        h('a', { class: 'w-back', onclick: () => go('facilities') }, 'â† Back to Facilities'),
         h('article', { class: 'w-fac-detail' },
           f.photo_url ? h('img', { src: f.photo_url, alt: '', class: 'w-fac-detail-img' }) : null,
           h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
@@ -1200,7 +2275,7 @@ function PageApps() {
   const apps = DATA.apps || [];
   return h('div', null,
     PageBanner('Apps', 'Lab apps & calculators',
-      'Browser-based mini-applications produced by the lab — calculators, regime maps, and interactive teaching tools tied to our research.'),
+      'Browser-based mini-applications produced by the lab â€” calculators, regime maps, and interactive teaching tools tied to our research.'),
     h('section', { class: 'w-page-content' },
       h('div', { class: 'max-w' },
         apps.length
@@ -1208,11 +2283,80 @@ function PageApps() {
               ...apps.map(a => h('div', { class: 'w-card' },
                 h('h3', null, a.title || ''),
                 h('p',  null, a.summary || a.description || ''),
-                a.url
-                  ? h('a', { class: 'btn-ghost', href: a.url, target: '_blank', rel: 'noopener', style: { marginTop: '12px', display: 'inline-block' } }, 'Open app →')
-                  : h('span', { class: 'eyebrow', style: { marginTop: '12px', display: 'inline-block', color: 'var(--fg-4)' } }, 'Coming soon'),
+                h('div', { class: 'w-app-actions' },
+                  a.embed_html
+                    ? h('button', { class: 'btn-primary', type: 'button', onclick: () => openInlineApp(a) }, 'Launch app')
+                    : null,
+                  a.url
+                    ? h('a', { class: a.embed_html ? 'btn-ghost' : 'btn-primary', href: assetUrl(a.url), target: '_blank', rel: 'noopener' }, a.embed_html ? 'Open link' : 'Launch app')
+                    : null,
+                  !a.url && !a.embed_html
+                    ? h('span', { class: 'eyebrow', style: { color: 'var(--fg-4)' } }, 'Coming soon')
+                    : null
+                )
               )))
           : h('div', { class: 'w-empty' }, 'No apps published yet.')
+      )
+    )
+  );
+}
+
+function PageGallery() {
+  const photos = galleryEntries(DATA.gallery);
+  return h('div', null,
+    PageBanner('Gallery', 'From the lab',
+      'The latest lab photos, setups, people, and research moments from the gallery.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        renderGalleryGrid(photos)
+      )
+    )
+  );
+}
+
+function PageDownloads() {
+  const s = DATA.settings || {};
+  const items = (DATA.downloads || []).slice().sort((a, b) =>
+    String(a.category || '').localeCompare(String(b.category || '')) ||
+    String(a.title || a.name || '').localeCompare(String(b.title || b.name || ''))
+  );
+  const cats = Array.from(new Set(items.map(item => item.category || 'File'))).sort((a, b) => a.localeCompare(b));
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search downloads by title, description, type, or file name' });
+  const categorySelect = h('select', { class: 'w-filter-select' },
+    h('option', { value: 'all' }, 'All categories'),
+    ...cats.map(cat => h('option', { value: cat }, cat))
+  );
+  const meta = h('div', { class: 'w-filter-meta' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const category = categorySelect.value;
+    const filtered = items.filter(item =>
+      (category === 'all' || (item.category || 'File') === category) &&
+      matchesQuery([item.title, item.name, item.description, item.category, item.mime_type, item.file_url], query)
+    );
+    meta.textContent = `${filtered.length} download${filtered.length === 1 ? '' : 's'} shown`;
+    results.replaceChildren(...renderDownloadList(filtered));
+  };
+  searchInput.addEventListener('input', applyFilters);
+  categorySelect.addEventListener('change', applyFilters);
+  applyFilters();
+  return h('div', null,
+    PageBanner('Downloads', s.downloads_page_title || 'Downloads',
+      s.downloads_page_intro || 'Access published PDFs, documents, media, and downloadable resources shared by the lab.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            categorySelect,
+            meta
+          )
+        ),
+        results
       )
     )
   );
@@ -1229,22 +2373,32 @@ function fmtNewsDate(when) {
 
 function PageNews() {
   const news = DATA.news || [];
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search titles, announcements, or milestones' });
+  const meta = h('div', { class: 'w-filter-meta' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const filtered = news.filter(n => matchesQuery([n.title, n.content, n.body, n.summary, n.date], query));
+    meta.textContent = `${filtered.length} update${filtered.length === 1 ? '' : 's'} shown`;
+    results.replaceChildren(renderNewsCards(filtered));
+  };
+  searchInput.addEventListener('input', applyFilters);
+  applyFilters();
   return h('div', null,
     PageBanner('News', 'Updates from the lab',
       'New papers, awards, and milestones. Click any item to read the full story.'),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        news.length
-          ? h('div', { class: 'w-news-stack', style: { gap: '14px' } },
-              ...news.map(n => h('article', { class: 'w-news-card', onclick: () => go('news/' + n.id), style: { cursor: 'pointer' } },
-                n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
-                h('div', { class: 'w-news-body-wrap' },
-                  h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
-                  h('h3',  { class: 'w-news-title' }, n.title || ''),
-                  h('p',   { class: 'w-news-body' }, (n.content || n.body || n.summary || '').slice(0, 220) + ((n.content||'').length > 220 ? '…' : '')),
-                )
-              )))
-          : h('div', { class: 'w-empty' }, 'No news yet — check back soon.')
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            meta
+          )
+        ),
+        results
       )
     )
   );
@@ -1256,7 +2410,7 @@ function PageNewsDetail(id) {
     PageBanner('News', 'Not found', ''),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        h('a', { class: 'w-back', onclick: () => go('news') }, '← Back to News'),
+        h('a', { class: 'w-back', onclick: () => go('news') }, 'â† Back to News'),
         h('div', { class: 'w-empty' }, 'News item not found.')
       )
     )
@@ -1265,7 +2419,7 @@ function PageNewsDetail(id) {
     PageBanner(fmtNewsDate(n.date || n.published_at || n.created_at), n.title || '', ''),
     h('section', { class: 'w-page-content on-white' },
       h('div', { class: 'max-w' },
-        h('a', { class: 'w-back', onclick: () => go('news') }, '← Back to News'),
+        h('a', { class: 'w-back', onclick: () => go('news') }, 'â† Back to News'),
         h('article', { class: 'w-news-detail' },
           n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
           h('div', { class: 'w-news-body-rich' }, n.content || n.body || ''),
@@ -1277,10 +2431,10 @@ function PageNewsDetail(id) {
 
 function PageJoin() {
   const cards = [
-    { icon: '🎓', title: 'Prospective PhD students', body: 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.' },
-    { icon: '📐', title: 'MS / Undergraduate', body: 'Course-based research projects available. Contact the lab to discuss what you would like to learn.' },
-    { icon: '🏭', title: 'Industry collaboration', body: 'We partner with industry on directed research, often through the NSF E³S Center. Reach out for membership and project framing.' },
-    { icon: '✈️', title: 'Visiting scholars', body: 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.' },
+    { icon: 'ðŸŽ“', title: 'Prospective PhD students', body: 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.' },
+    { icon: 'ðŸ“', title: 'MS / Undergraduate', body: 'Course-based research projects available. Contact the lab to discuss what you would like to learn.' },
+    { icon: 'ðŸ­', title: 'Industry collaboration', body: 'We partner with industry on directed research, often through the NSF EÂ³S Center. Reach out for membership and project framing.' },
+    { icon: 'âœˆï¸', title: 'Visiting scholars', body: 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.' },
   ];
   return h('div', null,
     PageBanner('Join', 'Work with LATFS',
@@ -1309,12 +2463,12 @@ function PageContact() {
       h('div', { class: 'max-w' },
         h('div', { class: 'w-grid-2' },
           h('div', { class: 'w-icon-card' },
-            h('span', { class: 'w-icon-card-icon' }, '👤'),
+            h('span', { class: 'w-icon-card-icon' }, 'ðŸ‘¤'),
             h('h3', null, 'Director'),
             h('p',  null, 'Dr. Alfonso Ortega', h('br'), 'aortega@villanova.edu', h('br'), '+1 (610) 519-4996'),
           ),
           h('div', { class: 'w-icon-card' },
-            h('span', { class: 'w-icon-card-icon' }, '🏛️'),
+            h('span', { class: 'w-icon-card-icon' }, 'ðŸ›ï¸'),
             h('h3', null, 'Mailing address'),
             h('p',  null, 'Tolentine Hall 344', h('br'), 'Villanova University', h('br'), '800 Lancaster Avenue', h('br'), 'Villanova, PA 19085'),
           ),
@@ -1324,10 +2478,11 @@ function PageContact() {
   );
 }
 
-const PAGES = { home: Home, research: PageResearch, people: PagePeople, publications: PagePublications, facilities: PageFacilities, apps: PageApps, news: PageNews, join: PageJoin, contact: PageContact };
+const PAGES = { home: Home, research: PageResearch, people: PagePeople, publications: PagePublications, facilities: PageFacilities, gallery: PageGallery, apps: PageApps, downloads: PageDownloads, news: PageNews, join: PageJoin, contact: PageContact };
 
 function render() {
   const root = document.getElementById('app');
+  applySiteTheme((DATA.settings || FALLBACK_DATA.settings || {}).site_theme);
   root.innerHTML = '';
   root.appendChild(Nav());
   const m = /^([a-z]+)\/(.+)$/.exec(state.route || '');
@@ -1343,17 +2498,20 @@ function render() {
     pageEl = Page();
   }
   root.appendChild(pageEl);
-  root.appendChild(Footer());
+  root.appendChild(PublicFooter());
   if (state.route === 'home') restartHeroTimer();
   else if (state.heroTimer) { clearInterval(state.heroTimer); state.heroTimer = null; }
 }
 
 (async function init() {
   state.route = (location.hash.replace('#','') || 'home');
+  applySiteTheme(FALLBACK_DATA.settings.site_theme);
   render();
   await loadAll();
+  applySiteTheme((DATA.settings || FALLBACK_DATA.settings || {}).site_theme);
   render();
 })();
 </script>
 </body>
 </html>
+

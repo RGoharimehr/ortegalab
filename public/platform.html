@@ -270,7 +270,8 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   /* Sidebar */
   .p-sidebar { width: 240px; background: var(--navy-900); color: rgba(255,255,255,.8); display: flex; flex-direction: column; padding: 20px 12px; }
   .p-brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 12px; }
-  .p-brand-mark { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .p-brand-mark { width: 36px; height: 36px; border-radius: 50%; background: rgba(212,169,66,.12); border: 1px solid rgba(212,169,66,.26); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .p-brand-mark img { width: 24px; height: 24px; display: block; object-fit: contain; }
   .p-brand-wm { color: #fff; font-weight: 800; font-size: 14px; }
   .p-brand-sub { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .08em; text-transform: uppercase; }
   .p-nav, .p-nav-section { display: flex; flex-direction: column; gap: 2px; }
@@ -281,7 +282,8 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   .p-nav-item.active { background: var(--gold-600); color: #fff; }
   .p-nav-icon { width: 16px; height: 16px; }
   .p-user { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08); }
-  .p-user-av { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .p-user-av { width: 34px; height: 34px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .p-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
   .p-user-name { color: #fff; font-size: 13px; font-weight: 600; }
   .p-user-role { color: rgba(255,255,255,.5); font-size: 11px; }
 
@@ -302,11 +304,44 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   .p-card-title { font-weight: 700; font-size: 14px; color: var(--navy-900); }
   .p-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .p-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .p-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .p-stat-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px; position: relative; box-shadow: var(--shadow-xs); }
+  .p-stat-card.warn { border-left-color: var(--status-warn); }
+  .p-stat-card.alert { border-left-color: var(--status-alert); }
+  .p-stat-card.info { border-left-color: var(--status-info); }
   .p-stat-icon { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; color: var(--fg-4); }
   .p-stat-num { font-size: 1.75rem; font-weight: 800; color: var(--navy-900); line-height: 1; }
   .p-stat-lbl { font-size: 12px; color: var(--fg-3); }
   .w-link-gold { background: none; border: none; color: var(--gold-700); font-weight: 600; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+  .p-section-summary { margin-bottom: 14px; }
+  .p-resource-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .p-resource-card { border: 1px solid var(--border-1); border-radius: 12px; padding: 14px; background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96)); }
+  .p-resource-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .p-resource-title { font-size: 13px; font-weight: 700; color: var(--navy-900); }
+  .p-resource-num { font-size: 1.6rem; font-weight: 800; color: var(--navy-900); line-height: 1; }
+  .p-resource-meta { font-size: 11px; color: var(--fg-3); margin-top: 3px; }
+  .p-alert-list { display: flex; flex-direction: column; gap: 2px; }
+  .p-alert-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-alert-row:last-child { border-bottom: none; }
+  .p-alert-kicker { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-700); min-width: 92px; }
+  .p-alert-title { font-size: 13px; font-weight: 600; color: var(--navy-900); }
+  .p-alert-meta { font-size: 11px; color: var(--fg-4); margin-top: 2px; }
+  .p-inline-check { display: flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; color: var(--fg-2); }
+  .p-inline-check input { width: auto; margin: 0; }
+  .p-action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .p-action-card { border: 1px solid var(--border-1); border-radius: 12px; padding: 14px; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,249,252,0.98)); }
+  .p-action-card.critical { border-color: rgba(220,38,38,0.18); box-shadow: 0 6px 18px rgba(220,38,38,0.08); }
+  .p-action-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .p-action-title { font-size: 14px; font-weight: 700; color: var(--navy-900); }
+  .p-action-meta { font-size: 11px; color: var(--fg-4); margin-top: 3px; }
+  .p-action-copy { font-size: 12px; color: var(--fg-2); margin-top: 8px; line-height: 1.45; }
+  .p-action-foot { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .p-chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .p-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: var(--bg-1); color: var(--fg-3); font-size: 11px; font-weight: 600; }
+  .p-chip.alert { background: var(--status-alert-tint); color: #991b1b; }
+  .p-chip.warn { background: var(--status-warn-tint); color: #92400e; }
+  .p-chip.info { background: var(--status-info-tint); color: #075985; }
+  .btn-ghost-sm:disabled, .btn-primary-sm:disabled { opacity: .55; cursor: not-allowed; pointer-events: none; }
 
   /* Slots */
   .p-slot { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-1); }
@@ -376,7 +411,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   .p-tab { background: none; border: none; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--fg-3); cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 8px; }
   .p-tab.active { color: var(--navy-900); border-bottom-color: var(--gold-600); }
   .p-tab-count { background: var(--bg-1); border-radius: 999px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--fg-3); }
-  .p-inv-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .p-inv-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
   .p-inv-search { position: relative; flex: 1; }
   .p-inv-search-i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--fg-4); }
   .p-inv-input { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; box-sizing: border-box; }
@@ -421,6 +456,8 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-eq-status-out { background: var(--status-warn-tint); color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .p-eq-status-broken { background: var(--status-alert-tint); color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 .p-eq-status-maint { background: var(--status-info-tint); color: #075985; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.p-eq-meta { font-size: 12px; font-weight: 600; line-height: 1.45; color: var(--fg-4); }
+.p-eq-meta-soft { color: var(--fg-4); font-weight: 500; }
 .p-issue-card { background:#fff; border:1px solid var(--border-1); border-radius:10px; padding:14px; margin-bottom:10px; box-shadow: var(--shadow-xs); }
 .p-issue-card.priority-high { border-left: 4px solid var(--status-alert); }
 .p-issue-card.priority-medium { border-left: 4px solid var(--status-warn); }
@@ -430,8 +467,9 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-issue-title { font-weight:700; color:var(--navy-900); font-size:14px; }
 .p-issue-meta { font-size:11px; color:var(--fg-4); margin-top:4px; }
 .p-issue-body { font-size:13px; color:var(--fg-2); margin:8px 0; }
+.p-zone-line { display: inline-block; margin-top: 5px; font-size: 12px; color: var(--fg-2); line-height: 1.55; }
 .p-profile-card { background:#fff; border:1px solid var(--border-1); border-radius:12px; padding:24px; margin-bottom:16px; }
-.p-prof-av { width: 72px; height: 72px; border-radius: 50%; background: var(--gold-600); color:#fff; font-weight:800; font-size:24px; display:flex; align-items:center; justify-content:center; }
+.p-prof-av { width: 72px; height: 72px; border-radius: 50%; background: var(--gold-600); color:#fff; font-weight:800; font-size:24px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .p-prof-row { display:flex; gap:20px; align-items:center; }
 .p-prof-name { font-size:1.5rem; font-weight:800; color:var(--navy-900); margin:0; }
 .p-prof-role { font-size:13px; color:var(--gold-700); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
@@ -483,6 +521,19 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 .p-sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:199; }
 .p-sidebar-overlay.open { display:block; }
 
+@media (max-width: 1280px) {
+  .p-main { padding: 24px; }
+  .p-grid-2 { grid-template-columns: 1fr; }
+  .p-page-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+@media (max-width: 1100px) {
+  .p-grid-3,
+  .p-grid-4,
+  .p-resource-strip { grid-template-columns: 1fr; }
+  .p-actions { flex-wrap: wrap; }
+  .p-resource-card { min-width: 0; }
+}
+
 @media (max-width: 768px) {
   .p-app { display: block; position: relative; }
   .p-sidebar {
@@ -503,7 +554,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   .p-topbar-title { font-weight: 800; font-size: 14px; color: #fff; flex: 1; }
   .p-hamburger { display: block; }
   /* Stack grid cards on mobile */
-  .p-grid-2, .p-grid-3 { grid-template-columns: 1fr; }
+  .p-grid-2, .p-grid-3, .p-grid-4, .p-resource-strip, .p-action-grid { grid-template-columns: 1fr; }
   .p-kanban { flex-direction: column; }
   .p-page-head { flex-direction: column; align-items: flex-start; gap: 12px; }
   .pi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -524,8 +575,8 @@ body.dm {
   --bg-3: #131a2e;
   --fg-1: #e8edf5;
   --fg-2: #b0bbd0;
-  --fg-3: #7a8aa0;
-  --fg-4: #556070;
+  --fg-3: #a7b7ce;
+  --fg-4: #8fa1ba;
   --border-1: #1e2a42;
   --border-2: #253352;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.5);
@@ -544,16 +595,36 @@ body.dm .modal-bg .modal { background: var(--bg-2); }
 body.dm .p-main { background: var(--bg-2); }
 body.dm .p-meet-card { background: var(--bg-3); border-color: var(--border-1); }
 body.dm .p-profile-card { background: var(--bg-3); border-color: var(--border-1); }
+body.dm .p-resource-card { background: linear-gradient(180deg, rgba(19,26,46,0.96), rgba(8,12,20,0.96)); border-color: var(--border-1); }
+body.dm .p-action-card { background: linear-gradient(180deg, rgba(19,26,46,0.96), rgba(8,12,20,0.96)); border-color: var(--border-1); }
 body.dm .p-slot-title { color: var(--fg-1); }
 body.dm .p-task-title, body.dm .p-task-card-title { color: var(--fg-1); }
 body.dm .p-h1, body.dm .p-h1-sub { color: var(--fg-1); }
 body.dm .p-card-title { color: var(--fg-1); }
 body.dm .p-page-head h2, body.dm .p-section-head { color: var(--fg-1); }
-body.dm .p-inv-name, body.dm .p-inv-cat { color: var(--fg-2); }
+body.dm .p-inv-name, body.dm .p-inv-cat, body.dm .p-alert-title, body.dm .p-resource-title, body.dm .p-resource-num, body.dm .p-action-title { color: var(--fg-1); }
+body.dm .p-task-due,
+body.dm .p-task-due-sm,
+body.dm .p-slot-room,
+body.dm .p-resource-meta,
+body.dm .p-alert-meta,
+body.dm .p-meet-day-time,
+body.dm .p-meet-room { color: var(--fg-2); }
+body.dm .p-meet-title { color: #f8fbff; }
+body.dm .p-eq-meta { color: #d9e6fb; text-shadow: 0 1px 0 rgba(4,8,18,.18); }
+body.dm .p-eq-meta-soft { color: #c3d4ef; text-shadow: 0 1px 0 rgba(4,8,18,.18); }
+body.dm .p-meet-tag { background: rgba(74,111,165,.55) !important; }
 body.dm .p-tag-outline { background: var(--bg-3); border-color: var(--border-2); color: var(--fg-2); }
 body.dm .btn-ghost, body.dm .btn-ghost-sm { background: var(--bg-3); border-color: var(--border-2); color: var(--fg-1); }
 body.dm .btn-ghost:hover, body.dm .btn-ghost-sm:hover { background: var(--bg-1); }
 body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
+body.dm .p-issue-card { background: linear-gradient(180deg, rgba(19,26,46,0.98), rgba(10,15,27,0.98)); border-color: var(--border-1); box-shadow: none; }
+body.dm .p-issue-title { color: #f7fbff; }
+body.dm .p-issue-body { color: #d8e3f6; }
+body.dm .p-issue-meta { color: #b9c9df; }
+body.dm .p-zone-line { color: #d3def0; }
+body.dm .p-eq-meta { color: #e4eefc; }
+body.dm .p-eq-meta-soft { color: #cfddf5; }
 
 /* Notification badge on nav items */
 .p-nav-badge {
@@ -579,6 +650,461 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
   margin-top: 8px; width: 100%;
 }
 .p-dm-toggle:hover { background: rgba(255,255,255,.07); color: #fff; }
+
+/* ---- 2026 polish pass ---- */
+body {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(212,169,66,.14), transparent 26%),
+    radial-gradient(circle at top right, rgba(74,111,165,.12), transparent 22%),
+    linear-gradient(180deg, #eef3f8 0%, #f8fafc 38%, #edf2f7 100%);
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(15,23,42,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,.18), transparent 82%);
+}
+.p-app, .login-screen { position: relative; z-index: 1; }
+.p-app { background: transparent; }
+.p-main {
+  padding: 30px 34px 42px;
+  background: transparent;
+}
+.p-sidebar {
+  width: 272px;
+  padding: 16px 14px 18px;
+  background: linear-gradient(180deg, #08101f 0%, #0f172a 28%, #12213d 100%);
+  box-shadow: inset -1px 0 0 rgba(255,255,255,.05), 20px 0 48px rgba(8,15,36,.16);
+}
+.p-brand {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+  box-shadow: 0 18px 36px rgba(0,0,0,.18);
+}
+.p-brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+  box-shadow: 0 10px 24px rgba(184,145,42,.28);
+}
+.p-nav, .p-nav-section { gap: 6px; }
+.p-nav-section {
+  margin-top: 18px;
+  padding-top: 18px;
+}
+.p-nav-head {
+  padding-bottom: 10px;
+  letter-spacing: .14em;
+}
+.p-nav-item {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 12px;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.p-nav-item:hover {
+  transform: translateX(2px);
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.08);
+}
+.p-nav-item.active {
+  background: linear-gradient(135deg, rgba(212,169,66,.96), rgba(154,120,32,.96));
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(154,120,32,.24);
+}
+.p-nav-badge {
+  box-shadow: 0 0 0 3px rgba(220,38,38,.16);
+}
+.p-user {
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+}
+.p-user-av {
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+  box-shadow: 0 10px 20px rgba(184,145,42,.26);
+}
+.p-dm-toggle {
+  margin-top: 10px;
+  border-radius: 10px;
+  padding: 7px 10px;
+}
+.p-section.active {
+  display: block;
+  animation: p-rise var(--dur-base) var(--ease-out);
+}
+.p-page-head {
+  position: relative;
+  overflow: hidden;
+  padding: 26px 28px;
+  margin-bottom: 22px;
+  border: 1px solid rgba(226,232,240,.95);
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255,255,255,.97) 0%, rgba(254,247,228,.92) 46%, rgba(244,248,252,.94) 100%);
+  box-shadow: 0 24px 50px rgba(15,23,42,.08);
+}
+.p-page-head::before {
+  content: "";
+  position: absolute;
+  top: -70px;
+  right: -30px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,169,66,.24), transparent 64%);
+  pointer-events: none;
+}
+.p-page-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(184,145,42,.34), transparent 65%);
+}
+.p-page-head > * {
+  position: relative;
+  z-index: 1;
+}
+.p-h1 {
+  margin: 6px 0;
+  font-size: clamp(1.8rem, 2.8vw, 2.45rem);
+}
+.p-h1-sub {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 14px;
+}
+.p-actions {
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn-primary-sm,
+.btn-ghost-sm {
+  min-height: 38px;
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+.btn-primary-sm {
+  box-shadow: 0 12px 22px rgba(184,145,42,.22);
+}
+.btn-ghost-sm {
+  background: rgba(255,255,255,.82);
+  border-color: rgba(203,213,225,.9);
+}
+.btn-ghost-sm:hover {
+  background: #fff;
+}
+.p-card,
+.p-stat-card,
+.p-resource-card,
+.p-inv-toolbar,
+.p-tabs,
+.p-banner {
+  backdrop-filter: blur(10px);
+}
+.p-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 16px 32px rgba(15,23,42,.06);
+}
+.p-card-head {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+}
+.p-grid-2,
+.p-grid-3,
+.p-grid-4,
+.p-resource-strip,
+.p-action-grid {
+  gap: 18px;
+}
+.p-stat-card {
+  min-height: 132px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(226,232,240,.95);
+  border-left: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,250,252,.96));
+  box-shadow: 0 16px 30px rgba(15,23,42,.06);
+  overflow: hidden;
+}
+.p-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--gold-500), var(--navy-700));
+}
+.p-stat-card.warn::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+.p-stat-card.alert::before {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+.p-stat-card.info::before {
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+}
+.p-stat-icon {
+  width: 20px;
+  height: 20px;
+  opacity: .9;
+}
+.p-stat-num {
+  font-size: clamp(1.7rem, 3vw, 2rem);
+}
+.p-resource-card {
+  padding: 16px;
+  border-radius: 16px;
+  border-color: rgba(226,232,240,.95);
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(245,248,252,.96));
+  box-shadow: 0 14px 26px rgba(15,23,42,.05);
+}
+.p-resource-title,
+.p-alert-title {
+  letter-spacing: -.01em;
+}
+.p-resource-meta,
+.p-alert-meta {
+  line-height: 1.5;
+}
+.p-alert-row {
+  padding: 12px 0;
+}
+.p-tabs {
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(226,232,240,.95);
+  border-radius: 16px;
+  background: rgba(255,255,255,.82);
+}
+.p-tab {
+  margin-bottom: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+.p-tab.active {
+  color: #fff;
+  border-bottom-color: transparent;
+  background: var(--navy-900);
+  box-shadow: 0 8px 18px rgba(15,23,42,.18);
+}
+.p-tab.active .p-tab-count {
+  background: rgba(255,255,255,.16);
+  color: #fff;
+}
+.p-inv-toolbar {
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(226,232,240,.95);
+  border-radius: 16px;
+  background: rgba(255,255,255,.84);
+}
+.p-toggle {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.p-toggle button {
+  min-height: 38px;
+  padding: 8px 14px;
+}
+.p-toggle button.active {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.p-banner {
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(184,145,42,.12);
+}
+.p-topbar {
+  backdrop-filter: blur(18px);
+  background: rgba(8,15,36,.92);
+  box-shadow: 0 10px 24px rgba(8,15,36,.18);
+}
+.modal {
+  width: 540px;
+  border: 1px solid rgba(226,232,240,.9);
+  border-radius: 20px;
+  box-shadow: 0 32px 70px rgba(15,23,42,.2);
+}
+.modal-actions {
+  margin-top: 20px;
+}
+body.dm {
+  background:
+    radial-gradient(circle at top left, rgba(212,169,66,.12), transparent 24%),
+    linear-gradient(180deg, #07111f 0%, #0b1427 36%, #0c172c 100%);
+}
+body.dm::before {
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+}
+body.dm .p-page-head {
+  border-color: rgba(71,85,105,.65);
+  background: linear-gradient(135deg, rgba(15,23,42,.94) 0%, rgba(22,32,65,.92) 48%, rgba(30,58,95,.88) 100%);
+  box-shadow: 0 24px 50px rgba(0,0,0,.28);
+}
+body.dm .p-page-head::after {
+  background: linear-gradient(90deg, rgba(232,201,114,.32), transparent 65%);
+}
+body.dm .p-card,
+body.dm .p-stat-card,
+body.dm .p-resource-card,
+body.dm .p-inv-toolbar,
+body.dm .p-tabs,
+body.dm .btn-ghost-sm {
+  border-color: rgba(71,85,105,.55);
+}
+body.dm .p-card,
+body.dm .p-stat-card,
+body.dm .p-resource-card,
+body.dm .p-inv-toolbar,
+body.dm .p-tabs {
+  background: rgba(17,24,39,.88);
+  box-shadow: 0 18px 36px rgba(0,0,0,.24);
+}
+body.dm .btn-ghost-sm {
+  background: rgba(15,23,42,.78);
+}
+.btn-primary-sm,
+.btn-ghost-sm,
+.p-bigbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.15;
+}
+body.dm .modal {
+  background: #0b1220;
+  color: #eef5ff;
+  border-color: rgba(148,163,184,.72);
+  box-shadow: 0 34px 80px rgba(0,0,0,.5);
+}
+body.dm .modal h2,
+body.dm .modal label,
+body.dm .modal .p-card-title,
+body.dm .modal .p-inv-name,
+body.dm .modal .p-log-who,
+body.dm .modal .p-log-note,
+body.dm .modal .p-tab.active {
+  color: #f8fbff;
+}
+body.dm .modal p,
+body.dm .modal .modal-sub,
+body.dm .modal .empty,
+body.dm .modal .p-log-when,
+body.dm .modal .p-eq-meta,
+body.dm .modal .p-eq-meta-soft,
+body.dm .modal .p-issue-meta,
+body.dm .modal .p-issue-body,
+body.dm .modal .p-log-row,
+body.dm .modal .p-tab {
+  color: #c9d8ee;
+}
+body.dm .modal input,
+body.dm .modal select,
+body.dm .modal textarea {
+  background: #111b31;
+  color: #f8fbff;
+  border-color: rgba(148,163,184,.48);
+}
+body.dm .modal input::placeholder,
+body.dm .modal textarea::placeholder {
+  color: #93a4be;
+}
+body.dm .modal .p-tabs {
+  background: #0f172a;
+  border-color: rgba(148,163,184,.42);
+}
+body.dm .p-col-title,
+body.dm .p-add-task,
+body.dm .p-kanban .empty {
+  color: #eaf2ff;
+}
+body.dm .p-col-count {
+  background: #f8fafc;
+  border-color: rgba(226,232,240,.95);
+  color: #0f172a;
+}
+body.dm .p-prof-name {
+  color: #f8fbff;
+}
+body.dm .p-prof-email {
+  color: #cbd5e1;
+}
+body.dm .p-col {
+  background: rgba(15,23,42,.88);
+  border-color: rgba(71,85,105,.68);
+}
+.p-qty-control {
+  display: inline-grid;
+  grid-template-columns: 28px minmax(30px, 38px) minmax(42px, auto) 28px;
+  align-items: center;
+  justify-content: center;
+  column-gap: 6px;
+  min-width: 150px;
+  white-space: nowrap;
+}
+.p-qty-control .btn-ghost-sm {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.p-qty-control .p-qty-num {
+  min-width: 34px;
+  text-align: center;
+}
+.p-qty-control .p-qty-min {
+  min-width: 0;
+  text-align: center;
+  color: var(--fg-2);
+}
+body.dm .p-qty-control .p-qty-num,
+body.dm .p-qty-control .p-qty-min {
+  color: #dbeafe;
+}
+@keyframes p-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 980px) {
+  .p-main { padding: 20px; }
+  .p-page-head {
+    padding: 22px 20px;
+    border-radius: 20px;
+  }
+}
+@media (max-width: 760px) {
+  .p-main { padding: 16px; }
+  .p-card, .p-stat-card, .p-resource-card { border-radius: 16px; }
+  .p-inv-toolbar, .p-tabs { padding: 10px; }
+}
 
 </style>
 </head>
@@ -622,7 +1148,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
 
   <aside class="p-sidebar" id="sidebar">
     <div class="p-brand">
-      <div class="p-brand-mark">L</div>
+      <div class="p-brand-mark"><img src="/assets/site-logos/latfs-icon.png" alt="LATFS mark"></div>
       <div>
         <div class="p-brand-wm">LATFS</div>
         <div class="p-brand-sub">Platform</div>
@@ -677,13 +1203,13 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Welcome</div>
           <h1 class="p-h1" id="dashGreeting">Good morning</h1>
-          <p class="p-h1-sub" id="dashSub">Here is today's snapshot.</p>
+          <p class="p-h1-sub" id="dashSub">Here is today's snapshot.<span class="p-zone-line" id="dashZones"></span></p>
         </div>
-      </div>
-      <div class="p-grid-3" style="margin-bottom:18px;">
-        <div class="p-stat-card"><div class="p-stat-num" id="stMyTasks">0</div><div class="p-stat-lbl">My open tasks</div></div>
-        <div class="p-stat-card"><div class="p-stat-num" id="stMyMeetings">0</div><div class="p-stat-lbl">Meetings this week</div></div>
-        <div class="p-stat-card"><div class="p-stat-num" id="stMyEq">0</div><div class="p-stat-lbl">Equipment checked out to me</div></div>
+        <div class="p-actions">
+          <button class="btn-ghost-sm" type="button" onclick="goRoute('tasks')">My tasks</button>
+          <button class="btn-ghost-sm" type="button" onclick="goRoute('inventory')">Supply status</button>
+          <button class="btn-primary-sm" type="button" onclick="goRoute('equipment')">Open equipment</button>
+        </div>
       </div>
       <div class="p-grid-2">
         <div class="p-card">
@@ -711,6 +1237,20 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
             <button class="w-link-gold" onclick="goRoute('issues')">View board →</button>
           </div>
           <div id="dashIssues"><div class="empty">No open issues.</div></div>
+        </div>
+      </div>
+      <div class="p-grid-2" style="margin-top:18px;">
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">Resource pulse</div>
+            <button class="w-link-gold" onclick="goRoute('inventory')">Manage lab stock -></button>
+          </div>
+          <div class="p-resource-strip" id="resourcePulse"><div class="empty">Loading...</div></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-head"><div class="p-card-title">Attention queue</div>
+            <button class="w-link-gold" onclick="goRoute('equipment')">Open lab operations -></button>
+          </div>
+          <div id="resourceAlerts"><div class="empty">Loading...</div></div>
         </div>
       </div>
       <!-- Staff-only PI overview panel (inserted below personal cards) -->
@@ -799,7 +1339,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <p class="p-h1-sub" id="meetingsSub">Group meetings, seminars and announcements from the PI.</p>
         </div>
         <div class="p-actions">
-          <button class="btn-primary-sm" id="addMeetingBtn">+ Add meeting</button>
+          <button class="btn-primary-sm staff-only hidden" id="addMeetingBtn">+ Add meeting</button>
         </div>
       </div>
       <div class="p-meet-list" id="meetList"></div>
@@ -818,6 +1358,7 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <button class="btn-primary-sm staff-only hidden" id="addEquipBtn">+ Add item</button>
         </div>
       </div>
+      <div class="p-grid-4 p-section-summary" id="eqSummary"></div>
       <div class="p-tabs" id="eqTabs">
         <button class="p-tab active" data-eqcat="">All</button>
         <button class="p-tab" data-eqcat="rig">Rigs</button>
@@ -834,6 +1375,30 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <option value="broken">Broken</option>
           <option value="maintenance">Maintenance</option>
         </select>
+        <select class="p-inv-select" id="eqDue">
+          <option value="">All due windows</option>
+          <option value="any">Any item due soon</option>
+          <option value="maintenance">Maintenance due</option>
+          <option value="calibration">Calibration due</option>
+        </select>
+        <select class="p-inv-select" id="eqSort">
+          <option value="">Needs attention first</option>
+          <option value="name">Name</option>
+          <option value="recent">Recently used</option>
+        </select>
+        <select class="p-inv-select" id="eqTraining">
+          <option value="">Any training state</option>
+          <option value="required">Training required</option>
+          <option value="blocked">Blocked for me</option>
+          <option value="ready">Cleared for me</option>
+          <option value="expired">Expired for me</option>
+        </select>
+        <label class="p-inline-check">
+          <input type="checkbox" id="eqMineOnly" style="width:auto;"> Checked out to me
+        </label>
+        <label class="p-inline-check">
+          <input type="checkbox" id="eqPendingOnly" style="width:auto;"> Pending reservations
+        </label>
       </div>
       <div class="p-inv-table">
         <div class="p-inv-row p-inv-head">
@@ -893,18 +1458,46 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <p class="p-h1-sub" id="inventorySub">Track consumables, chemicals, reagents and supplies.</p>
         </div>
         <div class="p-actions">
-          <a class="btn-ghost-sm" href="/api/inventory/export.csv" download>⬇ CSV</a>
+          <button class="btn-ghost-sm" id="requestSupplyBtn">Request supply</button>
+          <button class="btn-ghost-sm" id="invExportBtn" type="button">Export CSV</button>
           <button class="btn-primary-sm staff-only hidden" id="addInvBtn">+ Add item</button>
         </div>
+      </div>
+      <div class="p-grid-4 p-section-summary" id="invSummary"></div>
+      <div class="p-card" style="margin-bottom:14px;">
+        <div class="p-card-head">
+          <div>
+            <div class="p-card-title">Replenishment queue</div>
+            <div class="p-alert-meta" id="invQueueMeta">Review low stock, stockouts, and items approaching expiry.</div>
+          </div>
+        </div>
+        <div id="invActionQueue"><div class="empty">Loading...</div></div>
       </div>
       <div class="p-inv-toolbar">
         <div class="p-inv-search"><input class="p-inv-input" id="invSearch" placeholder="Search items…"></div>
         <select class="p-inv-select" id="invLab"><option value="">All labs</option></select>
         <select class="p-inv-select" id="invCatFilter"><option value="">All categories</option></select>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;">
+        <select class="p-inv-select" id="invSupplier"><option value="">All suppliers</option></select>
+        <select class="p-inv-select" id="invStatus">
+          <option value="">Any stock state</option>
+          <option value="out">Out of stock</option>
+          <option value="low">Low stock</option>
+          <option value="healthy">Healthy stock</option>
+          <option value="expired">Expired</option>
+          <option value="expiring">Expiring soon</option>
+        </select>
+        <select class="p-inv-select" id="invSort">
+          <option value="">Needs attention first</option>
+          <option value="name">Name</option>
+          <option value="qty_asc">Lowest quantity</option>
+          <option value="qty_desc">Highest quantity</option>
+          <option value="expiry">Expiry date</option>
+          <option value="recent">Recently adjusted</option>
+        </select>
+        <label class="p-inline-check">
           <input type="checkbox" id="invLowStock" style="width:auto;"> Low stock only
         </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;">
+        <label class="p-inline-check">
           <input type="checkbox" id="invExpiring" style="width:auto;"> Expiring ≤30 days
         </label>
       </div>
@@ -972,12 +1565,13 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
         <div>
           <div class="eyebrow" style="color:var(--gold-700);">Lab management</div>
           <h1 class="p-h1">Sample Registry</h1>
-          <p class="p-h1-sub">Track physical samples — chemicals, biological, and research specimens.</p>
+          <p class="p-h1-sub">Track physical samples — submissions stay hidden until approved by an admin, professor, or moderator.</p>
         </div>
         <div class="p-actions">
           <button class="btn-primary-sm" id="addSampleBtn">+ New sample</button>
         </div>
       </div>
+      <div class="p-grid-4 p-section-summary" id="sampleSummary"></div>
       <div class="p-inv-toolbar">
         <div class="p-inv-search"><input class="p-inv-input" id="sampleSearch" placeholder="Search samples…"></div>
         <select class="p-inv-select" id="sampleStatus">
@@ -987,6 +1581,21 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <option value="disposed">Disposed</option>
           <option value="archived">Archived</option>
         </select>
+        <select class="p-inv-select" id="sampleApproval">
+          <option value="">Any approval state</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Awaiting approval</option>
+          <option value="denied">Needs changes</option>
+        </select>
+        <label class="p-inline-check">
+          <input type="checkbox" id="sampleExpiringSoon" style="width:auto;"> Expiring soon
+        </label>
+        <label class="p-inline-check">
+          <input type="checkbox" id="sampleExpired" style="width:auto;"> Expired
+        </label>
+        <label class="p-inline-check">
+          <input type="checkbox" id="sampleLowQty" style="width:auto;"> Empty / depleted
+        </label>
       </div>
       <div id="sampleList" class="p-inv-table"></div>
     </section>
@@ -1019,7 +1628,9 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <button class="btn-primary-sm staff-only hidden" id="addTrainingBtn">+ Add record</button>
         </div>
       </div>
+      <div class="p-grid-4 p-section-summary" id="trainingSummary"></div>
       <div class="p-inv-toolbar">
+        <div class="p-inv-search"><input class="p-inv-input" id="trainingSearch" placeholder="Search training, member, or equipment..."></div>
         <select class="p-inv-select" id="trainingUserFilter"><option value="">All members</option></select>
         <select class="p-inv-select" id="trainingTypeFilter">
           <option value="">All types</option>
@@ -1029,8 +1640,11 @@ body.dm code, body.dm .p-mono { background: var(--bg-1); color: var(--fg-2); }
           <option value="lab">Lab procedures</option>
           <option value="other">Other</option>
         </select>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;">
+        <label class="p-inline-check">
           <input type="checkbox" id="trainingExpiringFilter" style="width:auto;"> Expiring soon
+        </label>
+        <label class="p-inline-check">
+          <input type="checkbox" id="trainingExpiredFilter" style="width:auto;"> Expired
         </label>
       </div>
       <div id="trainingList" class="p-inv-table"></div>
@@ -1073,6 +1687,54 @@ function escapeHTML(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c 
 function fmtDate(d){ if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 function fmtDT(d){ if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
 function initials(name){ if(!name) return '??'; return name.trim().split(/\s+/).slice(0,2).map(s=>s[0]).join('').toUpperCase(); }
+function setAvatarContent(el, user){
+  if(!el) return;
+  const name = user?.name || user?.username || 'User';
+  if(user?.photo_url){
+    const img = document.createElement('img');
+    img.src = user.photo_url;
+    img.alt = name;
+    img.className = 'p-avatar-img';
+    if(user.photo_position) img.style.objectPosition = user.photo_position;
+    el.replaceChildren(img);
+    el.style.background = 'rgba(212,169,66,.14)';
+    return;
+  }
+  el.replaceChildren(document.createTextNode(initials(name)));
+  el.style.background = 'var(--gold-600)';
+}
+function formatUsTimeZones(now = new Date()){
+  const zones = [
+    ['ET', 'America/New_York'],
+    ['CT', 'America/Chicago'],
+    ['MT', 'America/Denver'],
+    ['PT', 'America/Los_Angeles'],
+    ['AK', 'America/Anchorage'],
+    ['HI', 'Pacific/Honolulu']
+  ];
+  return zones.map(([label, zone]) => {
+    const value = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: zone }).format(now);
+    return `${label} ${value}`;
+  }).join(' · ');
+}
+function formatDashboardCoastTimes(now = new Date()){
+  const east = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' }).format(now);
+  const west = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles' }).format(now);
+  return `East Coast ${east} ET | West Coast ${west} PT`;
+}
+async function downloadFile(url, filename){
+  const resp = await fetch(url, { credentials:'same-origin' });
+  if(!resp.ok) throw new Error('Download failed');
+  const blob = await resp.blob();
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+}
 
 async function api(path, opts={}){
   const o = Object.assign({ credentials:'same-origin', headers:{} }, opts);
@@ -1088,6 +1750,151 @@ async function api(path, opts={}){
 /** Unwrap paginated list responses { total, rows } → plain array.
  *  Falls back gracefully for endpoints that still return an array directly. */
 function unwrap(res){ return Array.isArray(res) ? res : (res && res.rows ? res.rows : []); }
+function summaryOf(res){ return (res && typeof res === 'object' && res.summary) ? res.summary : {}; }
+function n0(v){ return Number(v || 0); }
+function buildQS(values){
+  const qs = new URLSearchParams();
+  Object.entries(values || {}).forEach(([key, value]) => {
+    if(value === undefined || value === null || value === '' || value === false) return;
+    qs.set(key, value === true ? '1' : String(value));
+  });
+  return qs.toString();
+}
+function statCard(value, label, cls=''){
+  return `<div class="p-stat-card ${cls}"><div class="p-stat-num">${escapeHTML(value)}</div><div class="p-stat-lbl">${escapeHTML(label)}</div></div>`;
+}
+
+function platformEntryUrl(){
+  return 'http://127.0.0.1:3000/platform';
+}
+
+function showFileModeNotice(){
+  const mount = $('#loginScreen');
+  mount.innerHTML = `
+    <div class="login-card" style="width:min(460px,92vw);">
+      <h1 class="display-serif">Open the served platform</h1>
+      <p>This page cannot run correctly from a local <code>file://</code> path because the platform needs the backend API and login session.</p>
+      <p style="margin-bottom:18px;">Use the live local URL below when you want to review or annotate the platform UI.</p>
+      <div style="padding:12px 14px;background:var(--bg-2);border:1px solid var(--border-1);border-radius:12px;font-family:var(--font-mono);font-size:12px;color:var(--fg-2);word-break:break-all;">${platformEntryUrl()}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+        <a href="${platformEntryUrl()}" style="display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border-radius:10px;background:var(--gold-600);color:#fff;font-weight:700;text-decoration:none;">Open platform</a>
+        <button type="button" class="p-bigbtn ghost" id="copyPlatformUrlBtn">Copy URL</button>
+      </div>
+    </div>`;
+  const copyBtn = $('#copyPlatformUrlBtn');
+  if(copyBtn){
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(platformEntryUrl());
+        copyBtn.textContent = 'Copied';
+      } catch(_){
+        copyBtn.textContent = platformEntryUrl();
+      }
+    });
+  }
+}
+
+function isLabStaffRole(role){
+  return role === 'admin' || role === 'professor';
+}
+
+function isSiteModeratorRole(role){
+  return isLabStaffRole(role) || role === 'moderator';
+}
+
+function canApproveReservationsRole(role){
+  return role === 'professor';
+}
+
+function trainingTagMarkup(row){
+  if(!n0(row?.requires_training)) return '';
+  if(row.training_state === 'active') {
+    return `<span class="p-tag-sm p-tag-ok">${row.user_training_expires_at ? `clear until ${fmtDate(row.user_training_expires_at)}` : 'training clear'}</span>`;
+  }
+  if(row.training_state === 'expired') {
+    return `<span class="p-tag-sm p-tag-warn">${row.user_training_expires_at ? `expired ${fmtDate(row.user_training_expires_at)}` : 'training expired'}</span>`;
+  }
+  return `<span class="p-tag-sm p-tag-alert">${escapeHTML(row.training_requirement || 'training required')}</span>`;
+}
+
+function canOperateEquipment(row){
+  return !n0(row?.requires_training) || n0(row?.user_active_training_count) > 0 || isLabStaffRole(ME?.role);
+}
+
+function renderInventoryActionQueue(data){
+  const mount = $('#invActionQueue');
+  const meta = $('#invQueueMeta');
+  if(!mount) return;
+  if(data && data.error){
+    mount.innerHTML = `<div class="empty">${escapeHTML(data.error)}</div>`;
+    if(meta) meta.textContent = 'Could not load the replenishment queue.';
+    return;
+  }
+  const rows = unwrap(data).slice(0, 8);
+  const summary = summaryOf(data);
+  if(meta){
+    meta.textContent = rows.length
+      ? `${n0(summary.critical)} critical, ${n0(summary.with_links)} with direct reorder links, ${n0(summary.expiring_soon)} expiring soon.`
+      : 'Nothing currently needs a restock or expiry review.';
+  }
+  if(!rows.length){
+    mount.innerHTML = '<div class="empty">Nothing currently needs a restock or expiry review.</div>';
+    return;
+  }
+  mount.innerHTML = `<div class="p-action-grid">${rows.map(item => {
+    const stateClass = item.action_state === 'expired' || item.action_state === 'out_of_stock' ? 'critical' : '';
+    const qtyLine = `${n0(item.qty)} ${escapeHTML(item.unit || 'each')} on hand • min ${n0(item.min_qty)} ${escapeHTML(item.unit || 'each')}`;
+    const suggestion = n0(item.suggested_reorder_qty) > 0 ? `Suggested receipt ${n0(item.suggested_reorder_qty)} ${escapeHTML(item.unit || 'each')}` : 'Expiry review needed';
+    const stateLabel = String(item.action_state || 'review').replace(/_/g, ' ');
+    return `<div class="p-action-card ${stateClass}">
+      <div class="p-action-top">
+        <div>
+          <div class="p-action-title">${escapeHTML(item.name)}</div>
+          <div class="p-action-meta">${escapeHTML(item.sku || 'No SKU')} • ${escapeHTML(item.lab || 'Lab')} ${item.location ? `• ${escapeHTML(item.location)}` : ''}</div>
+        </div>
+        <span class="p-tag-sm ${item.action_state === 'expired' || item.action_state === 'out_of_stock' ? 'p-tag-alert' : item.action_state === 'low_stock' ? 'p-tag-warn' : 'p-tag-info'}">${escapeHTML(stateLabel)}</span>
+      </div>
+      <div class="p-chip-row">
+        <span class="p-chip ${item.stock_state === 'out' ? 'alert' : item.stock_state === 'low' ? 'warn' : 'info'}">${escapeHTML(String(item.stock_state || 'review').replace(/_/g, ' '))}</span>
+        ${item.supplier_name ? `<span class="p-chip">${escapeHTML(item.supplier_name)}</span>` : ''}
+        ${item.expiry_date ? `<span class="p-chip ${item.days_until_expiry < 0 ? 'alert' : item.days_until_expiry <= 30 ? 'warn' : ''}">${item.days_until_expiry < 0 ? 'Expired' : `Exp ${fmtDate(item.expiry_date)}`}</span>` : ''}
+      </div>
+      <div class="p-action-copy">${escapeHTML(qtyLine)}</div>
+      <div class="p-action-copy">${escapeHTML(suggestion)}</div>
+      <div class="p-action-foot">
+        <button class="btn-ghost-sm" data-queue-receive="${item.id}">Receive</button>
+        <button class="btn-ghost-sm" data-queue-focus="${item.id}">Focus item</button>
+        <button class="btn-ghost-sm" data-queue-request="${item.id}">Request</button>
+        ${item.reorder_url ? `<a class="btn-ghost-sm" href="${escapeHTML(item.reorder_url)}" target="_blank">Order</a>` : ''}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+  mount.querySelectorAll('[data-queue-receive]').forEach(btn => btn.addEventListener('click', async () => {
+    const item = rows.find(row => String(row.id) === btn.dataset.queueReceive);
+    try { await receiveInventoryStock(btn.dataset.queueReceive, item?.name || 'item'); }
+    catch(err){ alert(err.message); }
+  }));
+  mount.querySelectorAll('[data-queue-focus]').forEach(btn => btn.addEventListener('click', () => {
+    const item = rows.find(row => String(row.id) === btn.dataset.queueFocus);
+    INV_QUERY = item?.sku || item?.name || '';
+    $('#invSearch').value = INV_QUERY;
+    loadInventory();
+  }));
+  mount.querySelectorAll('[data-queue-request]').forEach(btn => btn.addEventListener('click', () => {
+    const item = rows.find(row => String(row.id) === btn.dataset.queueRequest);
+    openIssueModal({ category:'supplies', inventory:item });
+  }));
+}
+
+async function receiveInventoryStock(itemId, itemName){
+  const amountRaw = prompt(`How many units of ${itemName} were received?`, '1');
+  if(amountRaw == null) return;
+  const delta = parseInt(amountRaw, 10);
+  if(!Number.isFinite(delta) || delta <= 0) throw new Error('Enter a positive whole number');
+  const reason = prompt('Optional receipt note:', 'received stock') || 'received stock';
+  await api(`/api/inventory/${itemId}/adjust`, { method:'PATCH', body:{ delta, reason } });
+  loadInventory();
+}
 
 /* ---------- Auth ---------- */
 async function checkAuth(){
@@ -1145,8 +1952,7 @@ async function doLogin(ev){
       return;
     }
     if(!r.ok || !data.success){ $('#loginErr').textContent = data.error || 'Login failed'; return; }
-    CSRF = data.csrfToken;
-    ME = { username:data.username, name:data.name||data.username, role:data.role||'student', csrfToken: data.csrfToken };
+    await checkAuth();
     showApp();
   } catch(e){ $('#loginErr').textContent = e.message; }
 }
@@ -1161,13 +1967,19 @@ function showApp(){
   $('#appShell').classList.remove('hidden');
   $('#userName').textContent = ME.name || ME.username;
   $('#userRole').textContent = (ME.role || 'member').toUpperCase();
-  $('#userAv').textContent = initials(ME.name || ME.username);
-  if(ME.role === 'admin' || ME.role === 'professor' || ME.role === 'moderator'){
+  setAvatarContent($('#userAv'), ME);
+  if(isLabStaffRole(ME.role)){
     $$('.staff-only').forEach(el => el.classList.remove('hidden'));
   }
   // Load editable section subtitles from settings
   api('/api/settings').then(s => {
-    const apply = (id, key) => { const el = document.getElementById(id); if(el && s[key]) el.textContent = s[key]; };
+    const apply = (id, key) => {
+      const el = document.getElementById(id);
+      if (el && s[key]) {
+        el.textContent = s[key];
+        el.dataset.baseText = s[key];
+      }
+    };
     apply('dashSub',      'platform_dashboard_sub');
     apply('schedSub',     'platform_schedule_sub');
     apply('tasksSub',     'platform_tasks_sub');
@@ -1223,17 +2035,123 @@ document.addEventListener('click', e => {
   if(t && t.dataset.route){ e.preventDefault(); goRoute(t.dataset.route); }
 });
 
+function renderResourceDashboard(overview){
+  const pulse = $('#resourcePulse');
+  const alerts = $('#resourceAlerts');
+  if(!pulse || !alerts) return;
+  const equipmentDue = n0(overview?.equipment?.maintenance_due_soon) + n0(overview?.equipment?.maintenance_overdue) +
+    n0(overview?.equipment?.calibration_due_soon) + n0(overview?.equipment?.calibration_overdue);
+  const sampleApprovalLoad = isSiteModeratorRole(ME?.role) ? n0(overview?.samples?.pending_approval) : 0;
+  const cards = [
+    {
+      title: 'Inventory',
+      total: n0(overview?.inventory?.total),
+      badge: n0(overview?.inventory?.out_of_stock) + n0(overview?.inventory?.low_stock) + n0(overview?.inventory?.expired),
+      meta: `${n0(overview?.inventory?.low_stock)} low | ${n0(overview?.inventory?.out_of_stock)} out | ${n0(overview?.inventory?.expiring_soon)} expiring`,
+      route: 'inventory'
+    },
+    {
+      title: 'Equipment',
+      total: n0(overview?.equipment?.total),
+      badge: equipmentDue + n0(overview?.reservations?.pending),
+      meta: `${n0(overview?.equipment?.in_use)} in use | ${equipmentDue} due soon | ${n0(overview?.reservations?.pending)} pending`,
+      route: 'equipment'
+    },
+    {
+      title: 'Samples',
+      total: n0(overview?.samples?.total),
+      badge: n0(overview?.samples?.expired) + n0(overview?.samples?.depleted) + sampleApprovalLoad,
+      meta: `${n0(overview?.samples?.active)} active | ${n0(overview?.samples?.expired)} expired | ${sampleApprovalLoad ? `${sampleApprovalLoad} awaiting approval` : `${n0(overview?.samples?.expiring_soon)} expiring`}`,
+      route: 'samples'
+    },
+    {
+      title: 'Training',
+      total: n0(overview?.training?.total),
+      badge: n0(overview?.training?.expired) + n0(overview?.training?.expiring_soon),
+      meta: `${n0(overview?.training?.covered_members)} members covered | ${n0(overview?.training?.expired)} expired | ${n0(overview?.training?.expiring_soon)} expiring`,
+      route: 'training'
+    }
+  ];
+  pulse.innerHTML = cards.map(card => `
+    <div class="p-resource-card">
+      <div class="p-resource-head">
+        <div>
+          <div class="p-resource-title">${escapeHTML(card.title)}</div>
+          <div class="p-resource-meta">${escapeHTML(card.meta)}</div>
+        </div>
+        <span class="p-tag-sm ${card.badge > 0 ? 'p-tag-warn' : 'p-tag-ok'}">${card.badge > 0 ? `${card.badge} need review` : 'stable'}</span>
+      </div>
+      <div class="p-resource-num">${card.total}</div>
+      <div style="margin-top:10px;">
+        <button class="btn-ghost-sm" onclick="goRoute('${card.route}')">Open ${escapeHTML(card.title.toLowerCase())}</button>
+      </div>
+    </div>`).join('');
+
+  const attention = [];
+  (overview?.alerts?.inventory || []).slice(0, 2).forEach(item => {
+    const parts = [];
+    if(item.stock_state === 'out') parts.push('Out of stock');
+    else if(item.stock_state === 'low') parts.push('Low stock');
+    if(item.days_until_expiry < 0) parts.push(`Expired ${Math.abs(item.days_until_expiry)}d`);
+    else if(item.days_until_expiry <= 30) parts.push(`Expires in ${item.days_until_expiry}d`);
+    attention.push({ bucket: 'Inventory', title: item.name, meta: parts.join(' | ') || item.sku || 'Needs review', route: 'inventory' });
+  });
+  (overview?.alerts?.equipment || []).slice(0, 2).forEach(item => {
+    const parts = [];
+    if(item.status) parts.push(String(item.status).replace('_', ' '));
+    if(item.maintenance_state && item.maintenance_state !== 'ok') parts.push(`Maintenance ${item.maintenance_state}`);
+    if(item.calibration_state && item.calibration_state !== 'ok') parts.push(`Calibration ${item.calibration_state}`);
+    attention.push({ bucket: 'Equipment', title: item.name, meta: parts.join(' | ') || item.sku || 'Needs review', route: 'equipment' });
+  });
+  (overview?.alerts?.training || []).slice(0, 2).forEach(item => {
+    const parts = [];
+    if(item.days_until_expiry < 0) parts.push(`Expired ${Math.abs(item.days_until_expiry)}d`);
+    else if(item.days_until_expiry <= 60) parts.push(`Expires in ${item.days_until_expiry}d`);
+    if(item.user_name) parts.push(item.user_name);
+    if(item.equipment_name) parts.push(item.equipment_name);
+    attention.push({ bucket: 'Training', title: item.training_name, meta: parts.join(' | '), route: 'training' });
+  });
+  (overview?.alerts?.issues || []).slice(0, 2).forEach(item => {
+    attention.push({ bucket: 'Issues', title: item.title, meta: `${item.category || 'issue'} | ${item.priority || 'normal'} priority`, route: 'issues' });
+  });
+  (overview?.alerts?.reservations || []).slice(0, 2).forEach(item => {
+    attention.push({ bucket: 'Reservations', title: item.equipment_name, meta: `${item.status} | ${item.user_name} | ${fmtDT(item.start_at)}`, route: 'equipment' });
+  });
+
+  alerts.innerHTML = attention.length ? `<div class="p-alert-list">${attention.slice(0, 8).map(item => `
+    <div class="p-alert-row">
+      <div class="p-alert-kicker">${escapeHTML(item.bucket)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="p-alert-title">${escapeHTML(item.title)}</div>
+        <div class="p-alert-meta">${escapeHTML(item.meta)}</div>
+      </div>
+      <button class="btn-ghost-sm" onclick="goRoute('${item.route}')">Open</button>
+    </div>`).join('')}</div>` : '<div class="empty">No urgent resource alerts.</div>';
+}
+
 /* ---------- Dashboard ---------- */
 async function loadDashboard(){
-  const hour = new Date().getHours();
+  const now = new Date();
+  const hour = now.getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   $('#dashGreeting').textContent = `${greet}, ${(ME.name||ME.username).split(' ')[0]}`;
-  $('#dashSub').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+  const dashSub = $('#dashSub');
+  const dashZones = $('#dashZones');
+  if (dashSub) {
+    const stamp = now.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+    const localTime = now.toLocaleTimeString(undefined,{hour:'numeric', minute:'2-digit'});
+    const base = dashSub.dataset.baseText || "Here is today's snapshot.";
+    const zones = document.createElement('span');
+    zones.className = 'p-zone-line';
+    zones.id = 'dashZones';
+    zones.textContent = formatDashboardCoastTimes(now);
+    dashSub.replaceChildren(document.createTextNode(`${stamp}, ${localTime} - ${base}`), zones);
+  }
   // tasks
   try {
     const tasks = await api('/api/tasks/full?mine=1');
     const open = tasks.filter(t => t.status !== 'done');
-    $('#stMyTasks').textContent = open.length;
+    if ($('#stMyTasks')) $('#stMyTasks').textContent = open.length;
     $('#dashTasks').innerHTML = open.length ? open.slice(0,5).map(t => `
       <div class="p-task">
         <input class="p-check" type="checkbox" ${t.status==='done'?'checked':''} disabled>
@@ -1248,7 +2166,7 @@ async function loadDashboard(){
     const events = await api('/api/events');
     const now = new Date();
     const upcoming = events.filter(ev => new Date(ev.start_time) >= now).sort((a,b)=> new Date(a.start_time)-new Date(b.start_time));
-    $('#stMyMeetings').textContent = upcoming.length;
+    if ($('#stMyMeetings')) $('#stMyMeetings').textContent = upcoming.length;
     $('#dashMeetings').innerHTML = upcoming.length ? upcoming.slice(0,5).map(ev => `
       <div class="p-slot">
         <div class="p-slot-time">${new Date(ev.start_time).toLocaleString(undefined,{weekday:'short'})}</div>
@@ -1260,9 +2178,8 @@ async function loadDashboard(){
   } catch(e){ $('#dashMeetings').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
   // equipment checked out to me
   try {
-    const eq = unwrap(await api('/api/equipment'));
-    const mine = eq.filter(x => x.current_user_id === ME.id);
-    $('#stMyEq').textContent = mine.length;
+    const mine = unwrap(await api('/api/equipment?mine=1&limit=20'));
+    if ($('#stMyEq')) $('#stMyEq').textContent = mine.length;
     $('#dashEquip').innerHTML = mine.length ? mine.map(x => `
       <div class="p-task">
         <div style="flex:1;">
@@ -1287,6 +2204,14 @@ async function loadDashboard(){
         </div>
       </div>`).join('') : '<div class="empty">No open issues.</div>';
   } catch(e){ $('#dashIssues').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
+  try {
+    renderResourceDashboard(await api('/api/resources/overview'));
+  } catch(e){
+    const pulse = $('#resourcePulse');
+    const alerts = $('#resourceAlerts');
+    if(pulse) pulse.innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`;
+    if(alerts) alerts.innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`;
+  }
   // PI panel — only for staff
   if(ME.role === 'admin' || ME.role === 'professor') loadPIDashboard();
 }
@@ -1369,7 +2294,7 @@ async function loadSchedule(){
         subtitle: `${fmtDT(ev.start_time)}${ev.end_time?' → '+fmtDT(ev.end_time):''}${ev.location?' · '+ev.location:''}`,
         badge: ev.event_type || 'event',
         badgeColor: 'var(--navy-700)',
-        canEdit: (ev.owner_user_id===ME.id) || ME.role==='admin' || ME.role==='professor',
+        canEdit: (ev.owner_user_id===ME.id) || isLabStaffRole(ME.role),
       }));
 
     // Normalise meetings (from the meetings table)
@@ -1386,7 +2311,7 @@ async function loadSchedule(){
         subtitle: `${fmtDT(m.scheduled_at)}${m.location?' · '+m.location:''}`,
         badge: m.meeting_type || 'meeting',
         badgeColor: 'var(--gold-700)',
-        canEdit: ME.role==='admin' || ME.role==='professor' || ME.role==='moderator',
+        canEdit: isLabStaffRole(ME.role),
       }));
 
     // Normalise task deadlines
@@ -1596,7 +2521,7 @@ async function loadMeetings(){
       .concat(meetings.filter(m => !m.scheduled_at)
         .sort((a,b)=> new Date(a.created_at||0)-new Date(b.created_at||0)));
     if(!upcoming.length){ $('#meetList').innerHTML='<div class="empty">No meetings yet.</div>'; return; }
-    const isStaff = ME.role==='admin' || ME.role==='professor';
+    const isStaff = isLabStaffRole(ME.role);
     $('#meetList').innerHTML = upcoming.map(m => {
       const d = new Date(m.scheduled_at||m.created_at);
       return `<div class="p-meet-card">
@@ -1669,47 +2594,60 @@ function openMeetingModal(m){
 }
 
 /* ---------- Equipment ---------- */
-let EQ_CAT='', EQ_STATUS='', EQ_QUERY='';
+let EQ_CAT='', EQ_STATUS='', EQ_QUERY='', EQ_DUE='', EQ_SORT='', EQ_TRAINING='', EQ_MINE_ONLY=false, EQ_PENDING_ONLY=false;
 
 function _eqMaintBadge(x){
-  const today = new Date(); today.setHours(0,0,0,0);
-  if(x.next_maintenance_at){
-    const due = new Date(x.next_maintenance_at);
-    const days = Math.round((due-today)/(86400000));
-    if(days < 0)  return `<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">⚠ Maint overdue</span>`;
-    if(days <= 14) return `<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;margin-left:4px;">Maint due ${days}d</span>`;
-  }
-  if(x.next_calibration_at){
-    const due = new Date(x.next_calibration_at);
-    const days = Math.round((due-today)/(86400000));
-    if(days < 0)  return `<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">⚠ Cal overdue</span>`;
-    if(days <= 14) return `<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;margin-left:4px;">Cal due ${days}d</span>`;
-  }
-  return '';
+  const badges = [];
+  if(x.maintenance_state === 'overdue') badges.push('<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">Maintenance overdue</span>');
+  else if(x.maintenance_state === 'due_soon') badges.push('<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;margin-left:4px;">Maintenance due soon</span>');
+  if(x.calibration_state === 'overdue') badges.push('<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">Calibration overdue</span>');
+  else if(x.calibration_state === 'due_soon') badges.push('<span style="font-size:10px;background:#eff6ff;color:#1d4ed8;padding:2px 5px;border-radius:3px;margin-left:4px;">Calibration due soon</span>');
+  if(n0(x.pending_reservations) > 0) badges.push(`<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 5px;border-radius:3px;margin-left:4px;">${n0(x.pending_reservations)} pending</span>`);
+  return badges.join('');
 }
 
 async function loadEquipment(){
   try {
-    const eq = unwrap(await api('/api/equipment'));
-    let filtered = eq;
-    if(EQ_CAT)    filtered = filtered.filter(x => x.category === EQ_CAT);
-    if(EQ_STATUS) filtered = filtered.filter(x => x.status === EQ_STATUS);
-    if(EQ_QUERY){
-      const q = EQ_QUERY.toLowerCase();
-      filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q));
-    }
+    const res = await api('/api/equipment?' + buildQS({
+      category: EQ_CAT,
+      status: EQ_STATUS,
+      search: EQ_QUERY,
+      due: EQ_DUE,
+      mine: EQ_MINE_ONLY,
+      reservations: EQ_PENDING_ONLY ? 'pending' : '',
+      training: EQ_TRAINING,
+      sort: EQ_SORT,
+      limit: 200
+    }));
+    const eq = unwrap(res);
+    const summary = summaryOf(res);
+    $('#eqSummary').innerHTML = [
+      statCard(n0(summary.total), 'Tracked equipment'),
+      statCard(`${n0(summary.available)} available`, 'Ready right now', n0(summary.available) ? '' : 'warn'),
+      statCard(`${n0(summary.in_use)} active`, 'Checked out or in use', n0(summary.pending_reservations) ? 'info' : ''),
+      statCard(`${n0(summary.training_blocked)} blocked`, 'Training clearance missing', n0(summary.training_blocked) ? 'warn' : ''),
+      statCard(`${n0(summary.maintenance_overdue) + n0(summary.calibration_overdue)} overdue`, 'Maintenance or calibration', (n0(summary.maintenance_overdue) + n0(summary.calibration_overdue)) ? 'alert' : '')
+    ].join('');
     const list = $('#eqList');
-    if(!filtered.length){ list.innerHTML='<div class="empty">No equipment matches.</div>'; return; }
-    const isStaff = ME.role==='admin' || ME.role==='professor';
-    list.innerHTML = filtered.map(x => {
+    if(!eq.length){ list.innerHTML='<div class="empty">No equipment matches these filters.</div>'; return; }
+    const isStaff = isLabStaffRole(ME.role);
+    list.innerHTML = eq.map(x => {
+      const trainingBlocked = n0(x.requires_training) && !canOperateEquipment(x);
       const statusCls = x.status==='available' ? 'p-eq-status-available'
                        : x.status==='in_use' ? 'p-eq-status-out'
                        : x.status==='broken' ? 'p-eq-status-broken'
                        : 'p-eq-status-maint';
+      const reservationMeta = x.next_reservation_at ? `Next reservation ${fmtDT(x.next_reservation_at)}` : 'No upcoming reservations';
+      const trainingMeta = !n0(x.requires_training) ? 'No training gate'
+        : x.training_state === 'active' ? `Cleared${x.user_training_expires_at ? ` until ${fmtDate(x.user_training_expires_at)}` : ''}`
+        : x.training_state === 'expired' ? `Training expired${x.user_training_expires_at ? ` ${fmtDate(x.user_training_expires_at)}` : ''}`
+        : `Requires ${x.training_requirement || 'active training'}`;
       return `<div class="p-inv-row">
         <div style="flex:2;">
-          <div class="p-inv-name">${escapeHTML(x.name)}${_eqMaintBadge(x)}</div>
-          <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.location||'')}${x.manufacturer?` · ${escapeHTML(x.manufacturer)}`:''}</div>
+          <div class="p-inv-name">${escapeHTML(x.name)} ${trainingTagMarkup(x)}${_eqMaintBadge(x)}</div>
+          <div class="p-eq-meta">${escapeHTML(x.location||'')}${x.manufacturer?` · ${escapeHTML(x.manufacturer)}`:''}${x.model?` ${escapeHTML(x.model)}`:''}</div>
+          <div class="p-eq-meta p-eq-meta-soft" style="margin-top:3px;">${escapeHTML(reservationMeta)}</div>
+          <div class="p-eq-meta p-eq-meta-soft" style="margin-top:3px;">${escapeHTML(trainingMeta)}</div>
         </div>
         <div style="flex:1;"><span class="p-mono">${escapeHTML(x.sku||'—')}</span></div>
         <div style="flex:1;" class="p-inv-cat">${escapeHTML(x.category||'')}</div>
@@ -1717,8 +2655,9 @@ async function loadEquipment(){
           <span style="font-size:11px;color:var(--fg-4);">${x.last_used_at?fmtDT(x.last_used_at):''}</span></div>
         <div style="flex:1;"><span class="${statusCls}">${escapeHTML((x.status||'').replace('_',' '))}</span></div>
         <div style="width:200px; display:flex; gap:5px; flex-wrap:wrap;">
-          ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="checkout" data-eq-id="${x.id}">Check out</button>` : ''}
-          ${x.status==='available' ? `<button class="btn-ghost-sm" data-eq-action="reserve"  data-eq-id="${x.id}">Reserve</button>` : ''}
+          ${x.status==='available' && !trainingBlocked ? `<button class="btn-ghost-sm" data-eq-action="checkout" data-eq-id="${x.id}">Check out</button>` : ''}
+          ${x.status==='available' && !trainingBlocked ? `<button class="btn-ghost-sm" data-eq-action="reserve"  data-eq-id="${x.id}">Reserve</button>` : ''}
+          ${x.status==='available' && trainingBlocked ? `<button class="btn-ghost-sm" data-eq-action="training" data-eq-id="${x.id}">Open training</button>` : ''}
           ${x.status==='in_use' && x.current_user_id===ME.id ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Return</button>` : ''}
           ${isStaff && x.status==='in_use' ? `<button class="btn-ghost-sm" data-eq-action="checkin" data-eq-id="${x.id}">Force return</button>` : ''}
           <button class="btn-ghost-sm" data-eq-action="log" data-eq-id="${x.id}">History</button>
@@ -1736,6 +2675,11 @@ $('#eqTabs').addEventListener('click', e => {
 });
 $('#eqStatus').addEventListener('change', e => { EQ_STATUS = e.target.value; loadEquipment(); });
 $('#eqSearch').addEventListener('input', e => { EQ_QUERY = e.target.value; loadEquipment(); });
+$('#eqDue').addEventListener('change', e => { EQ_DUE = e.target.value; loadEquipment(); });
+$('#eqSort').addEventListener('change', e => { EQ_SORT = e.target.value; loadEquipment(); });
+$('#eqTraining').addEventListener('change', e => { EQ_TRAINING = e.target.value; loadEquipment(); });
+$('#eqMineOnly').addEventListener('change', e => { EQ_MINE_ONLY = e.target.checked; loadEquipment(); });
+$('#eqPendingOnly').addEventListener('change', e => { EQ_PENDING_ONLY = e.target.checked; loadEquipment(); });
 $('#addEquipBtn').addEventListener('click', () => openEquipModal());
 $('#myResvBtn').addEventListener('click', async () => {
   try {
@@ -1781,8 +2725,10 @@ document.addEventListener('click', async e => {
         if(!s||!en) throw new Error('Start and end are required');
         if(s >= en) throw new Error('End must be after start');
         await api(`/api/equipment/${id}/reservations`,{method:'POST', body:{start_at:s, end_at:en, purpose:$('#resvPurpose').value}});
-        alert('Reservation requested. A staff member will approve it.');
+        alert('Reservation requested. The professor will review and approve it.');
       });
+  } else if(action==='training'){
+    goRoute('training');
   } else if(action==='log'){
     try {
       const [log, maint, resvs, eq] = await Promise.all([
@@ -1791,13 +2737,14 @@ document.addEventListener('click', async e => {
         api('/api/equipment/'+id+'/reservations'),
         api('/api/equipment').then(r => unwrap(r).find(x => x.id == id))
       ]);
-      const isStaff = ME.role==='admin'||ME.role==='professor';
+      const isStaff = isLabStaffRole(ME.role);
+      const canApproveReservations = canApproveReservationsRole(ME.role);
       modal(`<h2>${escapeHTML(eq?.name||'Equipment')} — history</h2>
         <p style="font-size:12px;color:var(--fg-3);">SKU ${escapeHTML(eq?.sku||'—')} · ${escapeHTML(eq?.manufacturer||'')} ${escapeHTML(eq?.model||'')}</p>
         <div class="p-tabs" style="margin-bottom:12px;">
-          <button class="p-tab active" data-htab="usage">Usage log</button>
-          <button class="p-tab" data-htab="maint">Maintenance</button>
-          <button class="p-tab" data-htab="resvs">Reservations</button>
+          <button type="button" class="p-tab active" data-htab="usage">Usage log</button>
+          <button type="button" class="p-tab" data-htab="maint">Maintenance</button>
+          <button type="button" class="p-tab" data-htab="resvs">Reservations</button>
         </div>
         <div id="htUsage">
           ${log.length ? log.map(l=>`<div class="p-log-row">
@@ -1808,7 +2755,7 @@ document.addEventListener('click', async e => {
           </div>`).join('') : '<div class="empty">No usage history.</div>'}
         </div>
         <div id="htMaint" style="display:none;">
-          ${isStaff ? `<button class="btn-ghost-sm" id="addMaintBtn" style="margin-bottom:10px;">+ Add maintenance record</button>` : ''}
+          ${isStaff ? `<button type="button" class="btn-ghost-sm" id="addMaintBtn" style="margin-bottom:10px;">+ Add maintenance record</button>` : ''}
           ${maint.length ? maint.map(m=>`<div class="p-log-row">
             <span class="p-log-when">${fmtDate(m.completed_at||m.scheduled_at)}</span>
             <span class="p-log-act">${escapeHTML(m.maint_type)}</span>
@@ -1822,13 +2769,14 @@ document.addEventListener('click', async e => {
             <span class="p-log-act">${escapeHTML(r.status)}</span>
             <span class="p-log-who">${escapeHTML(r.user_name||r.username||'?')}</span>
             <span class="p-log-note">${escapeHTML(r.purpose||'')}
-              ${isStaff && r.status==='pending' ? `<button class="btn-ghost-sm" data-approve-resv="${r.id}">✓ Approve</button> <button class="btn-ghost-sm" data-deny-resv="${r.id}">✗ Deny</button>` : ''}
+              ${canApproveReservations && r.status==='pending' ? `<button type="button" class="btn-ghost-sm" data-approve-resv="${r.id}">✓ Approve</button> <button type="button" class="btn-ghost-sm" data-deny-resv="${r.id}">✗ Deny</button>` : ''}
             </span>
           </div>`).join('') : '<div class="empty">No reservations.</div>'}
         </div>`,
         null, '', 'Close');
       // Tab switching
-      document.querySelectorAll('[data-htab]').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('[data-htab]').forEach(t => t.addEventListener('click', ev => {
+        ev.preventDefault();
         document.querySelectorAll('[data-htab]').forEach(x=>x.classList.remove('active'));
         t.classList.add('active');
         document.getElementById('htUsage').style.display = t.dataset.htab==='usage'?'':'none';
@@ -1900,6 +2848,8 @@ function openEquipModal(eq){
     <label>Maintenance interval (days, 0=none)<input id="eqMaintInt" type="number" min="0" value="${eq?.maintenance_interval_days||0}"></label>
     <label>Last calibrated<input id="eqCalLast" type="date" value="${eq?.last_calibrated_at?.slice(0,10)||''}"></label>
     <label>Next calibration due<input id="eqCalNext" type="date" value="${eq?.next_calibration_at?.slice(0,10)||''}"></label>
+    <label class="p-inline-check"><input id="eqReqTraining" type="checkbox" style="width:auto;" ${n0(eq?.requires_training) ? 'checked' : ''}> Requires active training</label>
+    <label>Training requirement / course name<input id="eqTrainingReq" value="${escapeHTML(eq?.training_requirement||'')}" placeholder="e.g. Confocal microscope certification"></label>
     <label>Status<select id="eqSt">
       ${['available','in_use','maintenance','broken'].map(c=>`<option value="${c}" ${eq?.status===c?'selected':''}>${c.replace('_',' ')}</option>`).join('')}
     </select></label>
@@ -1917,6 +2867,8 @@ function openEquipModal(eq){
         maintenance_interval_days: Number($('#eqMaintInt').value)||0,
         last_calibrated_at: $('#eqCalLast').value||null,
         next_calibration_at: $('#eqCalNext').value||null,
+        requires_training: $('#eqReqTraining').checked,
+        training_requirement: $('#eqReqTraining').checked ? $('#eqTrainingReq').value.trim() : '',
         status: $('#eqSt').value,
         notes: $('#eqNotes').value
       };
@@ -1927,6 +2879,14 @@ function openEquipModal(eq){
     },
     isEdit ? `<button type="button" class="p-bigbtn danger" id="delEq">Delete</button>` : ''
   );
+  const reqToggle = $('#eqReqTraining');
+  const reqInput = $('#eqTrainingReq');
+  const syncTrainingRequirement = () => {
+    reqInput.disabled = !reqToggle.checked;
+    if(!reqToggle.checked) reqInput.value = '';
+  };
+  reqToggle.addEventListener('change', syncTrainingRequirement);
+  syncTrainingRequirement();
   if(isEdit){
     $('#delEq').addEventListener('click', async () => {
       if(!confirm('Delete this equipment? Its usage log will be lost.')) return;
@@ -1937,7 +2897,7 @@ function openEquipModal(eq){
 }
 
 /* ---------- Inventory ---------- */
-let INV_LAB = '', INV_QUERY = '', INV_CAT = '', INV_LOW_STOCK = false, INV_EXPIRING = false;
+let INV_LAB = '', INV_QUERY = '', INV_CAT = '', INV_SUPPLIER = '', INV_STATUS = '', INV_SORT = '', INV_LOW_STOCK = false, INV_EXPIRING = false;
 
 function _expiryBadge(expiry_date){
   if(!expiry_date) return '';
@@ -1960,7 +2920,27 @@ function _hazardBadge(h, sds){
 
 async function loadInventory(){
   try {
-    let items = unwrap(await api('/api/inventory'));
+    const [res, suppliers, queue] = await Promise.all([
+      api('/api/inventory?' + buildQS({
+        search: INV_QUERY,
+        lab: INV_LAB,
+        category: INV_CAT,
+        supplier_id: INV_SUPPLIER,
+        status: INV_STATUS,
+        sort: INV_SORT,
+        low_stock: INV_LOW_STOCK,
+        expiring_soon: INV_EXPIRING,
+        limit: 300
+      })),
+      api('/api/suppliers').catch(() => []),
+      api('/api/inventory/reorder-queue?' + buildQS({
+        lab: INV_LAB,
+        supplier_id: INV_SUPPLIER,
+        limit: 8
+      })).catch(err => ({ error: err.message, rows: [], summary: {} }))
+    ]);
+    const items = unwrap(res);
+    const summary = summaryOf(res);
     // populate lab filter
     const labs = [...new Set(items.map(x=>x.lab||'').filter(Boolean))];
     const sel = $('#invLab');
@@ -1971,19 +2951,17 @@ async function loadInventory(){
     const catSel = $('#invCatFilter');
     const curCat = INV_CAT || catSel.value;
     catSel.innerHTML = '<option value="">All categories</option>' + cats.map(c=>`<option value="${c}" ${c===curCat?'selected':''}>${escapeHTML(c)}</option>`).join('');
-    // apply filters
-    if(INV_LAB)   items = items.filter(x => (x.lab||'') === INV_LAB);
-    if(INV_CAT)   items = items.filter(x => (x.category||'') === INV_CAT);
-    if(INV_LOW_STOCK) items = items.filter(x => x.qty <= x.min_qty);
-    if(INV_EXPIRING){
-      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() + 30);
-      items = items.filter(x => x.expiry_date && new Date(x.expiry_date) <= cutoff);
-    }
-    if(INV_QUERY){
-      const q = INV_QUERY.toLowerCase();
-      items = items.filter(x => (x.name||'').toLowerCase().includes(q) || (x.sku||'').toLowerCase().includes(q) || (x.lab||'').toLowerCase().includes(q) || (x.supplier_name||'').toLowerCase().includes(q));
-    }
-    const isStaff = ME.role==='admin' || ME.role==='professor';
+    const supplierSel = $('#invSupplier');
+    const curSupplier = INV_SUPPLIER || supplierSel.value;
+    supplierSel.innerHTML = '<option value="">All suppliers</option>' + suppliers.map(s=>`<option value="${s.id}" ${String(s.id)===String(curSupplier)?'selected':''}>${escapeHTML(s.name)}</option>`).join('');
+    $('#invSummary').innerHTML = [
+      statCard(n0(summary.total), 'Tracked items'),
+      statCard(`${n0(summary.low_stock)} low`, 'Below reorder threshold', n0(summary.low_stock) ? 'warn' : ''),
+      statCard(`${n0(summary.out_of_stock)} out`, 'Unavailable now', n0(summary.out_of_stock) ? 'alert' : ''),
+      statCard(`${n0(summary.expired) + n0(summary.expiring_soon)} at risk`, 'Expiry and safety watch', (n0(summary.expired) + n0(summary.expiring_soon)) ? 'alert' : '')
+    ].join('');
+    renderInventoryActionQueue(queue);
+    const isStaff = isLabStaffRole(ME.role);
     if(!items.length){ $('#invList').innerHTML='<div class="empty">No inventory items match.</div>'; return; }
     $('#invList').innerHTML = `
       <div class="p-inv-table">
@@ -1998,8 +2976,8 @@ async function loadInventory(){
           const fillColor = x.qty <= 0 ? 'var(--status-alert)' : x.qty < x.min_qty ? 'var(--status-warn)' : 'var(--status-ok)';
           return `<div class="p-inv-row">
             <div style="flex:2.5;">
-              <div class="p-inv-name">${escapeHTML(x.name)}</div>
-              <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.category||'')}${x.supplier_name?` · ${escapeHTML(x.supplier_name)}`:''}</div>
+              <div class="p-inv-name">${escapeHTML(x.name)} <span class="p-tag-sm ${x.stock_state==='out'?'p-tag-alert':x.stock_state==='low'?'p-tag-warn':'p-tag-ok'}">${escapeHTML(String(x.stock_state||'ok').replace('_',' '))}</span></div>
+              <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.category||'')}${x.supplier_name?` · ${escapeHTML(x.supplier_name)}`:''}${x.supplier_email?` · ${escapeHTML(x.supplier_email)}`:''}</div>
               <div style="margin-top:2px;display:flex;gap:6px;align-items:center;">
                 ${_hazardBadge(x.hazard_class, x.sds_url)}
                 ${_expiryBadge(x.expiry_date)}
@@ -2007,20 +2985,22 @@ async function loadInventory(){
             </div>
             <div style="flex:1;">
               <div><span class="p-mono" style="font-size:12px;">${escapeHTML(x.sku||'—')}</span></div>
-              <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.lab||'—')}${x.location?' · '+escapeHTML(x.location):''}</div>
+              <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(x.lab||'—')}${x.location?' · '+escapeHTML(x.location):''}${x.last_adjusted_at?` · adjusted ${fmtDT(x.last_adjusted_at)}`:''}</div>
             </div>
             <div style="flex:1.5;">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <button class="btn-ghost-sm" data-inv-adj="${x.id}" data-adj-delta="-1" title="Decrease by 1" style="padding:2px 6px;min-width:22px;">−</button>
+              <div class="p-qty-control">
+                <button class="btn-ghost-sm" data-inv-adj="${x.id}" data-adj-delta="-1" title="Decrease by 1">-</button>
                 <span class="p-qty-num">${x.qty}</span>
                 <span class="p-qty-min" style="font-size:11px;"> ${escapeHTML(x.unit||'each')}</span>
-                <button class="btn-ghost-sm" data-inv-adj="${x.id}" data-adj-delta="1"  title="Increase by 1" style="padding:2px 6px;min-width:22px;">+</button>
+                <button class="btn-ghost-sm" data-inv-adj="${x.id}" data-adj-delta="1" title="Increase by 1">+</button>
               </div>
               <div style="font-size:11px;color:var(--fg-4);">min ${x.min_qty} ${escapeHTML(x.unit||'each')}</div>
               <div class="p-qty-bar"><div class="p-qty-fill" style="width:${pct}%;background:${fillColor};"></div></div>
             </div>
             <div style="width:130px;display:flex;gap:4px;flex-wrap:wrap;">
               <button class="btn-ghost-sm" data-inv-log="${x.id}">Log</button>
+              <button class="btn-ghost-sm" data-inv-receive="${x.id}">Receive</button>
+              <button class="btn-ghost-sm" data-inv-request="${x.id}">Request</button>
               ${isStaff ? `<button class="btn-ghost-sm" data-inv-edit="${x.id}">Edit</button>` : ''}
               ${x.reorder_url ? `<a class="btn-ghost-sm" href="${escapeHTML(x.reorder_url)}" target="_blank">Order</a>` : ''}
             </div>
@@ -2039,6 +3019,10 @@ async function loadInventory(){
         loadInventory(); // refresh to update bar colours and min display
       } catch(err){ alert(err.message); }
     }));
+    $('#invList').querySelectorAll('[data-inv-request]').forEach(b => b.addEventListener('click', () => {
+      const item = items.find(x => String(x.id) === b.dataset.invRequest);
+      openIssueModal({ category:'supplies', inventory:item });
+    }));
     // Wire log buttons
     $('#invList').querySelectorAll('[data-inv-log]').forEach(b => b.addEventListener('click', async () => {
       const it = items.find(x => x.id == b.dataset.invLog); if(!it) return;
@@ -2055,6 +3039,11 @@ async function loadInventory(){
           null, '', 'Close');
       } catch(err){ alert(err.message); }
     }));
+    $('#invList').querySelectorAll('[data-inv-receive]').forEach(b => b.addEventListener('click', async () => {
+      const it = items.find(x => x.id == b.dataset.invReceive); if(!it) return;
+      try { await receiveInventoryStock(it.id, it.name); }
+      catch(err){ alert(err.message); }
+    }));
     // Wire edit buttons
     $('#invList').querySelectorAll('[data-inv-edit]').forEach(b => b.addEventListener('click', async () => {
       const it = items.find(x => x.id == b.dataset.invEdit); if(it) openInvModal(it);
@@ -2065,9 +3054,19 @@ async function loadInventory(){
 $('#invSearch').addEventListener('input', e => { INV_QUERY = e.target.value; loadInventory(); });
 $('#invLab').addEventListener('change', e => { INV_LAB = e.target.value; loadInventory(); });
 $('#invCatFilter').addEventListener('change', e => { INV_CAT = e.target.value; loadInventory(); });
+$('#invSupplier').addEventListener('change', e => { INV_SUPPLIER = e.target.value; loadInventory(); });
+$('#invStatus').addEventListener('change', e => { INV_STATUS = e.target.value; loadInventory(); });
+$('#invSort').addEventListener('change', e => { INV_SORT = e.target.value; loadInventory(); });
 $('#invLowStock').addEventListener('change', e => { INV_LOW_STOCK = e.target.checked; loadInventory(); });
 $('#invExpiring').addEventListener('change', e => { INV_EXPIRING = e.target.checked; loadInventory(); });
 $('#addInvBtn').addEventListener('click', () => openInvModal());
+$('#invExportBtn').addEventListener('click', async () => {
+  try {
+    await downloadFile('/api/inventory/export.csv', 'latfs-inventory.csv');
+  } catch (err) {
+    alert(err.message);
+  }
+});
 
 async function openInvModal(it){
   const isEdit = !!it;
@@ -2132,44 +3131,109 @@ async function openInvModal(it){
 }
 
 /* ---------- Samples ---------- */
-let SAMPLE_QUERY='', SAMPLE_STATUS='';
+let SAMPLE_QUERY='', SAMPLE_STATUS='', SAMPLE_APPROVAL='', SAMPLE_EXPIRING_SOON=false, SAMPLE_EXPIRED=false, SAMPLE_LOW_QTY=false;
+
+function canEditSampleEntry(sample){
+  if(isSiteModeratorRole(ME.role)) return true;
+  return Number(sample?.created_by_id) === Number(ME.id) && sample?.approval_status !== 'approved';
+}
+
+async function reviewSampleEntry(sample, approvalStatus){
+  let reviewNote = '';
+  if(approvalStatus === 'denied'){
+    reviewNote = prompt(
+      `Optional note for ${sample.name}:`,
+      sample.review_note || 'Please update the sample details and resubmit.'
+    ) || '';
+  }
+  await api(`/api/samples/${sample.id}/review`, {
+    method:'POST',
+    body:{ approval_status: approvalStatus, review_note: reviewNote }
+  });
+  loadSamples();
+  loadDashboard();
+}
+
 async function loadSamples(){
   try {
-    const qs = new URLSearchParams();
-    if(SAMPLE_STATUS) qs.set('status', SAMPLE_STATUS);
-    if(SAMPLE_QUERY)  qs.set('search', SAMPLE_QUERY);
-    const items = await api('/api/samples?'+qs);
+    const res = await api('/api/samples?' + buildQS({
+      status: SAMPLE_STATUS,
+      approval_status: SAMPLE_APPROVAL,
+      search: SAMPLE_QUERY,
+      expiring_soon: SAMPLE_EXPIRING_SOON,
+      expired: SAMPLE_EXPIRED,
+      low_qty: SAMPLE_LOW_QTY
+    }));
+    const items = unwrap(res);
+    const summary = summaryOf(res);
+    const canReview = isSiteModeratorRole(ME.role);
+    $('#sampleSummary').innerHTML = (canReview
+      ? [
+          statCard(n0(summary.total), 'Visible to approvers'),
+          statCard(`${n0(summary.pending)} pending`, 'Awaiting approval', n0(summary.pending) ? 'warn' : ''),
+          statCard(`${n0(summary.approved)} live`, 'Approved samples'),
+          statCard(`${n0(summary.expired) + n0(summary.depleted)} blocked`, 'Expired or depleted approved', (n0(summary.expired) + n0(summary.depleted)) ? 'alert' : '')
+        ]
+      : [
+          statCard(`${n0(summary.approved)} live`, 'Approved samples'),
+          statCard(`${n0(summary.pending)} pending`, 'My submissions awaiting approval', n0(summary.pending) ? 'info' : ''),
+          statCard(`${n0(summary.denied)} revise`, 'Returned for changes', n0(summary.denied) ? 'warn' : ''),
+          statCard(`${n0(summary.expired) + n0(summary.depleted)} blocked`, 'Expired or depleted approved', (n0(summary.expired) + n0(summary.depleted)) ? 'alert' : '')
+        ]).join('');
     if(!items.length){ $('#sampleList').innerHTML='<div class="empty">No samples found.</div>'; return; }
     const today = new Date(); today.setHours(0,0,0,0);
-    const isStaff = ME.role==='admin'||ME.role==='professor';
+    const isStaff = isLabStaffRole(ME.role);
     $('#sampleList').innerHTML = `
       <div class="p-inv-row p-inv-head">
         <div style="flex:2;">Sample</div>
         <div style="flex:1;">Type · Location</div>
         <div style="flex:1;">Qty</div>
         <div style="flex:1;">Expiry</div>
-        <div style="width:100px;"></div>
+        <div style="width:220px;"></div>
       </div>
       ${items.map(s=>{
         const exp = s.expiry_date ? new Date(s.expiry_date) : null;
         const days = exp ? Math.round((exp-today)/86400000) : null;
         const expStyle = days===null ? '' : days<0 ? 'color:#dc2626;font-weight:600;' : days<=30 ? 'color:#c2410c;' : 'color:var(--fg-3);';
+        const approvalClass = s.approval_status==='approved' ? 'p-tag-ok' : s.approval_status==='denied' ? 'p-tag-warn' : 'p-tag-info';
+        const lifecycleClass = s.status==='active' ? 'p-tag-ok' : s.status==='depleted' ? 'p-tag-warn' : 'p-tag-outline';
+        const approvalMeta = s.approval_status==='approved'
+          ? `${s.approved_by_name ? `Approved by ${s.approved_by_name}` : 'Approved'}${s.approved_at ? ` - ${fmtDT(s.approved_at)}` : ''}`
+          : s.approval_status==='denied'
+            ? (s.review_note || 'Needs updates before approval')
+            : (Number(s.created_by_id)===Number(ME.id)
+              ? 'Awaiting approval - only you and approvers can see this entry right now.'
+              : 'Awaiting approval');
         return `<div class="p-inv-row">
           <div style="flex:2;">
-            <div class="p-inv-name">${escapeHTML(s.name)}</div>
-            <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(s.project_title||'')} · ${escapeHTML(s.created_by_name||'?')}</div>
+            <div class="p-inv-name">${escapeHTML(s.name)} <span class="p-tag-sm ${approvalClass}">${escapeHTML(s.approval_status||'pending')}</span> <span class="p-tag-sm ${lifecycleClass}">${escapeHTML(s.status||'active')}</span></div>
+            <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(s.project_title||'')} - ${escapeHTML(s.created_by_name||'?')}</div>
+            <div style="font-size:11px;color:${s.approval_status==='approved' ? '#dbe8ff' : s.approval_status==='denied' ? '#f6ad55' : '#d7e5fb'};font-weight:600;margin-top:3px;">${escapeHTML(approvalMeta)}</div>
           </div>
           <div style="flex:1;font-size:12px;">${escapeHTML(s.sample_type||'—')}<br><span style="font-size:11px;color:var(--fg-4);">${escapeHTML(s.location||'')}</span></div>
-          <div style="flex:1;font-size:13px;">${s.qty} ${escapeHTML(s.unit||'')}</div>
+          <div style="flex:1;font-size:13px;">${s.qty} ${escapeHTML(s.unit||'')} ${n0(s.qty) <= 0 ? '<span class="p-tag-sm p-tag-alert">empty</span>' : ''}</div>
           <div style="flex:1;font-size:12px;${expStyle}">${s.expiry_date ? (days<0 ? `Expired ${fmtDate(s.expiry_date)}` : `${fmtDate(s.expiry_date)}`) : '—'}</div>
-          <div style="width:100px;display:flex;gap:4px;">
-            <button class="btn-ghost-sm" data-sample-edit="${s.id}">Edit</button>
+          <div style="width:220px;display:flex;gap:4px;flex-wrap:wrap;">
+            ${canEditSampleEntry(s) ? `<button class="btn-ghost-sm" data-sample-edit="${s.id}">Edit</button>` : ''}
+            ${canReview && s.approval_status!=='approved' ? `<button class="btn-ghost-sm" data-sample-approve="${s.id}">Approve</button><button class="btn-ghost-sm" data-sample-deny="${s.id}">Changes</button>` : ''}
             ${isStaff?`<button class="btn-ghost-sm" data-sample-del="${s.id}">Del</button>`:''}
           </div>
         </div>`;
       }).join('')}`;
     $('#sampleList').querySelectorAll('[data-sample-edit]').forEach(b=>b.addEventListener('click',()=>{
       const s=items.find(x=>x.id==b.dataset.sampleEdit); if(s) openSampleModal(s);
+    }));
+    $('#sampleList').querySelectorAll('[data-sample-approve]').forEach(b=>b.addEventListener('click', async ()=>{
+      const sample = items.find(x=>x.id==b.dataset.sampleApprove);
+      if(!sample) return;
+      try { await reviewSampleEntry(sample, 'approved'); }
+      catch(err){ alert(err.message); }
+    }));
+    $('#sampleList').querySelectorAll('[data-sample-deny]').forEach(b=>b.addEventListener('click', async ()=>{
+      const sample = items.find(x=>x.id==b.dataset.sampleDeny);
+      if(!sample) return;
+      try { await reviewSampleEntry(sample, 'denied'); }
+      catch(err){ alert(err.message); }
     }));
     $('#sampleList').querySelectorAll('[data-sample-del]').forEach(b=>b.addEventListener('click',async()=>{
       if(!confirm('Delete this sample?')) return;
@@ -2180,13 +3244,21 @@ async function loadSamples(){
 }
 $('#sampleSearch').addEventListener('input', e=>{ SAMPLE_QUERY=e.target.value; loadSamples(); });
 $('#sampleStatus').addEventListener('change', e=>{ SAMPLE_STATUS=e.target.value; loadSamples(); });
+$('#sampleApproval').addEventListener('change', e=>{ SAMPLE_APPROVAL=e.target.value; loadSamples(); });
+$('#sampleExpiringSoon').addEventListener('change', e=>{ SAMPLE_EXPIRING_SOON=e.target.checked; if(e.target.checked) { SAMPLE_EXPIRED = false; $('#sampleExpired').checked = false; } loadSamples(); });
+$('#sampleExpired').addEventListener('change', e=>{ SAMPLE_EXPIRED=e.target.checked; if(e.target.checked) { SAMPLE_EXPIRING_SOON = false; $('#sampleExpiringSoon').checked = false; } loadSamples(); });
+$('#sampleLowQty').addEventListener('change', e=>{ SAMPLE_LOW_QTY=e.target.checked; loadSamples(); });
 $('#addSampleBtn').addEventListener('click', ()=>openSampleModal());
 
 async function openSampleModal(s){
   const isEdit=!!s;
+  const canReview = isSiteModeratorRole(ME.role);
+  if(isEdit && !canEditSampleEntry(s)) { alert('Approved samples can only be edited by an admin, professor, or moderator.'); return; }
   let projs=[];
   try { projs = await api('/api/projects'); } catch(_){}
   modal(`<h2>${isEdit?'Edit sample':'New sample'}</h2>
+    ${!canReview ? `<p style="font-size:12px;color:var(--fg-3);margin-top:-4px;">Your sample stays hidden until approved by an admin, professor, or moderator.</p>` : ''}
+    ${isEdit && s?.approval_status==='denied' && s?.review_note ? `<div class="p-card" style="margin-bottom:10px;background:#fff7ed;border-color:#fdba74;"><div style="font-size:12px;color:#9a3412;"><strong>Reviewer note:</strong> ${escapeHTML(s.review_note)}</div></div>` : ''}
     <label>Name<input id="smName" value="${escapeHTML(s?.name||'')}"></label>
     <label>Type<select id="smType">
       ${['solid','liquid','gas','biological','chemical','other'].map(t=>`<option value="${t}" ${s?.sample_type===t?'selected':''}>${t}</option>`).join('')}
@@ -2199,15 +3271,17 @@ async function openSampleModal(s){
     <label>Status<select id="smSt">
       ${['active','depleted','disposed','archived'].map(t=>`<option value="${t}" ${s?.status===t?'selected':''}>${t}</option>`).join('')}
     </select></label>
-    <label>Description<textarea id="smDesc">${escapeHTML(s?.description||'')}</textarea></label>`,
+    <label>Description<textarea id="smDesc">${escapeHTML(s?.description||'')}</textarea></label>
+    <label>Handling notes<textarea id="smNotes">${escapeHTML(s?.notes||'')}</textarea></label>`,
     async()=>{
       const body={name:$('#smName').value.trim(), sample_type:$('#smType').value, location:$('#smLoc').value,
         project_id:$('#smProj').value||null, qty:Number($('#smQty').value)||0, unit:$('#smUnit').value||'mL',
-        expiry_date:$('#smExp').value||null, status:$('#smSt').value, description:$('#smDesc').value};
+        expiry_date:$('#smExp').value||null, status:$('#smSt').value, description:$('#smDesc').value, notes:$('#smNotes').value};
       if(!body.name) throw new Error('Name required');
       if(isEdit) await api('/api/samples/'+s.id,{method:'PUT',body});
       else await api('/api/samples',{method:'POST',body});
       loadSamples();
+      loadDashboard();
     });
 }
 
@@ -2215,7 +3289,7 @@ async function openSampleModal(s){
 let NOTEBOOK_QUERY='';
 async function loadNotebook(){
   try {
-    const isStaff = ME.role==='admin'||ME.role==='professor';
+  const isStaff = isLabStaffRole(ME.role);
     const qs = new URLSearchParams();
     if(!isStaff) qs.set('mine','1');
     if(NOTEBOOK_QUERY) qs.set('search',NOTEBOOK_QUERY);
@@ -2282,7 +3356,7 @@ async function openNotebookModal(n){
 }
 
 /* ---------- Training & Certifications ---------- */
-let TRAINING_USER='', TRAINING_TYPE='', TRAINING_EXPIRING=false;
+let TRAINING_USER='', TRAINING_TYPE='', TRAINING_EXPIRING=false, TRAINING_EXPIRED=false, TRAINING_QUERY='';
 async function loadTraining(){
   try {
     // populate user filter
@@ -2292,13 +3366,23 @@ async function loadTraining(){
     const curU = TRAINING_USER || uSel.value;
     uSel.innerHTML = '<option value="">All members</option>' + users.map(u=>`<option value="${u.id}" ${u.id==curU?'selected':''}>${escapeHTML(u.name||u.username)}</option>`).join('');
 
-    const qs = new URLSearchParams();
-    if(TRAINING_USER) qs.set('user_id', TRAINING_USER);
-    if(TRAINING_TYPE) qs.set('training_type', TRAINING_TYPE);
-    if(TRAINING_EXPIRING) qs.set('expiring_soon','1');
-    const records = await api('/api/training?'+qs);
-    const isStaff = ME.role==='admin'||ME.role==='professor';
+    const res = await api('/api/training?' + buildQS({
+      user_id: TRAINING_USER,
+      training_type: TRAINING_TYPE,
+      expiring_soon: TRAINING_EXPIRING,
+      expired: TRAINING_EXPIRED,
+      search: TRAINING_QUERY
+    }));
+    const records = unwrap(res);
+    const summary = summaryOf(res);
+  const isStaff = isLabStaffRole(ME.role);
     const today = new Date(); today.setHours(0,0,0,0);
+    $('#trainingSummary').innerHTML = [
+      statCard(n0(summary.total), 'Training records'),
+      statCard(`${n0(summary.members)} members`, 'People covered'),
+      statCard(`${n0(summary.expiring_soon)} expiring`, 'Needs renewal soon', n0(summary.expiring_soon) ? 'warn' : ''),
+      statCard(`${n0(summary.expired)} expired`, 'Expired certifications', n0(summary.expired) ? 'alert' : '')
+    ].join('');
     if(!records.length){ $('#trainingList').innerHTML='<div class="empty">No training records found.</div>'; return; }
     $('#trainingList').innerHTML = `
       <div class="p-inv-row p-inv-head">
@@ -2314,7 +3398,7 @@ async function loadTraining(){
         const expStyle = days===null ? '' : days<0 ? 'color:#dc2626;font-weight:600;' : days<=60 ? 'color:#c2410c;' : '';
         return `<div class="p-inv-row">
           <div style="flex:2;">
-            <div class="p-inv-name">${escapeHTML(r.training_name)}</div>
+            <div class="p-inv-name">${escapeHTML(r.training_name)} <span class="p-tag-sm ${days!==null && days<0?'p-tag-alert':days!==null && days<=60?'p-tag-warn':'p-tag-ok'}">${days===null?'no expiry':days<0?'expired':'active'}</span></div>
             <div style="font-size:11px;color:var(--fg-4);">${escapeHTML(r.training_type)}${r.certified_by?` · cert. by ${escapeHTML(r.certified_by)}`:''}</div>
           </div>
           <div style="flex:1;font-size:13px;">${escapeHTML(r.user_name||r.username||'?')}</div>
@@ -2343,7 +3427,9 @@ async function loadTraining(){
 }
 $('#trainingUserFilter').addEventListener('change', e=>{ TRAINING_USER=e.target.value; loadTraining(); });
 $('#trainingTypeFilter').addEventListener('change', e=>{ TRAINING_TYPE=e.target.value; loadTraining(); });
-$('#trainingExpiringFilter').addEventListener('change', e=>{ TRAINING_EXPIRING=e.target.checked; loadTraining(); });
+$('#trainingExpiringFilter').addEventListener('change', e=>{ TRAINING_EXPIRING=e.target.checked; if(e.target.checked) { TRAINING_EXPIRED = false; $('#trainingExpiredFilter').checked = false; } loadTraining(); });
+$('#trainingExpiredFilter').addEventListener('change', e=>{ TRAINING_EXPIRED=e.target.checked; if(e.target.checked) { TRAINING_EXPIRING = false; $('#trainingExpiringFilter').checked = false; } loadTraining(); });
+$('#trainingSearch').addEventListener('input', e=>{ TRAINING_QUERY=e.target.value; loadTraining(); });
 $('#addTrainingBtn').addEventListener('click', ()=>openTrainingModal());
 
 async function openTrainingModal(r){
@@ -2409,8 +3495,8 @@ async function loadIssues(){
           <button class="btn-ghost-sm" data-issue-id="${it.id}" data-act="open">Open</button>
         </div>
         <div class="p-issue-title">${escapeHTML(it.title)}</div>
-        ${(body => `<div class="p-issue-body">${escapeHTML(body.slice(0,200))}${body.length>200?'…':''}</div>`)(it.body||'')}
-        <div class="p-issue-meta">Reported by ${escapeHTML(it.reporter_name||it.reporter_username||'?')} · ${fmtDT(it.created_at)}${it.equipment_name?' · re: '+escapeHTML(it.equipment_name):''}</div>
+        ${(body => `<div class="p-issue-body">${escapeHTML(body.slice(0,200))}${body.length>200?'...':''}</div>`)(it.body||'')}
+        <div class="p-issue-meta">Reported by ${escapeHTML(it.reporter_name||it.reporter_username||'?')} - ${fmtDT(it.created_at)}${it.equipment_name?' - re: '+escapeHTML(it.equipment_name):''}</div>
       </div>`).join('');
   } catch(e){ $('#issueList').innerHTML = `<div class="empty">${escapeHTML(e.message)}</div>`; }
 }
@@ -2426,6 +3512,7 @@ $('#issueFilter').addEventListener('click', e => {
   ISSUE_FILTER = b.dataset.filter; loadIssues();
 });
 $('#addIssueBtn').addEventListener('click', () => openIssueModal());
+$('#requestSupplyBtn').addEventListener('click', () => openIssueModal({ category:'supplies' }));
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-issue-id][data-act="open"]'); if(!b) return;
   try {
@@ -2435,45 +3522,77 @@ document.addEventListener('click', async e => {
   } catch(err){ alert(err.message); }
 });
 
-async function openIssueModal(){
+async function openIssueModal(opts = {}){
   let equipment=[];
   try { equipment = unwrap(await api('/api/equipment')); } catch(e){}
+  const isSupplyRequest = (opts.category || '') === 'supplies';
+  const inventory = opts.inventory || null;
+  const defaultTitle = opts.title || (inventory ? `Supply request: ${inventory.name}` : '');
+  const defaultDesc = opts.description || '';
   modal(`<h2>Report an issue or request</h2>
-    <label>Title<input id="iTitle" placeholder="Short summary…"></label>
+    <label>Title<input id="iTitle" placeholder="Short summary…" value="${escapeHTML(defaultTitle)}"></label>
     <label>Category<select id="iCat">
-      <option value="equipment">Equipment</option>
-      <option value="supplies">Supplies</option>
+      <option value="equipment" ${!isSupplyRequest ? 'selected' : ''}>Equipment</option>
+      <option value="supplies" ${isSupplyRequest ? 'selected' : ''}>Supplies</option>
       <option value="facility">Facility</option>
       <option value="safety">Safety</option>
       <option value="other">Other</option>
     </select></label>
     <label>Priority<select id="iPri">
       <option value="low">Low</option>
-      <option value="normal" selected>Normal</option>
-      <option value="high">High</option>
+      <option value="normal" ${!isSupplyRequest ? 'selected' : ''}>Normal</option>
+      <option value="high" ${isSupplyRequest ? 'selected' : ''}>High</option>
     </select></label>
-    <label>Related equipment (optional)<select id="iEq"><option value="">—</option>
+    <label id="iEqWrap">Related equipment (optional)<select id="iEq"><option value="">-</option>
       ${equipment.map(e=>`<option value="${e.id}">${escapeHTML(e.name)} (${escapeHTML(e.sku||'')})</option>`).join('')}
     </select></label>
-    <label>Description<textarea id="iDesc" placeholder="What happened? What's needed?"></textarea></label>`,
+    <div id="iSupplyFields" style="${isSupplyRequest ? '' : 'display:none;'}">
+      <label>Requested quantity<input id="iQty" placeholder="e.g. 2 boxes or 500 mL"></label>
+      <label>Preferred supplier<input id="iSupplier" value="${escapeHTML(inventory?.supplier_name || '')}" placeholder="Vendor name"></label>
+      <label>Part / catalog #<input id="iPart" value="${escapeHTML(inventory?.sku || '')}" placeholder="Catalog number or SKU"></label>
+      <label>Order / quote # (optional)<input id="iOrderRef" placeholder="PO, quote, or order reference"></label>
+      <label>Reference URL (optional)<input id="iItemUrl" type="url" value="${escapeHTML(inventory?.reorder_url || '')}" placeholder="https://…"></label>
+    </div>
+    <label>Description<textarea id="iDesc" placeholder="What happened? What's needed?">${escapeHTML(defaultDesc)}</textarea></label>`,
     async () => {
+      const category = $('#iCat').value;
+      const supplyLines = [];
+      if(category === 'supplies'){
+        if(inventory?.name) supplyLines.push(`Inventory item: ${inventory.name}`);
+        if($('#iQty').value.trim()) supplyLines.push(`Requested quantity: ${$('#iQty').value.trim()}`);
+        if($('#iSupplier').value.trim()) supplyLines.push(`Preferred supplier: ${$('#iSupplier').value.trim()}`);
+        if($('#iPart').value.trim()) supplyLines.push(`Part / catalog #: ${$('#iPart').value.trim()}`);
+        if($('#iOrderRef').value.trim()) supplyLines.push(`Order / quote #: ${$('#iOrderRef').value.trim()}`);
+        if($('#iItemUrl').value.trim()) supplyLines.push(`Reference URL: ${$('#iItemUrl').value.trim()}`);
+      }
+      const details = $('#iDesc').value.trim();
       const body = {
         title: $('#iTitle').value.trim(),
-        category: $('#iCat').value,
+        category,
         priority: $('#iPri').value,
-        related_equipment_id: $('#iEq').value || null,
-        body: $('#iDesc').value
+        related_equipment_id: category === 'equipment' ? ($('#iEq').value || null) : null,
+        body: category === 'supplies'
+          ? [...supplyLines, details ? '' : null, details || null].filter(v => v !== null).join('\n')
+          : $('#iDesc').value
       };
+      if(!body.title) body.title = category === 'supplies' ? 'Supply request' : '';
       if(!body.title) throw new Error('Title required');
       await api('/api/issues',{method:'POST', body});
       loadIssues(); loadDashboard();
     });
+  const syncIssueModalFields = () => {
+    const isSupplies = $('#iCat').value === 'supplies';
+    $('#iSupplyFields').style.display = isSupplies ? '' : 'none';
+    $('#iEqWrap').style.display = isSupplies ? 'none' : '';
+  };
+  $('#iCat').addEventListener('change', syncIssueModalFields);
+  syncIssueModalFields();
 }
 
 async function openIssueDetail(it){
   let comments=[];
   try { comments = await api('/api/issues/'+it.id+'/comments'); } catch(e){}
-  const isStaff = ME.role==='admin' || ME.role==='professor';
+  const isStaff = isLabStaffRole(ME.role);
   modal(`<h2>${escapeHTML(it.title)}</h2>
     <div class="p-issue-meta">${escapeHTML(it.category)} · ${escapeHTML(it.priority||'')} · reported by ${escapeHTML(it.reporter_name||'?')} on ${fmtDT(it.created_at)}</div>
     <div class="p-issue-body" style="margin-top:12px;">${escapeHTML(it.body||'')}</div>
@@ -2521,7 +3640,7 @@ async function openIssueDetail(it){
 
 /* ---------- Profile ---------- */
 async function loadProfile(){
-  $('#profAv').textContent = initials(ME.name||ME.username);
+  setAvatarContent($('#profAv'), ME);
   $('#profName').textContent = ME.name || ME.username;
   $('#profRole').textContent = (ME.role || '').toUpperCase();
   $('#profEmail').textContent = ME.email || `@${ME.username}`;
@@ -2634,7 +3753,7 @@ $('#profEditBtn').addEventListener('click', () => {
       await api('/api/me/profile', {method:'PUT', body});
       ME.name = body.name; ME.email = body.email;
       $('#userName').textContent = ME.name || ME.username;
-      $('#userAv').textContent = initials(ME.name||ME.username);
+      setAvatarContent($('#userAv'), ME);
       loadProfile();
     });
 });
@@ -2708,7 +3827,7 @@ function openUserModal(u){
     <label>Display name<input id="uName" value="${escapeHTML(u?.name||'')}"></label>
     <label>Email<input id="uEmail" value="${escapeHTML(u?.email||'')}"></label>
     <label>Role<select id="uRole">
-      ${['admin','professor','postdoc','student'].map(r=>`<option value="${r}" ${u?.role===r?'selected':''}>${r}</option>`).join('')}
+      ${['admin','professor','moderator','postdoc','student'].map(r=>`<option value="${r}" ${u?.role===r?'selected':''}>${r}</option>`).join('')}
     </select></label>
     ${!isEdit?`<label>Initial password (min 12)<input id="uPw" type="text" value=""></label>`:''}`,
     async () => {
@@ -2733,17 +3852,17 @@ function modal(bodyHTML, onSave, extraFootHTML='', saveLabel='Save'){
     <div class="modal-actions">
       ${extraFootHTML}
       <button type="button" class="p-bigbtn ghost" id="modalCancel">${onSave?'Cancel':'Close'}</button>
-      ${onSave?`<button type="submit" class="p-bigbtn">${saveLabel}</button>`:''}
+      ${onSave?`<button type="submit" class="p-bigbtn" data-modal-submit="1">${saveLabel}</button>`:''}
     </div>
   </form></div>`;
   $('#modalCancel').addEventListener('click', closeModal);
-  if(onSave){
-    $('#modalForm').addEventListener('submit', async ev => {
-      ev.preventDefault();
-      try { await onSave(); closeModal(); }
-      catch(err){ alert(err.message); }
-    });
-  }
+  $('#modalForm').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    if(!onSave) return;
+    if(ev.submitter && !ev.submitter.hasAttribute('data-modal-submit')) return;
+    try { await onSave(); closeModal(); }
+    catch(err){ alert(err.message); }
+  });
 }
 function closeModal(){ $('#modalMount').innerHTML=''; }
 
@@ -2764,6 +3883,10 @@ $('#loginForm').addEventListener('submit', doLogin);
 $('#loginBackBtn').addEventListener('click', () => { $('#loginErr').textContent = ''; _resetLoginForm(); });
 $('#logoutBtn').addEventListener('click', doLogout);
 (async function boot(){
+  if(location.protocol === 'file:'){
+    showFileModeNotice();
+    return;
+  }
   if(await checkAuth()) showApp();
 })();
 </script>

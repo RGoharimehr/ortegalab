@@ -248,12 +248,14 @@ code {
 /* Modal (used for forms) */
 .modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
 .modal { background:#fff; border-radius: var(--radius-lg); padding:24px; width: 480px; max-width:100%; max-height: 90vh; overflow:auto; box-shadow: var(--shadow-xl); }
+.modal.is-wide { width: min(780px, 96vw); }
 .modal h2 { font-size:18px; font-weight:700; color: var(--navy-900); margin:0 0 6px; }
 .modal-sub{ font-size:12px; color: var(--fg-3); margin:0 0 16px; }
 .modal label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 10px 0 4px; }
 .modal input, .modal select, .modal textarea{ width:100%; padding: 8px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family:inherit; font-size:13px; box-sizing:border-box; }
 .modal textarea{ min-height: 80px; resize: vertical; }
 .modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+.modal input[type="range"] { padding: 0; border: none; background: transparent; }
 /* Empty state */
 .empty { padding: 40px 20px; text-align:center; color: var(--fg-4); font-size: 13px; }
 /* List item with delete button */
@@ -261,6 +263,28 @@ code {
 .row-actions button { background:none; border:1px solid var(--border-1); color: var(--fg-3); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor:pointer; font-family:inherit; }
 .row-actions button:hover { background: var(--bg-2); color: var(--navy-900); }
 .row-actions button.danger:hover { background: #fee2e2; color: #991b1b; border-color:#fca5a5; }
+.p-btn-tight { padding: 7px 12px; font-size: 12px; border-radius: 999px; }
+.p-inline-meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; font-size:11px; color:var(--fg-4); }
+.p-inline-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; font-size:11px; }
+.p-inline-links a { color: var(--gold-700); font-weight: 700; }
+.p-photo-tool { display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:16px; align-items:start; margin-top:6px; }
+.p-photo-stage { position:relative; width:100%; aspect-ratio:1/1; border:1px solid var(--border-1); border-radius:12px; overflow:hidden; background:linear-gradient(180deg, var(--bg-1), var(--bg-2)); cursor:crosshair; }
+.p-photo-stage img { width:100%; height:100%; object-fit:cover; display:block; }
+.p-photo-stage::after { content:""; position:absolute; inset:14%; border:2px dashed rgba(200,162,74,.7); border-radius:50%; pointer-events:none; }
+.p-photo-stage::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(15,23,42,.04), rgba(15,23,42,.18)); pointer-events:none; }
+.p-photo-dot { position:absolute; width:18px; height:18px; border:2px solid var(--gold-600); background:rgba(255,255,255,.72); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; left:50%; top:50%; box-shadow:0 6px 16px rgba(15,23,42,.18); }
+.p-photo-help { font-size:12px; color:var(--fg-3); line-height:1.55; }
+.p-photo-presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.p-photo-presets button { border:1px solid var(--border-1); background:#fff; border-radius:999px; padding:5px 10px; font-size:11px; font-weight:600; color:var(--fg-2); cursor:pointer; }
+.p-photo-presets button:hover { border-color:var(--gold-300); color:var(--gold-700); }
+.p-photo-preview-card { margin-top:12px; border:1px solid var(--border-1); border-radius:12px; background:var(--bg-2); padding:12px; }
+.p-photo-preview-card strong { display:block; font-size:12px; color:var(--fg-2); margin-bottom:10px; }
+.p-photo-preview-card img { width:120px; height:120px; border-radius:50%; object-fit:cover; display:block; border:3px solid #fff; box-shadow:var(--shadow-sm); }
+.p-photo-zoom { margin-top:10px; }
+.p-photo-zoom label { margin:0 0 6px; }
+.p-photo-zoom-value { font-size:11px; color:var(--fg-4); margin-top:4px; text-align:right; }
+.p-theme-grid { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:end; margin-top:16px; }
+.p-soft-note { font-size:12px; color:var(--fg-3); line-height:1.55; margin-top:8px; }
 
 
 /* ---- Platform layout (sidebar/main, cards, kanban, calendar, etc.) ---- */
@@ -423,6 +447,383 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
   .p-slot-time { font-size: 12px; font-weight: 700; color: var(--gold-700); min-width: 60px; }
   .p-slot-title { font-size: 14px; font-weight: 600; color: var(--navy-900); }
   .p-slot-room { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+
+  /* ---- 2026 polish pass ---- */
+  body {
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(212,169,66,.14), transparent 24%),
+      radial-gradient(circle at top right, rgba(74,111,165,.1), transparent 24%),
+      linear-gradient(180deg, #eef3f8 0%, #f8fafc 34%, #edf2f7 100%);
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(15,23,42,.032) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,.032) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,.2), transparent 84%);
+  }
+  .login-screen,
+  .p-app {
+    position: relative;
+    z-index: 1;
+  }
+  .p-app { background: transparent; }
+  .p-sidebar {
+    width: 272px;
+    padding: 16px 14px 18px;
+    background: linear-gradient(180deg, #08101f 0%, #0f172a 28%, #12213d 100%);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,.05), 20px 0 48px rgba(8,15,36,.16);
+  }
+  .p-brand {
+    margin-bottom: 16px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+    box-shadow: 0 18px 36px rgba(0,0,0,.18);
+  }
+  .p-brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+    box-shadow: 0 10px 24px rgba(184,145,42,.28);
+    overflow: hidden;
+  }
+  .p-brand-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+    display: block;
+  }
+  .p-nav, .p-nav-section { gap: 6px; }
+  .p-nav-section {
+    margin-top: 18px;
+    padding-top: 18px;
+  }
+  .p-nav-head {
+    padding-bottom: 10px;
+    letter-spacing: .14em;
+  }
+  .p-nav-item {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 11px 12px;
+    transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .p-nav-item:hover {
+    transform: translateX(2px);
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.08);
+  }
+  .p-nav-item.active {
+    background: linear-gradient(135deg, rgba(212,169,66,.96), rgba(154,120,32,.96));
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(154,120,32,.24);
+  }
+  .p-user {
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  }
+  .p-user-av {
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+    box-shadow: 0 10px 20px rgba(184,145,42,.26);
+  }
+  .p-main {
+    padding: 30px 34px 42px;
+    background: transparent;
+  }
+  .p-page-head {
+    position: relative;
+    overflow: hidden;
+    padding: 26px 28px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255,255,255,.97) 0%, rgba(254,247,228,.92) 46%, rgba(244,248,252,.94) 100%);
+    box-shadow: 0 24px 50px rgba(15,23,42,.08);
+  }
+  .p-page-head::before {
+    content: "";
+    position: absolute;
+    top: -70px;
+    right: -30px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,169,66,.24), transparent 64%);
+    pointer-events: none;
+  }
+  .p-page-head::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(184,145,42,.34), transparent 65%);
+  }
+  .p-page-head > * {
+    position: relative;
+    z-index: 1;
+  }
+  .p-h1 {
+    margin: 6px 0;
+    font-size: clamp(1.85rem, 2.8vw, 2.5rem);
+  }
+  .p-h1-sub {
+    margin: 0;
+    max-width: 64ch;
+    font-size: 14px;
+  }
+  .p-actions {
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-primary-sm,
+  .btn-ghost-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.15;
+    white-space: nowrap;
+    min-height: 38px;
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+  .btn-primary-sm {
+    box-shadow: 0 12px 22px rgba(184,145,42,.22);
+  }
+  .btn-ghost-sm {
+    background: rgba(255,255,255,.82);
+    border-color: rgba(203,213,225,.9);
+  }
+  .btn-ghost-sm:hover { background: #fff; }
+  .p-card,
+  .p-stat-card,
+  .p-tabs,
+  .p-inv-toolbar,
+  .p-inv-table,
+  .p-banner,
+  .login-card {
+    backdrop-filter: blur(10px);
+  }
+  .p-card,
+  .login-card {
+    border-radius: 20px;
+    box-shadow: 0 18px 34px rgba(15,23,42,.07);
+  }
+  .p-card {
+    padding: 20px;
+    background: rgba(255,255,255,.92);
+  }
+  .p-card-head {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+  .p-grid-2, .p-grid-3, .p-grid-4 { gap: 18px; }
+  .p-stat-card {
+    min-height: 132px;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-left: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,250,252,.96));
+    box-shadow: 0 16px 30px rgba(15,23,42,.06);
+    overflow: hidden;
+  }
+  .p-stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--gold-500), var(--navy-700));
+  }
+  .p-stat-num {
+    font-size: clamp(1.7rem, 3vw, 2rem);
+  }
+  .p-stat-icon {
+    width: 20px;
+    height: 20px;
+    opacity: .9;
+  }
+  .p-tabs {
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 6px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 16px;
+    background: rgba(255,255,255,.82);
+  }
+  .p-tab {
+    margin-bottom: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
+  .p-tab.active {
+    color: #fff;
+    border-bottom-color: transparent;
+    background: var(--navy-900);
+    box-shadow: 0 8px 18px rgba(15,23,42,.18);
+  }
+  .p-inv-toolbar {
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 16px;
+    background: rgba(255,255,255,.84);
+  }
+  .p-inv-table {
+    border-radius: 18px;
+    border-color: rgba(226,232,240,.95);
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 14px 28px rgba(15,23,42,.05);
+  }
+  .p-banner {
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(184,145,42,.12);
+  }
+  .p-admin-ribbon {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 18px;
+    background: rgba(255,255,255,.84);
+    box-shadow: 0 14px 28px rgba(15,23,42,.05);
+  }
+  .p-admin-kicker {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold-700);
+  }
+  .p-admin-title {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy-900);
+    letter-spacing: -.015em;
+  }
+  .p-admin-copy {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--fg-3);
+    line-height: 1.6;
+  }
+  .p-admin-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .p-admin-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--navy-900);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+  .p-admin-pill.soft {
+    background: var(--gold-100);
+    color: var(--gold-900);
+  }
+  .p-overview-grid {
+    display: grid;
+    grid-template-columns: 1.2fr .9fr;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  .p-action-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .p-action-tile {
+    display: block;
+    padding: 16px;
+    border: 1px solid var(--border-1);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.94));
+    color: inherit;
+    text-decoration: none;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+  .p-action-tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold-300);
+    box-shadow: 0 14px 26px rgba(15,23,42,.08);
+  }
+  .p-action-tile-kicker {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold-700);
+  }
+  .p-action-tile-title {
+    margin-top: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy-900);
+  }
+  .p-action-tile-copy {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--fg-3);
+    line-height: 1.55;
+  }
+  .p-link-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .p-link-item {
+    padding: 14px 16px;
+    border: 1px solid var(--border-1);
+    border-radius: 14px;
+    background: rgba(248,250,252,.92);
+    font-size: 13px;
+    color: var(--fg-2);
+    line-height: 1.6;
+  }
+  .p-link-item strong {
+    color: var(--navy-900);
+  }
+  @media (max-width: 1100px) {
+    .p-overview-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .p-main { padding: 16px; }
+    .p-page-head { padding: 22px 20px; border-radius: 20px; }
+    .p-admin-ribbon { grid-template-columns: 1fr; }
+    .p-admin-pill-row { justify-content: flex-start; }
+    .p-action-tiles { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -464,7 +865,7 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
 <div id="appShell" class="p-app" style="display:none">
   <aside class="p-sidebar">
     <div class="p-brand">
-      <div class="p-brand-mark">L</div>
+      <div class="p-brand-mark"><img src="/assets/site-logos/latfs-icon.png" alt="LATFS mark"></div>
       <div>
         <div class="p-brand-wm">LATFS</div>
         <div class="p-brand-sub">Website Admin</div>
@@ -475,11 +876,11 @@ html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
       <div class="p-nav-head">Other surfaces</div>
       <a class="p-nav-item" href="/platform" style="text-decoration:none;">
         <i data-lucide="users" class="p-nav-icon"></i>
-        <span>Lab platform →</span>
+        <span>Lab platform</span>
       </a>
       <a class="p-nav-item" href="/" style="text-decoration:none;">
         <i data-lucide="globe" class="p-nav-icon"></i>
-        <span>Public website →</span>
+        <span>Public website</span>
       </a>
     </div>
     <div class="p-user">
@@ -513,6 +914,47 @@ const $ = (s, root=document) => root.querySelector(s);
 const escHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const initials = (name) => (name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase();
 const fmtDT = (d) => { if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); };
+const ADMIN_SURFACE_ROLES = new Set(['admin', 'professor', 'moderator']);
+const LAB_STAFF_ROLES = new Set(['admin', 'professor']);
+const ALL_NAV_ITEMS = [
+  ['overview',   'Overview',     'home'],
+  ['content',    'Site content', 'edit-3'],
+];
+
+function isLabStaffRole(role) {
+  return LAB_STAFF_ROLES.has(role);
+}
+
+function canAccessAdminSurface(role) {
+  return ADMIN_SURFACE_ROLES.has(role);
+}
+
+function allowedNavItems() {
+  return ALL_NAV_ITEMS.slice();
+}
+
+function allowedContentTabs() {
+  if (isLabStaffRole(SESSION_USER.role)) {
+    return [
+      ['people','People','users'],
+      ['news','News','megaphone'],
+      ['publications','Publications','book-open'],
+      ['research','Research','flask-conical'],
+      ['facilities','Facilities','building-2'],
+      ['hero','Hero / homepage','image'],
+      ['gallery','Gallery','images'],
+      ['downloads','Downloads','download'],
+      ['sponsors','Sponsors','briefcase'],
+      ['apps','Apps','grid'],
+      ['settings','Settings','settings']
+    ];
+  }
+  return [
+    ['news','News','megaphone'],
+    ['hero','Hero / homepage','image'],
+    ['gallery','Gallery','images']
+  ];
+}
 
 async function api(path, opts={}) {
   const headers = { 'Content-Type':'application/json' };
@@ -528,6 +970,12 @@ const apiGet = (p) => api(p);
 const apiPost = (p, body) => api(p, { method:'POST', body: JSON.stringify(body) });
 const apiPut  = (p, body) => api(p, { method:'PUT',  body: JSON.stringify(body) });
 const apiDel  = (p)       => api(p, { method:'DELETE' });
+async function apiRows(p) {
+  const data = await apiGet(p);
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data && data.rows)) return data.rows;
+  return [];
+}
 
 async function uploadPhoto(file) {
   const fd = new FormData(); fd.append('photo', file);
@@ -566,6 +1014,7 @@ async function checkAuth() {
       SESSION_USER.initials = initials(SESSION_USER.name);
       return true;
     }
+    if (data && data.message) $('#lErr').textContent = data.message;
   } catch(e) { console.error('auth check failed', e); }
   return false;
 }
@@ -592,6 +1041,9 @@ async function doLogin(user, pass, totpCode, rememberMe) {
   const data = await r.json();
   if (data.totp_required) return data; // caller handles step transition
   if (!r.ok) throw new Error(data.error || 'Login failed');
+  if (!canAccessAdminSurface(data.role || 'student')) {
+    throw new Error('This account should use the Lab platform. Website Admin access is limited to moderator, professor, or admin roles.');
+  }
   CSRF = data.csrfToken || '';
   SESSION_USER.name = data.name || data.username;
   SESSION_USER.role = data.role || 'admin';
@@ -601,20 +1053,12 @@ async function doLogin(user, pass, totpCode, rememberMe) {
 }
 
 /* ── Sidebar nav ───────────────────────────────────────── */
-const NAV_ITEMS = [
-  ['overview',   'Overview',     'home'],
-  ['content',    'Site content', 'edit-3'],
-  ['schedule',   'Schedule',     'calendar'],
-  ['tasks',      'Tasks',        'check-square'],
-  ['meetings',   'Meetings',     'users'],
-  ['inventory',  'Inventory',    'package'],
-  ['projects',   'Projects',     'folder'],
-];
-
 let activeRoute = 'overview';
 
 function renderNav() {
-  $('#navMain').innerHTML = NAV_ITEMS.map(([id,label,icon]) =>
+  const items = allowedNavItems();
+  if (!items.some(([id]) => id === activeRoute)) activeRoute = items[0][0];
+  $('#navMain').innerHTML = items.map(([id,label,icon]) =>
     `<button class="p-nav-item${id===activeRoute?' active':''}" data-route="${id}">
       <i data-lucide="${icon}" class="p-nav-icon"></i><span>${label}</span>
     </button>`
@@ -626,6 +1070,8 @@ function renderNav() {
 }
 
 async function navigate(route) {
+  const items = allowedNavItems();
+  if (!items.some(([id]) => id === route)) route = 'overview';
   activeRoute = route;
   renderNav();
   const main = $('#mainContent');
@@ -672,8 +1118,8 @@ function modal(title, sub, body, onSave) {
 async function renderDashboard(root) {
   const [meetings, tasks, inventory] = await Promise.all([
     apiGet('/api/meetings').catch(()=>[]),
-    apiGet('/api/tasks').catch(()=>[]),
-    apiGet('/api/inventory').catch(()=>[]),
+    apiRows('/api/tasks').catch(()=>[]),
+    apiRows('/api/inventory').catch(()=>[]),
   ]);
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayMeetings = meetings.filter(m => m.day_label === 'TODAY' || (m.scheduled_at && m.scheduled_at.startsWith(todayStr))).length;
@@ -686,7 +1132,7 @@ async function renderDashboard(root) {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   const tagColor = { team:'var(--navy-900)', experiment:'var(--gold-600)', '1:1':'var(--status-info)', external:'var(--gold-600)', review:'var(--status-warn)', onboarding:'var(--gold-700)', lab:'var(--fg-3)' };
-  const taskTag = { todo:['To do','p-tag-outline'], doing:['Doing','p-tag-info'], review:['Review','p-tag-gold'], done:['Done','p-tag-ok'] };
+  const taskTag = { todo:['To do','p-tag-outline'], in_progress:['In progress','p-tag-info'], blocked:['Blocked','p-tag-gold'], done:['Done','p-tag-ok'] };
 
   root.innerHTML = `
     <div class="p-page-head">
@@ -860,8 +1306,8 @@ async function renderSchedule(root) {
    TASKS — kanban
    ─────────────────────────────────────────────────────────── */
 async function renderTasks(root) {
-  const tasks = await apiGet('/api/tasks');
-  const COLS = [['todo','To do'], ['doing','Doing'], ['review','Review'], ['done','Done']];
+  const tasks = await apiRows('/api/tasks');
+  const COLS = [['todo','To do'], ['in_progress','In progress'], ['blocked','Blocked'], ['done','Done']];
   const tagBg = { inventory:'var(--status-info-tint)', experiment:'var(--gold-100)', lab:'var(--gray-100)', paper:'var(--status-info-tint)', maintenance:'var(--status-warn-tint)', data:'var(--gold-100)', team:'var(--gray-100)' };
   const tagFg = { inventory:'#075985', experiment:'var(--gold-700)', lab:'var(--fg-2)', paper:'#075985', maintenance:'#92400e', data:'var(--gold-700)', team:'var(--fg-2)' };
 
@@ -889,7 +1335,7 @@ async function renderTasks(root) {
               <span class="p-tag-sm" style="background:${tagBg[it.tag]||'var(--gray-100)'};color:${tagFg[it.tag]||'var(--fg-2)'}">${escHtml(it.tag||'lab')}</span>
               <div class="p-task-meta">
                 <span class="p-task-due-sm">${escHtml(it.due_label||'—')}</span>
-                <div class="p-task-av" title="${escHtml(it.assignee||'')}">${escHtml(initials(it.assignee))}</div>
+                <div class="p-task-av" title="${escHtml(it.assignee_display||it.assignee||it.assignee_name||'')}">${escHtml(initials(it.assignee_display||it.assignee||it.assignee_name))}</div>
               </div>
             </div>
           </div>`).join('')}
@@ -906,7 +1352,7 @@ async function renderTasks(root) {
       if (!t) return;
       const bg = modal('Edit task', '', `
         <label>Title</label><input id="m_title" value="${escHtml(t.title)}">
-        <label>Assignee</label><input id="m_who" value="${escHtml(t.assignee||'')}">
+        <label>Assignee</label><input id="m_who" value="${escHtml(t.assignee_display||t.assignee||t.assignee_name||'')}">
         <label>Tag</label>
         <select id="m_tag">
           ${['inventory','experiment','lab','paper','maintenance','data','team'].map(x=>`<option value="${x}"${x===t.tag?' selected':''}>${x}</option>`).join('')}
@@ -914,7 +1360,7 @@ async function renderTasks(root) {
         <label>Due</label><input id="m_due" value="${escHtml(t.due_label||'')}">
         <label>Status</label>
         <select id="m_st">
-          ${['todo','doing','review','done'].map(x=>`<option value="${x}"${x===t.status?' selected':''}>${x}</option>`).join('')}
+          ${COLS.map(([value,label])=>`<option value="${value}"${value===t.status?' selected':''}>${label}</option>`).join('')}
         </select>
         <label>&nbsp;</label>
         <div class="row-actions"><button class="danger" id="m_del">Delete</button></div>
@@ -1045,11 +1491,13 @@ async function renderMeetings(root) {
    ─────────────────────────────────────────────────────────── */
 let _invLab = 'A';
 async function renderInventory(root, embedded=false) {
-  const items = await apiGet('/api/inventory');
+  const response = await apiGet('/api/inventory').catch(()=>({ rows: [] }));
+  const suppliers = await apiGet('/api/suppliers').catch(()=>[]);
+  const items = Array.isArray(response) ? response : (response.rows || []);
   const labA = items.filter(i => i.lab==='A');
   const labB = items.filter(i => i.lab==='B');
   const list = _invLab==='A'?labA:labB;
-  const stateOf = (it) => it.qty===0 ? 'alert' : it.qty < it.min_qty ? 'warn' : 'ok';
+  const stateOf = (it) => it.qty <= 0 ? 'alert' : it.qty <= it.min_qty ? 'warn' : 'ok';
   const stateMap = { ok:{cls:'p-tag-ok',lbl:'In stock',c:'var(--status-ok)'}, warn:{cls:'p-tag-warn',lbl:'Low',c:'var(--status-warn)'}, alert:{cls:'p-tag-alert',lbl:'Out',c:'var(--status-alert)'} };
   const low = list.filter(i => stateOf(i)!=='ok').length;
 
@@ -1060,11 +1508,12 @@ async function renderInventory(root, embedded=false) {
         <p class="p-h1-sub">Tracked across two lab spaces · ${low} item${low===1?'':'s'} need attention</p>
       </div>
       <div class="p-actions">
-        <button class="btn-ghost-sm">Export CSV</button>
-        <button class="btn-primary-sm" id="newInv">+ Add item</button>
+        <button class="btn-ghost-sm p-btn-tight" id="editSpaces" type="button">Edit lab spaces</button>
+        <a class="btn-ghost-sm p-btn-tight" href="/api/inventory/export.csv" download style="text-decoration:none;">Export CSV</a>
+        <button class="btn-primary-sm p-btn-tight" id="newInv" type="button">Add item</button>
       </div>
     </div>` : `<div class="p-inv-toolbar" style="justify-content:flex-end;">
-      <button class="btn-primary-sm" id="newInv">+ Add item</button>
+      <button class="btn-primary-sm p-btn-tight" id="newInv" type="button">Add item</button>
     </div>`}
 
     <div class="p-tabs">
@@ -1084,7 +1533,7 @@ async function renderInventory(root, embedded=false) {
     <div class="p-inv-table" id="invTable">
       <div class="p-inv-row p-inv-head">
         <div style="flex-basis:140px">SKU</div>
-        <div style="flex:2">Item</div>
+        <div style="flex:2.2">Item</div>
         <div style="flex:1">Category</div>
         <div style="flex:1">Quantity</div>
         <div style="flex:1">Status</div>
@@ -1092,12 +1541,21 @@ async function renderInventory(root, embedded=false) {
       </div>
       ${list.map(it => {
         const st = stateOf(it); const sm = stateMap[st];
+        const supplierBits = [it.supplier_name, it.location].filter(Boolean).map(escHtml).join(' · ');
+        const links = [];
+        if (it.supplier_url) links.push(`<a href="${escHtml(it.supplier_url)}" target="_blank" rel="noopener">Vendor</a>`);
+        if (it.reorder_url) links.push(`<a href="${escHtml(it.reorder_url)}" target="_blank" rel="noopener">Reorder</a>`);
+        if (it.sds_url) links.push(`<a href="${escHtml(it.sds_url)}" target="_blank" rel="noopener">SDS</a>`);
         return `<div class="p-inv-row" data-id="${it.id}">
           <div style="flex-basis:140px"><code class="p-mono">${escHtml(it.sku)}</code></div>
-          <div style="flex:2" class="p-inv-name">${escHtml(it.name)}</div>
+          <div style="flex:2.2">
+            <div class="p-inv-name">${escHtml(it.name)}</div>
+            ${supplierBits ? `<div class="p-inline-meta"><span>${supplierBits}</span></div>` : ''}
+            ${links.length ? `<div class="p-inline-links">${links.join('')}</div>` : ''}
+          </div>
           <div style="flex:1" class="p-inv-cat">${escHtml(it.category||'')}</div>
           <div style="flex:1">
-            <div><span class="p-qty-num">${it.qty}</span><span class="p-qty-min"> / min ${it.min_qty}</span></div>
+            <div><span class="p-qty-num">${it.qty}</span><span class="p-qty-min"> ${escHtml(it.unit || 'each')} / min ${it.min_qty}</span></div>
             <div class="p-qty-bar"><div class="p-qty-fill" style="width:${Math.min(100,(it.qty/Math.max(it.min_qty,1))*60)}%;background:${sm.c}"></div></div>
           </div>
           <div style="flex:1">
@@ -1112,14 +1570,20 @@ async function renderInventory(root, embedded=false) {
     </div>
   `;
 
-  root.querySelectorAll('[data-lab]').forEach(b => b.onclick = () => { _invLab = b.dataset.lab; renderInventory(root); if(window.lucide) window.lucide.createIcons(); });
+  root.querySelectorAll('[data-lab]').forEach(b => b.onclick = () => { _invLab = b.dataset.lab; renderInventory(root, embedded); if(window.lucide) window.lucide.createIcons(); });
   root.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
     if (!confirm('Delete item?')) return;
     await apiDel('/api/inventory/'+b.dataset.del);
-    renderInventory(root);
+    renderInventory(root, embedded);
   });
   root.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openInvModal(items.find(x=>x.id==b.dataset.edit)));
   $('#newInv').onclick = () => openInvModal(null);
+  if ($('#editSpaces')) {
+    $('#editSpaces').onclick = () => {
+      _adminTab = 'settings';
+      navigate('content');
+    };
+  }
   $('#invSearch').oninput = (e) => {
     const q = e.target.value.toLowerCase();
     root.querySelectorAll('#invTable .p-inv-row:not(.p-inv-head)').forEach(r => {
@@ -1129,24 +1593,47 @@ async function renderInventory(root, embedded=false) {
 
   function openInvModal(it) {
     const isNew = !it;
-    it = it || { lab:_invLab, sku:'', name:'', category:'', qty:0, min_qty:0 };
-    modal(isNew?'Add inventory item':'Edit item','',`
+    it = it || { lab:_invLab, sku:'', name:'', category:'', qty:0, min_qty:0, unit:'each', supplier_id:'', reorder_url:'', notes:'', expiry_date:'', location:'', sds_url:'' };
+    const bg = modal(isNew?'Add inventory item':'Edit item','',`
       <label>Lab</label><select id="m_lab"><option value="A"${it.lab==='A'?' selected':''}>${escHtml(labLabel('A'))}</option><option value="B"${it.lab==='B'?' selected':''}>${escHtml(labLabel('B'))}</option></select>
       <label>SKU</label><input id="m_sku" value="${escHtml(it.sku)}" placeholder="SN-LAT-00000">
       <label>Name</label><input id="m_name" value="${escHtml(it.name)}">
       <label>Category</label><input id="m_cat" value="${escHtml(it.category||'')}" placeholder="Sensors / Hardware / Consumables / Fluids / Optics / PPE">
-      <label>Quantity</label><input id="m_qty" type="number" value="${it.qty}">
-      <label>Min quantity</label><input id="m_min" type="number" value="${it.min_qty}">
+      <div class="p-grid-2" style="gap:12px;">
+        <div><label>Quantity</label><input id="m_qty" type="number" value="${it.qty}"></div>
+        <div><label>Min quantity</label><input id="m_min" type="number" value="${it.min_qty}"></div>
+      </div>
+      <div class="p-grid-2" style="gap:12px;">
+        <div><label>Unit</label><input id="m_unit" value="${escHtml(it.unit||'each')}" placeholder="each / bottles / packs"></div>
+        <div><label>Expiry date</label><input id="m_exp" type="date" value="${escHtml(it.expiry_date||'')}"></div>
+      </div>
+      <label>Location</label><input id="m_loc" value="${escHtml(it.location||'')}" placeholder="Cabinet, shelf, freezer, or bench">
+      <label>Supplier</label>
+      <select id="m_sup">
+        <option value="">No supplier linked</option>
+        ${suppliers.map(s => `<option value="${s.id}"${String(s.id)===String(it.supplier_id||'')?' selected':''}>${escHtml(s.name)}</option>`).join('')}
+      </select>
+      <label>Vendor / reorder URL</label><input id="m_reorder" value="${escHtml(it.reorder_url||'')}" placeholder="https://vendor.example/item">
+      <label>SDS / reference URL</label><input id="m_sds" value="${escHtml(it.sds_url||'')}" placeholder="https://...">
+      <label>Notes</label><textarea id="m_notes" style="min-height:110px;">${escHtml(it.notes||'')}</textarea>
     `, async (mb) => {
       const body = {
         lab: $('#m_lab',mb).value, sku: $('#m_sku',mb).value, name: $('#m_name',mb).value,
         category: $('#m_cat',mb).value, qty: +$('#m_qty',mb).value, min_qty: +$('#m_min',mb).value,
+        unit: $('#m_unit',mb).value || 'each',
+        supplier_id: $('#m_sup',mb).value ? +$('#m_sup',mb).value : null,
+        reorder_url: $('#m_reorder',mb).value,
+        notes: $('#m_notes',mb).value,
+        expiry_date: $('#m_exp',mb).value || null,
+        location: $('#m_loc',mb).value,
+        sds_url: $('#m_sds',mb).value,
         sort_order: it.sort_order||0
       };
       if (isNew) await apiPost('/api/inventory', body);
       else await apiPut('/api/inventory/'+it.id, body);
-      renderInventory(root); if(window.lucide) window.lucide.createIcons();
+      renderInventory(root, embedded); if(window.lucide) window.lucide.createIcons();
     });
+    bg.querySelector('.modal').classList.add('is-wide');
   }
 }
 
@@ -1216,7 +1703,23 @@ async function renderProjects(root) {
    Members + Content + Apps render real lab data (people/news/publications/research/sponsors)
    ─────────────────────────────────────────────────────────── */
 let _adminTab = 'people';
+const ADMIN_TAB_META = {
+  people:        { title: 'People and profiles', copy: 'Keep bios, roles, contact links, and photos aligned with the current lab roster.' },
+  news:          { title: 'News publishing', copy: 'Highlight milestones, conference activity, awards, and lab announcements with strong cover images.' },
+  publications:  { title: 'Publication archive', copy: 'Maintain the paper list, outbound links, and venue metadata for researchers and visitors.' },
+  research:      { title: 'Research pillars', copy: 'Shape the homepage research narrative with concise themes and compelling supporting imagery.' },
+  facilities:    { title: 'Facility showcase', copy: 'Document rigs, instruments, and reference materials so collaborators know what is available.' },
+  hero:          { title: 'Homepage hero', copy: 'Refresh the first impression with seasonal photography, clear positioning, and disciplined copy.' },
+  gallery:       { title: 'Gallery curation', copy: 'Surface candid lab work, team moments, and conference images that make the site feel alive.' },
+  downloads:     { title: 'Download library', copy: 'Manage PDFs, office files, media, and other downloadable resources shown on the public site.' },
+  sponsors:      { title: 'Sponsors and collaborators', copy: 'Present funding partners and collaborators with clean, current acknowledgements.' },
+  apps:          { title: 'App launcher', copy: 'Organize tools, calculators, and linked experiences so students can find them quickly.' },
+  settings:      { title: 'Site and platform copy', copy: 'Tune labels, section intros, and surface-level messaging used across the website and platform.' },
+};
 async function renderAdmin(root) {
+  const tabs = allowedContentTabs();
+  if (!tabs.some(([id]) => id === _adminTab)) _adminTab = tabs[0][0];
+  const activeMeta = ADMIN_TAB_META[_adminTab] || { title: 'Content operations', copy: 'Manage the public-facing LATFS website.' };
   root.innerHTML = `
     <div class="p-page-head">
       <div>
@@ -1225,25 +1728,25 @@ async function renderAdmin(root) {
         <p class="p-h1-sub">Members, content publishing, and site settings.</p>
       </div>
       <div class="p-actions">
+        <a class="btn-ghost-sm" href="/" target="_blank" rel="noopener" style="text-decoration:none;">Preview public site</a>
         <button class="btn-ghost-sm" id="logoutTop"><i data-lucide="log-out" style="width:12px;height:12px;margin-right:4px"></i>Sign out</button>
       </div>
     </div>
 
-    <div class="p-grid-3" style="margin-bottom:20px" id="adminStats"></div>
+    <div class="p-admin-ribbon">
+      <div>
+        <div class="p-admin-kicker">Current focus</div>
+        <div class="p-admin-title">${escHtml(activeMeta.title)}</div>
+        <div class="p-admin-copy">${escHtml(activeMeta.copy)}</div>
+      </div>
+      <div class="p-admin-pill-row">
+        <span class="p-admin-pill">${escHtml(SESSION_USER.role || 'admin')}</span>
+        <span class="p-admin-pill soft">${isLabStaffRole(SESSION_USER.role) ? 'Full content access' : 'Moderator-safe access'}</span>
+      </div>
+    </div>
 
     <div class="p-tabs" id="adminTabs">
-      ${[['people','People','users'],
-         ['news','News','megaphone'],
-         ['publications','Publications','book-open'],
-         ['research','Research','flask-conical'],
-         ['facilities','Facilities','building-2'],
-         ['inventory','Inventory','package'],
-         ['hero','Hero / homepage','image'],
-         ['gallery','Gallery','images'],
-         ['sponsors','Sponsors','briefcase'],
-         ['apps','Apps','grid'],
-         ['settings','Settings','settings']
-        ].map(([id,lbl,icn]) =>
+      ${tabs.map(([id,lbl,icn]) =>
         `<button class="p-tab${id===_adminTab?' active':''}" data-tab="${id}"><i data-lucide="${icn}" style="width:14px;height:14px"></i> ${lbl}</button>`
       ).join('')}
     </div>
@@ -1253,30 +1756,19 @@ async function renderAdmin(root) {
   root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { _adminTab = b.dataset.tab; renderAdmin(root); if(window.lucide) window.lucide.createIcons(); });
   $('#logoutTop').onclick = doLogout;
 
-  // Stats
-  const [people, pubs, news] = await Promise.all([
-    apiGet('/api/people').catch(()=>[]),
-    apiGet('/api/publications').catch(()=>[]),
-    apiGet('/api/news').catch(()=>[]),
-  ]);
-  $('#adminStats').innerHTML = `
-    <div class="p-stat-card"><i data-lucide="users" class="p-stat-icon"></i><div class="p-stat-num">${people.length}</div><div class="p-stat-lbl">Lab members</div></div>
-    <div class="p-stat-card"><i data-lucide="book-open" class="p-stat-icon"></i><div class="p-stat-num">${pubs.length}</div><div class="p-stat-lbl">Publications</div></div>
-    <div class="p-stat-card"><i data-lucide="megaphone" class="p-stat-icon"></i><div class="p-stat-num">${news.length}</div><div class="p-stat-lbl">News items</div></div>
-  `;
-
   const body = $('#adminBody');
-  if (_adminTab === 'news') renderNewsTab(body, news);
-  else if (_adminTab === 'publications') renderPubsTab(body, pubs);
-  else if (_adminTab === 'research') renderResearchTab(body);
-  else if (_adminTab === 'people') renderPeopleTab(body, people);
-  else if (_adminTab === 'facilities') renderFacilitiesTab(body);
-  else if (_adminTab === 'inventory') renderInventory(body, true);
+  if (_adminTab === 'news') renderNewsTab(body, await apiGet('/api/news').catch(()=>[]));
+  else if (_adminTab === 'publications' && isLabStaffRole(SESSION_USER.role)) renderPubsTab(body, await apiGet('/api/publications').catch(()=>[]));
+  else if (_adminTab === 'research' && isLabStaffRole(SESSION_USER.role)) renderResearchTab(body);
+  else if (_adminTab === 'people' && isLabStaffRole(SESSION_USER.role)) renderPeopleTab(body, await apiGet('/api/people').catch(()=>[]));
+  else if (_adminTab === 'facilities' && isLabStaffRole(SESSION_USER.role)) renderFacilitiesTab(body);
   else if (_adminTab === 'hero') renderHeroTab(body);
   else if (_adminTab === 'gallery') renderGalleryTab(body);
-  else if (_adminTab === 'sponsors') renderSponsorsTab(body);
-  else if (_adminTab === 'apps') renderAppsTab(body);
-  else if (_adminTab === 'settings') renderSettingsTab(body);
+  else if (_adminTab === 'downloads' && isLabStaffRole(SESSION_USER.role)) renderDownloadsTab(body);
+  else if (_adminTab === 'sponsors' && isLabStaffRole(SESSION_USER.role)) renderSponsorsTab(body);
+  else if (_adminTab === 'apps' && isLabStaffRole(SESSION_USER.role)) renderAppsTab(body);
+  else if (_adminTab === 'settings' && isLabStaffRole(SESSION_USER.role)) renderSettingsTab(body);
+  else body.innerHTML = '<div class="p-card"><p style="color:var(--fg-3);font-size:13px;">This account has limited website-moderator access. News, hero, and gallery remain available here.</p></div>';
 
   if (window.lucide) window.lucide.createIcons();
 }
@@ -1429,7 +1921,7 @@ function renderPeopleTab(body, people) {
   $('#newP').onclick = ()=>openP(null);
   function openP(p) {
     const isNew = !p; p = p || {name:'',role:'',category:'phd',email:'',bio:'',photo_url:'',active:1};
-    modal(isNew?'Add person':'Edit person','',`
+    const bg = modal(isNew?'Add person':'Edit person','',`
       <label>Name</label><input id="m_n" value="${escHtml(p.name)}">
       <label>Role</label><input id="m_r" value="${escHtml(p.role)}">
       <label>Category</label>
@@ -1464,31 +1956,123 @@ function renderPeopleTab(body, people) {
       if(isNew) await apiPost('/api/people', body); else await apiPut('/api/people/'+p.id, body);
       renderAdmin($('#mainContent'));
     });
-    // Wire up the focal-point picker on the modal we just opened
+    bg.querySelector('.modal').classList.add('is-wide');
+    // Upgrade the focal-point picker into a larger drag-to-frame tool.
     setTimeout(() => {
       const picker = document.getElementById('m_ph_picker');
       if (!picker) return;
       const img = document.getElementById('m_ph_picker_img');
       const dot = document.getElementById('m_ph_picker_dot');
       const result = document.getElementById('m_ph_result');
+      const preview = document.getElementById('m_ph_prev');
       const hidden = document.getElementById('m_pp');
-      // Initial dot position
-      const init = (hidden.value || 'center center').split(' ');
+      const urlInput = document.getElementById('m_ph');
+      const fileInput = document.getElementById('m_ph_file');
+      const resultLabel = result ? result.previousElementSibling : null;
+      picker.className = 'p-photo-stage';
+      picker.style.width = '100%';
+      picker.style.maxWidth = '360px';
+      picker.style.height = 'auto';
+      if (img) {
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+      }
+      if (dot) dot.className = 'p-photo-dot';
+      if (resultLabel && resultLabel.tagName === 'LABEL') resultLabel.textContent = 'Circle preview';
+      if (result) {
+        result.style.width = '120px';
+        result.style.height = '120px';
+        result.style.display = result.src ? 'block' : 'none';
+      }
       const xMap = { left: '0%', center: '50%', right: '100%' };
       const yMap = { top: '0%', center: '50%', bottom: '100%' };
-      const initX = xMap[init[0]] || init[0] || '50%';
-      const initY = yMap[init[1]] || init[1] || '50%';
-      dot.style.left = initX; dot.style.top = initY;
-      picker.addEventListener('click', e => {
-        if (!img.src) return;
+      const applySource = (src) => {
+        const visible = !!src;
+        if (img) {
+          img.src = src || '';
+          img.style.display = visible ? 'block' : 'none';
+        }
+        if (result) {
+          result.src = src || '';
+          result.style.display = visible ? 'block' : 'none';
+        }
+        if (preview) {
+          preview.src = src || '';
+          preview.style.visibility = visible ? 'visible' : 'hidden';
+        }
+      };
+      const applyFocus = (pos) => {
+        const parts = String(pos || 'center center').split(' ');
+        const x = xMap[parts[0]] || parts[0] || '50%';
+        const y = yMap[parts[1]] || parts[1] || '50%';
+        hidden.value = `${x} ${y}`;
+        if (dot) {
+          dot.style.left = x;
+          dot.style.top = y;
+        }
+        if (img) img.style.objectPosition = `${x} ${y}`;
+        if (result) result.style.objectPosition = `${x} ${y}`;
+        if (preview) preview.style.objectPosition = `${x} ${y}`;
+      };
+      const setFromPointer = (clientX, clientY) => {
+        if (!img || !img.src) return;
         const rect = picker.getBoundingClientRect();
-        const xPct = ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%';
-        const yPct = ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%';
-        dot.style.left = xPct; dot.style.top = yPct;
-        const pos = xPct + ' ' + yPct;
-        hidden.value = pos;
-        if (result) { result.style.objectPosition = pos; result.style.display = 'inline-block'; }
+        const xPct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)).toFixed(1) + '%';
+        const yPct = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)).toFixed(1) + '%';
+        applyFocus(`${xPct} ${yPct}`);
+      };
+      const modalBody = picker.parentElement;
+      const leftCol = document.createElement('div');
+      const toolWrap = document.createElement('div');
+      toolWrap.className = 'p-photo-tool';
+      const infoCol = document.createElement('div');
+      infoCol.innerHTML = `
+        <div class="p-photo-help">Click or drag on the image to choose what stays centered in the circular crop. The preview reflects the same cover-style framing used on the public site.</div>
+        <div class="p-photo-presets">
+          <button type="button" data-photo-pos="50% 50%">Center</button>
+          <button type="button" data-photo-pos="50% 26%">Raise</button>
+          <button type="button" data-photo-pos="35% 50%">Left</button>
+          <button type="button" data-photo-pos="65% 50%">Right</button>
+        </div>
+      `;
+      const previewCard = document.createElement('div');
+      previewCard.className = 'p-photo-preview-card';
+      if (resultLabel && result) {
+        resultLabel.remove();
+        previewCard.appendChild(resultLabel);
+        previewCard.appendChild(result);
+      }
+      infoCol.appendChild(previewCard);
+      modalBody.insertBefore(toolWrap, picker);
+      leftCol.appendChild(picker);
+      if (hidden) leftCol.appendChild(hidden);
+      toolWrap.appendChild(leftCol);
+      toolWrap.appendChild(infoCol);
+      let dragging = false;
+      applyFocus(hidden.value || 'center center');
+      applySource(urlInput.value.trim() || p.photo_url || '');
+      picker.addEventListener('pointerdown', e => {
+        dragging = true;
+        setFromPointer(e.clientX, e.clientY);
       });
+      picker.addEventListener('pointermove', e => {
+        if (dragging) setFromPointer(e.clientX, e.clientY);
+      });
+      ['pointerup','pointerleave','pointercancel'].forEach(evt =>
+        picker.addEventListener(evt, () => { dragging = false; })
+      );
+      infoCol.querySelectorAll('[data-photo-pos]').forEach(btn => btn.onclick = () => applyFocus(btn.dataset.photoPos));
+      urlInput.addEventListener('input', () => applySource(urlInput.value.trim()));
+      if (fileInput) {
+        fileInput.addEventListener('change', () => {
+          const file = fileInput.files && fileInput.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => applySource(String(reader.result || ''));
+          reader.readAsDataURL(file);
+        });
+      }
     }, 0);
   }
 }
@@ -1689,14 +2273,19 @@ async function renderSponsorsTab(body) {
 async function renderAppsTab(body) {
   const apps = await apiGet('/api/apps/all').catch(()=>[]);
   body.innerHTML = `
-    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">HTML mini-apps and calculators that appear on the public site Apps page. Each entry needs a title, short summary, and a link to the app.</div>
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Publish either a linked app URL, inline HTML, or both. Inline HTML entries launch directly on the public Apps page, and you can also paste or import a full HTML file.</div>
     <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newApp">+ Add app</button></div>
     <div class="p-inv-table">
-      <div class="p-inv-row p-inv-head"><div style="flex:2">App</div><div style="flex:1">Slug</div><div style="flex:2">Summary</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
+      <div class="p-inv-row p-inv-head"><div style="flex:2">App</div><div style="flex:1">Slug</div><div style="flex:2">Summary</div><div style="flex-basis:110px;text-align:center">Mode</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
       ${apps.map(a => `<div class="p-inv-row">
-        <div style="flex:2"><div class="p-inv-name">${escHtml(a.title)}</div><div style="font-size:11px;color:var(--fg-4)"><a href="${escHtml(a.url||'#')}" target="_blank" style="color:var(--fg-4); text-decoration:underline;">${escHtml(a.url||'(no url)')}</a></div></div>
+        <div style="flex:2">
+          <div class="p-inv-name">${escHtml(a.title)}</div>
+          <div style="font-size:11px;color:var(--fg-4)">${a.url ? `<a href="${escHtml(a.url)}" target="_blank" style="color:var(--fg-4); text-decoration:underline;">${escHtml(a.url)}</a>` : '(no linked URL)'}</div>
+          ${a.embed_html ? '<div class="p-inline-meta"><span>Inline HTML ready</span></div>' : ''}
+        </div>
         <div style="flex:1"><code class="p-mono">${escHtml(a.slug)}</code></div>
         <div style="flex:2; font-size:12px; color:var(--fg-2);">${escHtml(a.summary||'')}</div>
+        <div style="flex-basis:110px; text-align:center; font-size:11px; color:var(--fg-3);">${a.url && a.embed_html ? 'Link + inline' : a.embed_html ? 'Inline HTML' : a.url ? 'Linked URL' : 'Draft shell'}</div>
         <div style="flex-basis:80px; text-align:center; font-size:12px; color:${a.published?'var(--status-ok)':'var(--fg-4)'};">${a.published?'Yes':'Draft'}</div>
         <div style="flex-basis:100px; text-align:right" class="row-actions"><button data-edit="${a.id}">Edit</button><button class="danger" data-del="${a.id}">x</button></div>
       </div>`).join('')}
@@ -1709,21 +2298,125 @@ async function renderAppsTab(body) {
   body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openApp(apps.find(a=>a.id==b.dataset.edit)));
   $('#newApp').onclick = () => openApp(null);
   function openApp(a) {
-    const isNew = !a; a = a || {slug:'', title:'', summary:'', description:'', url:'', sort_order:0, published:1};
-    modal(isNew?'Add app':'Edit app','',`
+    const isNew = !a; a = a || {slug:'', title:'', summary:'', description:'', url:'', embed_html:'', thumbnail:'', sort_order:0, published:1};
+    const bg = modal(isNew?'Add app':'Edit app','',`
       <label>Title</label><input id="m_t" value="${escHtml(a.title||'')}">
       <label>Slug (URL-safe id)</label><input id="m_sl" value="${escHtml(a.slug||'')}">
       <label>Summary (one line)</label><input id="m_su" value="${escHtml(a.summary||'')}">
       <label>Description</label><textarea id="m_d">${escHtml(a.description||'')}</textarea>
-      <label>App URL (where users open it)</label><input id="m_u" value="${escHtml(a.url||'')}" placeholder="https://... or /apps/your-app">
+      <label>App URL (optional)</label><input id="m_u" value="${escHtml(a.url||'')}" placeholder="https://... or /apps/your-app">
+      <label>Inline HTML (optional)</label><textarea id="m_html" style="min-height:180px;" placeholder="<div>...</div><script>...<\/script>">${escHtml(a.embed_html||'')}</textarea>
+      <label>Import HTML file (optional)</label><input id="m_html_file" type="file" accept=".html,text/html">
+      <div class="p-soft-note">Choose a standalone HTML file and its contents will be loaded into the inline HTML field.</div>
+      <label>Thumbnail image URL (optional)</label><input id="m_thumb" value="${escHtml(a.thumbnail||'')}" placeholder="https://...">
       <label>Sort order</label><input id="m_so" type="number" value="${a.sort_order||0}">
       <label><input type="checkbox" id="m_pub" ${a.published?'checked':''}> Published (visible on public site)</label>
     `, async (mb) => {
-      const body = { slug:$('#m_sl',mb).value.trim(), title:$('#m_t',mb).value, summary:$('#m_su',mb).value, description:$('#m_d',mb).value, url:$('#m_u',mb).value, sort_order:+$('#m_so',mb).value, published: $('#m_pub', mb).checked ? 1 : 0 };
+      const body = {
+        slug: $('#m_sl',mb).value.trim(),
+        title: $('#m_t',mb).value,
+        summary: $('#m_su',mb).value,
+        description: $('#m_d',mb).value,
+        url: $('#m_u',mb).value,
+        embed_html: $('#m_html',mb).value,
+        thumbnail: $('#m_thumb',mb).value,
+        sort_order: +$('#m_so',mb).value,
+        published: $('#m_pub', mb).checked ? 1 : 0
+      };
       if(!body.slug || !body.title) throw new Error('Slug and title required');
+      if(!body.url && !body.embed_html) throw new Error('Add either a URL or inline HTML');
       if(isNew) await apiPost('/api/apps', body); else await apiPut('/api/apps/'+a.id, body);
       renderAdmin($('#mainContent'));
     });
+    bg.querySelector('.modal').classList.add('is-wide');
+    const htmlFileInput = $('#m_html_file', bg);
+    if(htmlFileInput){
+      htmlFileInput.addEventListener('change', () => {
+        const file = htmlFileInput.files && htmlFileInput.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = () => { $('#m_html', bg).value = String(reader.result || ''); };
+        reader.readAsText(file);
+      });
+    }
+  }
+}
+
+async function renderDownloadsTab(body) {
+  const rows = await apiGet('/api/downloads/all').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Publish downloadable PDFs, Office files, text files, media, and other resources up to 25 MB each.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newDownload">+ Add download</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">Title</div><div style="flex:1">Category</div><div style="flex:1">File</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${rows.map(item => `<div class="p-inv-row">
+        <div style="flex:2">
+          <div class="p-inv-name">${escHtml(item.title || '')}</div>
+          <div style="font-size:11px;color:var(--fg-4)">${escHtml(item.description || '')}</div>
+        </div>
+        <div style="flex:1;font-size:12px;color:var(--fg-2)">${escHtml(item.category || 'General')}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--fg-2)">${escHtml(item.file_name || 'Uploaded file')}</div>
+          <div style="font-size:11px;color:var(--fg-4)">${escHtml(item.mime_type || '')}${item.file_size ? ` · ${Math.max(1, Math.round(item.file_size / 1024))} KB` : ''}</div>
+        </div>
+        <div style="flex-basis:80px;text-align:center;font-size:12px;color:${item.published ? 'var(--status-ok)' : 'var(--fg-4)'};">${item.published ? 'Yes' : 'Draft'}</div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit-download="${item.id}">Edit</button><button class="danger" data-del-download="${item.id}">x</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del-download]').forEach(btn => btn.onclick = async () => {
+    if(!confirm('Remove this download?')) return;
+    await apiDel('/api/downloads/' + btn.dataset.delDownload);
+    renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit-download]').forEach(btn => btn.onclick = () => {
+    const item = rows.find(row => row.id == btn.dataset.editDownload);
+    if(item) openDownloadEditor(item);
+  });
+  $('#newDownload').onclick = () => openDownloadEditor(null);
+
+  function openDownloadEditor(item) {
+    const isNew = !item;
+    item = item || { title:'', description:'', category:'', file_url:'', file_name:'', mime_type:'', file_size:0, sort_order:0, published:1 };
+    const bg = modal(isNew ? 'Add download' : 'Edit download', '', `
+      <label>Title</label><input id="d_title" value="${escHtml(item.title || '')}">
+      <label>Description</label><textarea id="d_desc">${escHtml(item.description || '')}</textarea>
+      <label>Category</label><input id="d_cat" value="${escHtml(item.category || '')}" placeholder="PDF, Form, Video, Data, Office file...">
+      <label>Upload file (optional if keeping current file)</label><input id="d_file" type="file" accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls,.ppt,.pptx,.mp4,.mov,.zip,.html,.json,.png,.jpg,.jpeg,.gif,.webp">
+      <label>File URL</label><input id="d_url" value="${escHtml(item.file_url || '')}" placeholder="/uploads/your-file.pdf">
+      <label>Visible file name</label><input id="d_name" value="${escHtml(item.file_name || '')}" placeholder="Original file name">
+      <label>Sort order</label><input id="d_sort" type="number" value="${item.sort_order || 0}">
+      <label><input type="checkbox" id="d_pub" ${item.published ? 'checked' : ''}> Published (visible on public site)</label>
+    `, async (mb) => {
+      let fileUrl = $('#d_url', mb).value.trim();
+      let fileName = $('#d_name', mb).value.trim();
+      let mimeType = item.mime_type || '';
+      let fileSize = Number(item.file_size || 0);
+      const file = $('#d_file', mb).files && $('#d_file', mb).files[0];
+      if(file){
+        const uploaded = await uploadDoc(file);
+        fileUrl = uploaded.url;
+        fileName = uploaded.name || fileName;
+        mimeType = uploaded.mime_type || mimeType;
+        fileSize = Number(uploaded.file_size || fileSize || 0);
+      }
+      const payload = {
+        title: $('#d_title', mb).value.trim(),
+        description: $('#d_desc', mb).value.trim(),
+        category: $('#d_cat', mb).value.trim(),
+        file_url: fileUrl,
+        file_name: fileName,
+        mime_type: mimeType,
+        file_size: fileSize,
+        sort_order: Number($('#d_sort', mb).value || 0),
+        published: $('#d_pub', mb).checked ? 1 : 0
+      };
+      if(!payload.title || !payload.file_url) throw new Error('Title and file are required');
+      if(isNew) await apiPost('/api/downloads', payload);
+      else await apiPut('/api/downloads/' + item.id, payload);
+      renderAdmin($('#mainContent'));
+    });
+    bg.querySelector('.modal').classList.add('is-wide');
   }
 }
 
@@ -1741,12 +2434,26 @@ async function renderSettingsTab(body) {
     <div class="p-grid-2">
       <div class="p-card">
         <div class="p-card-head"><div class="p-card-title">Site</div></div>
-        ${[['globe','Public domain','latfs.villanova.edu'],['palette','Theme','Navy + Gold'],['image','Homepage hero','from Hero tab'],['mail','Contact inbox','info@latfs.villanova.edu']].map(([icn,lbl,val])=>`
+        ${[['globe','Public domain','latfs.villanova.edu'],['image','Homepage hero','from Hero tab'],['mail','Contact inbox','info@latfs.villanova.edu']].map(([icn,lbl,val])=>`
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border-1)">
             <i data-lucide="${icn}" style="width:16px;height:16px;color:var(--fg-4);flex-shrink:0"></i>
             <div style="flex:1;font-size:13px;color:var(--navy-900);font-weight:600">${lbl}</div>
             <div style="font-size:12px;color:var(--fg-3)">${val}</div>
           </div>`).join('')}
+        <div class="p-theme-grid">
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--fg-3);display:block;margin-bottom:4px;">Website theme</label>
+            <select id="st_theme" class="p-inv-input">
+              <option value="navy-gold"${(s.site_theme||'navy-gold')==='navy-gold'?' selected':''}>Navy + Gold</option>
+              <option value="navy-copper"${(s.site_theme||'navy-gold')==='navy-copper'?' selected':''}>Navy + Copper</option>
+            </select>
+            <div class="p-soft-note">Navy + Copper keeps the navy base and swaps the accent color to a warmer editorial tone.</div>
+          </div>
+          <div>
+            <button class="btn-primary-sm p-btn-tight" id="saveThemeBtn" type="button">Save theme</button>
+            <div id="themeSaveMsg" style="font-size:12px;color:var(--status-ok);margin-top:8px;display:none;">Saved!</div>
+          </div>
+        </div>
       </div>
       <div class="p-card">
         <div class="p-card-head"><div class="p-card-title">Account</div></div>
@@ -1757,7 +2464,7 @@ async function renderSettingsTab(body) {
 
     <div class="p-card" style="margin-top:24px;">
       <div class="p-card-head"><div class="p-card-title">Lab spaces</div></div>
-      <p style="font-size:13px;color:var(--fg-3);margin-bottom:16px;">These names appear throughout the admin panel (inventory tabs, dashboard, etc.).</p>
+      <p style="font-size:13px;color:var(--fg-3);margin-bottom:16px;">These names flow into the lab platform and shared operational labels.</p>
       <div class="p-grid-2" style="gap:16px;">
         <div>
           ${fieldRow('st_la_name','Lab A — short name', s.lab_a_name, 'Lab A')}
@@ -1779,14 +2486,20 @@ async function renderSettingsTab(body) {
         <div>
           ${fieldRow('st_res_sec','Research section title (home)', s.research_section_title, 'Research Areas')}
           ${fieldRow('st_res_ey','Research section eyebrow (home)', s.research_eyebrow, 'Six pillars · updated quarterly')}
+          ${fieldRow('st_metric_res','Hero metric label · research', s.hero_metric_research_label, 'Research areas')}
+          ${fieldRow('st_metric_pub','Hero metric label · publications', s.hero_metric_publications_label, 'Publications')}
           ${fieldRow('st_res_pt','Research page title', s.research_page_title, 'Six pillars of inquiry')}
           ${fieldRow('st_res_pi','Research page intro', s.research_page_intro, 'LATFS investigates…')}
         </div>
         <div>
+          ${fieldRow('st_metric_people','Hero metric label · people', s.hero_metric_people_label, 'Active members')}
+          ${fieldRow('st_metric_fac','Hero metric label · facilities', s.hero_metric_facilities_label, 'Facilities')}
           ${fieldRow('st_ppl_pt','People page title', s.people_page_title, 'Lab members')}
           ${fieldRow('st_ppl_pi','People page intro', s.people_page_intro, 'A small, hands-on lab…')}
           ${fieldRow('st_fac_pt','Facilities page title', s.facilities_page_title, 'Lab facilities & instruments')}
           ${fieldRow('st_fac_pi','Facilities page intro', s.facilities_page_intro, 'Click any facility…')}
+          ${fieldRow('st_dl_pt','Downloads page title', s.downloads_page_title, 'Downloads')}
+          ${fieldRow('st_dl_pi','Downloads page intro', s.downloads_page_intro, 'Access published PDFs…')}
         </div>
       </div>
       <button class="btn-primary-sm" id="savePageHeaders" style="margin-top:4px;">Save page headers</button>
@@ -1819,6 +2532,11 @@ async function renderSettingsTab(body) {
   const showSaved = (id) => { const el = $('#'+id); if(el){ el.style.display=''; setTimeout(()=>{ el.style.display='none'; }, 2500); } };
 
   $('#logoutSet').onclick = doLogout;
+  $('#saveThemeBtn').onclick = async () => {
+    const upd = { site_theme: $('#st_theme').value };
+    try { await apiPut('/api/settings', upd); showSaved('themeSaveMsg'); }
+    catch(e) { alert(e.message); }
+  };
 
   $('#saveLabNames').onclick = async () => {
     const upd = {
@@ -1835,12 +2553,18 @@ async function renderSettingsTab(body) {
     const upd = {
       research_section_title: $('#st_res_sec').value.trim(),
       research_eyebrow:       $('#st_res_ey').value.trim(),
+      hero_metric_research_label: $('#st_metric_res').value.trim(),
+      hero_metric_publications_label: $('#st_metric_pub').value.trim(),
       research_page_title:    $('#st_res_pt').value.trim(),
       research_page_intro:    $('#st_res_pi').value.trim(),
+      hero_metric_people_label: $('#st_metric_people').value.trim(),
+      hero_metric_facilities_label: $('#st_metric_fac').value.trim(),
       people_page_title:      $('#st_ppl_pt').value.trim(),
       people_page_intro:      $('#st_ppl_pi').value.trim(),
       facilities_page_title:  $('#st_fac_pt').value.trim(),
       facilities_page_intro:  $('#st_fac_pi').value.trim(),
+      downloads_page_title:   $('#st_dl_pt').value.trim(),
+      downloads_page_intro:   $('#st_dl_pi').value.trim(),
     };
     try { await apiPut('/api/settings', upd); Object.assign(LAB_NAMES, upd); showSaved('pageHdrMsg'); }
     catch(e) { alert(e.message); }
@@ -1866,6 +2590,14 @@ async function renderSettingsTab(body) {
 }
 
 async function renderOverview(root){
+  const [people, news, pubs, gallery, downloads, apps] = await Promise.all([
+    apiGet('/api/people').catch(()=>[]),
+    apiGet('/api/news').catch(()=>[]),
+    apiGet('/api/publications').catch(()=>[]),
+    apiGet('/api/gallery').catch(()=>[]),
+    apiGet('/api/downloads/all').catch(()=>[]),
+    apiGet('/api/apps/all').catch(()=>[])
+  ]);
   root.innerHTML = `
     <div class="p-page-head">
       <div>
@@ -1874,41 +2606,54 @@ async function renderOverview(root){
         <p class="p-h1-sub">This panel manages the public LATFS website. For day-to-day lab use, use the Lab platform.</p>
       </div>
       <div class="p-actions">
-        <a class="btn-primary-sm" href="/platform" style="text-decoration:none;">Open Lab platform &rarr;</a>
-        <button class="btn-ghost-sm" id="ovLogout">Sign out</button>
+        <a class="btn-ghost-sm p-btn-tight" href="/platform" style="text-decoration:none;">Open lab platform</a>
+        <button class="btn-ghost-sm p-btn-tight" id="ovLogout">Sign out</button>
       </div>
     </div>
-    <div class="p-banner" style="background:var(--gold-100); border:1px solid var(--gold-300); color:var(--gold-900); padding:12px 16px; border-radius:10px; margin-bottom:20px; font-size:13px;">
-      <strong>What is here:</strong> people, news, publications, research, facilities, hero, gallery, sponsors, apps, settings. <strong>What moved:</strong> schedule / tasks / meetings / equipment / issues live at <a href="/platform" style="color:var(--gold-900); text-decoration:underline;">/platform</a>.
-    </div>
-    <div class="p-grid-3" id="ovStats" style="margin-bottom:20px;"></div>
-    <div class="p-grid-2">
+    <div class="p-overview-grid">
       <div class="p-card">
-        <div class="p-card-head"><div class="p-card-title">Edit site content</div></div>
-        <p style="color:var(--fg-3); font-size:13px;">Open the content editor to add or update items.</p>
-        <button class="btn-primary-sm" onclick="navigate('content')">Open content editor</button>
+        <div class="p-card-head"><div class="p-card-title">Quick edits</div></div>
+        <div class="p-action-tiles">
+          <button class="p-action-tile" type="button" data-ov-tab="hero">
+            <div class="p-action-tile-kicker">Homepage</div>
+            <div class="p-action-tile-title">Hero and front page</div>
+            <div class="p-action-tile-copy">Jump straight to the homepage hero, research labels, and public-first content.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="publications">
+            <div class="p-action-tile-kicker">Archive</div>
+            <div class="p-action-tile-title">Publications</div>
+            <div class="p-action-tile-copy">Edit the publication table, PDF links, DOI links, and year ordering from one place.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="downloads">
+            <div class="p-action-tile-kicker">Library</div>
+            <div class="p-action-tile-title">Downloads</div>
+            <div class="p-action-tile-copy">Manage PDFs, documents, media, and any public file you want visitors to download.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="gallery">
+            <div class="p-action-tile-kicker">Media</div>
+            <div class="p-action-tile-title">Gallery</div>
+            <div class="p-action-tile-copy">Keep the homepage carousel and gallery page synced to the latest uploaded lab images.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="apps">
+            <div class="p-action-tile-kicker">Apps</div>
+            <div class="p-action-tile-title">Apps and calculators</div>
+            <div class="p-action-tile-copy">Add linked tools, paste inline HTML, or import a standalone HTML calculator file.</div>
+          </button>
+        </div>
       </div>
       <div class="p-card">
-        <div class="p-card-head"><div class="p-card-title">Quick links</div></div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <a class="w-link-gold" href="/" target="_blank">View public site &rarr;</a>
-          <a class="w-link-gold" href="/platform">Open lab platform &rarr;</a>
+        <div class="p-card-head"><div class="p-card-title">Content status</div></div>
+        <div class="p-link-stack">
+          <div class="p-link-item"><strong>${people.length}</strong> people profiles are currently published on the public site.</div>
+          <div class="p-link-item"><strong>${pubs.length}</strong> publications are live in the public archive table.</div>
+          <div class="p-link-item"><strong>${gallery.length}</strong> gallery images, <strong>${downloads.length}</strong> downloads, and <strong>${apps.length}</strong> apps are ready to manage.</div>
+          <div class="p-link-item"><strong>${news.length}</strong> public news items are available for homepage and news-page surfacing.</div>
         </div>
       </div>
     </div>
   `;
   $('#ovLogout').onclick = doLogout;
-  try {
-    const [people, pubs, news, research, sponsors, gallery] = await Promise.all([
-      apiGet('/api/people').catch(()=>[]), apiGet('/api/publications').catch(()=>[]), apiGet('/api/news').catch(()=>[]),
-      apiGet('/api/research').catch(()=>[]), apiGet('/api/sponsors').catch(()=>[]), apiGet('/api/gallery').catch(()=>[]),
-    ]);
-    $('#ovStats').innerHTML = [
-      ['News', news.length, 'megaphone'],['Publications', pubs.length, 'book-open'],['Research', research.length, 'flask-conical'],
-      ['People', people.length, 'users'],['Sponsors', sponsors.length, 'briefcase'],['Gallery', gallery.length, 'image'],
-    ].map(([lbl,n,icn]) => `<div class="p-stat-card"><i data-lucide="${icn}" class="p-stat-icon"></i><div class="p-stat-num">${n}</div><div class="p-stat-lbl">${lbl}</div></div>`).join('');
-    if(window.lucide) window.lucide.createIcons();
-  } catch(e){ console.error(e); }
+  root.querySelectorAll('[data-ov-tab]').forEach(btn => btn.onclick = () => { _adminTab = btn.dataset.ovTab; navigate('content'); });
 }
 
 const ROUTES = { overview: renderOverview, content: renderAdmin, schedule: renderSchedule, tasks: renderTasks, meetings: renderMeetings, inventory: renderInventory, projects: renderProjects };

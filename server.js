@@ -72,7 +72,7 @@ const photoUpload = multer({
   }
 });
 
-// Document upload storage: PDFs and common document types, up to 20 MB
+// Document upload storage: common downloadable files, up to 25 MB
 const docStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, './uploads/'),
   filename: (req, file, cb) => {
@@ -81,13 +81,50 @@ const docStorage = multer.diskStorage({
     cb(null, `doc_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
   }
 });
+const DOC_ALLOWED_EXTS = new Set([
+  '.pdf', '.doc', '.docx', '.txt', '.rtf', '.csv', '.tsv',
+  '.xls', '.xlsx', '.ppt', '.pptx',
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
+  '.mp4', '.mov', '.avi', '.webm', '.mp3', '.wav', '.m4a',
+  '.zip'
+]);
+const DOC_ALLOWED_MIMES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/rtf',
+  'application/zip',
+  'application/x-zip-compressed',
+  'text/plain',
+  'text/csv',
+  'text/tab-separated-values',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+  'audio/mpeg',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/mp4',
+  'video/mp4',
+  'video/quicktime',
+  'video/x-msvideo',
+  'video/webm'
+]);
 const docUpload = multer({
   storage: docStorage,
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Only PDF, DOC, DOCX, or TXT files are allowed'));
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const allowedByMime = DOC_ALLOWED_MIMES.has(file.mimetype);
+    const allowedByExt = DOC_ALLOWED_EXTS.has(ext);
+    if (allowedByMime || allowedByExt) cb(null, true);
+    else cb(new Error('Allowed files include documents, spreadsheets, presentations, images, audio, video, and ZIP files up to 25 MB'));
   }
 });
 
@@ -253,6 +290,8 @@ db.exec(`
     location TEXT DEFAULT '',
     status TEXT DEFAULT 'available',           -- available | in_use | maintenance | broken
     notes TEXT DEFAULT '',
+    requires_training INTEGER DEFAULT 0,
+    training_requirement TEXT DEFAULT '',
     last_used_user_id INTEGER,
     last_used_at DATETIME,
     current_user_id INTEGER,
@@ -297,8 +336,13 @@ db.exec(`
     entity_type TEXT NOT NULL,
     entity_id INTEGER NOT NULL,
     title TEXT DEFAULT '',
+    description TEXT DEFAULT '',
+    category TEXT DEFAULT '',
     file_url TEXT NOT NULL,
     file_name TEXT DEFAULT '',
+    mime_type TEXT DEFAULT '',
+    file_size INTEGER DEFAULT 0,
+    published INTEGER DEFAULT 1,
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -366,6 +410,11 @@ const migrations = [
   'ALTER TABLE facilities ADD COLUMN slug TEXT DEFAULT ""',
   'ALTER TABLE facilities ADD COLUMN image_url TEXT DEFAULT ""',
   'ALTER TABLE facilities ADD COLUMN long_description TEXT DEFAULT ""',
+  'ALTER TABLE documents ADD COLUMN description TEXT DEFAULT ""',
+  'ALTER TABLE documents ADD COLUMN category TEXT DEFAULT ""',
+  'ALTER TABLE documents ADD COLUMN mime_type TEXT DEFAULT ""',
+  'ALTER TABLE documents ADD COLUMN file_size INTEGER DEFAULT 0',
+  'ALTER TABLE documents ADD COLUMN published INTEGER DEFAULT 1',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch(e) {
@@ -461,6 +510,26 @@ if (appsCount.cnt === 0) {
   ];
   const ins = db.prepare('INSERT INTO apps (slug, title, summary, description, url, embed_html, sort_order) VALUES (?,?,?,?,?,?,?)');
   seed.forEach(a => ins.run(a.slug, a.title, a.summary, a.description, a.url, a.embed_html, a.sort_order));
+}
+
+// Bundle the standalone HFO calculator with fresh databases as a first-class public app.
+try {
+  const hfoSlug = 'hfo-1234yf-pressure-drop';
+  const hasHfoApp = db.prepare('SELECT id FROM apps WHERE slug=?').get(hfoSlug);
+  if (!hasHfoApp) {
+    db.prepare('INSERT INTO apps (slug, title, summary, description, url, embed_html, sort_order, published) VALUES (?,?,?,?,?,?,?,1)')
+      .run(
+        hfoSlug,
+        'HFO-1234yf pressure drop estimator',
+        'Estimate two-phase pressure drop for HFO-1234yf flow cases.',
+        'Standalone LATFS calculator for HFO-1234yf two-phase pressure drop estimates.',
+        '/apps/hfo-1234yf-pressure-drop.html',
+        '',
+        0
+      );
+  }
+} catch (e) {
+  console.warn('[apps] bundled HFO app seed skipped:', e.message);
 }
 
 // Seed a couple of issues
@@ -788,6 +857,10 @@ try {
       project_id     INTEGER,
       created_by_id  INTEGER,
       status         TEXT DEFAULT 'active',  -- active | depleted | disposed | archived
+      approval_status TEXT DEFAULT 'approved', -- pending | approved | denied
+      approved_by_id INTEGER,
+      approved_at    DATETIME,
+      review_note    TEXT DEFAULT '',
       expiry_date    DATE,
       qty            REAL DEFAULT 0,
       unit           TEXT DEFAULT 'unit',
@@ -857,11 +930,24 @@ const advancedMigrations = [
   "ALTER TABLE equipment ADD COLUMN next_maintenance_at DATETIME",
   "ALTER TABLE equipment ADD COLUMN last_calibrated_at DATETIME",
   "ALTER TABLE equipment ADD COLUMN next_calibration_at DATETIME",
+  "ALTER TABLE equipment ADD COLUMN requires_training INTEGER DEFAULT 0",
+  "ALTER TABLE equipment ADD COLUMN training_requirement TEXT DEFAULT ''",
+  // Samples — approval workflow
+  "ALTER TABLE sample_registry ADD COLUMN approval_status TEXT DEFAULT 'approved'",
+  "ALTER TABLE sample_registry ADD COLUMN approved_by_id INTEGER",
+  "ALTER TABLE sample_registry ADD COLUMN approved_at DATETIME",
+  "ALTER TABLE sample_registry ADD COLUMN review_note TEXT DEFAULT ''",
 ];
 for (const sql of advancedMigrations) {
   try { db.exec(sql); } catch(e) {
     if (!e.message.includes('duplicate column name')) console.error('Advanced migration error:', e.message);
   }
+}
+try {
+  db.prepare("UPDATE sample_registry SET approval_status='approved' WHERE approval_status IS NULL OR approval_status=''").run();
+  db.prepare("UPDATE sample_registry SET approved_at=COALESCE(approved_at, created_at) WHERE approval_status='approved'").run();
+} catch (e) {
+  console.error('Sample approval migration error:', e.message);
 }
 
 // Middleware
@@ -953,6 +1039,148 @@ const requireStaff = requireRole('admin', 'professor');
 // Convenience: admin, professor, or moderator (can post news, photos)
 const requireModerator = requireRole('admin', 'professor', 'moderator');
 
+const USER_ROLES = new Set(['admin', 'professor', 'moderator', 'postdoc', 'student']);
+
+function currentRole(req) {
+  return req.session?.role || 'student';
+}
+
+function isLabStaffRole(role) {
+  return role === 'admin' || role === 'professor';
+}
+
+function isSiteModeratorRole(role) {
+  return isLabStaffRole(role) || role === 'moderator';
+}
+
+function isProfessorRole(role) {
+  return role === 'professor';
+}
+
+function canAccessAdminSurfaceRole(role) {
+  return isSiteModeratorRole(role);
+}
+
+function personForUser(user) {
+  if (!user) return null;
+  if (user.person_id) {
+    const byId = db.prepare('SELECT id, photo_url, photo_position FROM people WHERE id=?').get(user.person_id);
+    if (byId) return byId;
+  }
+  if (user.email) {
+    const byEmail = db.prepare('SELECT id, photo_url, photo_position FROM people WHERE lower(email)=lower(?) ORDER BY active DESC, id LIMIT 1').get(user.email);
+    if (byEmail) return byEmail;
+  }
+  if (user.name) {
+    const byName = db.prepare('SELECT id, photo_url, photo_position FROM people WHERE lower(name)=lower(?) ORDER BY active DESC, id LIMIT 1').get(user.name);
+    if (byName) return byName;
+  }
+  return null;
+}
+
+function withUserProfile(user) {
+  if (!user) return null;
+  const person = personForUser(user) || {};
+  return {
+    ...user,
+    person_id: user.person_id || person.id || null,
+    photo_url: person.photo_url || '',
+    photo_position: person.photo_position || 'center center'
+  };
+}
+
+function titleCaseWords(value) {
+  return String(value || '')
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function publicRoleFromUser(user) {
+  const role = String(user?.role || '').toLowerCase();
+  const name = String(user?.name || '');
+  if (role === 'professor') return /ortega/i.test(name) ? 'Director & Professor' : 'Professor';
+  if (role === 'postdoc') return 'Postdoctoral Researcher';
+  if (role === 'student') return 'Graduate Researcher';
+  if (role === 'moderator') return 'Research Staff';
+  if (role === 'admin') return 'Lab Administrator';
+  return titleCaseWords(role || 'Lab member');
+}
+
+function publicCategoryFromUser(user) {
+  const role = String(user?.role || '').toLowerCase();
+  const name = String(user?.name || '');
+  if (role === 'professor') return /ortega/i.test(name) ? 'director' : 'faculty';
+  if (role === 'postdoc') return 'postdoc';
+  if (role === 'student') return 'phd';
+  if (role === 'moderator') return 'faculty';
+  if (role === 'admin') return 'manager';
+  return 'collaborator';
+}
+
+function buildPublicPeopleRows() {
+  const cmsPeople = db.prepare('SELECT * FROM people WHERE active=1 ORDER BY category, name').all();
+  const platformUsers = db.prepare(`
+    SELECT id, username, name, role, email, person_id
+    FROM users
+    WHERE role IN ('professor', 'postdoc', 'student', 'moderator')
+      AND username NOT LIKE 'codexmodtemp%'
+    ORDER BY name, username
+  `).all();
+  const roster = new Map();
+  const addRow = (row) => {
+    const key = String(row.email || row.name || row.id || '').trim().toLowerCase();
+    if (!key) return;
+    roster.set(key, { ...(roster.get(key) || {}), ...row });
+  };
+  cmsPeople.forEach(addRow);
+  platformUsers.forEach(user => {
+    const profiledUser = withUserProfile(user) || user;
+    addRow({
+      id: profiledUser.person_id ? profiledUser.person_id : `user-${profiledUser.id}`,
+      name: profiledUser.name || profiledUser.username,
+      role: publicRoleFromUser(profiledUser),
+      category: publicCategoryFromUser(profiledUser),
+      bio: '',
+      photo_url: profiledUser.photo_url || '',
+      photo_position: profiledUser.photo_position || 'center center',
+      email: profiledUser.email || '',
+      linkedin_url: '',
+      website_url: '',
+      active: 1,
+      source: profiledUser.person_id ? 'people+user' : 'user'
+    });
+  });
+  return Array.from(roster.values()).sort((a, b) =>
+    String(a.category || '').localeCompare(String(b.category || '')) ||
+    String(a.name || '').localeCompare(String(b.name || ''))
+  );
+}
+
+function normalizeUserRole(value) {
+  const role = str(value, 40).trim().toLowerCase();
+  return USER_ROLES.has(role) ? role : null;
+}
+
+const SAMPLE_LIFECYCLE_STATUSES = new Set(['active', 'depleted', 'disposed', 'archived']);
+const SAMPLE_APPROVAL_STATUSES = new Set(['pending', 'approved', 'denied']);
+
+function isSampleApproverRole(role) {
+  return isSiteModeratorRole(role);
+}
+
+function normalizeSampleLifecycleStatus(value, fallback = 'active') {
+  const status = str(value, 40).trim().toLowerCase();
+  return SAMPLE_LIFECYCLE_STATUSES.has(status) ? status : fallback;
+}
+
+function normalizeSampleApprovalStatus(value, fallback = null) {
+  const status = str(value, 40).trim().toLowerCase();
+  if (!status) return fallback;
+  return SAMPLE_APPROVAL_STATUSES.has(status) ? status : null;
+}
+
 /**
  * Truncate a user-supplied string to `max` characters.
  * Prevents oversized strings from being stored in SQLite.
@@ -960,6 +1188,251 @@ const requireModerator = requireRole('admin', 'professor', 'moderator');
 function str(v, max) {
   return String(v == null ? '' : v).slice(0, max);
 }
+
+function clampInt(value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function searchTerm(value, max = 160) {
+  return str(value, max).trim();
+}
+
+function likePattern(value) {
+  return `%${String(value).replace(/[\\%_]/g, '\\$&')}%`;
+}
+
+function queryFlag(value) {
+  return value === true || value === 1 || value === '1' || value === 'true' || value === 'on';
+}
+
+function daysUntilExpr(column) {
+  return `CASE
+    WHEN ${column} IS NULL OR ${column} = '' THEN NULL
+    ELSE CAST(julianday(date(${column})) - julianday(date('now')) AS INTEGER)
+  END`;
+}
+
+function inventoryStockCase(column = 'i') {
+  return `CASE
+    WHEN ${column}.qty <= 0 THEN 'out'
+    WHEN ${column}.qty <= ${column}.min_qty THEN 'low'
+    ELSE 'healthy'
+  END`;
+}
+
+function equipmentDueCase(column) {
+  return `CASE
+    WHEN ${column} IS NULL OR ${column} = '' THEN 'none'
+    WHEN date(${column}) < date('now') THEN 'overdue'
+    WHEN date(${column}) <= date('now','+30 days') THEN 'due_soon'
+    ELSE 'scheduled'
+  END`;
+}
+
+function inventoryOrderBy(sort) {
+  switch (String(sort || '').toLowerCase()) {
+    case 'name':
+      return 'i.name COLLATE NOCASE ASC, i.lab, i.sort_order, i.id';
+    case 'qty_asc':
+      return 'i.qty ASC, i.min_qty DESC, i.name COLLATE NOCASE ASC';
+    case 'qty_desc':
+      return 'i.qty DESC, i.name COLLATE NOCASE ASC';
+    case 'expiry':
+      return `CASE WHEN i.expiry_date IS NULL OR i.expiry_date = '' THEN 1 ELSE 0 END,
+        date(i.expiry_date) ASC, i.name COLLATE NOCASE ASC`;
+    case 'recent':
+      return `CASE WHEN ia.last_adjusted_at IS NULL THEN 1 ELSE 0 END,
+        datetime(ia.last_adjusted_at) DESC, i.name COLLATE NOCASE ASC`;
+    default:
+      return `CASE WHEN i.qty <= 0 THEN 0 WHEN i.qty <= i.min_qty THEN 1 ELSE 2 END,
+        CASE WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) <= date('now','+30 days') THEN 0 ELSE 1 END,
+        i.lab, i.sort_order, i.name COLLATE NOCASE ASC`;
+  }
+}
+
+function equipmentOrderBy(sort) {
+  switch (String(sort || '').toLowerCase()) {
+    case 'name':
+      return 'e.name COLLATE NOCASE ASC, e.sort_order, e.id';
+    case 'recent':
+      return `CASE WHEN e.last_used_at IS NULL THEN 1 ELSE 0 END,
+        datetime(e.last_used_at) DESC, e.name COLLATE NOCASE ASC`;
+    default:
+      return `CASE e.status
+          WHEN 'maintenance' THEN 0
+          WHEN 'broken' THEN 1
+          WHEN 'in_use' THEN 2
+          ELSE 3
+        END,
+        CASE WHEN e.next_maintenance_at IS NOT NULL AND e.next_maintenance_at != '' AND date(e.next_maintenance_at) <= date('now','+30 days') THEN 0 ELSE 1 END,
+        CASE WHEN e.next_calibration_at IS NOT NULL AND e.next_calibration_at != '' AND date(e.next_calibration_at) <= date('now','+30 days') THEN 0 ELSE 1 END,
+        e.sort_order, e.name COLLATE NOCASE ASC`;
+  }
+}
+
+function inventoryActionStateCase(qtyColumn = 'i.qty', minColumn = 'i.min_qty', expiryColumn = 'i.expiry_date') {
+  return `CASE
+    WHEN ${expiryColumn} IS NOT NULL AND ${expiryColumn} != '' AND date(${expiryColumn}) < date('now') THEN 'expired'
+    WHEN ${qtyColumn} <= 0 THEN 'out_of_stock'
+    WHEN ${qtyColumn} > 0 AND ${qtyColumn} <= ${minColumn} THEN 'low_stock'
+    WHEN ${expiryColumn} IS NOT NULL AND ${expiryColumn} != '' AND date(${expiryColumn}) <= date('now','+30 days') THEN 'expiring_soon'
+    ELSE 'review'
+  END`;
+}
+
+function suggestedReorderQtyExpr(qtyColumn = 'i.qty', minColumn = 'i.min_qty') {
+  return `CASE
+    WHEN ${qtyColumn} <= 0 THEN MAX(COALESCE(${minColumn}, 0) * 2, 1)
+    WHEN ${qtyColumn} < ${minColumn} THEN MAX(${minColumn} - ${qtyColumn}, 1)
+    ELSE 0
+  END`;
+}
+
+function syncEquipmentMaintenanceState(equipmentId) {
+  const maintenance = db.prepare(`
+    SELECT completed_at, next_due_at
+    FROM equipment_maintenance
+    WHERE equipment_id=? AND maint_type IN ('maintenance','repair') AND completed_at IS NOT NULL
+    ORDER BY datetime(completed_at) DESC, id DESC
+    LIMIT 1
+  `).get(equipmentId);
+  const calibration = db.prepare(`
+    SELECT completed_at, next_due_at
+    FROM equipment_maintenance
+    WHERE equipment_id=? AND maint_type='calibration' AND completed_at IS NOT NULL
+    ORDER BY datetime(completed_at) DESC, id DESC
+    LIMIT 1
+  `).get(equipmentId);
+  db.prepare(`
+    UPDATE equipment
+    SET last_maintained_at=?, next_maintenance_at=?, last_calibrated_at=?, next_calibration_at=?
+    WHERE id=?
+  `).run(
+    maintenance?.completed_at || null,
+    maintenance?.next_due_at || null,
+    calibration?.completed_at || null,
+    calibration?.next_due_at || null,
+    equipmentId
+  );
+}
+
+function validateReservationWindow(startAt, endAt) {
+  if (!startAt || !endAt) return 'start_at and end_at required';
+  const start = new Date(startAt);
+  const end = new Date(endAt);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 'invalid reservation date';
+  if (end <= start) return 'end_at must be after start_at';
+  return '';
+}
+
+function findReservationConflict(equipmentId, startAt, endAt, excludeId = null) {
+  const params = [equipmentId, endAt, startAt];
+  let sql = `SELECT id, user_id, status
+    FROM equipment_reservations
+    WHERE equipment_id=?
+      AND status IN ('pending','approved')
+      AND start_at < ?
+      AND end_at > ?`;
+  if (excludeId != null) {
+    sql += ' AND id != ?';
+    params.push(excludeId);
+  }
+  return db.prepare(sql).get(...params);
+}
+
+function getEquipmentTrainingStatus(userId, equipmentId) {
+  const active = db.prepare(`
+    SELECT training_name, expires_at
+    FROM training_records
+    WHERE user_id=? AND equipment_id=? AND completed_at IS NOT NULL
+      AND (expires_at IS NULL OR expires_at='' OR date(expires_at) >= date('now'))
+    ORDER BY
+      CASE WHEN expires_at IS NULL OR expires_at='' THEN 1 ELSE 0 END DESC,
+      CASE WHEN expires_at IS NULL OR expires_at='' THEN date('2999-12-31') ELSE date(expires_at) END ASC,
+      date(completed_at) DESC
+    LIMIT 1
+  `).get(userId, equipmentId);
+  if (active) {
+    return { status: 'active', training_name: active.training_name || '', expires_at: active.expires_at || null };
+  }
+  const latest = db.prepare(`
+    SELECT training_name, expires_at
+    FROM training_records
+    WHERE user_id=? AND equipment_id=? AND completed_at IS NOT NULL
+    ORDER BY
+      CASE WHEN expires_at IS NULL OR expires_at='' THEN 1 ELSE 0 END DESC,
+      CASE WHEN expires_at IS NULL OR expires_at='' THEN date('2999-12-31') ELSE date(expires_at) END DESC,
+      date(completed_at) DESC
+    LIMIT 1
+  `).get(userId, equipmentId);
+  if (latest) {
+    return { status: 'expired', training_name: latest.training_name || '', expires_at: latest.expires_at || null };
+  }
+  return { status: 'missing', training_name: '', expires_at: null };
+}
+
+function equipmentAccessError(equipment, userId, role) {
+  if (!equipment || !queryFlag(equipment.requires_training)) return null;
+  if (isLabStaffRole(role)) return null;
+  const trainingStatus = getEquipmentTrainingStatus(userId, equipment.id);
+  if (trainingStatus.status === 'active') return null;
+  const label = equipment.training_requirement || trainingStatus.training_name || 'Active training';
+  if (trainingStatus.status === 'expired') {
+    return trainingStatus.expires_at
+      ? `${label} expired on ${trainingStatus.expires_at}; renew training before using this equipment`
+      : `${label} is no longer active; renew training before using this equipment`;
+  }
+  return `${label} is required before this equipment can be reserved or checked out`;
+}
+
+function normalizeTaskStatus(value) {
+  const raw = String(value == null ? 'todo' : value).trim().toLowerCase();
+  const aliases = {
+    doing: 'in_progress',
+    'in progress': 'in_progress',
+    inprogress: 'in_progress',
+    review: 'blocked',
+  };
+  return aliases[raw] || raw;
+}
+
+function isValidTaskStatus(value) {
+  return ['todo', 'in_progress', 'blocked', 'done'].includes(value);
+}
+
+function taskStatusOrderExpr(column = 't.status') {
+  return `CASE ${column}
+    WHEN 'todo' THEN 0
+    WHEN 'in_progress' THEN 1
+    WHEN 'blocked' THEN 2
+    WHEN 'done' THEN 3
+    ELSE 4
+  END`;
+}
+
+function resolveTaskAssigneeName(assigneeUserId, fallbackName = '') {
+  const idNum = assigneeUserId == null || assigneeUserId === '' ? null : Number(assigneeUserId);
+  if (idNum) {
+    const user = db.prepare('SELECT name, username FROM users WHERE id=?').get(idNum);
+    if (user) return str(user.name || user.username || fallbackName, 120).trim();
+  }
+  return str(fallbackName, 120).trim();
+}
+
+function resolveTaskDueLabel(dueDate, dueLabel = '') {
+  return str(dueLabel || dueDate || '', 80).trim();
+}
+
+function publicLimit(value, fallback = 250, max = 250) {
+  return clampInt(value, fallback, { min: 1, max });
+}
+
+try {
+  db.prepare("UPDATE tasks SET status='in_progress' WHERE status='doing'").run();
+  db.prepare("UPDATE tasks SET status='blocked' WHERE status='review'").run();
+} catch (_) {}
 
 
 // Admin auth routes
@@ -1087,8 +1560,26 @@ app.get('/admin/check', (req, res) => {
     if (!req.session.csrfToken) {
       req.session.csrfToken = crypto.randomBytes(32).toString('hex');
     }
-    const u = db.prepare('SELECT id, username, name, role, email FROM users WHERE id=?').get(req.session.userId) || {};
-    res.json({ loggedIn: true, username: req.session.username, name: u.name || '', role: u.role || req.session.role || 'student', email: u.email || '', csrfToken: req.session.csrfToken });
+    const rawUser = db.prepare('SELECT id, username, name, role, email, person_id FROM users WHERE id=?').get(req.session.userId) || {};
+    const u = withUserProfile(rawUser) || {};
+    if (!canAccessAdminSurfaceRole(u.role || req.session.role || 'student')) {
+      return res.json({
+        loggedIn: false,
+        role: u.role || req.session.role || 'student',
+        message: 'Use the lab platform for member workflows. Admin access requires moderator, professor, or admin permission.'
+      });
+    }
+    res.json({
+      loggedIn: true,
+      username: req.session.username,
+      name: u.name || '',
+      role: u.role || req.session.role || 'student',
+      email: u.email || '',
+      person_id: u.person_id || null,
+      photo_url: u.photo_url || '',
+      photo_position: u.photo_position || 'center center',
+      csrfToken: req.session.csrfToken
+    });
   } else {
     res.json({ loggedIn: false });
   }
@@ -1096,8 +1587,18 @@ app.get('/admin/check', (req, res) => {
 
 // NEWS API — write operations restricted to staff (admin/professor)
 app.get('/api/news', apiReadLimiter, (req, res) => {
-  const news = db.prepare('SELECT * FROM news ORDER BY date DESC, id DESC').all();
-  res.json(news);
+  const q = searchTerm(req.query.q);
+  const limit = publicLimit(req.query.limit);
+  const params = [];
+  let sql = 'SELECT * FROM news';
+  if (q) {
+    const like = likePattern(q);
+    sql += " WHERE (title LIKE ? ESCAPE '\\' OR content LIKE ? ESCAPE '\\' OR COALESCE(slug,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like);
+  }
+  sql += ' ORDER BY date DESC, id DESC LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
 });
 
 app.post('/api/news', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
@@ -1120,8 +1621,25 @@ app.delete('/api/news/:id', apiWriteLimiter, requireModerator, requireCsrf, (req
 
 // PUBLICATIONS API — write operations restricted to staff
 app.get('/api/publications', apiReadLimiter, (req, res) => {
-  const pubs = db.prepare('SELECT * FROM publications ORDER BY year DESC, id DESC').all();
-  res.json(pubs);
+  const q = searchTerm(req.query.q);
+  const year = clampInt(req.query.year, null, { min: 1900, max: 2100 });
+  const limit = publicLimit(req.query.limit);
+  const conditions = [];
+  const params = [];
+  if (year) {
+    conditions.push('year=?');
+    params.push(year);
+  }
+  if (q) {
+    const like = likePattern(q);
+    conditions.push("(title LIKE ? ESCAPE '\\' OR authors LIKE ? ESCAPE '\\' OR venue LIKE ? ESCAPE '\\')");
+    params.push(like, like, like);
+  }
+  let sql = 'SELECT * FROM publications';
+  if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ');
+  sql += ' ORDER BY year DESC, id DESC LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
 });
 
 app.post('/api/publications', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1149,13 +1667,39 @@ app.delete('/api/publications/:id', apiWriteLimiter, requireStaff, requireCsrf, 
 // PEOPLE API — write operations restricted to staff
 app.get('/api/people', apiReadLimiter, (req, res) => {
   const { category, active } = req.query;
+  const q = searchTerm(req.query.q);
+  const limit = publicLimit(req.query.limit, 500, 500);
   let sql = 'SELECT * FROM people WHERE 1=1';
   const params = [];
   if (category) { sql += ' AND category=?'; params.push(category); }
   if (active !== undefined) { sql += ' AND active=?'; params.push(active === 'true' || active === '1' ? 1 : 0); }
-  sql += ' ORDER BY category, name';
+  if (q) {
+    const like = likePattern(q);
+    sql += " AND (name LIKE ? ESCAPE '\\' OR role LIKE ? ESCAPE '\\' OR COALESCE(bio,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like);
+  }
+  sql += ' ORDER BY category, name LIMIT ?';
+  params.push(limit);
   const people = db.prepare(sql).all(...params);
   res.json(people);
+});
+
+app.get('/api/people/public', apiReadLimiter, (req, res) => {
+  const q = searchTerm(req.query.q);
+  const category = str(req.query.category, 80).trim().toLowerCase();
+  const limit = publicLimit(req.query.limit, 500, 500);
+  let rows = buildPublicPeopleRows();
+  if (category) {
+    rows = rows.filter(person => String(person.category || '').toLowerCase() === category);
+  }
+  if (q) {
+    const needle = q.toLowerCase();
+    rows = rows.filter(person =>
+      [person.name, person.role, person.bio, person.category]
+        .some(field => String(field || '').toLowerCase().includes(needle))
+    );
+  }
+  res.json(rows.slice(0, limit));
 });
 
 app.post('/api/people', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1178,8 +1722,18 @@ app.delete('/api/people/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, 
 
 // RESEARCH API — write operations restricted to staff
 app.get('/api/research', apiReadLimiter, (req, res) => {
-  const areas = db.prepare('SELECT * FROM research ORDER BY sort_order, id').all();
-  res.json(areas);
+  const q = searchTerm(req.query.q);
+  const limit = publicLimit(req.query.limit);
+  const params = [];
+  let sql = 'SELECT * FROM research';
+  if (q) {
+    const like = likePattern(q);
+    sql += " WHERE (title LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR COALESCE(content,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like);
+  }
+  sql += ' ORDER BY sort_order, id LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
 });
 
 app.post('/api/research', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1202,7 +1756,8 @@ app.delete('/api/research/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 
 // SPONSORS API — write operations restricted to staff
 app.get('/api/sponsors', apiReadLimiter, (req, res) => {
-  const sponsors = db.prepare('SELECT * FROM sponsors ORDER BY sort_order, id').all();
+  const limit = publicLimit(req.query.limit);
+  const sponsors = db.prepare('SELECT * FROM sponsors ORDER BY sort_order, id LIMIT ?').all(limit);
   res.json(sponsors);
 });
 
@@ -1242,14 +1797,29 @@ app.post('/api/upload/document', uploadRateLimiter, requireAuth, requireCsrf, (r
   docUpload.single('document')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message || 'Upload error' });
     if (!req.file) return res.status(400).json({ error: 'No document file provided' });
-    res.json({ url: `/uploads/${req.file.filename}`, name: req.file.originalname });
+    res.json({
+      url: `/uploads/${req.file.filename}`,
+      name: req.file.originalname,
+      mime_type: req.file.mimetype || '',
+      file_size: req.file.size || 0
+    });
   });
 });
 
 // GALLERY API
 app.get('/api/gallery', apiReadLimiter, (req, res) => {
-  const photos = db.prepare('SELECT * FROM gallery ORDER BY sort_order, id').all();
-  res.json(photos);
+  const limit = publicLimit(req.query.limit);
+  const q = searchTerm(req.query.q);
+  const params = [];
+  let sql = 'SELECT * FROM gallery';
+  if (q) {
+    const like = likePattern(q);
+    sql += " WHERE COALESCE(caption,'') LIKE ? ESCAPE '\\'";
+    params.push(like);
+  }
+  sql += ' ORDER BY sort_order, id LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
 });
 
 app.post('/api/gallery', uploadRateLimiter, requireModerator, requireCsrf, (req, res) => {
@@ -1278,7 +1848,8 @@ app.delete('/api/gallery/:id', apiWriteLimiter, requireModerator, requireCsrf, (
 
 // HERO SLIDES API (separate from photo gallery)
 app.get('/api/hero-slides', apiReadLimiter, (req, res) => {
-  const slides = db.prepare('SELECT * FROM hero_slides ORDER BY sort_order, id').all();
+  const limit = publicLimit(req.query.limit, 20, 20);
+  const slides = db.prepare('SELECT * FROM hero_slides ORDER BY sort_order, id LIMIT ?').all(limit);
   res.json(slides);
 });
 
@@ -1314,8 +1885,18 @@ app.delete('/api/hero-slides/:id', apiWriteLimiter, requireModerator, requireCsr
 
 // FACILITIES API
 app.get('/api/facilities', apiReadLimiter, (req, res) => {
-  const items = db.prepare('SELECT * FROM facilities ORDER BY sort_order, id').all();
-  res.json(items);
+  const q = searchTerm(req.query.q);
+  const limit = publicLimit(req.query.limit);
+  const params = [];
+  let sql = 'SELECT * FROM facilities';
+  if (q) {
+    const like = likePattern(q);
+    sql += " WHERE (name LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR COALESCE(content,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like);
+  }
+  sql += ' ORDER BY sort_order, id LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
 });
 
 app.post('/api/facilities', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1389,6 +1970,11 @@ app.put('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
 });
 app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   try {
+    const ev = db.prepare('SELECT owner_user_id FROM events WHERE id=?').get(req.params.id);
+    if (!ev) return res.status(404).json({ error: 'Not found' });
+    const role = currentRole(req);
+    const isOwner = ev.owner_user_id === req.session.userId;
+    if (!isOwner && !isLabStaffRole(role)) return res.status(403).json({ error: 'Only the owner or staff can delete this event' });
     db.prepare('DELETE FROM events WHERE id=?').run(req.params.id);
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -1396,32 +1982,68 @@ app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, r
 
 // TASKS
 app.get('/api/tasks', apiReadLimiter, requireAuth, (req, res) => {
-  const { page, limit } = req.query;
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
+  const { page, limit, status, mine } = req.query;
+  const pageNum = clampInt(page, 1, { min: 1, max: 100000 });
+  const pageSize = clampInt(limit, 200, { min: 1, max: 200 });
   const offset = (pageNum - 1) * pageSize;
-  const total = db.prepare('SELECT COUNT(*) as n FROM tasks').get().n;
-  const rows = db.prepare('SELECT * FROM tasks ORDER BY status, sort_order, id LIMIT ? OFFSET ?').all(pageSize, offset);
+  const conditions = [];
+  const params = [];
+  if (status) {
+    const normalized = normalizeTaskStatus(status);
+    if (!isValidTaskStatus(normalized)) return res.status(400).json({ error: 'invalid status' });
+    conditions.push('t.status=?');
+    params.push(normalized);
+  }
+  if (mine === '1') {
+    conditions.push('(t.assignee_user_id=? OR t.created_by_user_id=?)');
+    params.push(req.session.userId, req.session.userId);
+  }
+  const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+  const baseSql = `FROM tasks t LEFT JOIN users u ON u.id = t.assignee_user_id ${where}`;
+  const total = db.prepare(`SELECT COUNT(*) as n ${baseSql}`).get(...params).n;
+  const rows = db.prepare(`
+    SELECT t.*, u.name AS assignee_name, u.username AS assignee_username,
+           COALESCE(u.name, NULLIF(t.assignee, '')) AS assignee_display
+    ${baseSql}
+    ORDER BY ${taskStatusOrderExpr('t.status')}, t.sort_order, t.id
+    LIMIT ? OFFSET ?
+  `).all(...params, pageSize, offset);
   res.json({ total, page: pageNum, limit: pageSize, rows });
 });
 app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
+  const { title, description, assignee_user_id, assignee, priority, due_date, due_label, status, tag, sort_order } = req.body;
   if (!title) return res.status(400).json({ error: 'Missing title' });
   // Only professors and admins can assign tasks to other people; everyone else self-assigns
   const role = req.session.role || 'student';
   const canAssignOthers = (role === 'admin' || role === 'professor');
   const effectiveAssignee = canAssignOthers ? (assignee_user_id || null) : (req.session.userId || null);
-  const result = db.prepare('INSERT INTO tasks (title, description, assignee_user_id, created_by_user_id, priority, due_date, status, tag, sort_order) VALUES (?,?,?,?,?,?,?,?,?)')
-    .run(str(title,500), str(description,5000), effectiveAssignee, req.session.userId || null, priority || 'normal', due_date || '', status || 'todo', tag || 'lab', sort_order || 0);
+  const normalizedStatus = normalizeTaskStatus(status);
+  if (!isValidTaskStatus(normalizedStatus)) return res.status(400).json({ error: 'invalid status' });
+  const assigneeName = resolveTaskAssigneeName(effectiveAssignee, assignee || '');
+  const legacyDueLabel = resolveTaskDueLabel(due_date || '', due_label || '');
+  const result = db.prepare('INSERT INTO tasks (title, assignee, description, assignee_user_id, created_by_user_id, priority, due_label, due_date, status, tag, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+    .run(
+      str(title,500),
+      assigneeName,
+      str(description,5000),
+      effectiveAssignee,
+      req.session.userId || null,
+      priority || 'normal',
+      legacyDueLabel,
+      due_date || '',
+      normalizedStatus,
+      tag || 'lab',
+      sort_order || 0
+    );
   // Email notification — alert the assignee if different from creator
-  if (assignee_user_id && Number(assignee_user_id) !== req.session.userId) {
-    const assignee = db.prepare('SELECT name, email FROM users WHERE id=?').get(assignee_user_id);
+  if (effectiveAssignee && Number(effectiveAssignee) !== req.session.userId) {
+    const assigneeRecord = db.prepare('SELECT name, email FROM users WHERE id=?').get(effectiveAssignee);
     const creator  = db.prepare('SELECT name FROM users WHERE id=?').get(req.session.userId);
-    if (assignee && assignee.email) {
+    if (assigneeRecord && assigneeRecord.email) {
       sendMail(
-        assignee.email,
+        assigneeRecord.email,
         `[LATFS] Task assigned to you: ${title}`,
-        `Hi ${assignee.name || assignee.email},\n\nA new task has been assigned to you by ${creator ? creator.name : 'a lab member'}.\n\nTask: ${title}\nPriority: ${priority || 'normal'}${due_date ? '\nDue: ' + due_date : ''}\n\nLog in to the LATFS Platform to view details.\n`
+        `Hi ${assigneeRecord.name || assigneeRecord.email},\n\nA new task has been assigned to you by ${creator ? creator.name : 'a lab member'}.\n\nTask: ${title}\nPriority: ${priority || 'normal'}${due_date ? '\nDue: ' + due_date : ''}\n\nLog in to the LATFS Platform to view details.\n`
       );
     }
   }
@@ -1431,27 +2053,66 @@ app.post('/api/tasks', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => 
 app.put('/api/tasks/bulk', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { ids, status } = req.body;
   if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ error: 'ids array required' });
-  const validStatuses = ['todo', 'in_progress', 'blocked', 'done'];
-  if (!validStatuses.includes(status)) return res.status(400).json({ error: 'invalid status' });
+  const taskIds = ids.map(Number).filter(Number.isFinite);
+  if (!taskIds.length) return res.status(400).json({ error: 'valid ids required' });
+  const normalizedStatus = normalizeTaskStatus(status);
+  if (!isValidTaskStatus(normalizedStatus)) return res.status(400).json({ error: 'invalid status' });
+  const role = currentRole(req);
+  const isStaff = isLabStaffRole(role);
+  const placeholders = taskIds.map(() => '?').join(',');
+  const rows = db.prepare(`SELECT id, assignee_user_id, created_by_user_id FROM tasks WHERE id IN (${placeholders})`).all(...taskIds);
+  const userId = req.session.userId;
+  const canEditTask = (task) => isStaff || task.created_by_user_id === userId || task.assignee_user_id === userId;
+  if (rows.length !== taskIds.length || rows.some(task => !canEditTask(task))) {
+    return res.status(403).json({ error: 'Only the assignee, creator, or staff can update these tasks' });
+  }
   const update = db.prepare('UPDATE tasks SET status=? WHERE id=?');
   const bulkUpdate = db.transaction((taskIds, st) => {
     for (const id of taskIds) update.run(st, id);
   });
-  bulkUpdate(ids.map(Number), status);
-  res.json({ success: true, updated: ids.length });
+  bulkUpdate(taskIds, normalizedStatus);
+  res.json({ success: true, updated: taskIds.length });
 });
 app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const { title, description, assignee_user_id, priority, due_date, status, tag, sort_order } = req.body;
-  const role = req.session.role || 'student';
-  const canAssignOthers = (role === 'admin' || role === 'professor');
+  const task = db.prepare('SELECT * FROM tasks WHERE id=?').get(req.params.id);
+  if (!task) return res.status(404).json({ error: 'not found' });
+  const { title, description, assignee_user_id, assignee, priority, due_date, due_label, status, tag, sort_order } = req.body;
+  const role = currentRole(req);
+  const isStaff = isLabStaffRole(role);
+  const isCreator = task.created_by_user_id === req.session.userId;
+  const isAssignee = task.assignee_user_id === req.session.userId;
+  if (!isStaff && !isCreator && !isAssignee) {
+    return res.status(403).json({ error: 'Only the assignee, creator, or staff can edit this task' });
+  }
+  const canAssignOthers = isStaff;
   const sets = [], params = [];
   if (title !== undefined)            { sets.push('title=?');            params.push(str(title,500)); }
   if (description !== undefined)      { sets.push('description=?');      params.push(str(description,5000)); }
   // Only professors and admins can reassign tasks to other people
-  if (assignee_user_id !== undefined && canAssignOthers) { sets.push('assignee_user_id=?'); params.push(assignee_user_id || null); }
+  let resolvedAssigneeName;
+  if (assignee_user_id !== undefined && canAssignOthers) {
+    sets.push('assignee_user_id=?');
+    params.push(assignee_user_id || null);
+    resolvedAssigneeName = resolveTaskAssigneeName(assignee_user_id || null, assignee || '');
+  } else if (assignee !== undefined) {
+    resolvedAssigneeName = resolveTaskAssigneeName(null, assignee);
+  }
+  if (resolvedAssigneeName !== undefined) {
+    sets.push('assignee=?');
+    params.push(resolvedAssigneeName);
+  }
   if (priority !== undefined)         { sets.push('priority=?');         params.push(priority || 'normal'); }
   if (due_date !== undefined)         { sets.push('due_date=?');         params.push(due_date || ''); }
-  if (status !== undefined)           { sets.push('status=?');           params.push(status || 'todo'); }
+  if (due_date !== undefined || due_label !== undefined) {
+    sets.push('due_label=?');
+    params.push(resolveTaskDueLabel(due_date || '', due_label || ''));
+  }
+  if (status !== undefined) {
+    const normalizedStatus = normalizeTaskStatus(status);
+    if (!isValidTaskStatus(normalizedStatus)) return res.status(400).json({ error: 'invalid status' });
+    sets.push('status=?');
+    params.push(normalizedStatus);
+  }
   if (tag !== undefined)              { sets.push('tag=?');              params.push(tag || 'lab'); }
   if (sort_order !== undefined)       { sets.push('sort_order=?');       params.push(sort_order || 0); }
   if (!sets.length) return res.json({ success: true });
@@ -1460,6 +2121,13 @@ app.put('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) 
   res.json({ success: true });
 });
 app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const task = db.prepare('SELECT created_by_user_id FROM tasks WHERE id=?').get(req.params.id);
+  if (!task) return res.status(404).json({ error: 'not found' });
+  const role = currentRole(req);
+  const isCreator = task.created_by_user_id === req.session.userId;
+  if (!isCreator && !isLabStaffRole(role)) {
+    return res.status(403).json({ error: 'Only the creator or staff can delete this task' });
+  }
   db.prepare('DELETE FROM tasks WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -1470,7 +2138,7 @@ app.get('/api/meetings', apiReadLimiter, requireAuth, (req, res) => {
     res.json(db.prepare("SELECT * FROM meetings ORDER BY COALESCE(scheduled_at, ''), sort_order, id").all());
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/meetings', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+app.post('/api/meetings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   try {
     const { title, meeting_type, scheduled_at, location, description, sort_order } = req.body;
     if (!title) return res.status(400).json({ error: 'Title required' });
@@ -1508,12 +2176,14 @@ app.delete('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT i.id, i.lab, i.sku, i.name, i.category, i.qty, i.min_qty, i.unit,
-           i.reorder_url, i.notes, s.name AS supplier_name, i.created_at
+           i.location, i.expiry_date, i.chemical_cas, i.hazard_class, i.sds_url,
+           i.reorder_url, i.notes, s.name AS supplier_name, s.email AS supplier_email,
+           s.phone AS supplier_phone, i.created_at
     FROM inventory i
     LEFT JOIN suppliers s ON s.id = i.supplier_id
     ORDER BY i.lab, i.sort_order, i.id
   `).all();
-  const header = ['id','lab','sku','name','category','qty','min_qty','unit','reorder_url','notes','supplier','created_at'];
+  const header = ['id','lab','sku','name','category','qty','min_qty','unit','location','expiry_date','chemical_cas','hazard_class','sds_url','reorder_url','notes','supplier','supplier_email','supplier_phone','created_at'];
   const csvEscape = v => {
     const s = String(v == null ? '' : v);
     return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
@@ -1521,7 +2191,8 @@ app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => 
   const lines = [header.join(',')];
   for (const r of rows) {
     lines.push([r.id, r.lab, r.sku, r.name, r.category, r.qty, r.min_qty, r.unit || 'each',
-                r.reorder_url, r.notes, r.supplier_name, r.created_at].map(csvEscape).join(','));
+                r.location, r.expiry_date, r.chemical_cas, r.hazard_class, r.sds_url,
+                r.reorder_url, r.notes, r.supplier_name, r.supplier_email, r.supplier_phone, r.created_at].map(csvEscape).join(','));
   }
   const csv = lines.join('\r\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -1529,24 +2200,126 @@ app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => 
   res.send(csv);
 });
 
+app.get('/api/inventory/reorder-queue', apiReadLimiter, requireAuth, (req, res) => {
+  const limit = clampInt(req.query.limit, 24, { min: 1, max: 200 });
+  const lab = str(req.query.lab, 32).trim();
+  const supplierId = req.query.supplier_id ? clampInt(req.query.supplier_id, null, { min: 1, max: 1000000 }) : null;
+  const conditions = [
+    `(i.qty <= i.min_qty OR (i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) <= date('now','+30 days')))`
+  ];
+  const params = [];
+  if (lab) {
+    conditions.push('i.lab=?');
+    params.push(lab);
+  }
+  if (supplierId) {
+    conditions.push('i.supplier_id=?');
+    params.push(supplierId);
+  }
+  const rows = db.prepare(`
+    SELECT
+      i.id, i.lab, i.sku, i.name, i.category, i.location, i.qty, i.min_qty, i.unit,
+      i.expiry_date, i.reorder_url, i.notes,
+      s.id AS supplier_id, s.name AS supplier_name, s.email AS supplier_email, s.phone AS supplier_phone,
+      ${inventoryStockCase('i')} AS stock_state,
+      ${daysUntilExpr('i.expiry_date')} AS days_until_expiry,
+      ${inventoryActionStateCase('i.qty', 'i.min_qty', 'i.expiry_date')} AS action_state,
+      ${suggestedReorderQtyExpr('i.qty', 'i.min_qty')} AS suggested_reorder_qty
+    FROM inventory i
+    LEFT JOIN suppliers s ON s.id = i.supplier_id
+    WHERE ${conditions.join(' AND ')}
+    ORDER BY CASE
+        WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) < date('now') THEN 0
+        WHEN i.qty <= 0 THEN 1
+        WHEN i.qty > 0 AND i.qty <= i.min_qty THEN 2
+        WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) <= date('now','+30 days') THEN 3
+        ELSE 4
+      END,
+      CASE WHEN i.expiry_date IS NULL OR i.expiry_date = '' THEN 1 ELSE 0 END,
+      date(i.expiry_date) ASC,
+      COALESCE(s.name, '') COLLATE NOCASE ASC,
+      i.name COLLATE NOCASE ASC
+    LIMIT ?
+  `).all(...params, limit);
+  const summary = rows.reduce((acc, row) => {
+    acc.total += 1;
+    if (row.action_state === 'expired' || row.action_state === 'out_of_stock') acc.critical += 1;
+    if (row.reorder_url) acc.with_links += 1;
+    if (row.supplier_id) acc.with_supplier += 1;
+    if (row.action_state === 'low_stock') acc.low_stock += 1;
+    if (row.action_state === 'out_of_stock') acc.out_of_stock += 1;
+    if (row.action_state === 'expired') acc.expired += 1;
+    if (row.action_state === 'expiring_soon') acc.expiring_soon += 1;
+    return acc;
+  }, {
+    total: 0,
+    critical: 0,
+    with_links: 0,
+    with_supplier: 0,
+    low_stock: 0,
+    out_of_stock: 0,
+    expired: 0,
+    expiring_soon: 0
+  });
+  res.json({ summary, rows });
+});
+
 app.get('/api/inventory', apiReadLimiter, requireAuth, (req, res) => {
-  const { page, limit, search, category, lab, low_stock } = req.query;
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const pageSize = Math.min(500, Math.max(1, parseInt(limit, 10) || 200));
+  const { page, limit, search, category, lab, low_stock, expiring_soon, supplier_id, status, sort } = req.query;
+  const pageNum = clampInt(page, 1, { min: 1, max: 100000 });
+  const pageSize = clampInt(limit, 200, { min: 1, max: 500 });
   const conditions = [], params = [];
   if (lab)      { conditions.push('i.lab=?');                       params.push(lab); }
   if (category) { conditions.push('i.category=?');                  params.push(category); }
-  if (low_stock === '1') conditions.push('i.qty <= i.min_qty');
-  if (search)   { conditions.push('(i.name LIKE ? OR i.sku LIKE ?)'); params.push(`%${search}%`, `%${search}%`); }
+  if (supplier_id) { conditions.push('i.supplier_id=?'); params.push(supplier_id); }
+  if (queryFlag(low_stock)) conditions.push('i.qty <= i.min_qty');
+  if (queryFlag(expiring_soon)) conditions.push("i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) <= date('now','+30 days')");
+  if (status === 'out') conditions.push('i.qty <= 0');
+  else if (status === 'low') conditions.push('i.qty > 0 AND i.qty <= i.min_qty');
+  else if (status === 'healthy') conditions.push('i.qty > i.min_qty');
+  else if (status === 'expired') conditions.push("i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) < date('now')");
+  else if (status === 'expiring') conditions.push("i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) BETWEEN date('now') AND date('now','+30 days')");
+  const q = searchTerm(search);
+  if (q) {
+    const like = likePattern(q);
+    conditions.push(`(
+      i.name LIKE ? ESCAPE '\\' OR i.sku LIKE ? ESCAPE '\\' OR COALESCE(i.location,'') LIKE ? ESCAPE '\\' OR
+      COALESCE(i.category,'') LIKE ? ESCAPE '\\' OR COALESCE(i.chemical_cas,'') LIKE ? ESCAPE '\\' OR
+      COALESCE(i.hazard_class,'') LIKE ? ESCAPE '\\' OR COALESCE(s.name,'') LIKE ? ESCAPE '\\'
+    )`);
+    params.push(like, like, like, like, like, like, like);
+  }
   const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-  const baseSql = `FROM inventory i LEFT JOIN suppliers s ON s.id=i.supplier_id ${where}`;
+  const baseSql = `FROM inventory i
+    LEFT JOIN suppliers s ON s.id=i.supplier_id
+    LEFT JOIN (
+      SELECT inventory_id, MAX(created_at) AS last_adjusted_at
+      FROM inventory_adjustments
+      GROUP BY inventory_id
+    ) ia ON ia.inventory_id=i.id
+    ${where}`;
   const total = db.prepare(`SELECT COUNT(*) as n ${baseSql}`).get(...params).n;
-  const rows  = db.prepare(`
-    SELECT i.*, s.name AS supplier_name, s.website_url AS supplier_url
+  const summary = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN i.qty <= 0 THEN 1 ELSE 0 END), 0) AS out_of_stock,
+      COALESCE(SUM(CASE WHEN i.qty > 0 AND i.qty <= i.min_qty THEN 1 ELSE 0 END), 0) AS low_stock,
+      COALESCE(SUM(CASE WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) < date('now') THEN 1 ELSE 0 END), 0) AS expired,
+      COALESCE(SUM(CASE WHEN i.expiry_date IS NOT NULL AND i.expiry_date != '' AND date(i.expiry_date) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS expiring_soon,
+      COALESCE(SUM(CASE WHEN COALESCE(i.hazard_class,'') != '' THEN 1 ELSE 0 END), 0) AS hazardous,
+      COUNT(DISTINCT NULLIF(i.lab, '')) AS labs,
+      COUNT(DISTINCT NULLIF(i.category, '')) AS categories
     ${baseSql}
-    ORDER BY i.lab, i.sort_order, i.id LIMIT ? OFFSET ?
+  `).get(...params);
+  const rows  = db.prepare(`
+    SELECT i.*, s.name AS supplier_name, s.website_url AS supplier_url, s.email AS supplier_email,
+      ia.last_adjusted_at,
+      ${inventoryStockCase('i')} AS stock_state,
+      ${daysUntilExpr('i.expiry_date')} AS days_until_expiry
+    ${baseSql}
+    ORDER BY ${inventoryOrderBy(sort)} LIMIT ? OFFSET ?
   `).all(...params, pageSize, (pageNum - 1) * pageSize);
-  res.json({ total, page: pageNum, limit: pageSize, rows });
+  res.json({ total, page: pageNum, limit: pageSize, summary, rows });
 });
 
 app.post('/api/inventory', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -1707,7 +2480,18 @@ app.delete('/api/suppliers/:id', apiWriteLimiter, requireStaff, requireCsrf, (re
 
 // APPS — HTML mini-applications featured on the public website
 app.get('/api/apps', apiReadLimiter, (req, res) => {
-  res.json(db.prepare('SELECT * FROM apps WHERE published=1 ORDER BY sort_order, id').all());
+  const q = searchTerm(req.query.q);
+  const limit = publicLimit(req.query.limit);
+  const params = [];
+  let sql = 'SELECT * FROM apps WHERE published=1';
+  if (q) {
+    const like = likePattern(q);
+    sql += " AND (title LIKE ? ESCAPE '\\' OR COALESCE(summary,'') LIKE ? ESCAPE '\\' OR COALESCE(description,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like);
+  }
+  sql += ' ORDER BY sort_order, id LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
 });
 app.get('/api/apps/all', apiReadLimiter, requireStaff, (req, res) => {
   res.json(db.prepare('SELECT * FROM apps ORDER BY sort_order, id').all());
@@ -1751,6 +2535,13 @@ app.delete('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, re
     ['people_page_intro', 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'],
     ['facilities_page_title', 'Lab facilities & instruments'],
     ['facilities_page_intro', 'Click any facility to see photos, the full description, and any documentation we have on it.'],
+    ['downloads_page_title', 'Downloads'],
+    ['downloads_page_intro', 'Download papers, forms, media, and supporting files shared by the lab.'],
+    ['site_theme', 'navy-gold'],
+    ['hero_metric_research_label', 'Research areas'],
+    ['hero_metric_publications_label', 'Publications'],
+    ['hero_metric_people_label', 'Active members'],
+    ['hero_metric_facilities_label', 'Facilities'],
     // Platform section subtitles (editable by staff)
     ['platform_schedule_sub', 'Calendar of meetings, sessions and reservations.'],
     ['platform_tasks_sub', 'Drag-style kanban (open / in progress / blocked / done).'],
@@ -1773,7 +2564,13 @@ app.get('/api/settings', apiReadLimiter, requireAuth, (req, res) => {
 });
 // Public subset of settings (no auth required) — exposes only page-content keys for the public website
 app.get('/api/site-settings', apiReadLimiter, (req, res) => {
-  const publicKeys = ['research_section_title','research_eyebrow','research_page_title','research_page_intro','people_page_title','people_page_intro','facilities_page_title','facilities_page_intro'];
+  const publicKeys = [
+    'research_section_title','research_eyebrow','research_page_title','research_page_intro',
+    'people_page_title','people_page_intro','facilities_page_title','facilities_page_intro',
+    'downloads_page_title','downloads_page_intro',
+    'hero_metric_research_label','hero_metric_publications_label','hero_metric_people_label','hero_metric_facilities_label',
+    'site_theme'
+  ];
   const rows = db.prepare('SELECT key, value FROM app_settings').all();
   const out = {};
   for (const r of rows) { if (publicKeys.includes(r.key)) out[r.key] = r.value; }
@@ -1783,8 +2580,15 @@ app.put('/api/settings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) 
   const ALLOWED_KEYS = new Set([
     'research_section_title','research_eyebrow','research_page_title','research_page_intro',
     'people_page_title','people_page_intro','facilities_page_title','facilities_page_intro',
+    'downloads_page_title','downloads_page_intro',
+    'hero_metric_research_label','hero_metric_publications_label','hero_metric_people_label','hero_metric_facilities_label',
     'hero_title','hero_subtitle','hero_cta_text','hero_cta_url',
     'site_title','site_description','contact_email','contact_address',
+    'site_theme',
+    'lab_a_name','lab_a_room','lab_b_name','lab_b_room',
+    'platform_dashboard_sub','platform_schedule_sub','platform_tasks_sub','platform_meetings_sub',
+    'platform_equipment_sub','platform_issues_sub','platform_inventory_sub','platform_profile_sub',
+    'platform_members_sub',
   ]);
   const pairs = Object.entries(req.body || {}).filter(([k]) => ALLOWED_KEYS.has(k));
   if (!pairs.length) return res.json({ success: true });
@@ -1819,7 +2623,8 @@ app.delete('/api/projects/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 // ---- Self / current user ----
 app.get('/api/me', apiReadLimiter, (req, res) => {
   if (!req.session || !req.session.userId) return res.status(401).json({ error: 'Auth required' });
-  const u = db.prepare('SELECT id, username, name, role, email, person_id, totp_enabled, last_login_at, last_login_ip FROM users WHERE id=?').get(req.session.userId);
+  const rawUser = db.prepare('SELECT id, username, name, role, email, person_id, totp_enabled, last_login_at, last_login_ip FROM users WHERE id=?').get(req.session.userId);
+  const u = withUserProfile(rawUser);
   if (!u) return res.status(401).json({ error: 'Auth required' });
   if (!req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
@@ -1967,19 +2772,25 @@ app.get('/api/users', apiReadLimiter, requireAuth, (req, res) => {
 });
 app.post('/api/users', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { username, password, name, role, email } = req.body;
-  if (!username || !password || !role) return res.status(400).json({ error: 'username, password, role required' });
+  const normalizedRole = normalizeUserRole(role);
+  if (!username || !password || !normalizedRole) return res.status(400).json({ error: 'username, password, valid role required' });
   if (password.length < 12) return res.status(400).json({ error: 'Password must be at least 12 characters' });
   if (db.prepare('SELECT 1 FROM users WHERE username=?').get(username)) return res.status(409).json({ error: 'username exists' });
   const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
   const r = db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
-    .run(username, hash, name || '', role, email || '');
+    .run(username, hash, name || '', normalizedRole, email || '');
   res.json({ id: r.lastInsertRowid });
 });
 app.put('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, role, email, active, password } = req.body;
   const sets = [], params = [];
   if (name !== undefined)   { sets.push('name=?');   params.push(name); }
-  if (role !== undefined)   { sets.push('role=?');   params.push(role); }
+  if (role !== undefined) {
+    const normalizedRole = normalizeUserRole(role);
+    if (!normalizedRole) return res.status(400).json({ error: 'valid role required' });
+    sets.push('role=?');
+    params.push(normalizedRole);
+  }
   if (email !== undefined)  { sets.push('email=?');  params.push(email); }
   if (active !== undefined) { sets.push('active=?'); params.push(active ? 1 : 0); }
   if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, BCRYPT_ROUNDS)); }
@@ -1996,50 +2807,159 @@ app.delete('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, r
 
 // ---- Equipment ----
 app.get('/api/equipment', apiReadLimiter, requireAuth, (req, res) => {
-  const { page, limit } = req.query;
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
-  const total = db.prepare('SELECT COUNT(*) as n FROM equipment').get().n;
+  const { page, limit, category, status, search, due, mine, reservations, sort, training } = req.query;
+  const pageNum = clampInt(page, 1, { min: 1, max: 100000 });
+  const pageSize = clampInt(limit, 200, { min: 1, max: 200 });
+  const baseParams = [req.session.userId];
+  const conditions = [];
+  const params = [];
+  if (category) { conditions.push('e.category=?'); params.push(category); }
+  if (status) { conditions.push('e.status=?'); params.push(status); }
+  if (queryFlag(mine)) { conditions.push('e.current_user_id=?'); params.push(req.session.userId); }
+  if (due === 'maintenance') conditions.push("e.next_maintenance_at IS NOT NULL AND e.next_maintenance_at != '' AND date(e.next_maintenance_at) <= date('now','+30 days')");
+  else if (due === 'calibration') conditions.push("e.next_calibration_at IS NOT NULL AND e.next_calibration_at != '' AND date(e.next_calibration_at) <= date('now','+30 days')");
+  else if (due === 'any') conditions.push(`(
+    (e.next_maintenance_at IS NOT NULL AND e.next_maintenance_at != '' AND date(e.next_maintenance_at) <= date('now','+30 days')) OR
+    (e.next_calibration_at IS NOT NULL AND e.next_calibration_at != '' AND date(e.next_calibration_at) <= date('now','+30 days'))
+  )`);
+  if (reservations === 'pending') conditions.push('COALESCE(er.pending_reservations, 0) > 0');
+  if (training === 'required') conditions.push('e.requires_training=1');
+  else if (training === 'ready') conditions.push('e.requires_training=1 AND COALESCE(utr.user_active_training_count, 0) > 0');
+  else if (training === 'blocked') conditions.push('e.requires_training=1 AND COALESCE(utr.user_active_training_count, 0) = 0');
+  else if (training === 'expired') conditions.push('e.requires_training=1 AND COALESCE(utr.user_training_records_count, 0) > 0 AND COALESCE(utr.user_active_training_count, 0) = 0');
+  const q = searchTerm(search);
+  if (q) {
+    const like = likePattern(q);
+    conditions.push(`(
+      e.name LIKE ? ESCAPE '\\' OR COALESCE(e.sku,'') LIKE ? ESCAPE '\\' OR COALESCE(e.location,'') LIKE ? ESCAPE '\\' OR
+      COALESCE(e.category,'') LIKE ? ESCAPE '\\' OR COALESCE(e.manufacturer,'') LIKE ? ESCAPE '\\' OR
+      COALESCE(e.model,'') LIKE ? ESCAPE '\\' OR COALESCE(e.serial_number,'') LIKE ? ESCAPE '\\'
+    )`);
+    params.push(like, like, like, like, like, like, like);
+  }
+  const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+  const baseSql = `FROM equipment e
+    LEFT JOIN users lu ON lu.id = e.last_used_user_id
+    LEFT JOIN users cu ON cu.id = e.current_user_id
+    LEFT JOIN (
+      SELECT
+        equipment_id,
+        SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending_reservations,
+        MIN(CASE WHEN status IN ('pending','approved') AND end_at >= datetime('now') THEN start_at END) AS next_reservation_at
+      FROM equipment_reservations
+      GROUP BY equipment_id
+    ) er ON er.equipment_id = e.id
+    LEFT JOIN (
+      SELECT equipment_id, COUNT(*) AS training_records_count
+      FROM training_records
+      GROUP BY equipment_id
+    ) tr ON tr.equipment_id = e.id
+    LEFT JOIN (
+      SELECT
+        equipment_id,
+        COUNT(*) AS user_training_records_count,
+        SUM(CASE WHEN expires_at IS NULL OR expires_at='' OR date(expires_at) >= date('now') THEN 1 ELSE 0 END) AS user_active_training_count,
+        MIN(CASE WHEN expires_at IS NOT NULL AND expires_at != '' AND date(expires_at) >= date('now') THEN expires_at ELSE NULL END) AS user_training_expires_at
+      FROM training_records
+      WHERE user_id=? AND completed_at IS NOT NULL
+      GROUP BY equipment_id
+    ) utr ON utr.equipment_id = e.id
+    ${where}`;
+  const sqlParams = [...baseParams, ...params];
+  const total = db.prepare(`SELECT COUNT(*) as n ${baseSql}`).get(...sqlParams).n;
+  const summary = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN e.status='available' THEN 1 ELSE 0 END), 0) AS available,
+      COALESCE(SUM(CASE WHEN e.status='in_use' THEN 1 ELSE 0 END), 0) AS in_use,
+      COALESCE(SUM(CASE WHEN e.status='maintenance' THEN 1 ELSE 0 END), 0) AS maintenance,
+      COALESCE(SUM(CASE WHEN e.status='broken' THEN 1 ELSE 0 END), 0) AS broken,
+      COALESCE(SUM(CASE WHEN e.next_maintenance_at IS NOT NULL AND e.next_maintenance_at != '' AND date(e.next_maintenance_at) < date('now') THEN 1 ELSE 0 END), 0) AS maintenance_overdue,
+      COALESCE(SUM(CASE WHEN e.next_maintenance_at IS NOT NULL AND e.next_maintenance_at != '' AND date(e.next_maintenance_at) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS maintenance_due_soon,
+      COALESCE(SUM(CASE WHEN e.next_calibration_at IS NOT NULL AND e.next_calibration_at != '' AND date(e.next_calibration_at) < date('now') THEN 1 ELSE 0 END), 0) AS calibration_overdue,
+      COALESCE(SUM(CASE WHEN e.next_calibration_at IS NOT NULL AND e.next_calibration_at != '' AND date(e.next_calibration_at) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS calibration_due_soon,
+      COALESCE(SUM(COALESCE(er.pending_reservations, 0)), 0) AS pending_reservations,
+      COALESCE(SUM(CASE WHEN e.requires_training=1 THEN 1 ELSE 0 END), 0) AS requires_training,
+      COALESCE(SUM(CASE WHEN e.requires_training=1 AND COALESCE(utr.user_active_training_count, 0) > 0 THEN 1 ELSE 0 END), 0) AS training_ready,
+      COALESCE(SUM(CASE WHEN e.requires_training=1 AND COALESCE(utr.user_active_training_count, 0) = 0 THEN 1 ELSE 0 END), 0) AS training_blocked,
+      COALESCE(SUM(CASE WHEN e.requires_training=1 AND COALESCE(utr.user_training_records_count, 0) > 0 AND COALESCE(utr.user_active_training_count, 0) = 0 THEN 1 ELSE 0 END), 0) AS training_expired
+    ${baseSql}
+  `).get(...sqlParams);
   const rows = db.prepare(`
     SELECT e.*,
       lu.name AS last_used_user_name, lu.username AS last_used_username,
-      cu.name AS current_user_name,   cu.username AS current_username
-    FROM equipment e
-    LEFT JOIN users lu ON lu.id = e.last_used_user_id
-    LEFT JOIN users cu ON cu.id = e.current_user_id
-    ORDER BY e.sort_order, e.name LIMIT ? OFFSET ?`).all(pageSize, (pageNum - 1) * pageSize);
-  res.json({ total, page: pageNum, limit: pageSize, rows });
+      cu.name AS current_user_name,   cu.username AS current_username,
+      COALESCE(er.pending_reservations, 0) AS pending_reservations,
+      er.next_reservation_at,
+      COALESCE(tr.training_records_count, 0) AS training_records_count,
+      COALESCE(utr.user_training_records_count, 0) AS user_training_records_count,
+      COALESCE(utr.user_active_training_count, 0) AS user_active_training_count,
+      utr.user_training_expires_at,
+      CASE
+        WHEN e.requires_training=0 THEN 'not_required'
+        WHEN COALESCE(utr.user_active_training_count, 0) > 0 THEN 'active'
+        WHEN COALESCE(utr.user_training_records_count, 0) > 0 THEN 'expired'
+        ELSE 'missing'
+      END AS training_state,
+      ${equipmentDueCase('e.next_maintenance_at')} AS maintenance_state,
+      ${equipmentDueCase('e.next_calibration_at')} AS calibration_state
+    ${baseSql}
+    ORDER BY ${equipmentOrderBy(sort)} LIMIT ? OFFSET ?`).all(...sqlParams, pageSize, (pageNum - 1) * pageSize);
+  res.json({ total, page: pageNum, limit: pageSize, summary, rows });
 });
 app.post('/api/equipment', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, sku, category, location, status, notes, sort_order,
           manufacturer, model, serial_number, purchase_date, maintenance_interval_days,
-          last_calibrated_at, next_calibration_at } = req.body;
+          last_calibrated_at, next_calibration_at, requires_training, training_requirement } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const r = db.prepare(`INSERT INTO equipment
     (name, sku, category, location, status, notes, sort_order,
      manufacturer, model, serial_number, purchase_date, maintenance_interval_days,
-     last_calibrated_at, next_calibration_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+     last_calibrated_at, next_calibration_at, requires_training, training_requirement)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0,
          manufacturer || '', model || '', serial_number || '', purchase_date || null,
-         maintenance_interval_days || 0, last_calibrated_at || null, next_calibration_at || null);
+         maintenance_interval_days || 0, last_calibrated_at || null, next_calibration_at || null,
+         queryFlag(requires_training) ? 1 : 0, training_requirement || '');
   res.json({ id: r.lastInsertRowid });
 });
 app.put('/api/equipment/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, sku, category, location, status, notes, sort_order,
           manufacturer, model, serial_number, purchase_date, maintenance_interval_days,
-          last_maintained_at, next_maintenance_at, last_calibrated_at, next_calibration_at } = req.body;
+          last_maintained_at, next_maintenance_at, last_calibrated_at, next_calibration_at,
+          requires_training, training_requirement } = req.body;
   db.prepare(`UPDATE equipment SET name=?, sku=?, category=?, location=?, status=?, notes=?, sort_order=?,
     manufacturer=?, model=?, serial_number=?, purchase_date=?, maintenance_interval_days=?,
-    last_maintained_at=?, next_maintenance_at=?, last_calibrated_at=?, next_calibration_at=? WHERE id=?`)
+    last_maintained_at=?, next_maintenance_at=?, last_calibrated_at=?, next_calibration_at=?,
+    requires_training=?, training_requirement=? WHERE id=?`)
     .run(name, sku || null, category || '', location || '', status || 'available', notes || '', sort_order || 0,
          manufacturer || '', model || '', serial_number || '', purchase_date || null,
          maintenance_interval_days || 0, last_maintained_at || null, next_maintenance_at || null,
-         last_calibrated_at || null, next_calibration_at || null, req.params.id);
+         last_calibrated_at || null, next_calibration_at || null,
+         queryFlag(requires_training) ? 1 : 0, training_requirement || '', req.params.id);
   res.json({ success: true });
 });
+
+function removeUploadedAsset(fileUrl) {
+  if (!fileUrl || !fileUrl.startsWith('/uploads/')) return;
+  try {
+    const filePath = path.join(__dirname, fileUrl.replace(/^\/+/, ''));
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  } catch (err) {
+    console.warn('[uploads] cleanup failed:', err.message);
+  }
+}
 app.delete('/api/equipment/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-  db.prepare('DELETE FROM equipment WHERE id=?').run(req.params.id);
+  const eq = db.prepare('SELECT id FROM equipment WHERE id=?').get(req.params.id);
+  if (!eq) return res.status(404).json({ error: 'not found' });
+  db.transaction(() => {
+    db.prepare('DELETE FROM equipment_reservations WHERE equipment_id=?').run(eq.id);
+    db.prepare('DELETE FROM equipment_maintenance WHERE equipment_id=?').run(eq.id);
+    db.prepare('DELETE FROM training_records WHERE equipment_id=?').run(eq.id);
+    db.prepare('UPDATE issues SET related_equipment_id=NULL WHERE related_equipment_id=?').run(eq.id);
+    db.prepare('DELETE FROM equipment_log WHERE equipment_id=?').run(eq.id);
+    db.prepare('DELETE FROM equipment WHERE id=?').run(eq.id);
+  })();
   res.json({ success: true });
 });
 
@@ -2049,6 +2969,22 @@ app.post('/api/equipment/:id/checkout', apiWriteLimiter, requireAuth, requireCsr
   if (!eq) return res.status(404).json({ error: 'not found' });
   if (eq.current_user_id) return res.status(409).json({ error: 'already checked out' });
   if (eq.status === 'broken' || eq.status === 'maintenance') return res.status(409).json({ error: 'unavailable: ' + eq.status });
+  const role = req.session.role || 'student';
+  const trainingError = equipmentAccessError(eq, req.session.userId, role);
+  if (trainingError) return res.status(403).json({ error: trainingError });
+  const blockingReservation = db.prepare(`
+    SELECT user_id
+    FROM equipment_reservations
+    WHERE equipment_id=?
+      AND status='approved'
+      AND start_at <= datetime('now')
+      AND end_at >= datetime('now')
+      AND user_id != ?
+    LIMIT 1
+  `).get(req.params.id, req.session.userId);
+  if (blockingReservation) {
+    return res.status(409).json({ error: 'reserved for another lab member right now' });
+  }
   const note = (req.body && req.body.note) || '';
   const userId = req.session.userId;
   db.prepare('UPDATE equipment SET status=?, current_user_id=?, last_used_user_id=?, last_used_at=CURRENT_TIMESTAMP WHERE id=?')
@@ -2084,7 +3020,7 @@ app.get('/api/equipment/:id/log', apiReadLimiter, requireAuth, (req, res) => {
 
 // ── Equipment reservations ───────────────────────────────────────────────────
 app.get('/api/equipment/reservations', apiReadLimiter, requireAuth, (req, res) => {
-  const { equipment_id, user_id, upcoming } = req.query;
+  const { equipment_id, user_id, upcoming, status } = req.query;
   let sql = `SELECT r.*, u.name AS user_name, u.username,
     e.name AS equipment_name, e.sku AS equipment_sku
     FROM equipment_reservations r
@@ -2093,8 +3029,9 @@ app.get('/api/equipment/reservations', apiReadLimiter, requireAuth, (req, res) =
   const params = [];
   if (equipment_id) { sql += ' AND r.equipment_id=?'; params.push(equipment_id); }
   if (user_id)      { sql += ' AND r.user_id=?';      params.push(user_id); }
+  if (status)       { sql += ' AND r.status=?';       params.push(status); }
   if (upcoming === '1') { sql += " AND r.end_at >= datetime('now') AND r.status NOT IN ('cancelled','denied')"; }
-  sql += ' ORDER BY r.start_at DESC LIMIT 200';
+  sql += " ORDER BY CASE r.status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END, r.start_at ASC LIMIT 200";
   res.json(db.prepare(sql).all(...params));
 });
 app.get('/api/equipment/:id/reservations', apiReadLimiter, requireAuth, (req, res) => {
@@ -2105,13 +3042,14 @@ app.get('/api/equipment/:id/reservations', apiReadLimiter, requireAuth, (req, re
 });
 app.post('/api/equipment/:id/reservations', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { start_at, end_at, purpose, notes } = req.body;
-  if (!start_at || !end_at) return res.status(400).json({ error: 'start_at and end_at required' });
-  const eq = db.prepare('SELECT id FROM equipment WHERE id=?').get(req.params.id);
+  const reservationError = validateReservationWindow(start_at, end_at);
+  if (reservationError) return res.status(400).json({ error: reservationError });
+  const eq = db.prepare('SELECT * FROM equipment WHERE id=?').get(req.params.id);
   if (!eq) return res.status(404).json({ error: 'equipment not found' });
+  const trainingError = equipmentAccessError(eq, req.session.userId, req.session.role || 'student');
+  if (trainingError) return res.status(403).json({ error: trainingError });
   // Conflict check: overlapping approved/pending reservations
-  const conflict = db.prepare(`SELECT id FROM equipment_reservations WHERE equipment_id=?
-    AND status IN ('pending','approved')
-    AND start_at < ? AND end_at > ?`).get(req.params.id, end_at, start_at);
+  const conflict = findReservationConflict(req.params.id, start_at, end_at);
   if (conflict) return res.status(409).json({ error: 'Time slot conflicts with an existing reservation' });
   const r = db.prepare(`INSERT INTO equipment_reservations
     (equipment_id, user_id, start_at, end_at, purpose, notes, status)
@@ -2122,22 +3060,44 @@ app.post('/api/equipment/:id/reservations', apiWriteLimiter, requireAuth, requir
 app.put('/api/equipment/reservations/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const resv = db.prepare('SELECT * FROM equipment_reservations WHERE id=?').get(req.params.id);
   if (!resv) return res.status(404).json({ error: 'not found' });
-  const role = req.session.role || 'student';
-  const isStaff = role === 'admin' || role === 'professor';
+  const role = currentRole(req);
+  const isStaff = isLabStaffRole(role);
+  const canApprove = isProfessorRole(role);
   const isOwner = resv.user_id === req.session.userId;
-  // Only staff can approve/deny; owner or staff can cancel
+  // Only the professor can approve/deny; owner or lab staff can cancel
   const { status, notes, start_at, end_at, purpose } = req.body;
-  if ((status === 'approved' || status === 'denied') && !isStaff)
-    return res.status(403).json({ error: 'Only staff can approve or deny reservations' });
+  if ((status === 'approved' || status === 'denied') && !canApprove)
+    return res.status(403).json({ error: 'Only the professor can approve or deny reservations' });
   if (status === 'cancelled' && !isOwner && !isStaff)
     return res.status(403).json({ error: 'Only the requestor or staff can cancel' });
+  const nextStart = start_at || resv.start_at;
+  const nextEnd = end_at || resv.end_at;
+  if (start_at || end_at) {
+    const reservationError = validateReservationWindow(nextStart, nextEnd);
+    if (reservationError) return res.status(400).json({ error: reservationError });
+    const conflict = findReservationConflict(resv.equipment_id, nextStart, nextEnd, resv.id);
+    if (conflict) return res.status(409).json({ error: 'Time slot conflicts with an existing reservation' });
+  }
   const sets = [], params = [];
   if (status)   { sets.push('status=?');   params.push(status); }
   if (notes !== undefined) { sets.push('notes=?'); params.push(notes); }
   if (start_at) { sets.push('start_at=?'); params.push(start_at); }
   if (end_at)   { sets.push('end_at=?');   params.push(end_at); }
   if (purpose !== undefined) { sets.push('purpose=?'); params.push(purpose); }
-  if (status === 'approved') { sets.push('approved_by=?'); params.push(req.session.userId); }
+  if (status === 'approved') {
+    const eq = db.prepare('SELECT * FROM equipment WHERE id=?').get(resv.equipment_id);
+    const trainingStatus = getEquipmentTrainingStatus(resv.user_id, resv.equipment_id);
+    if (eq && queryFlag(eq.requires_training) && trainingStatus.status !== 'active') {
+      const label = eq.training_requirement || trainingStatus.training_name || 'Active training';
+      return res.status(409).json({
+        error: trainingStatus.status === 'expired'
+          ? `${label} is expired for this reservation holder`
+          : `${label} is required before this reservation can be approved`
+      });
+    }
+    sets.push('approved_by=?');
+    params.push(req.session.userId);
+  }
   if (!sets.length) return res.json({ success: true });
   params.push(req.params.id);
   db.prepare(`UPDATE equipment_reservations SET ${sets.join(', ')} WHERE id=?`).run(...params);
@@ -2163,74 +3123,175 @@ app.get('/api/equipment/:id/maintenance', apiReadLimiter, requireAuth, (req, res
 app.post('/api/equipment/:id/maintenance', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { maint_type, scheduled_at, completed_at, performed_by, cost, notes, next_due_at } = req.body;
   if (!maint_type) return res.status(400).json({ error: 'maint_type required' });
+  const eq = db.prepare('SELECT id FROM equipment WHERE id=?').get(req.params.id);
+  if (!eq) return res.status(404).json({ error: 'equipment not found' });
   const r = db.prepare(`INSERT INTO equipment_maintenance
     (equipment_id, maint_type, scheduled_at, completed_at, performed_by, cost, notes, next_due_at, created_by)
     VALUES (?,?,?,?,?,?,?,?,?)`)
     .run(req.params.id, maint_type, scheduled_at || null, completed_at || null,
          performed_by || '', cost || null, notes || '', next_due_at || null, req.session.userId);
-  // Update equipment last_maintained_at / next_maintenance_at if this is a completed maintenance
-  if (completed_at && (maint_type === 'maintenance' || maint_type === 'repair')) {
-    db.prepare('UPDATE equipment SET last_maintained_at=?, next_maintenance_at=? WHERE id=?')
-      .run(completed_at, next_due_at || null, req.params.id);
-  }
-  if (completed_at && maint_type === 'calibration') {
-    db.prepare('UPDATE equipment SET last_calibrated_at=?, next_calibration_at=? WHERE id=?')
-      .run(completed_at, next_due_at || null, req.params.id);
-  }
+  syncEquipmentMaintenanceState(req.params.id);
   res.json({ id: r.lastInsertRowid });
 });
 app.put('/api/equipment/maintenance/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { maint_type, scheduled_at, completed_at, performed_by, cost, notes, next_due_at } = req.body;
+  const rec = db.prepare('SELECT equipment_id FROM equipment_maintenance WHERE id=?').get(req.params.id);
+  if (!rec) return res.status(404).json({ error: 'not found' });
   db.prepare(`UPDATE equipment_maintenance SET maint_type=?, scheduled_at=?, completed_at=?,
     performed_by=?, cost=?, notes=?, next_due_at=? WHERE id=?`)
     .run(maint_type, scheduled_at || null, completed_at || null,
          performed_by || '', cost || null, notes || '', next_due_at || null, req.params.id);
+  syncEquipmentMaintenanceState(rec.equipment_id);
   res.json({ success: true });
 });
 app.delete('/api/equipment/maintenance/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const rec = db.prepare('SELECT equipment_id FROM equipment_maintenance WHERE id=?').get(req.params.id);
+  if (!rec) return res.status(404).json({ error: 'not found' });
   db.prepare('DELETE FROM equipment_maintenance WHERE id=?').run(req.params.id);
+  syncEquipmentMaintenanceState(rec.equipment_id);
   res.json({ success: true });
 });
 
 // ── Sample registry ───────────────────────────────────────────────────────────
 app.get('/api/samples', apiReadLimiter, requireAuth, (req, res) => {
-  const { status, project_id, search } = req.query;
-  let sql = `SELECT s.*, u.name AS created_by_name, p.title AS project_title
+  const { status, project_id, search, expiring_soon, expired, low_qty, approval_status } = req.query;
+  const role = currentRole(req);
+  const canReview = isSampleApproverRole(role);
+  const lifecycleStatus = status ? normalizeSampleLifecycleStatus(status, '') : '';
+  if (status && !lifecycleStatus) return res.status(400).json({ error: 'invalid sample status' });
+  const approvalStatus = approval_status ? normalizeSampleApprovalStatus(approval_status, '') : '';
+  if (approval_status && !approvalStatus) return res.status(400).json({ error: 'invalid approval status' });
+  let sql = `SELECT s.*, u.name AS created_by_name, u.username AS created_by_username,
+      p.title AS project_title, au.name AS approved_by_name
     FROM sample_registry s
     LEFT JOIN users u ON u.id = s.created_by_id
+    LEFT JOIN users au ON au.id = s.approved_by_id
     LEFT JOIN projects p ON p.id = s.project_id WHERE 1=1`;
   const params = [];
-  if (status)     { sql += ' AND s.status=?';     params.push(status); }
-  if (project_id) { sql += ' AND s.project_id=?'; params.push(project_id); }
-  if (search) {
-    sql += ' AND (s.name LIKE ? OR s.location LIKE ? OR s.sample_type LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  if (!canReview) {
+    sql += " AND (s.approval_status='approved' OR s.created_by_id=?)";
+    params.push(req.session.userId);
   }
-  sql += ' ORDER BY s.created_at DESC LIMIT 500';
-  res.json(db.prepare(sql).all(...params));
+  if (lifecycleStatus) { sql += ' AND s.status=?'; params.push(lifecycleStatus); }
+  if (approvalStatus)  { sql += ' AND s.approval_status=?'; params.push(approvalStatus); }
+  if (project_id) { sql += ' AND s.project_id=?'; params.push(project_id); }
+  if (queryFlag(expired)) {
+    sql += " AND s.expiry_date IS NOT NULL AND s.expiry_date != '' AND date(s.expiry_date) < date('now')";
+  } else if (queryFlag(expiring_soon)) {
+    sql += " AND s.expiry_date IS NOT NULL AND s.expiry_date != '' AND date(s.expiry_date) BETWEEN date('now') AND date('now','+30 days')";
+  }
+  if (queryFlag(low_qty)) {
+    sql += ' AND COALESCE(s.qty, 0) <= 0';
+  }
+  const q = searchTerm(search);
+  if (q) {
+    const like = likePattern(q);
+    sql += " AND (s.name LIKE ? ESCAPE '\\' OR COALESCE(s.location,'') LIKE ? ESCAPE '\\' OR COALESCE(s.sample_type,'') LIKE ? ESCAPE '\\' OR COALESCE(s.description,'') LIKE ? ESCAPE '\\' OR COALESCE(s.notes,'') LIKE ? ESCAPE '\\' OR COALESCE(p.title,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like, like, like, like);
+  }
+  const rows = db.prepare(`
+    SELECT rows.*,
+      ${daysUntilExpr('rows.expiry_date')} AS days_until_expiry
+    FROM (${sql}) rows
+    ORDER BY CASE rows.approval_status WHEN 'pending' THEN 0 WHEN 'denied' THEN 1 ELSE 2 END,
+      CASE rows.status WHEN 'active' THEN 0 WHEN 'depleted' THEN 1 WHEN 'disposed' THEN 2 ELSE 3 END,
+      CASE WHEN rows.expiry_date IS NOT NULL AND rows.expiry_date != '' THEN date(rows.expiry_date) ELSE date('2999-12-31') END ASC,
+      rows.created_at DESC
+    LIMIT 500
+  `).all(...params);
+  const summary = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN vis.approval_status='approved' THEN 1 ELSE 0 END), 0) AS approved,
+      COALESCE(SUM(CASE WHEN vis.approval_status='pending' THEN 1 ELSE 0 END), 0) AS pending,
+      COALESCE(SUM(CASE WHEN vis.approval_status='denied' THEN 1 ELSE 0 END), 0) AS denied,
+      COALESCE(SUM(CASE WHEN vis.approval_status='approved' AND vis.status='active' THEN 1 ELSE 0 END), 0) AS active,
+      COALESCE(SUM(CASE WHEN vis.approval_status='approved' AND vis.status='depleted' THEN 1 ELSE 0 END), 0) AS depleted,
+      COALESCE(SUM(CASE WHEN vis.approval_status='approved' AND vis.status='disposed' THEN 1 ELSE 0 END), 0) AS disposed,
+      COALESCE(SUM(CASE WHEN vis.approval_status='approved' AND vis.expiry_date IS NOT NULL AND vis.expiry_date != '' AND date(vis.expiry_date) < date('now') THEN 1 ELSE 0 END), 0) AS expired,
+      COALESCE(SUM(CASE WHEN vis.approval_status='approved' AND vis.expiry_date IS NOT NULL AND vis.expiry_date != '' AND date(vis.expiry_date) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS expiring_soon
+    FROM (${sql}) vis
+  `).get(...params);
+  res.json({ rows, summary, can_review: canReview });
 });
 app.post('/api/samples', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { name, sample_type, location, project_id, status, expiry_date, qty, unit, description, notes } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
+  const role = currentRole(req);
+  const canReview = isSampleApproverRole(role);
+  const lifecycleStatus = normalizeSampleLifecycleStatus(status || 'active');
+  const approvalStatus = canReview ? 'approved' : 'pending';
   const r = db.prepare(`INSERT INTO sample_registry
-    (name, sample_type, location, project_id, created_by_id, status, expiry_date, qty, unit, description, notes)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(str(name,300), sample_type || 'other', location || '', project_id || null, req.session.userId,
-         status || 'active', expiry_date || null, qty || 0, unit || 'unit', description || '', notes || '');
-  res.json({ id: r.lastInsertRowid });
+    (name, sample_type, location, project_id, created_by_id, status, approval_status, approved_by_id, approved_at, review_note, expiry_date, qty, unit, description, notes)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(
+      str(name,300),
+      sample_type || 'other',
+      location || '',
+      project_id || null,
+      req.session.userId,
+      lifecycleStatus,
+      approvalStatus,
+      canReview ? req.session.userId : null,
+      canReview ? new Date().toISOString() : null,
+      '',
+      expiry_date || null,
+      qty || 0,
+      unit || 'unit',
+      description || '',
+      notes || ''
+    );
+  res.json({ id: r.lastInsertRowid, approval_status: approvalStatus });
 });
 app.put('/api/samples/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-  const smpl = db.prepare('SELECT created_by_id FROM sample_registry WHERE id=?').get(req.params.id);
+  const smpl = db.prepare('SELECT * FROM sample_registry WHERE id=?').get(req.params.id);
   if (!smpl) return res.status(404).json({ error: 'not found' });
-  const role = req.session.role || 'student';
-  if (smpl.created_by_id !== req.session.userId && role !== 'admin' && role !== 'professor')
-    return res.status(403).json({ error: 'Forbidden' });
+  const role = currentRole(req);
+  const canReview = isSampleApproverRole(role);
+  const isCreator = smpl.created_by_id === req.session.userId;
+  if (!canReview && !isCreator) return res.status(403).json({ error: 'Forbidden' });
+  if (!canReview && smpl.approval_status === 'approved') {
+    return res.status(403).json({ error: 'Approved samples can only be changed by an admin, professor, or moderator' });
+  }
   const { name, sample_type, location, project_id, status, expiry_date, qty, unit, description, notes } = req.body;
+  const lifecycleStatus = normalizeSampleLifecycleStatus(status || smpl.status || 'active');
+  const approvalStatus = canReview ? (smpl.approval_status || 'approved') : 'pending';
   db.prepare(`UPDATE sample_registry SET name=?, sample_type=?, location=?, project_id=?,
-    status=?, expiry_date=?, qty=?, unit=?, description=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
-    .run(str(name,300), sample_type || 'other', location || '', project_id || null,
-         status || 'active', expiry_date || null, qty || 0, unit || 'unit', description || '', notes || '', req.params.id);
-  res.json({ success: true });
+    status=?, approval_status=?, approved_by_id=?, approved_at=?, review_note=?, expiry_date=?, qty=?, unit=?, description=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+    .run(
+      str(name,300),
+      sample_type || 'other',
+      location || '',
+      project_id || null,
+      lifecycleStatus,
+      approvalStatus,
+      canReview ? smpl.approved_by_id || null : null,
+      canReview ? smpl.approved_at || null : null,
+      canReview ? smpl.review_note || '' : '',
+      expiry_date || null,
+      qty || 0,
+      unit || 'unit',
+      description || '',
+      notes || '',
+      req.params.id
+    );
+  res.json({ success: true, approval_status: approvalStatus });
+});
+app.post('/api/samples/:id/review', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const role = currentRole(req);
+  if (!isSampleApproverRole(role)) return res.status(403).json({ error: 'Only an admin, professor, or moderator can review samples' });
+  const smpl = db.prepare('SELECT id FROM sample_registry WHERE id=?').get(req.params.id);
+  if (!smpl) return res.status(404).json({ error: 'not found' });
+  const approvalStatus = normalizeSampleApprovalStatus(req.body.approval_status);
+  if (!approvalStatus || !['approved', 'denied'].includes(approvalStatus)) {
+    return res.status(400).json({ error: 'approval_status must be approved or denied' });
+  }
+  const reviewNote = str(req.body.review_note || '', 2000);
+  db.prepare(`UPDATE sample_registry
+    SET approval_status=?, approved_by_id=?, approved_at=CURRENT_TIMESTAMP, review_note=?, updated_at=CURRENT_TIMESTAMP
+    WHERE id=?`)
+    .run(approvalStatus, req.session.userId, reviewNote, req.params.id);
+  res.json({ success: true, approval_status: approvalStatus });
 });
 app.delete('/api/samples/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM sample_registry WHERE id=?').run(req.params.id);
@@ -2301,7 +3362,7 @@ app.delete('/api/lab-notebooks/:id', apiWriteLimiter, requireAuth, requireCsrf, 
 
 // ── Training & certification records ─────────────────────────────────────────
 app.get('/api/training', apiReadLimiter, requireAuth, (req, res) => {
-  const { user_id, equipment_id, training_type, expiring_soon } = req.query;
+  const { user_id, equipment_id, training_type, expiring_soon, expired, search } = req.query;
   let sql = `SELECT t.*, u.name AS user_name, u.username,
     e.name AS equipment_name
     FROM training_records t
@@ -2311,11 +3372,49 @@ app.get('/api/training', apiReadLimiter, requireAuth, (req, res) => {
   if (user_id)      { sql += ' AND t.user_id=?';        params.push(user_id); }
   if (equipment_id) { sql += ' AND t.equipment_id=?';   params.push(equipment_id); }
   if (training_type){ sql += ' AND t.training_type=?';  params.push(training_type); }
-  if (expiring_soon === '1') {
-    sql += " AND t.expires_at IS NOT NULL AND date(t.expires_at) <= date('now','+60 days')";
+  if (queryFlag(expired)) {
+    sql += " AND t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) < date('now')";
+  } else if (queryFlag(expiring_soon)) {
+    sql += " AND t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) BETWEEN date('now') AND date('now','+60 days')";
   }
-  sql += ' ORDER BY t.completed_at DESC LIMIT 500';
-  res.json(db.prepare(sql).all(...params));
+  const q = searchTerm(search);
+  if (q) {
+    const like = likePattern(q);
+    sql += " AND (t.training_name LIKE ? ESCAPE '\\' OR COALESCE(t.notes,'') LIKE ? ESCAPE '\\' OR COALESCE(u.name,'') LIKE ? ESCAPE '\\' OR COALESCE(u.username,'') LIKE ? ESCAPE '\\' OR COALESCE(e.name,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like, like, like);
+  }
+  const rows = db.prepare(`
+    SELECT rows.*,
+      ${daysUntilExpr('rows.expires_at')} AS days_until_expiry
+    FROM (${sql}) rows
+    ORDER BY CASE
+      WHEN rows.expires_at IS NOT NULL AND rows.expires_at != '' AND date(rows.expires_at) < date('now') THEN 0
+      WHEN rows.expires_at IS NOT NULL AND rows.expires_at != '' AND date(rows.expires_at) <= date('now','+60 days') THEN 1
+      ELSE 2
+    END,
+    rows.completed_at DESC
+    LIMIT 500
+  `).all(...params);
+  const summary = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) < date('now') THEN 1 ELSE 0 END), 0) AS expired,
+      COALESCE(SUM(CASE WHEN t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) BETWEEN date('now') AND date('now','+60 days') THEN 1 ELSE 0 END), 0) AS expiring_soon,
+      COALESCE(SUM(CASE WHEN t.expires_at IS NULL OR t.expires_at = '' THEN 1 ELSE 0 END), 0) AS no_expiry,
+      COUNT(DISTINCT t.user_id) AS members,
+      COALESCE(SUM(CASE WHEN t.equipment_id IS NOT NULL THEN 1 ELSE 0 END), 0) AS equipment_linked
+    FROM training_records t
+    JOIN users u ON u.id=t.user_id
+    LEFT JOIN equipment e ON e.id=t.equipment_id
+    WHERE 1=1
+      ${user_id ? 'AND t.user_id=?' : ''}
+      ${equipment_id ? 'AND t.equipment_id=?' : ''}
+      ${training_type ? 'AND t.training_type=?' : ''}
+      ${queryFlag(expired) ? "AND t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) < date('now')" : ''}
+      ${!queryFlag(expired) && queryFlag(expiring_soon) ? "AND t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) BETWEEN date('now') AND date('now','+60 days')" : ''}
+      ${q ? "AND (t.training_name LIKE ? ESCAPE '\\' OR COALESCE(t.notes,'') LIKE ? ESCAPE '\\' OR COALESCE(u.name,'') LIKE ? ESCAPE '\\' OR COALESCE(u.username,'') LIKE ? ESCAPE '\\' OR COALESCE(e.name,'') LIKE ? ESCAPE '\\')" : ''}
+  `).get(...params);
+  res.json({ rows, summary });
 });
 app.post('/api/training', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { user_id, equipment_id, training_type, training_name, completed_at, expires_at, certified_by, notes } = req.body;
@@ -2340,6 +3439,132 @@ app.delete('/api/training/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
   res.json({ success: true });
 });
 
+// ---- Lab resources overview ----
+app.get('/api/resources/overview', apiReadLimiter, requireAuth, (req, res) => {
+  const inventory = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN qty <= 0 THEN 1 ELSE 0 END), 0) AS out_of_stock,
+      COALESCE(SUM(CASE WHEN qty > 0 AND qty <= min_qty THEN 1 ELSE 0 END), 0) AS low_stock,
+      COALESCE(SUM(CASE WHEN expiry_date IS NOT NULL AND expiry_date != '' AND date(expiry_date) < date('now') THEN 1 ELSE 0 END), 0) AS expired,
+      COALESCE(SUM(CASE WHEN expiry_date IS NOT NULL AND expiry_date != '' AND date(expiry_date) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS expiring_soon,
+      COALESCE(SUM(CASE WHEN COALESCE(hazard_class,'') != '' THEN 1 ELSE 0 END), 0) AS hazardous
+    FROM inventory
+  `).get();
+  const equipment = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN status='available' THEN 1 ELSE 0 END), 0) AS available,
+      COALESCE(SUM(CASE WHEN status='in_use' THEN 1 ELSE 0 END), 0) AS in_use,
+      COALESCE(SUM(CASE WHEN status='maintenance' THEN 1 ELSE 0 END), 0) AS maintenance,
+      COALESCE(SUM(CASE WHEN status='broken' THEN 1 ELSE 0 END), 0) AS broken,
+      COALESCE(SUM(CASE WHEN next_maintenance_at IS NOT NULL AND next_maintenance_at != '' AND date(next_maintenance_at) < date('now') THEN 1 ELSE 0 END), 0) AS maintenance_overdue,
+      COALESCE(SUM(CASE WHEN next_maintenance_at IS NOT NULL AND next_maintenance_at != '' AND date(next_maintenance_at) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS maintenance_due_soon,
+      COALESCE(SUM(CASE WHEN next_calibration_at IS NOT NULL AND next_calibration_at != '' AND date(next_calibration_at) < date('now') THEN 1 ELSE 0 END), 0) AS calibration_overdue,
+      COALESCE(SUM(CASE WHEN next_calibration_at IS NOT NULL AND next_calibration_at != '' AND date(next_calibration_at) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS calibration_due_soon
+    FROM equipment
+  `).get();
+  const samples = db.prepare(`
+    SELECT
+      COALESCE(SUM(CASE WHEN approval_status='approved' THEN 1 ELSE 0 END), 0) AS total,
+      COALESCE(SUM(CASE WHEN approval_status='approved' AND status='active' THEN 1 ELSE 0 END), 0) AS active,
+      COALESCE(SUM(CASE WHEN approval_status='approved' AND status='depleted' THEN 1 ELSE 0 END), 0) AS depleted,
+      COALESCE(SUM(CASE WHEN approval_status='approved' AND expiry_date IS NOT NULL AND expiry_date != '' AND date(expiry_date) < date('now') THEN 1 ELSE 0 END), 0) AS expired,
+      COALESCE(SUM(CASE WHEN approval_status='approved' AND expiry_date IS NOT NULL AND expiry_date != '' AND date(expiry_date) BETWEEN date('now') AND date('now','+30 days') THEN 1 ELSE 0 END), 0) AS expiring_soon,
+      COALESCE(SUM(CASE WHEN approval_status='pending' THEN 1 ELSE 0 END), 0) AS pending_approval
+    FROM sample_registry
+  `).get();
+  const training = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN expires_at IS NOT NULL AND expires_at != '' AND date(expires_at) < date('now') THEN 1 ELSE 0 END), 0) AS expired,
+      COALESCE(SUM(CASE WHEN expires_at IS NOT NULL AND expires_at != '' AND date(expires_at) BETWEEN date('now') AND date('now','+60 days') THEN 1 ELSE 0 END), 0) AS expiring_soon,
+      COUNT(DISTINCT user_id) AS covered_members
+    FROM training_records
+  `).get();
+  const issues = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN status='open' THEN 1 ELSE 0 END), 0) AS open,
+      COALESCE(SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END), 0) AS in_progress,
+      COALESCE(SUM(CASE WHEN priority='high' AND status!='resolved' THEN 1 ELSE 0 END), 0) AS high_priority
+    FROM issues
+  `).get();
+  const reservations = db.prepare(`
+    SELECT
+      COALESCE(SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END), 0) AS pending,
+      COALESCE(SUM(CASE WHEN status='approved' AND end_at >= datetime('now') THEN 1 ELSE 0 END), 0) AS upcoming
+    FROM equipment_reservations
+  `).get();
+
+  const alerts = {
+    inventory: db.prepare(`
+      SELECT id, name, sku, qty, min_qty, expiry_date,
+        ${daysUntilExpr('expiry_date')} AS days_until_expiry,
+        ${inventoryStockCase('inventory')} AS stock_state
+      FROM inventory
+      WHERE qty <= min_qty OR (expiry_date IS NOT NULL AND expiry_date != '' AND date(expiry_date) <= date('now','+30 days'))
+      ORDER BY CASE WHEN qty <= 0 THEN 0 WHEN qty <= min_qty THEN 1 ELSE 2 END,
+        CASE WHEN expiry_date IS NOT NULL AND expiry_date != '' THEN date(expiry_date) ELSE date('2999-12-31') END ASC,
+        name COLLATE NOCASE ASC
+      LIMIT 6
+    `).all(),
+    equipment: db.prepare(`
+      SELECT id, name, sku, status, next_maintenance_at, next_calibration_at,
+        ${equipmentDueCase('next_maintenance_at')} AS maintenance_state,
+        ${equipmentDueCase('next_calibration_at')} AS calibration_state
+      FROM equipment
+      WHERE status IN ('maintenance','broken')
+        OR (next_maintenance_at IS NOT NULL AND next_maintenance_at != '' AND date(next_maintenance_at) <= date('now','+30 days'))
+        OR (next_calibration_at IS NOT NULL AND next_calibration_at != '' AND date(next_calibration_at) <= date('now','+30 days'))
+      ORDER BY CASE status WHEN 'broken' THEN 0 WHEN 'maintenance' THEN 1 ELSE 2 END,
+        CASE WHEN next_maintenance_at IS NOT NULL AND next_maintenance_at != '' THEN date(next_maintenance_at) ELSE date('2999-12-31') END ASC,
+        name COLLATE NOCASE ASC
+      LIMIT 6
+    `).all(),
+    samples: db.prepare(`
+      SELECT id, name, status, qty, unit, expiry_date,
+        ${daysUntilExpr('expiry_date')} AS days_until_expiry
+      FROM sample_registry
+      WHERE approval_status='approved' AND (
+        (expiry_date IS NOT NULL AND expiry_date != '' AND date(expiry_date) <= date('now','+30 days'))
+        OR status='depleted'
+      )
+      ORDER BY CASE WHEN expiry_date IS NOT NULL AND expiry_date != '' THEN date(expiry_date) ELSE date('2999-12-31') END ASC,
+        name COLLATE NOCASE ASC
+      LIMIT 6
+    `).all(),
+    training: db.prepare(`
+      SELECT t.id, t.training_name, t.expires_at, u.name AS user_name, e.name AS equipment_name,
+        ${daysUntilExpr('t.expires_at')} AS days_until_expiry
+      FROM training_records t
+      JOIN users u ON u.id=t.user_id
+      LEFT JOIN equipment e ON e.id=t.equipment_id
+      WHERE t.expires_at IS NOT NULL AND t.expires_at != '' AND date(t.expires_at) <= date('now','+60 days')
+      ORDER BY date(t.expires_at) ASC, t.training_name COLLATE NOCASE ASC
+      LIMIT 6
+    `).all(),
+    reservations: db.prepare(`
+      SELECT r.id, r.status, r.start_at, r.end_at, u.name AS user_name, e.name AS equipment_name
+      FROM equipment_reservations r
+      JOIN users u ON u.id=r.user_id
+      JOIN equipment e ON e.id=r.equipment_id
+      WHERE r.status IN ('pending','approved') AND r.end_at >= datetime('now')
+      ORDER BY CASE r.status WHEN 'pending' THEN 0 ELSE 1 END, r.start_at ASC
+      LIMIT 6
+    `).all(),
+    issues: db.prepare(`
+      SELECT id, title, category, priority, status, created_at
+      FROM issues
+      WHERE status != 'resolved'
+      ORDER BY CASE priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END, created_at DESC
+      LIMIT 6
+    `).all(),
+  };
+
+  res.json({ inventory, equipment, samples, training, issues, reservations, alerts });
+});
+
 // ---- Issues ----
 app.get('/api/issues', apiReadLimiter, requireAuth, (req, res) => {
   const { status, mine, query, category, priority, page, limit } = req.query;
@@ -2357,18 +3582,29 @@ app.get('/api/issues', apiReadLimiter, requireAuth, (req, res) => {
   if (category) { sql += ' AND i.category=?'; params.push(category); }
   if (priority) { sql += ' AND i.priority=?'; params.push(priority); }
   if (mine === '1') { sql += ' AND (i.reporter_user_id=? OR i.assignee_user_id=?)'; params.push(req.session.userId, req.session.userId); }
-  if (query) {
-    sql += " AND (i.title LIKE ? OR i.body LIKE ?)";
-    const like = `%${query}%`;
-    params.push(like, like);
+  const q = searchTerm(query);
+  if (q) {
+    sql += " AND (i.title LIKE ? ESCAPE '\\' OR i.body LIKE ? ESCAPE '\\' OR COALESCE(e.name,'') LIKE ? ESCAPE '\\' OR COALESCE(r.name,'') LIKE ? ESCAPE '\\' OR COALESCE(a.name,'') LIKE ? ESCAPE '\\')";
+    const like = likePattern(q);
+    params.push(like, like, like, like, like);
   }
   sql += " ORDER BY CASE i.status WHEN 'open' THEN 0 WHEN 'in_progress' THEN 1 ELSE 2 END, CASE i.priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END, i.created_at DESC";
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 200));
+  const pageNum = clampInt(page, 1, { min: 1, max: 100000 });
+  const pageSize = clampInt(limit, 200, { min: 1, max: 200 });
   const total = db.prepare(`SELECT COUNT(*) as n FROM (${sql})`).get(...params).n;
+  const summary = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(CASE WHEN i.status='open' THEN 1 ELSE 0 END), 0) AS open,
+      COALESCE(SUM(CASE WHEN i.status='in_progress' THEN 1 ELSE 0 END), 0) AS in_progress,
+      COALESCE(SUM(CASE WHEN i.status='resolved' THEN 1 ELSE 0 END), 0) AS resolved,
+      COALESCE(SUM(CASE WHEN i.priority='high' THEN 1 ELSE 0 END), 0) AS high_priority,
+      COALESCE(SUM(CASE WHEN i.category='safety' AND i.status!='resolved' THEN 1 ELSE 0 END), 0) AS safety_open
+    FROM (${sql}) i
+  `).get(...params);
   sql += ' LIMIT ? OFFSET ?';
   params.push(pageSize, (pageNum - 1) * pageSize);
-  res.json({ total, page: pageNum, limit: pageSize, rows: db.prepare(sql).all(...params) });
+  res.json({ total, page: pageNum, limit: pageSize, summary, rows: db.prepare(sql).all(...params) });
 });
 app.post('/api/issues', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { title, body, category, priority, related_equipment_id } = req.body;
@@ -2434,8 +3670,13 @@ app.get('/api/tasks/full', apiReadLimiter, requireAuth, (req, res) => {
              FROM tasks t LEFT JOIN users u ON u.id = t.assignee_user_id WHERE 1=1`;
   const params = [];
   if (mine === '1') { sql += ' AND t.assignee_user_id=?'; params.push(req.session.userId); }
-  if (status) { sql += ' AND t.status=?'; params.push(status); }
-  sql += ' ORDER BY t.status, t.sort_order, t.id';
+  if (status) {
+    const normalizedStatus = normalizeTaskStatus(status);
+    if (!isValidTaskStatus(normalizedStatus)) return res.status(400).json({ error: 'invalid status' });
+    sql += ' AND t.status=?';
+    params.push(normalizedStatus);
+  }
+  sql += ` ORDER BY ${taskStatusOrderExpr('t.status')}, t.sort_order, t.id`;
   res.json(db.prepare(sql).all(...params));
 });
 
@@ -2485,6 +3726,81 @@ app.post('/api/documents', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
 });
 app.delete('/api/documents/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   db.prepare('DELETE FROM documents WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// ---- Download library (public website) ----
+app.get('/api/downloads', apiReadLimiter, (req, res) => {
+  const q = searchTerm(req.query.q);
+  const category = str(req.query.category, 80).trim();
+  const limit = publicLimit(req.query.limit, 200, 500);
+  const params = ['download'];
+  let sql = 'SELECT id, title, description, category, file_url, file_name, mime_type, file_size, sort_order, created_at FROM documents WHERE entity_type=? AND published=1';
+  if (category) {
+    sql += ' AND category=?';
+    params.push(category);
+  }
+  if (q) {
+    const like = likePattern(q);
+    sql += " AND (title LIKE ? ESCAPE '\\' OR COALESCE(description,'') LIKE ? ESCAPE '\\' OR COALESCE(category,'') LIKE ? ESCAPE '\\' OR COALESCE(file_name,'') LIKE ? ESCAPE '\\')";
+    params.push(like, like, like, like);
+  }
+  sql += ' ORDER BY sort_order, id DESC LIMIT ?';
+  params.push(limit);
+  res.json(db.prepare(sql).all(...params));
+});
+
+app.get('/api/downloads/all', apiReadLimiter, requireStaff, (req, res) => {
+  res.json(db.prepare("SELECT * FROM documents WHERE entity_type='download' ORDER BY sort_order, id DESC").all());
+});
+
+app.post('/api/downloads', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { title, description, category, file_url, file_name, mime_type, file_size, sort_order, published } = req.body || {};
+  if (!title || !file_url) return res.status(400).json({ error: 'title and file_url required' });
+  const r = db.prepare(`
+    INSERT INTO documents (entity_type, entity_id, title, description, category, file_url, file_name, mime_type, file_size, published, sort_order)
+    VALUES ('download', 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    title,
+    description || '',
+    category || '',
+    file_url,
+    file_name || '',
+    mime_type || '',
+    Number(file_size) || 0,
+    published === 0 ? 0 : 1,
+    Number(sort_order) || 0
+  );
+  res.json({ id: r.lastInsertRowid });
+});
+
+app.put('/api/downloads/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const { title, description, category, file_url, file_name, mime_type, file_size, sort_order, published } = req.body || {};
+  if (!title || !file_url) return res.status(400).json({ error: 'title and file_url required' });
+  db.prepare(`
+    UPDATE documents
+    SET title=?, description=?, category=?, file_url=?, file_name=?, mime_type=?, file_size=?, published=?, sort_order=?
+    WHERE id=? AND entity_type='download'
+  `).run(
+    title,
+    description || '',
+    category || '',
+    file_url,
+    file_name || '',
+    mime_type || '',
+    Number(file_size) || 0,
+    published === 0 ? 0 : 1,
+    Number(sort_order) || 0,
+    req.params.id
+  );
+  res.json({ success: true });
+});
+
+app.delete('/api/downloads/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const row = db.prepare("SELECT * FROM documents WHERE id=? AND entity_type='download'").get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Download not found' });
+  removeUploadedAsset(row.file_url);
+  db.prepare("DELETE FROM documents WHERE id=? AND entity_type='download'").run(req.params.id);
   res.json({ success: true });
 });
 
