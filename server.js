@@ -3312,9 +3312,11 @@ app.get('/api/lab-notebooks', apiReadLimiter, requireAuth, (req, res) => {
     sql += ' AND n.user_id=?'; params.push(req.session.userId);
   }
   if (project_id) { sql += ' AND n.project_id=?'; params.push(project_id); }
-  if (search) {
-    sql += ' AND (n.title LIKE ? OR n.content LIKE ? OR n.tags LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  const q = searchTerm(search);
+  if (q) {
+    const like = likePattern(q);
+    sql += " AND (n.title LIKE ? ESCAPE '\\' OR n.content LIKE ? ESCAPE '\\' OR n.tags LIKE ? ESCAPE '\\')";
+    params.push(like, like, like);
   }
   sql += ' ORDER BY n.experiment_date DESC, n.id DESC LIMIT 200';
   res.json(db.prepare(sql).all(...params));
