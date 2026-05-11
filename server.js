@@ -56,6 +56,24 @@ function hashResetToken(token) {
   return crypto.createHash('sha256').update(String(token || '')).digest('hex');
 }
 
+function envInt(name, fallback, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const raw = Number(process.env[name]);
+  if (!Number.isFinite(raw)) return fallback;
+  return Math.max(min, Math.min(max, Math.trunc(raw)));
+}
+
+function resolveSeedPassword(envName) {
+  const configured = String(process.env[envName] || '').trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === 'production') {
+    console.error(`[security] FATAL: ${envName} is required in production to avoid default seed passwords.`);
+    process.exit(1);
+  }
+  const generated = crypto.randomBytes(24).toString('base64url');
+  console.warn(`[security] ⚠️  ${envName} is not set — generated a random development seed password for this boot: ${generated}`);
+  return generated;
+}
+
 // Ensure uploads directory exists
 if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
 
@@ -440,7 +458,7 @@ try {
 } catch(e) { console.error('Data migration error:', e.message); }
 
 // Seed admin user — password can be overridden by ADMIN_SEED_PASSWORD env var
-const ADMIN_SEED_PW = process.env.ADMIN_SEED_PASSWORD || 'admin123';
+const ADMIN_SEED_PW = resolveSeedPassword('ADMIN_SEED_PASSWORD');
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
 if (!adminExists) {
   const hash = bcrypt.hashSync(ADMIN_SEED_PW, BCRYPT_ROUNDS);
@@ -451,7 +469,7 @@ if (!adminExists) {
 try { db.prepare("UPDATE users SET role='admin', name=COALESCE(NULLIF(name,''),'Site administrator') WHERE username='admin'").run(); } catch(_){}
 
 // Seed sample lab accounts — password can be overridden by LAB_SEED_PASSWORD env var
-const LAB_SEED_PW = process.env.LAB_SEED_PASSWORD || 'latfs2024';
+const LAB_SEED_PW = resolveSeedPassword('LAB_SEED_PASSWORD');
 const seedAccounts = [
   { username: 'aortega',   name: 'Dr. Alfonso Ortega', role: 'professor', email: 'aortega@villanova.edu' },
   { username: 'mreyes',    name: 'M. Reyes',           role: 'student',   email: 'mreyes@villanova.edu' },
@@ -963,7 +981,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", 'https://unpkg.com'],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'blob:'],
       fontSrc: ["'self'", 'data:'],
@@ -1007,7 +1025,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const BLOCKED_ROOT_PATHS = new Set([
   'server.js', 'package.json', 'package-lock.json',
   'latfs.db', 'Dockerfile', 'docker-compose.yml',
-  'README', 'README.md', 'tailwind.config.js', 'license.txt',
+  'README', 'README.md', 'tailwind.config.js', 'license.txt', 'uploads',
 ]);
 app.use((req, res, next) => {
   const first = req.path.split('/').filter(Boolean)[0] || '';
@@ -1454,6 +1472,26 @@ function publicLimit(value, fallback = 250, max = 250) {
   return clampInt(value, fallback, { min: 1, max });
 }
 
+const LOGIN_EVENTS_RETENTION_DAYS = envInt('LOGIN_EVENTS_RETENTION_DAYS', 180, { min: 7, max: 3650 });
+const LOGIN_EVENTS_MAX_ROWS = envInt('LOGIN_EVENTS_MAX_ROWS', 50000, { min: 1000, max: 500000 });
+const LOGIN_EVENTS_PRUNE_MS = envInt('LOGIN_EVENTS_PRUNE_INTERVAL_MS', 6 * 60 * 60 * 1000, { min: 60000, max: 7 * 24 * 60 * 60 * 1000 });
+
+function pruneLoginEvents() {
+  try {
+    db.prepare("DELETE FROM login_events WHERE datetime(created_at) < datetime('now', ?)").run(`-${LOGIN_EVENTS_RETENTION_DAYS} days`);
+    db.prepare(`
+      DELETE FROM login_events
+      WHERE id NOT IN (
+        SELECT id FROM login_events
+        ORDER BY datetime(created_at) DESC, id DESC
+        LIMIT ?
+      )
+    `).run(LOGIN_EVENTS_MAX_ROWS);
+  } catch (e) {
+    console.warn('[security] login_events prune failed:', e.message);
+  }
+}
+
 try {
   db.prepare("UPDATE tasks SET status='in_progress' WHERE status='doing'").run();
   db.prepare("UPDATE tasks SET status='blocked' WHERE status='review'").run();
@@ -1509,6 +1547,11 @@ app.post('/admin/login', authLimiter, (req, res) => {
   }
 
   // Password correct — check 2FA if enabled
+  if (user.role === 'admin' && !user.totp_enabled) {
+    logEvent(user.id, username, false, '2fa_required');
+    return res.status(403).json({ error: 'Admin accounts must enable two-factor authentication before signing in.' });
+  }
+
   if (user.totp_enabled) {
     if (!totp_code) {
       // Signal to the client that 2FA is required (password was correct)
@@ -1807,8 +1850,8 @@ app.delete('/api/sponsors/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
   res.json({ success: true });
 });
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve uploaded files to authenticated users only
+app.use('/uploads', requireAuth, express.static(path.join(__dirname, 'uploads'), { dotfiles: 'deny' }));
 
 // PHOTO UPLOAD API
 const uploadRateLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
@@ -2204,15 +2247,17 @@ app.delete('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 // INVENTORY
 // CSV export — must be before parameterised routes to avoid conflict
 app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => {
+  const rowLimit = clampInt(req.query.limit, 1000, { min: 1, max: 5000 });
   const rows = db.prepare(`
     SELECT i.id, i.lab, i.sku, i.name, i.category, i.qty, i.min_qty, i.unit,
            i.location, i.expiry_date, i.chemical_cas, i.hazard_class, i.sds_url,
            i.reorder_url, i.notes, s.name AS supplier_name, s.email AS supplier_email,
-           s.phone AS supplier_phone, i.created_at
+            s.phone AS supplier_phone, i.created_at
     FROM inventory i
     LEFT JOIN suppliers s ON s.id = i.supplier_id
     ORDER BY i.lab, i.sort_order, i.id
-  `).all();
+    LIMIT ?
+  `).all(rowLimit);
   const header = ['id','lab','sku','name','category','qty','min_qty','unit','location','expiry_date','chemical_cas','hazard_class','sds_url','reorder_url','notes','supplier','supplier_email','supplier_phone','created_at'];
   const csvEscape = v => {
     const s = String(v == null ? '' : v);
@@ -2226,6 +2271,7 @@ app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => 
   }
   const csv = lines.join('\r\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('X-Export-Row-Limit', String(rowLimit));
   res.setHeader('Content-Disposition', `attachment; filename="inventory-${new Date().toISOString().slice(0,10)}.csv"`);
   res.send(csv);
 });
@@ -3998,6 +4044,8 @@ app.use((err, req, res, next) => {
 });
 
 const server = app.listen(PORT, () => {
+  pruneLoginEvents();
+  setInterval(pruneLoginEvents, LOGIN_EVENTS_PRUNE_MS).unref();
   console.log(`LATFS Website running at http://localhost:${PORT}`);
   console.log(`Admin panel: http://localhost:${PORT}/admin`);
   console.log(`Platform:    http://localhost:${PORT}/platform`);
