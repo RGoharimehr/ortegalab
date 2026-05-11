@@ -17,6 +17,7 @@ const QRCode = require('qrcode');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || 'https://latfs.villanova.edu';
+const SESSION_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? '' : crypto.randomBytes(64).toString('hex'));
 
 // ── Email (optional) ────────────────────────────────────────────────────────
 // Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM to enable email.
@@ -49,6 +50,10 @@ function sendMail(to, subject, text) {
   mailer.sendMail({ from, to, subject, text }).catch(err => {
     console.warn('[email] send failed:', err.message);
   });
+}
+
+function hashResetToken(token) {
+  return crypto.createHash('sha256').update(String(token || '')).digest('hex');
 }
 
 // Ensure uploads directory exists
@@ -84,7 +89,7 @@ const docStorage = multer.diskStorage({
 const DOC_ALLOWED_EXTS = new Set([
   '.pdf', '.doc', '.docx', '.txt', '.rtf', '.csv', '.tsv',
   '.xls', '.xlsx', '.ppt', '.pptx',
-  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
+  '.jpg', '.jpeg', '.png', '.gif', '.webp',
   '.mp4', '.mov', '.avi', '.webm', '.mp3', '.wav', '.m4a',
   '.zip'
 ]);
@@ -106,7 +111,6 @@ const DOC_ALLOWED_MIMES = new Set([
   'image/png',
   'image/gif',
   'image/webp',
-  'image/svg+xml',
   'audio/mpeg',
   'audio/wav',
   'audio/x-wav',
@@ -121,9 +125,10 @@ const docUpload = multer({
   limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname || '').toLowerCase();
-    const allowedByMime = DOC_ALLOWED_MIMES.has(file.mimetype);
+    const mime = String(file.mimetype || '').toLowerCase();
+    const allowedByMime = DOC_ALLOWED_MIMES.has(mime) || mime === 'application/octet-stream';
     const allowedByExt = DOC_ALLOWED_EXTS.has(ext);
-    if (allowedByMime || allowedByExt) cb(null, true);
+    if (allowedByMime && allowedByExt) cb(null, true);
     else cb(new Error('Allowed files include documents, spreadsheets, presentations, images, audio, video, and ZIP files up to 25 MB'));
   }
 });
@@ -477,7 +482,7 @@ if (!process.env.SESSION_SECRET) {
     console.error('[security] FATAL: SESSION_SECRET env var is not set. Refusing to start in production without a secure secret.');
     process.exit(1);
   }
-  console.warn('[security] ⚠️  SESSION_SECRET env var is not set — using insecure default. Set a random 64-char secret in production.');
+  console.warn('[security] ⚠️  SESSION_SECRET env var is not set — using an ephemeral in-memory secret for development.');
 }
 
 // Seed equipment if empty
@@ -953,15 +958,28 @@ try {
 }
 
 // Middleware
-// Security headers (helmet) — Content Security Policy is intentionally disabled because the
-// admin and platform SPAs use inline scripts and styles. All other helmet protections are active
-// (X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy, etc.).
-// TODO: migrate inline scripts to external files and re-enable CSP.
-app.use(helmet({ contentSecurityPolicy: false }));
+app.disable('x-powered-by');
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      fontSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: []
+    }
+  }
+}));
 app.use(express.json({ limit: '256kb' }));
 app.use(express.urlencoded({ extended: true, limit: '256kb' }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'latfs-secret-key-2024',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -3865,8 +3883,9 @@ app.post('/api/forgot-password', passwordResetLimiter, (req, res) => {
   // Delete any existing tokens for this user
   db.prepare('DELETE FROM password_reset_tokens WHERE user_id=?').run(user.id);
   const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = hashResetToken(token);
   const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
-  db.prepare('INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?,?,?)').run(token, user.id, expires);
+  db.prepare('INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?,?,?)').run(tokenHash, user.id, expires);
   const resetUrl = `${BASE_URL}/reset-password?token=${token}`;
   sendMail(
     user.email,
@@ -3879,13 +3898,14 @@ app.post('/api/reset-password', passwordResetLimiter, (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) return res.status(400).json({ error: 'token and password required' });
   if (password.length < 12) return res.status(400).json({ error: 'password must be at least 12 characters' });
+  const tokenHash = hashResetToken(token);
   // Clean up expired tokens
   db.prepare("DELETE FROM password_reset_tokens WHERE datetime(expires_at) < datetime('now')").run();
-  const row = db.prepare('SELECT * FROM password_reset_tokens WHERE token=?').get(token);
+  const row = db.prepare('SELECT * FROM password_reset_tokens WHERE token=?').get(tokenHash);
   if (!row) return res.status(400).json({ error: 'Invalid or expired reset token' });
   const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
   db.prepare('UPDATE users SET password=? WHERE id=?').run(hash, row.user_id);
-  db.prepare('DELETE FROM password_reset_tokens WHERE token=?').run(token);
+  db.prepare('DELETE FROM password_reset_tokens WHERE token=?').run(tokenHash);
   res.json({ success: true });
 });
 
@@ -3904,7 +3924,7 @@ app.get('/api/admin/backup', adminOpLimiter, requireRole('admin'), (req, res) =>
           if (err && !res.headersSent) res.status(500).json({ error: 'Backup download failed' });
         });
       })
-      .catch(err => res.status(500).json({ error: err.message }));
+      .catch(err => sendInternalError(res, err, 'admin backup'));
   } catch(e) {
     sendInternalError(res, e, 'admin backup');
   }
