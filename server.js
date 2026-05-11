@@ -343,6 +343,7 @@ db.exec(`
     mime_type TEXT DEFAULT '',
     file_size INTEGER DEFAULT 0,
     published INTEGER DEFAULT 1,
+    created_by_user_id INTEGER,
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -415,6 +416,7 @@ const migrations = [
   'ALTER TABLE documents ADD COLUMN mime_type TEXT DEFAULT ""',
   'ALTER TABLE documents ADD COLUMN file_size INTEGER DEFAULT 0',
   'ALTER TABLE documents ADD COLUMN published INTEGER DEFAULT 1',
+  'ALTER TABLE documents ADD COLUMN created_by_user_id INTEGER',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch(e) {
@@ -1089,6 +1091,11 @@ function withUserProfile(user) {
   };
 }
 
+function sendInternalError(res, err, context = 'request') {
+  console.error(`[${context}]`, err);
+  return res.status(500).json({ error: 'Internal server error' });
+}
+
 function titleCaseWords(value) {
   return String(value || '')
     .split(/[\s_-]+/)
@@ -1130,7 +1137,7 @@ function buildPublicPeopleRows() {
   `).all();
   const roster = new Map();
   const addRow = (row) => {
-    const key = String(row.email || row.name || row.id || '').trim().toLowerCase();
+    const key = String(row.email || row.id || '').trim().toLowerCase();
     if (!key) return;
     roster.set(key, { ...(roster.get(key) || {}), ...row });
   };
@@ -1655,7 +1662,8 @@ app.put('/api/publications/:id', apiWriteLimiter, requireStaff, requireCsrf, (re
   const { title, authors, venue, year, pdf_url, doi_url, citation_url } = req.body;
   const yearNum = parseInt(year, 10);
   if (!yearNum || yearNum < 1900 || yearNum > 2100) return res.status(400).json({ error: 'year must be a number between 1900 and 2100' });
-  db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, doi_url=?, citation_url=? WHERE id=?').run(title, authors, venue, yearNum, pdf_url || null, doi_url || null, citation_url || null, req.params.id);
+  const result = db.prepare('UPDATE publications SET title=?, authors=?, venue=?, year=?, pdf_url=?, doi_url=?, citation_url=? WHERE id=?').run(title, authors, venue, yearNum, pdf_url || null, doi_url || null, citation_url || null, req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'not found' });
   res.json({ success: true });
 });
 
@@ -1745,7 +1753,8 @@ app.post('/api/research', apiWriteLimiter, requireStaff, requireCsrf, (req, res)
 
 app.put('/api/research/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { title, description, content, image_url, links, sort_order } = req.body;
-  db.prepare('UPDATE research SET title=?, description=?, content=?, image_url=?, links=?, sort_order=? WHERE id=?').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0, req.params.id);
+  const result = db.prepare('UPDATE research SET title=?, description=?, content=?, image_url=?, links=?, sort_order=? WHERE id=?').run(title, description, content || '', image_url || '', links || '[]', sort_order || 0, req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'not found' });
   res.json({ success: true });
 });
 
@@ -1770,7 +1779,8 @@ app.post('/api/sponsors', apiWriteLimiter, requireStaff, requireCsrf, (req, res)
 
 app.put('/api/sponsors/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, logo_url, website_url, sort_order, show_in_footer } = req.body;
-  db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=?, show_in_footer=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, show_in_footer ? 1 : 0, req.params.id);
+  const result = db.prepare('UPDATE sponsors SET name=?, logo_url=?, website_url=?, sort_order=?, show_in_footer=? WHERE id=?').run(name, logo_url || '', website_url || '', sort_order || 0, show_in_footer ? 1 : 0, req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'not found' });
   res.json({ success: true });
 });
 
@@ -1908,7 +1918,8 @@ app.post('/api/facilities', apiWriteLimiter, requireStaff, requireCsrf, (req, re
 
 app.put('/api/facilities/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, description, content, photo_url, doc_url, doc_name, sort_order } = req.body;
-  db.prepare('UPDATE facilities SET name=?, description=?, content=?, photo_url=?, doc_url=?, doc_name=?, sort_order=? WHERE id=?').run(name, description, content || '', photo_url || '', doc_url || '', doc_name || '', sort_order || 0, req.params.id);
+  const result = db.prepare('UPDATE facilities SET name=?, description=?, content=?, photo_url=?, doc_url=?, doc_name=?, sort_order=? WHERE id=?').run(name, description, content || '', photo_url || '', doc_url || '', doc_name || '', sort_order || 0, req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'not found' });
   res.json({ success: true });
 });
 
@@ -1934,7 +1945,7 @@ app.delete('/api/facilities/:id', apiWriteLimiter, requireStaff, requireCsrf, (r
 app.get('/api/events', apiReadLimiter, requireAuth, (req, res) => {
   try {
     res.json(db.prepare("SELECT * FROM events ORDER BY COALESCE(start_time, ''), id").all());
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'events list'); }
 });
 app.post('/api/events', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   try {
@@ -1944,7 +1955,7 @@ app.post('/api/events', apiWriteLimiter, requireAuth, requireCsrf, (req, res) =>
     const result = db.prepare('INSERT INTO events (title, event_type, start_time, end_time, location, visibility, attendees, owner_user_id, day, start_hour, duration_hours) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
       .run(title, event_type || 'meeting', start_time, end_time || '', location || '', visibility || 'public', attendees || '', req.session.userId || null, 0, 0, 0);
     res.json({ id: result.lastInsertRowid });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'events create'); }
 });
 app.put('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   try {
@@ -1966,7 +1977,7 @@ app.put('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res)
     params.push(req.params.id);
     db.prepare(`UPDATE events SET ${sets.join(', ')} WHERE id=?`).run(...params);
     res.json({ success: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'events update'); }
 });
 app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   try {
@@ -1977,7 +1988,7 @@ app.delete('/api/events/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, r
     if (!isOwner && !isLabStaffRole(role)) return res.status(403).json({ error: 'Only the owner or staff can delete this event' });
     db.prepare('DELETE FROM events WHERE id=?').run(req.params.id);
     res.json({ success: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'events delete'); }
 });
 
 // TASKS
@@ -2136,7 +2147,7 @@ app.delete('/api/tasks/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, re
 app.get('/api/meetings', apiReadLimiter, requireAuth, (req, res) => {
   try {
     res.json(db.prepare("SELECT * FROM meetings ORDER BY COALESCE(scheduled_at, ''), sort_order, id").all());
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'meetings list'); }
 });
 app.post('/api/meetings', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   try {
@@ -2146,7 +2157,7 @@ app.post('/api/meetings', apiWriteLimiter, requireStaff, requireCsrf, (req, res)
     const result = db.prepare('INSERT INTO meetings (title, meeting_type, scheduled_at, location, description, sort_order, day_label, time_label) VALUES (?,?,?,?,?,?,?,?)')
       .run(str(title,300), meeting_type || 'group', scheduled_at || '', str(location,300), str(description,5000), sort_order || 0, '', '');
     res.json({ id: result.lastInsertRowid });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'meetings create'); }
 });
 app.put('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   try {
@@ -2160,15 +2171,16 @@ app.put('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, r
     if (sort_order !== undefined)   { sets.push('sort_order=?');   params.push(sort_order || 0); }
     if (!sets.length) return res.json({ success: true });
     params.push(req.params.id);
-    db.prepare(`UPDATE meetings SET ${sets.join(', ')} WHERE id=?`).run(...params);
+    const result = db.prepare(`UPDATE meetings SET ${sets.join(', ')} WHERE id=?`).run(...params);
+    if (!result.changes) return res.status(404).json({ error: 'not found' });
     res.json({ success: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'meetings update'); }
 });
 app.delete('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   try {
     db.prepare('DELETE FROM meetings WHERE id=?').run(req.params.id);
     res.json({ success: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { sendInternalError(res, e, 'meetings delete'); }
 });
 
 // INVENTORY
@@ -2324,56 +2336,63 @@ app.get('/api/inventory', apiReadLimiter, requireAuth, (req, res) => {
 
 app.post('/api/inventory', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order,
-          expiry_date, location, chemical_cas, hazard_class, sds_url } = req.body;
+           expiry_date, location, chemical_cas, hazard_class, sds_url } = req.body;
   if (!sku || !name) return res.status(400).json({ error: 'Missing fields' });
+  const safeQty = Math.max(0, clampInt(qty, 0, { min: 0, max: Number.MAX_SAFE_INTEGER }));
+  const safeMinQty = clampInt(min_qty, 0, { min: 0, max: Number.MAX_SAFE_INTEGER });
   try {
     const result = db.prepare(`INSERT INTO inventory
       (lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order,
        expiry_date, location, chemical_cas, hazard_class, sds_url)
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .run(lab || 'A', sku, name, category || '', qty || 0, min_qty || 0, unit || 'each',
+      .run(lab || 'A', sku, name, category || '', safeQty, safeMinQty, unit || 'each',
            supplier_id || null, reorder_url || '', notes || '', sort_order || 0,
            expiry_date || null, location || '', chemical_cas || '', hazard_class || '', sds_url || '');
-    if ((qty || 0) > 0) {
+    if (safeQty > 0) {
       db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
-        .run(result.lastInsertRowid, req.session.userId || null, qty || 0, 0, qty || 0, 'initial stock');
+        .run(result.lastInsertRowid, req.session.userId || null, safeQty, 0, safeQty, 'initial stock');
     }
     res.json({ id: result.lastInsertRowid });
   } catch(e) {
     if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'SKU already exists' });
-    res.status(500).json({ error: e.message });
+    sendInternalError(res, e, 'inventory create');
   }
 });
 
 app.put('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { lab, sku, name, category, qty, min_qty, unit, supplier_id, reorder_url, notes, sort_order,
-          adjustment_reason, expiry_date, location, chemical_cas, hazard_class, sds_url } = req.body;
+           adjustment_reason, expiry_date, location, chemical_cas, hazard_class, sds_url } = req.body;
   const existing = db.prepare('SELECT qty, min_qty FROM inventory WHERE id=?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'not found' });
-
-  db.prepare(`UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, unit=?,
-    supplier_id=?, reorder_url=?, notes=?, sort_order=?,
-    expiry_date=?, location=?, chemical_cas=?, hazard_class=?, sds_url=? WHERE id=?`)
-    .run(lab || 'A', sku, name, category || '', qty ?? existing.qty, min_qty ?? existing.min_qty,
-         unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0,
-         expiry_date || null, location || '', chemical_cas || '', hazard_class || '', sds_url || '',
-         req.params.id);
+  if (!sku || !name) return res.status(400).json({ error: 'sku and name are required' });
+  const newQty = Math.max(0, clampInt(qty, existing.qty, { min: 0, max: Number.MAX_SAFE_INTEGER }));
+  const nextMinQty = clampInt(min_qty, existing.min_qty, { min: 0, max: Number.MAX_SAFE_INTEGER });
+  try {
+    db.prepare(`UPDATE inventory SET lab=?, sku=?, name=?, category=?, qty=?, min_qty=?, unit=?,
+      supplier_id=?, reorder_url=?, notes=?, sort_order=?,
+      expiry_date=?, location=?, chemical_cas=?, hazard_class=?, sds_url=? WHERE id=?`)
+      .run(lab || 'A', sku, name, category || '', newQty, nextMinQty,
+           unit || 'each', supplier_id || null, reorder_url || '', notes || '', sort_order || 0,
+           expiry_date || null, location || '', chemical_cas || '', hazard_class || '', sds_url || '',
+           req.params.id);
+  } catch (e) {
+    if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'SKU already exists' });
+    return sendInternalError(res, e, 'inventory update');
+  }
 
   // Log qty change if qty changed
-  const newQty = qty ?? existing.qty;
   const delta = newQty - existing.qty;
   if (delta !== 0) {
     db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
       .run(req.params.id, req.session.userId || null, delta, existing.qty, newQty, adjustment_reason || '');
     // Low-stock email alert
-    const minQ = min_qty ?? existing.min_qty;
-    if (newQty <= minQ && newQty < existing.qty) {
+    if (newQty <= nextMinQty && newQty < existing.qty) {
       const item = db.prepare('SELECT name, sku FROM inventory WHERE id=?').get(req.params.id);
       const staff = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active!=0").all();
       const emails = staff.map(u => u.email).filter(Boolean);
       if (emails.length && item) {
         sendMail(emails, `[LATFS] Low stock alert: ${item.name}`,
-          `Inventory item "${item.name}" (SKU: ${item.sku}) is at or below its minimum quantity.\n\nCurrent qty: ${newQty} (min: ${minQ})\n\nLog in to the LATFS Platform to reorder.\n`);
+          `Inventory item "${item.name}" (SKU: ${item.sku}) is at or below its minimum quantity.\n\nCurrent qty: ${newQty} (min: ${nextMinQty})\n\nLog in to the LATFS Platform to reorder.\n`);
       }
     }
   }
@@ -2381,6 +2400,8 @@ app.put('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, 
 });
 
 app.delete('/api/inventory/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
+  const item = db.prepare('SELECT id FROM inventory WHERE id=?').get(req.params.id);
+  if (!item) return res.status(404).json({ error: 'not found' });
   db.prepare('DELETE FROM inventory WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -2425,6 +2446,11 @@ app.post('/api/inventory/batch-adjust', apiWriteLimiter, requireStaff, requireCs
     return res.status(400).json({ error: 'adjustments array required' });
   }
   const results = [];
+  const pendingAlerts = [];
+  const staffEmails = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active!=0")
+    .all()
+    .map(u => u.email)
+    .filter(Boolean);
   const batchTx = db.transaction(() => {
     for (const adj of adjustments) {
       const id = parseInt(adj.id, 10);
@@ -2437,22 +2463,21 @@ app.post('/api/inventory/batch-adjust', apiWriteLimiter, requireStaff, requireCs
       db.prepare('INSERT INTO inventory_adjustments (inventory_id, user_id, delta, qty_before, qty_after, reason) VALUES (?,?,?,?,?,?)')
         .run(id, req.session.userId || null, newQty - item.qty, item.qty, newQty, adj.reason || 'batch adjust');
       // Low-stock email alert
-      if (newQty <= item.min_qty && newQty < item.qty) {
-        const staff = db.prepare("SELECT email FROM users WHERE role IN ('admin','professor') AND email != '' AND active!=0").all();
-        const emails = staff.map(u => u.email).filter(Boolean);
-        if (emails.length) {
-          sendMail(emails, `[LATFS] Low stock alert: ${item.name}`,
-            `Inventory item "${item.name}" (SKU: ${item.sku}) is at or below its minimum quantity.\n\nCurrent qty: ${newQty} (min: ${item.min_qty})\n`);
-        }
+      if (staffEmails.length && newQty <= item.min_qty && newQty < item.qty) {
+        pendingAlerts.push({
+          subject: `[LATFS] Low stock alert: ${item.name}`,
+          text: `Inventory item "${item.name}" (SKU: ${item.sku}) is at or below its minimum quantity.\n\nCurrent qty: ${newQty} (min: ${item.min_qty})\n`
+        });
       }
       results.push({ id, qty_before: item.qty, qty_after: newQty, delta: newQty - item.qty });
     }
   });
   try {
     batchTx();
+    for (const alert of pendingAlerts) sendMail(staffEmails, alert.subject, alert.text);
     res.json({ success: true, results });
   } catch(e) {
-    res.status(500).json({ error: e.message });
+    sendInternalError(res, e, 'inventory batch adjust');
   }
 });
 
@@ -2469,8 +2494,10 @@ app.post('/api/suppliers', apiWriteLimiter, requireStaff, requireCsrf, (req, res
 });
 app.put('/api/suppliers/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
   const { name, contact, email, phone, website_url, notes } = req.body;
-  db.prepare('UPDATE suppliers SET name=?, contact=?, email=?, phone=?, website_url=?, notes=? WHERE id=?')
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const result = db.prepare('UPDATE suppliers SET name=?, contact=?, email=?, phone=?, website_url=?, notes=? WHERE id=?')
     .run(name, contact || '', email || '', phone || '', website_url || '', notes || '', req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'not found' });
   res.json({ success: true });
 });
 app.delete('/api/suppliers/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -2505,7 +2532,7 @@ app.post('/api/apps', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => 
     res.json({ id: r.lastInsertRowid });
   } catch(e) {
     if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'Slug already exists' });
-    res.status(500).json({ error: e.message });
+    sendInternalError(res, e, 'apps create');
   }
 });
 app.put('/api/apps/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -2621,8 +2648,7 @@ app.delete('/api/projects/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 });
 
 // ---- Self / current user ----
-app.get('/api/me', apiReadLimiter, (req, res) => {
-  if (!req.session || !req.session.userId) return res.status(401).json({ error: 'Auth required' });
+app.get('/api/me', apiReadLimiter, requireAuth, (req, res) => {
   const rawUser = db.prepare('SELECT id, username, name, role, email, person_id, totp_enabled, last_login_at, last_login_ip FROM users WHERE id=?').get(req.session.userId);
   const u = withUserProfile(rawUser);
   if (!u) return res.status(401).json({ error: 'Auth required' });
@@ -2695,7 +2721,7 @@ app.post('/api/me/totp/setup', apiWriteLimiter, requireAuth, requireCsrf, async 
       .run(req.session.userId, secret);
     res.json({ secret, otpauth, qr: qrDataUrl });
   } catch(e) {
-    res.status(500).json({ error: e.message });
+    sendInternalError(res, e, 'totp setup');
   }
 });
 
@@ -2793,10 +2819,15 @@ app.put('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res)
   }
   if (email !== undefined)  { sets.push('email=?');  params.push(email); }
   if (active !== undefined) { sets.push('active=?'); params.push(active ? 1 : 0); }
-  if (password)             { sets.push('password=?'); params.push(bcrypt.hashSync(password, BCRYPT_ROUNDS)); }
+  if (password) {
+    if (password.length < 12) return res.status(400).json({ error: 'Password must be at least 12 characters' });
+    sets.push('password=?');
+    params.push(bcrypt.hashSync(password, BCRYPT_ROUNDS));
+  }
   if (!sets.length) return res.json({ success: true });
   params.push(req.params.id);
-  db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
+  const result = db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
+  if (!result.changes) return res.status(404).json({ error: 'not found' });
   res.json({ success: true });
 });
 app.delete('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
@@ -3062,7 +3093,7 @@ app.put('/api/equipment/reservations/:id', apiWriteLimiter, requireAuth, require
   if (!resv) return res.status(404).json({ error: 'not found' });
   const role = currentRole(req);
   const isStaff = isLabStaffRole(role);
-  const canApprove = isProfessorRole(role);
+  const canApprove = isLabStaffRole(role);
   const isOwner = resv.user_id === req.session.userId;
   // Only the professor can approve/deny; owner or lab staff can cancel
   const { status, notes, start_at, end_at, purpose } = req.body;
@@ -3660,7 +3691,10 @@ app.get('/api/issues/:id/comments', apiReadLimiter, requireAuth, (req, res) => {
 app.post('/api/issues/:id/comments', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { body } = req.body;
   if (!body) return res.status(400).json({ error: 'body required' });
-  const r = db.prepare('INSERT INTO issue_comments (issue_id, user_id, body) VALUES (?,?,?)').run(req.params.id, req.session.userId, body);
+  const issue = db.prepare('SELECT id FROM issues WHERE id=?').get(req.params.id);
+  if (!issue) return res.status(404).json({ error: 'not found' });
+  const r = db.prepare('INSERT INTO issue_comments (issue_id, user_id, body) VALUES (?,?,?)')
+    .run(req.params.id, req.session.userId, str(body, 10000));
   res.json({ id: r.lastInsertRowid });
 });
 
@@ -3722,11 +3756,17 @@ app.get('/api/documents', apiReadLimiter, requireAuth, (req, res) => {
 app.post('/api/documents', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
   const { entity_type, entity_id, title, file_url, file_name, sort_order } = req.body;
   if (!entity_type || !entity_id || !file_url) return res.status(400).json({ error: 'entity_type, entity_id, file_url required' });
-  const r = db.prepare('INSERT INTO documents (entity_type, entity_id, title, file_url, file_name, sort_order) VALUES (?,?,?,?,?,?)')
-    .run(entity_type, entity_id, title || '', file_url, file_name || '', sort_order || 0);
+  const r = db.prepare('INSERT INTO documents (entity_type, entity_id, title, file_url, file_name, created_by_user_id, sort_order) VALUES (?,?,?,?,?,?,?)')
+    .run(entity_type, entity_id, title || '', file_url, file_name || '', req.session.userId || null, sort_order || 0);
   res.json({ id: r.lastInsertRowid });
 });
 app.delete('/api/documents/:id', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
+  const row = db.prepare('SELECT id, created_by_user_id FROM documents WHERE id=?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'not found' });
+  const isStaff = isLabStaffRole(currentRole(req));
+  if (!isStaff && row.created_by_user_id !== req.session.userId) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   db.prepare('DELETE FROM documents WHERE id=?').run(req.params.id);
   res.json({ success: true });
 });
@@ -3866,7 +3906,7 @@ app.get('/api/admin/backup', adminOpLimiter, requireRole('admin'), (req, res) =>
       })
       .catch(err => res.status(500).json({ error: err.message }));
   } catch(e) {
-    res.status(500).json({ error: e.message });
+    sendInternalError(res, e, 'admin backup');
   }
 });
 
@@ -3933,7 +3973,7 @@ app.get('/api/events/calendar.ics', apiReadLimiter, (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Unhandled route error:', err);
   if (!res.headersSent) {
-    res.status(500).json({ error: err.message || 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
