@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" preserveAspectRatio="xMidYMid meet">
+  <g transform="translate(4,6)">
+    <path d="M26 2 C26 2, 46 22, 46 38 C46 50, 37 56, 26 56 C15 56, 6 50, 6 38 C6 22, 26 2, 26 2 Z" fill="#FFFFFF"></path>
+    <path d="M26 14 C26 14, 36 26, 36 38 C36 46, 31 50, 26 50 C21 50, 16 46, 16 38 C16 26, 26 14, 26 14 Z" fill="#C8A24A"></path>
+  </g>
+  <text x="66" y="32" font-family="Georgia, &#39;Times New Roman&#39;, serif" font-weight="700" font-size="26" fill="#FFFFFF" letter-spacing="1.5">LATFS</text>
+  <rect x="66" y="40" width="36" height="1.5" fill="#C8A24A"></rect>
+  <text x="66" y="54" font-family="&#39;Helvetica Neue&#39;, Arial, sans-serif" font-weight="600" font-size="8" fill="rgba(255,255,255,0.72)" letter-spacing="1.6">ADVANCED THERMAL &amp; FLUID SYSTEMS</text>
+</svg>

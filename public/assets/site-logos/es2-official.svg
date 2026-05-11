@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="120" viewBox="0 0 560 120" role="img" aria-labelledby="title desc">
+  <title id="title">ES2 Center for Energy-Smart Electronic Systems</title>
+  <desc id="desc">Official-style ES2 wordmark for the Center for Energy-Smart Electronic Systems.</desc>
+  <g transform="translate(10 20)">
+    <path fill="#007a5a" d="M0 0h156v20H0zM0 34h132v20H0zM0 68h156v20H0z"/>
+    <path fill="#007a5a" d="M0 0h38v88H0zM74 0h38v88H74z"/>
+    <path fill="#8b8e91" d="M176 0h96c26 0 40 13 40 35 0 18-9 29-28 36l-46 17h75v20H176V88c0-11 7-20 21-25l61-23c10-4 15-9 15-17 0-9-7-14-20-14h-77V0z"/>
+    <rect x="342" y="-4" width="3" height="96" fill="#888"/>
+    <text x="370" y="31" font-family="Aptos, Calibri, Arial, sans-serif" font-size="28" fill="#007a5a">Center for Energy-Smart</text>
+    <text x="370" y="65" font-family="Aptos, Calibri, Arial, sans-serif" font-size="28" fill="#007a5a">Electronic Systems</text>
+  </g>
+</svg>

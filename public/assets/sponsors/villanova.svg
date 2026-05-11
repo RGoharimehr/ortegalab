@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 56" preserveAspectRatio="xMidYMid meet">
+  
+  <g transform="translate(4,6)">
+    <path d="M22 2 L40 8 L40 24 C40 34, 31 42, 22 46 C13 42, 4 34, 4 24 L4 8 Z" fill="#13294B"></path>
+    <text x="22" y="28" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="16" fill="#FFFFFF">V</text>
+  </g>
+  <text x="54" y="26" font-family="Georgia, &#39;Times New Roman&#39;, serif" font-weight="700" font-size="16" fill="#13294B" letter-spacing="0.2">VILLANOVA</text>
+  <text x="54" y="44" font-family="&#39;Helvetica Neue&#39;, Arial, sans-serif" font-weight="600" font-size="9" fill="#475569" letter-spacing="1">UNIVERSITY</text>
+</svg>

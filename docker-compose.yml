@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    image: latfs-website:latest
+    container_name: latfs-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Required — override with a strong random value
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-production}
+      BASE_URL: ${BASE_URL:-https://latfs.villanova.edu}
+      # Optional: seed passwords (only used on first-run DB creation)
+      ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}
+      LAB_SEED_PASSWORD: ${LAB_SEED_PASSWORD:-}
+      # Optional: SMTP email notifications
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+    volumes:
+      # Persist the SQLite database and uploaded files outside the container
+      - latfs_db:/app/latfs.db
+      - latfs_uploads:/app/uploads
+
+volumes:
+  latfs_db:
+  latfs_uploads:

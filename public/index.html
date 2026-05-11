@@ -1,1474 +1,2517 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LATFS - Laboratory for Advanced Thermal and Fluid Systems</title>
-  <meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/tailwind.css">
-  <style>
-    :root {
-      --navy: #0f172a;
-      --navy-700: #1e3a5f;
-      --gold: #b8912a;
-      --gold-light: #fef7e4;
-      --gray-50: #f8fafc;
-      --gray-100: #f1f5f9;
-      --gray-200: #e2e8f0;
-      --gray-400: #94a3b8;
-      --gray-500: #64748b;
-      --gray-700: #374151;
-      /* Legacy aliases */
-      --primary: #0f172a;
-      --secondary: #b8912a;
-      --accent: #b8912a;
-      --green: #b8912a;
-      --light: #f8fafc;
-      --border: #e2e8f0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LATFS Â· Laboratory for Advanced Thermal & Fluid Systems</title>
+<meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University Â· two-phase flow, microchannel cooling, energy-efficient electronic systems.">
+<link rel="canonical" href="https://latfs.villanova.edu/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LATFS Â· Villanova University">
+<meta property="og:title" content="LATFS Â· Laboratory for Advanced Thermal & Fluid Systems">
+<meta property="og:description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University â€” research in two-phase flow, microchannel cooling, and energy-efficient electronic systems.">
+<meta property="og:url" content="https://latfs.villanova.edu/">
+<meta property="og:image" content="https://latfs.villanova.edu/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LATFS Â· Laboratory for Advanced Thermal & Fluid Systems">
+<meta name="twitter:description" content="Research in two-phase flow, microchannel cooling, and energy-efficient electronic systems at Villanova University.">
+<meta name="twitter:image" content="https://latfs.villanova.edu/assets/og-cover.png">
+<link rel="icon" href="./assets/favicon.gif">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   LATFS Design System â€” synced with website-ui-kit
+   ============================================================ */
+:root {
+  --navy-950:#080f24; --navy-900:#0f172a; --navy-800:#162041; --navy-700:#1e3a5f;
+  --navy-600:#2d4a78; --navy-500:#4a6fa5;
+  --gold-900:#7a5e15; --gold-700:#9a7820; --gold-600:#b8912a; --gold-500:#d4a942;
+  --gold-300:#e8c972; --gold-100:#fef7e4; --gold-50:#fdfbf4;
+  --gray-950:#0a0d13; --gray-900:#111827; --gray-800:#1f2937; --gray-700:#374151;
+  --gray-600:#4b5563; --gray-500:#64748b; --gray-400:#94a3b8; --gray-300:#cbd5e1;
+  --gray-200:#e2e8f0; --gray-100:#f1f5f9; --gray-50:#f8fafc;
+  --status-ok:#16a34a; --status-warn:#d97706; --status-alert:#dc2626; --status-info:#0284c7;
+  --fg-1:var(--navy-900); --fg-2:var(--gray-700); --fg-3:var(--gray-500); --fg-4:var(--gray-400); --fg-inv:#fff;
+  --bg-1:#fff; --bg-2:var(--gray-50); --bg-3:var(--gray-100); --bg-dark:var(--navy-900);
+  --border-1:var(--gray-200); --border-2:var(--gray-300);
+  --accent:var(--gold-600); --accent-soft:var(--gold-100); --accent-hover:var(--gold-700);
+  --shadow-xs:0 1px 2px rgba(15,23,42,.04);
+  --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.12);
+  --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-pill:999px;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px; --space-20:80px;
+  --font-sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-display:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem;
+  --text-xl:1.25rem; --text-2xl:1.5rem; --text-3xl:1.875rem; --text-4xl:2.25rem; --text-5xl:3rem; --text-6xl:3.75rem;
+  --ease-out:cubic-bezier(0.22,1,0.36,1); --ease-in-out:cubic-bezier(0.65,0,0.35,1);
+  --dur-fast:150ms; --dur-base:220ms; --dur-slow:400ms;
+}
 
-    body {
-      background: var(--gray-50);
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg-2); overflow-x: hidden; }
+body { font-family: var(--font-sans); font-size: var(--text-base); line-height: 1.6; color: var(--fg-1); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body[data-theme="navy-copper"] {
+  --gold-900:#6d381b;
+  --gold-700:#8f4b26;
+  --gold-600:#ad6032;
+  --gold-500:#cb7544;
+  --gold-300:#ebb08b;
+  --gold-100:#fff0e7;
+  --gold-50:#fff7f2;
+}
+h1, h2, h3, h4 { color: var(--fg-1); margin: 0; }
+p { margin: 0; color: var(--fg-2); }
+a { color: var(--navy-700); text-decoration: none; transition: color var(--dur-fast) var(--ease-out); }
+a:hover { color: var(--gold-700); }
+.max-w { max-width: min(1480px, 94vw); margin: 0 auto; padding: 0 24px; }
+.eyebrow { font-size: var(--text-xs); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-700); }
+.display-serif { font-family: var(--font-display); font-weight: 600; letter-spacing: -.02em; }
 
-    /* ── Section visibility ────────────────────────────── */
-    .section-hidden { display: none !important; }
+/* Nav */
+.w-nav { background: var(--navy-900); position: sticky; top: 0; z-index: 30; border-bottom: 1px solid rgba(255,255,255,.06); }
+.w-nav-inner { max-width: min(1480px, 94vw); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; }
+.w-brand { display: flex; align-items: center; cursor: pointer; gap: 0; }
+.w-brand-img { height: 42px; width: auto; max-width: 58px; object-fit: contain; display: block; }
+.w-brand-text { display: none; }
+.w-nav-links { display: flex; gap: 0; }
+.w-nav-link { color: rgba(255,255,255,.65); font-size: 12.5px; font-weight: 500; padding: 8px 10px; border-radius: 4px; cursor: pointer; position: relative; transition: color .15s; user-select: none; white-space: nowrap; }
+.w-nav-signin { color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; margin-left: 12px; text-decoration: none; letter-spacing: 0; text-transform: none; transition: background .15s, border-color .15s; }
+.w-nav-signin:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.24); color: #fff; }
+.w-nav-link:hover { color: #fff; }
+.w-nav-link.active { color: #fff; }
+.w-nav-link.active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -2px; height: 2px; background: var(--gold-600); border-radius: 1px; }
+.w-nav-toggle { display: none; background: transparent; border: 0; color: #fff; font-size: 22px; cursor: pointer; }
 
-    /* ── Navigation ────────────────────────────────────── */
-    nav {
-      background: var(--navy);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .nav-link {
-      color: rgba(255,255,255,0.65);
-      cursor: pointer;
-      padding: 0.5rem 0.75rem;
-      border-radius: 4px;
-      transition: color 0.2s;
-      font-size: 0.875rem;
-      font-weight: 500;
-      position: relative;
-      display: inline-block;
-    }
-    .nav-link:hover { color: #fff; }
-    .nav-link.active { color: #fff; }
-    .nav-link.active::after {
-      content: '';
-      display: block;
-      height: 2px;
-      background: var(--gold);
-      border-radius: 1px;
-      position: absolute;
-      bottom: -2px;
-      left: 0.75rem;
-      right: 0.75rem;
-    }
-    /* ── Slideshow ──────────────────────────────────────── */
-    .slide {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-    }
-    .slide.active { opacity: 1; }
-    .slide-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(15,23,42,0.82) 0%, rgba(15,23,42,0.55) 65%, rgba(15,23,42,0.28) 100%);
-    }
-    .slide-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(4px);
-      border: none;
-      color: #fff;
-      font-size: 1.5rem;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 10;
-      transition: background 0.2s;
-    }
-    .slide-arrow:hover { background: rgba(255,255,255,0.3); }
-    .slide-arrow.prev { left: 12px; }
-    .slide-arrow.next { right: 12px; }
-    #slideDots { position: absolute; bottom: 14px; right: 16px; display: flex; gap: 5px; z-index: 10; }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.4);
-      cursor: pointer;
-      transition: background 0.2s;
-      border: none;
-    }
-    .dot.active { background: #fff; }
-    /* Mobile nav */
-    #mobileMenu { display: none; }
-    #mobileMenu.open { display: block; }
+/* Hero */
+.w-hero { position: relative; overflow: hidden; min-height: 560px; background: var(--navy-700); color: #fff; }
+.w-hero-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 800ms var(--ease-out); }
+.w-hero-slide.active { opacity: 1; }
+.w-hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.58) 65%, rgba(15,23,42,.28) 100%); }
+.w-hero-grain { position: absolute; inset: 0; opacity: .08; pointer-events: none; mix-blend-mode: overlay;
+  background-image: radial-gradient(rgba(255,255,255,.4) 1px, transparent 1px); background-size: 3px 3px; }
+.w-hero-content { position: relative; z-index: 2; max-width: min(1480px, 94vw); margin: 0 auto; padding: 96px 24px 24px; min-height: 460px; display: flex; flex-direction: column; justify-content: center; }
+.w-hero-eyebrow,
+.w-hero-dot,
+.w-hero-panel,
+.w-banner-aside { display: none !important; }
+.w-hero-title { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin: 8px 0 0; max-width: 880px; color: #fff; }
+.w-amp { font-family: inherit; font-weight: inherit; font-style: normal; color: inherit; padding: 0; }
 
-    /* ── News Ticker ────────────────────────────────────── */
-    .ticker-wrap {
-      background: var(--navy);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      height: 36px;
-    }
-    .ticker-label {
-      background: var(--gold);
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.72rem;
-      padding: 0 14px;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      flex-shrink: 0;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .ticker-inner { overflow: hidden; flex: 1; }
-    .ticker-track {
-      display: flex;
-      white-space: nowrap;
-      animation: tickerScroll 40s linear infinite;
-    }
-    .ticker-track:hover { animation-play-state: paused; }
-    @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-    .ticker-item {
-      padding: 0 28px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: rgba(255,255,255,0.6);
-    }
+.w-hero-footer { position: relative; z-index: 2; max-width: min(1480px, 94vw); margin: 0 auto; padding: 0 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.w-hero-metrics { display: flex; gap: 38px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14); width: 100%; }
+.w-metric { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.w-metric-num { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: -.02em; line-height: 1; }
+.w-metric-lbl { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.w-metric-badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; }
+.w-metric-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold-500); }
+.w-metric-badge .w-metric-lbl { color: var(--gold-300); font-weight: 700; letter-spacing: .08em; text-transform: none; font-size: 12px; }
+.w-hero-dots { display: flex; gap: 6px; align-self: flex-end; padding-bottom: 4px; }
+.w-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.4); border: none; cursor: pointer; padding: 0; transition: background .15s; }
+.w-dot.active { background: #fff; }
 
-    /* ── Buttons ────────────────────────────────────────── */
-    .btn-primary {
-      background: var(--navy);
-      color: #fff;
-      border-radius: 8px;
-      padding: 0.625rem 1.25rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-    .btn-primary:hover { background: var(--navy-700); }
-    .btn-ghost {
-      border: 1.5px solid var(--gray-200);
-      color: var(--navy);
-      border-radius: 8px;
-      padding: 0.625rem 1.25rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      background: transparent;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .btn-ghost:hover { border-color: var(--navy); }
-    .btn-primary-inv {
-      background: #fff;
-      color: var(--navy);
-      border-radius: 8px;
-      padding: 0.625rem 1.25rem;
-      font-weight: 700;
-      font-size: 0.9rem;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .btn-primary-inv:hover { opacity: 0.9; }
-    .btn-ghost-inv {
-      border: 1.5px solid rgba(255,255,255,0.35);
-      color: #fff;
-      border-radius: 8px;
-      padding: 0.625rem 1.25rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      background: transparent;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .btn-ghost-inv:hover { border-color: rgba(255,255,255,0.7); }
-    *:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* Marquee keyframes (shared) */
+@keyframes w-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-    /* ── Hero stats ─────────────────────────────────────── */
-    .hero-stats {
-      display: flex;
-      gap: 2rem;
-      margin-top: 2.5rem;
-      flex-wrap: wrap;
-      border-top: 1px solid rgba(255,255,255,0.12);
-      padding-top: 1.5rem;
-    }
-    .hero-stat { display: flex; flex-direction: column; }
-    .hero-stat-num { font-size: 1.5rem; font-weight: 800; color: #fff; }
-    .hero-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
+/* Sections */
+.w-section { padding: 56px 0; }
+.w-sh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+.w-sh-inner { display: flex; align-items: center; gap: 12px; }
+.w-sh-bar { width: 3px; height: 22px; background: var(--gold-600); border-radius: 2px; }
+.w-sh-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em; color: var(--navy-900); margin: 0; }
+.w-link-gold { background: none; border: none; color: var(--gold-700); font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px 0; font-family: inherit; }
+.w-link-gold:hover { color: var(--gold-900); }
+.w-research-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-4); }
 
-    /* ── Page headings ──────────────────────────────────── */
-    .page-title {
-      font-size: clamp(1.75rem, 4vw, 2.5rem);
-      font-weight: 800;
-      color: var(--navy);
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
-    }
-    .page-subtitle { font-size: 1rem; color: var(--gray-500); margin-bottom: 2rem; }
+/* Research */
+.w-research { background: #fff; }
+.w-research-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 1.06fr); gap: 28px; align-items: start; overflow: visible; }
+.w-research-list { position: relative; min-width: 0; border-top: 1px solid var(--border-1); overflow: visible; z-index: 2; padding-right: 0; }
+.w-research-row { position: relative; display: block; padding: 18px 20px 18px 18px; border-bottom: 1px solid var(--border-1); text-decoration: none; color: inherit; cursor: pointer; transition: background .2s ease, box-shadow .24s ease, border-color .24s ease, transform .24s ease; border-left: 4px solid transparent; border-radius: 22px; margin-right: 0; overflow: visible; background: linear-gradient(180deg, rgba(255,255,255,.995), rgba(255,255,255,.985)); }
+.w-research-row::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; background: linear-gradient(90deg, rgba(212,169,66,.09) 0%, rgba(255,255,255,0) 58%); transition: opacity .24s ease; }
+.w-research-row::after { display: none; }
+.w-research-row:hover, .w-research-row.is-hover { border-left-color: var(--gold-500); box-shadow: 0 18px 32px rgba(15,23,42,.08), 0 0 0 1px rgba(212,169,66,.18); transform: translateY(-1px); z-index: 3; }
+.w-research-row:hover::before, .w-research-row.is-hover::before { opacity: 1; }
+.w-research-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--navy-900); margin: 0 0 3px; letter-spacing: -.015em; line-height: 1.25; }
+.w-research-desc { font-size: 12px; color: var(--fg-3); line-height: 1.5; margin: 0 0 5px; }
+.w-research-meta { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-4); }
+.w-research-peek { position: sticky; top: 80px; margin-left: 0; padding-left: 0; min-width: 0; z-index: 1; }
+.w-research-peek-frame { position: relative; border-radius: 30px; overflow: hidden; aspect-ratio: 4/3; background: var(--navy-900); box-shadow: 0 0 0 1px rgba(212,169,66,.24), 0 24px 48px rgba(15,23,42,.18), 0 0 32px rgba(247,236,203,.18); transition: box-shadow .3s ease; }
+.w-research-peek-frame::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, rgba(212,169,66,.3) 0%, rgba(232,201,114,.16) 12%, rgba(255,255,255,0) 30%), radial-gradient(circle at 0% 50%, rgba(212,169,66,.22) 0%, rgba(247,236,203,.14) 18%, rgba(255,255,255,0) 42%); z-index: 0; pointer-events: none; }
+.w-research-peek-frame.is-row-hovered { box-shadow: 0 0 0 1px rgba(212,169,66,.38), 0 0 42px rgba(247,236,203,.24), 0 30px 58px rgba(15,23,42,.22); }
+.w-research-peek-img { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transform: scale(1.05); transition: opacity .5s ease, transform .6s ease; }
+.w-research-peek-img.is-active { opacity: 1; transform: scale(1); }
+.w-research-peek-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,.1) 0%, rgba(15,23,42,.85) 100%); }
+.w-research-peek-label { position: absolute; left: 24px; right: 24px; bottom: 22px; color: #fff; z-index: 2; }
+.w-research-peek-num { font-size: 11px; font-weight: 800; color: var(--gold-500); letter-spacing: .14em; text-transform: uppercase; }
+.w-research-peek-title { font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: -.015em; margin-top: 4px; }
 
-    /* ── Section header with gold accent bar ────────────── */
-    .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
-    .section-header-bar { width: 3px; height: 1.5rem; background: var(--gold); border-radius: 2px; flex-shrink: 0; }
-    .section-header-title { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+/* News + Featured Pub */
+.w-two { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; padding: 0 0 56px; }
+.w-news-stack { display: flex; flex-direction: column; gap: 10px; }
+.w-news-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow-xs); }
+.w-news-date { font-size: 11px; color: var(--fg-4); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.w-news-title { font-size: 15px; font-weight: 700; color: var(--navy-900); margin: 4px 0 6px; }
+.w-news-body { font-size: 13px; color: var(--fg-3); line-height: 1.55; margin: 0; }
+.w-pub-card { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-sm); }
+.w-pub-year { display: inline-block; background: var(--navy-900); color: #fff; border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 800; margin-bottom: 10px; letter-spacing: .04em; }
+.w-pub-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--navy-900); line-height: 1.35; margin: 0 0 8px; letter-spacing: -.015em; }
+.w-pub-authors { font-size: 13px; color: var(--fg-2); margin: 0 0 2px; }
+.w-pub-venue { font-size: 12px; color: var(--fg-4); font-style: italic; margin: 0; }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border-2); color: var(--navy-900); border-radius: 6px; padding: 6px 12px; font-weight: 600; cursor: pointer; font-family: inherit; font-size: 12px; }
+.btn-ghost:hover { border-color: var(--gold-600); color: var(--gold-700); }
+.btn-primary { background: var(--gold-600); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+.btn-primary:hover { background: var(--gold-700); }
+.w-app-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.w-app-modal-bg { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 18px; z-index: 60; }
+.w-app-modal { width: min(1120px, 96vw); height: min(82vh, 760px); background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(15,23,42,.28); display: grid; grid-template-rows: auto 1fr; }
+.w-app-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--border-1); background: linear-gradient(180deg, rgba(248,250,252,.96) 0%, rgba(255,255,255,.98) 100%); }
+.w-app-modal-copy { min-width: 0; }
+.w-app-modal-copy h3 { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--navy-900); letter-spacing: -.02em; }
+.w-app-modal-copy p { margin: 4px 0 0; font-size: 13px; color: var(--fg-3); }
+.w-app-modal-head .btn-ghost { white-space: nowrap; }
+.w-app-frame { width: 100%; height: 100%; border: 0; background: #fff; }
 
-    /* ── Content card ───────────────────────────────────── */
-    .content-card {
-      background: #fff;
-      border: 1px solid var(--gray-200);
-      border-radius: 12px;
-      padding: 1.75rem 2rem;
-    }
-    .content-card h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--navy);
-      margin-bottom: 1rem;
-      letter-spacing: -0.01em;
-    }
+/* Photo gallery */
+.w-gallery { background: var(--bg-2); padding: 48px 0 64px; }
+.w-gallery-nav { display: flex; gap: 6px; }
+.w-gallery-arrow { width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid var(--border-1); color: var(--navy-900); font-size: 22px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, background .15s; }
+.w-gallery-arrow:hover { border-color: var(--gold-600); color: var(--gold-700); background: var(--gold-50); }
+.w-gallery-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 4px 0 0; }
+.w-gallery-slide { min-width: 0; height: 320px; position: relative; border: 0; border-radius: 18px; overflow: hidden; background: var(--navy-900); box-shadow: var(--shadow-xs); text-decoration: none; text-align: left; cursor: pointer; transition: box-shadow .2s var(--ease-out), transform .2s ease; }
+.w-gallery-slide:hover { box-shadow: var(--shadow-md); }
+.w-gallery-slide:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 3px; }
+.w-gallery-slide img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s var(--ease-out); }
+.w-gallery-slide:hover img { transform: scale(1.04); }
+.w-gallery-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0) 50%, rgba(15,23,42,.92) 100%); }
+.w-gallery-meta { position: absolute; left: 18px; right: 18px; bottom: 14px; color: #fff; }
+.w-gallery-cat { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-300); margin-bottom: 4px; }
+.w-gallery-title { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.w-gallery-sub { font-size: 12px; color: var(--fg-3); margin-top: 4px; }
+.w-lightbox-bg { position: fixed; inset: 0; z-index: 90; background: rgba(7,12,26,.82); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.w-lightbox { width: min(1120px, 94vw); max-height: 90vh; border-radius: 22px; overflow: hidden; background: var(--navy-900); border: 1px solid rgba(255,255,255,.18); box-shadow: 0 28px 90px rgba(0,0,0,.42); position: relative; }
+.w-lightbox-img { width: 100%; max-height: 76vh; display: block; object-fit: contain; background: #020617; }
+.w-lightbox-meta { padding: 16px 20px 18px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.w-lightbox-meta strong { display: block; font-size: 18px; }
+.w-lightbox-meta span { display: block; margin-top: 3px; font-size: 12px; color: rgba(255,255,255,.62); text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+.w-lightbox-close { border: 1px solid rgba(255,255,255,.26); background: rgba(255,255,255,.08); color: #fff; border-radius: 999px; padding: 9px 14px; font-weight: 800; cursor: pointer; }
 
-    /* ── Badge ──────────────────────────────────────────── */
-    .badge-gold {
-      display: inline-flex;
-      align-items: center;
-      background: var(--gold-light);
-      color: var(--gold);
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-      letter-spacing: 0.04em;
-      flex-shrink: 0;
-    }
+/* Marquee â€” sponsors */
+.w-marquee-wrap { overflow: hidden; padding: 20px 0; }
+.w-marquee { display: flex; gap: 56px; align-items: center; animation: w-scroll 38s linear infinite; padding: 0 28px; width: max-content; }
+.w-marquee:hover { animation-play-state: paused; }
+.w-sponsor-logo { flex-shrink: 0; height: 88px; width: auto; max-width: 320px; object-fit: contain; filter: opacity(.9); transition: filter .25s ease; }
+.w-sponsor-logo:hover { filter: opacity(1); }
 
-    /* ── Opening items ──────────────────────────────────── */
-    .opening-item {
-      display: flex;
-      gap: 0.75rem;
-      align-items: flex-start;
-      padding: 1rem 0;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .opening-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .opening-item strong { display: block; font-size: 0.9rem; color: var(--navy); margin-bottom: 0.25rem; }
-    .opening-item p { font-size: 0.84rem; color: var(--gray-500); margin: 0; }
+/* Footer */
+.w-footer { background: var(--navy-900); color: rgba(255,255,255,.7); }
+.w-footer-anchor { padding: 28px 24px 22px; border-bottom: 1px solid rgba(255,255,255,.08); text-align: center; }
+.w-anchor-label { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 14px; }
+.w-anchor-row { display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
+.w-anchor-logo-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; min-height: 82px; }
+.w-anchor-logo { height: 74px; width: auto; max-width: 420px; object-fit: contain; filter: none; background: transparent; border-radius: 0; padding: 0; box-shadow: none; }
+.w-anchor-logo.is-es2 { height: 76px; max-width: 380px; }
+.w-anchor-logo.is-nsf { height: 78px; max-width: 90px; }
+.w-anchor-logo.is-villanova { height: 102px; max-width: 460px; }
+.w-anchor-div { width: 1px; height: 40px; background: rgba(255,255,255,.12); }
+.w-foot-logo { height: 64px; width: auto; max-width: 290px; object-fit: contain; margin-bottom: 10px; filter: none; background: transparent; border-radius: 0; padding: 0; box-shadow: none; }
+.w-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; padding: 40px 24px; }
+.w-foot-sub { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.6); margin: 0; }
+.w-foot-h { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); margin: 0 0 10px; font-weight: 700; }
+.w-footer ul { list-style: none; padding: 0; margin: 0; }
+.w-footer ul li { font-size: 13px; padding: 4px 0; cursor: pointer; color: rgba(255,255,255,.7); }
+.w-footer ul li:hover { color: #fff; }
+.w-footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding: 18px 24px; font-size: 12px; color: rgba(255,255,255,.4); text-align: center; }
 
-    /* ── Lists ──────────────────────────────────────────── */
-    .offer-list { list-style: none; padding: 0; margin: 0; }
-    .offer-list li { font-size: 0.88rem; color: var(--gray-700); padding: 0.35rem 0; padding-left: 1.25rem; position: relative; }
-    .offer-list li::before { content: "✓"; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
-    .apply-list { padding-left: 1.25rem; margin: 0.75rem 0; }
-    .apply-list li { font-size: 0.88rem; color: var(--gray-700); padding: 0.2rem 0; }
+/* Page panes (non-home) */
+.w-page { padding: 56px 0; min-height: 60vh; background: #fff; }
+.w-page.alt { background: var(--bg-2); }
+.w-page h1.w-page-title { font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; letter-spacing: -.025em; line-height: 1.1; margin: 6px 0 12px; color: var(--navy-900); }
+.w-page p.w-page-intro { font-size: 1.0625rem; color: var(--fg-2); line-height: 1.65; margin: 0 0 36px; max-width: 720px; }
+.w-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+.w-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 22px; }
+.w-card { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-xs); transition: box-shadow .2s; }
+.w-card:hover { box-shadow: var(--shadow-md); }
+.w-card h3 { color: var(--navy-900); font-size: 16px; margin: 0 0 6px; font-weight: 700; }
+.w-card p { color: var(--fg-3); font-size: 13px; line-height: 1.55; margin: 0; }
+.w-download-title { display:flex; align-items:center; gap:14px; min-width:0; }
+.w-download-thumb { width:72px; height:56px; border-radius:12px; border:1px solid var(--border-1); background:var(--bg-1); object-fit:contain; padding:6px; flex:0 0 auto; }
+.w-download-fileicon { width:72px; height:56px; border-radius:12px; border:1px solid var(--border-1); background:linear-gradient(135deg,var(--navy-900),#27496f); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; letter-spacing:.08em; flex:0 0 auto; }
+.w-download-row .w-pub-left { align-self: center; justify-content: flex-start; }
+.w-download-row .w-pub-yr { font-size: 17px; line-height: 1.05; }
+.w-person { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; cursor: pointer; width: 200px; flex: 0 0 200px; text-align: center; }
+.w-person:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.w-person-img { width: 120px; height: 120px; border-radius: 50%; background: var(--gray-100) center/cover no-repeat; margin: 22px auto 12px; border: 3px solid #fff; box-shadow: var(--shadow-sm); }
+.w-person-body { padding: 0 14px 18px; }
+.w-person-name { font-size: 14px; font-weight: 700; color: var(--navy-900); margin: 0 0 2px; }
+.w-person-role { font-size: 11.5px; color: var(--fg-3); margin: 0 0 6px; line-height: 1.35; }
+.w-person-cat { display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--gold-100); color: var(--gold-900); margin-top: 2px; }
+.w-people-row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-top: 12px; }
+.w-person-detail { background:#fff; border:1px solid var(--border-1); border-radius:14px; padding:32px; max-width: 720px; margin: 0 auto; box-shadow: var(--shadow-sm); }
+.w-person-detail-img { width: 180px; height: 180px; border-radius: 50%; background: var(--gray-100) center/cover no-repeat; margin: 0 auto 18px; border: 4px solid #fff; box-shadow: var(--shadow-md); }
+.w-person-detail h2 { font-size: 1.6rem; margin: 0 0 4px; text-align:center; }
+.w-person-detail .sub { text-align:center; color: var(--fg-3); margin: 0 0 18px; font-size: 14px; }
+.w-person-detail .bio { font-size: 14px; color: var(--fg-2); line-height: 1.7; white-space: pre-wrap; margin: 18px 0; }
+.w-person-detail .links { display:flex; flex-wrap:wrap; gap: 8px; justify-content:center; margin-top: 18px; }
+.w-person-detail .links a { background: var(--bg-1); border:1px solid var(--border-1); padding: 6px 14px; border-radius: 999px; font-size: 12px; color: var(--navy-900); text-decoration: none; font-weight: 600; }
+.w-person-detail .links a:hover { background: var(--gold-100); border-color: var(--gold-300); color: var(--gold-900); }
+.w-back-link { display:inline-block; font-size:12px; font-weight:600; color:var(--gold-700); margin-bottom: 18px; cursor:pointer; text-decoration:none; }
+.w-back-link:hover { color: var(--gold-900); }
+.w-pub-row { display: grid; grid-template-columns: 60px 1fr auto; gap: 18px; align-items: start; padding: 16px 4px; border-bottom: 1px solid var(--border-1); }
+.w-pub-row .w-yr { font-family: var(--font-display); font-weight: 600; color: var(--gold-700); font-size: 22px; line-height: 1; }
+.w-pub-row .w-pub-t { font-size: 14px; font-weight: 600; color: var(--navy-900); margin: 0 0 3px; line-height: 1.35; }
+.w-pub-row .w-pub-a { font-size: 12px; color: var(--fg-3); margin: 0; }
+.w-pub-row .w-pub-v { font-size: 11px; color: var(--fg-4); font-style: italic; margin-top: 2px; }
 
-    /* ── FAQ ────────────────────────────────────────────── */
-    .faq-list { margin: 0; }
-    .faq-item { border-bottom: 1px solid var(--gray-100); }
-    .faq-item:last-child { border-bottom: none; }
-    .faq-item summary {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--navy);
-      padding: 0.85rem 0;
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary::after { content: "▾"; font-size: 0.85rem; color: var(--gray-400); }
-    .faq-item[open] summary::after { content: "▴"; }
-    .faq-item p { font-size: 0.85rem; color: var(--gray-500); padding: 0 0 1rem; line-height: 1.6; margin: 0; }
+/* Publications â€” polished */
+.w-pub-list { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); }
+.w-pub-row2 { display: grid; grid-template-columns: 92px 1fr 96px; gap: 22px; padding: 22px 22px; border-bottom: 1px solid var(--border-1); align-items: center; transition: background .15s; }
+.w-pub-row2:last-child { border-bottom: none; }
+.w-pub-row2:hover { background: var(--gold-50); }
+.w-pub-left { position: relative; display: flex; align-items: center; min-height: 32px; }
+.w-pub-yr { font-family: var(--font-sans); font-weight: 800; color: var(--gold-700); font-size: 22px; line-height: 1; letter-spacing: -.03em; }
+.w-pub-title2 { font-size: 16px; font-weight: 600; color: var(--navy-900); margin: 0 0 6px; line-height: 1.35; letter-spacing: -.01em; }
+.w-pub-authors { font-size: 13px; color: var(--fg-2); margin: 0 0 4px; }
+.w-pub-venue { font-size: 12px; color: var(--gold-700); font-style: italic; }
+.w-pub-right { display: flex; flex-direction: column; gap: 7px; align-items: center; justify-content: center; align-self: center; }
+.w-pub-btn { background: var(--navy-900); color: #fff; min-width: 64px; min-height: 31px; padding: 6px 10px; border: 0; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; text-align: center; cursor: pointer; transition: background .15s; }
+.w-pub-btn:hover { background: var(--gold-700); color: #fff; }
+.w-pub-btn.ghost { background: #fff; color: var(--fg-2); border: 1px solid var(--border-1); }
+.w-pub-btn.ghost:hover { background: var(--bg-1); color: var(--gold-700); border-color: var(--gold-300); }
 
-    /* ── News cards ─────────────────────────────────────── */
-    .news-card {
-      background: #fff;
-      border-radius: 10px;
-      border-left: 3px solid var(--gold);
-      padding: 0.9rem 1rem;
-      margin-bottom: 0.6rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .news-full-card {
-      background: #fff;
-      border: 1px solid var(--gray-200);
-      border-radius: 10px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
-      transition: box-shadow 0.2s;
-    }
-    .news-full-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .news-date { font-size: 0.75rem; color: var(--gray-400); font-weight: 600; }
-    .news-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin: 0.2rem 0; }
-    .news-body { font-size: 0.85rem; color: #475569; line-height: 1.5; }
+/* News â€” with thumbnail */
+.w-news-card { display: flex; gap: 18px; align-items: stretch; padding: 18px 20px; border: 1px solid var(--border-1); border-radius: 12px; background: #fff; transition: box-shadow .2s, transform .2s; }
+.w-news-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.w-news-thumb { width: 140px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--bg-1); }
+.w-news-body-wrap { flex: 1; min-width: 0; }
+.w-news-date { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--gold-700); letter-spacing: .08em; margin-bottom: 4px; }
+.w-news-title { font-size: 16px; font-weight: 700; color: var(--navy-900); margin: 0 0 6px; line-height: 1.35; }
+.w-news-body { font-size: 13px; color: var(--fg-2); line-height: 1.6; margin: 0; }
+.w-news-detail { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; padding: 36px; max-width: 820px; margin: 0 auto; box-shadow: var(--shadow-sm); }
+.w-news-detail-img { width: 100%; max-height: 380px; object-fit: cover; border-radius: 10px; margin: 0 0 24px; }
+.w-news-body-rich { font-size: 15px; color: var(--fg-2); line-height: 1.75; white-space: pre-wrap; }
+.w-news-body-rich a { color: var(--gold-700); text-decoration: underline; }
 
-    /* ── Research cards ─────────────────────────────────── */
-    .res-card {
-      background: #fff;
-      border-radius: 10px;
-      border: 1px solid var(--gray-200);
-      border-left: 4px solid var(--gold);
-      padding: 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .res-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-    .res-icon {
-      width: 44px;
-      height: 44px;
-      background: var(--navy);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 0.75rem;
-      flex-shrink: 0;
-    }
-    .res-card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
-    .res-card-desc { font-size: 0.82rem; color: #475569; line-height: 1.5; }
+/* Facilities â€” clickable cards */
+.w-fac-card { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs); transition: box-shadow .2s, transform .2s; }
+.w-fac-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.w-fac-img { aspect-ratio: 3/2; height: auto; background: var(--gray-100) center/cover no-repeat; }
+.w-fac-img-empty { background: linear-gradient(135deg, var(--navy-700), var(--navy-900)); }
+.w-fac-body { padding: 22px; }
+.w-fac-title { font-size: 18px; font-weight: 700; color: var(--navy-900); margin: 0 0 8px; letter-spacing: -.01em; }
+.w-fac-desc { font-size: 13px; color: var(--fg-2); line-height: 1.6; margin: 0 0 12px; }
+.w-fac-cta { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-700); }
+.w-fac-detail { background: #fff; border: 1px solid var(--border-1); border-radius: 14px; padding: 36px; max-width: 880px; margin: 0 auto; box-shadow: var(--shadow-sm); }
+.w-fac-detail-img { width: 100%; max-height: 460px; object-fit: cover; border-radius: 10px; margin: 0 0 24px; }
+.w-doc-link { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--bg-1); border: 1px solid var(--border-1); border-radius: 10px; text-decoration: none; transition: background .15s, border-color .15s; }
+.w-doc-link:hover { background: var(--gold-50); border-color: var(--gold-300); }
+.w-doc-icon { font-size: 22px; }
+.w-doc-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--navy-900); }
+.w-doc-sub { font-size: 11px; font-weight: 700; color: var(--gold-700); letter-spacing: .06em; text-transform: uppercase; }
+.w-page-section + .w-page-section { margin-top: 48px; }
+.w-page-section h2 { font-size: 1.125rem; font-weight: 800; letter-spacing: -.01em; color: var(--navy-900); display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
+.w-page-section h2::before { content: ""; width: 3px; height: 18px; background: var(--gold-600); border-radius: 2px; }
 
-    /* ── People cards ───────────────────────────────────── */
-    .person-card {
-      background: #fff;
-      border: 1px solid var(--gray-200);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .person-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-    .person-avatar {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      background: var(--navy);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      font-weight: 700;
-      color: #fff;
-      margin: 1.25rem auto 0;
-      overflow: hidden;
-    }
-    .person-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .person-body { padding: 1rem; text-align: center; }
-    .person-name { font-weight: 700; color: var(--navy); font-size: 1rem; }
-    .person-role { font-size: 0.82rem; color: #64748b; margin: 0.15rem 0; }
-    .category-badge {
-      display: inline-block;
-      font-size: 0.72rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-      font-weight: 600;
-      margin-top: 0.4rem;
-      background: var(--gold-light);
-      color: var(--gold);
-    }
+.w-empty { padding: 28px 0; color: var(--fg-3); font-size: 13px; }
+.w-loading { padding: 28px 0; color: var(--fg-3); font-size: 13px; font-style: italic; }
 
-    /* ── Publications ───────────────────────────────────── */
-    .pub-row {
-      background: #fff;
-      border: 1px solid var(--gray-200);
-      border-radius: 8px;
-      padding: 0.9rem 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      margin-bottom: 0.6rem;
-      display: flex;
-      gap: 0.75rem;
-      align-items: flex-start;
-    }
-    .pub-year-badge {
-      background: var(--navy);
-      color: #fff;
-      border-radius: 6px;
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .pub-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); }
-    .pub-authors { font-size: 0.8rem; color: #64748b; }
-    .pub-venue { font-size: 0.78rem; color: var(--gray-400); font-style: italic; }
+@media (max-width: 1180px) {
+  .w-nav-inner { gap: 18px; }
+  .w-brand-img { height: 36px; }
+  .w-nav-links { display: none; }
+  .w-nav-toggle { display: block; }
+  .w-nav-links.open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--navy-900); padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .w-nav-links.open .w-nav-signin { margin: 12px 0 0; display: inline-flex; align-self: flex-start; }
+  .w-hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .w-hero-copy { max-width: none; }
+  .w-hero-footer { gap: 20px; }
+  .w-hero-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .w-research-layout { grid-template-columns: 1fr; gap: 20px; }
+  .w-research-peek { position: relative; top: auto; }
+  .w-research-peek-frame { aspect-ratio: 16 / 10; }
+  .w-gallery-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .w-research-layout { grid-template-columns: 1fr; }
+  .w-research-list { padding-right: 0; max-width: none; }
+  .w-research-row { margin-right: 0; border-radius: 18px; }
+  .w-research-row:hover, .w-research-row.is-hover { box-shadow: 0 14px 24px rgba(15,23,42,.07); }
+  .w-research-peek { display: none; margin-left: 0; padding-left: 0; }
+  .w-two { grid-template-columns: 1fr; }
+  .w-footer-grid { grid-template-columns: 1fr 1fr; }
+  .w-grid-3 { grid-template-columns: repeat(2,1fr); }
+  .w-hero-metrics { gap: 22px; }
+}
+@media (max-width: 600px) {
+  .w-grid-2, .w-grid-3 { grid-template-columns: 1fr; }
+  .w-footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .w-section { padding: 36px 0; }
+  .w-gallery-strip { grid-template-columns: 1fr; }
+  .w-gallery-slide { flex-basis: 320px; height: 220px; }
+}
 
-    /* ── Facility cards ─────────────────────────────────── */
-    .facility-card {
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--gray-200);
-      border-top: 3px solid var(--gold);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .facility-icon { padding: 1.25rem 1.25rem 0; }
-    .facility-body { padding: 1.25rem; }
-    .facility-body h3 { font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+/* ============================================================
+   LATFS UI v2 â€” harmonised type, colour & component upgrades
+   ============================================================ */
 
-    /* ── Sponsors marquee ───────────────────────────────── */
-    .marquee-wrap { overflow: hidden; background: var(--gray-50); border-radius: 12px; }
-    .marquee-track { display: flex; animation: marqueeScroll 30s linear infinite; }
-    .marquee-track:hover { animation-play-state: paused; }
-    @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-    .sponsor-chip {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      border: 1px solid var(--gray-200);
-      border-radius: 10px;
-      padding: 0.75rem 1.25rem;
-      margin: 0 0.5rem;
-      white-space: nowrap;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      min-width: 80px;
-    }
-    .sponsor-init {
-      width: 52px;
-      height: 52px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: #fff;
-      flex-shrink: 0;
-    }
-    .sponsor-name { font-size: 0.82rem; font-weight: 600; color: #334155; }
+/* â”€â”€ Interior page banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-page-banner {
+  background: linear-gradient(160deg, var(--navy-950) 0%, var(--navy-800) 100%);
+  padding: 72px 0 60px;
+  border-bottom: 2px solid rgba(184,145,42,.3);
+}
+.w-page-banner .eyebrow {
+  color: var(--gold-400);
+  display: block;
+  margin-bottom: 16px;
+  font-size: var(--text-xs);
+  letter-spacing: .14em;
+}
+.w-page-banner-title {
+  color: #fff;
+  font-size: clamp(1.85rem, 4vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+  margin: 0 0 18px;
+}
+.w-page-banner-intro {
+  color: rgba(255,255,255,.6);
+  font-size: var(--text-lg);
+  line-height: 1.72;
+  max-width: 640px;
+  margin: 0;
+}
 
-    /* ── Video ──────────────────────────────────────────── */
-    .video-wrap { border-radius: 14px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
-    .video-wrap iframe { display: block; width: 100%; aspect-ratio: 16/9; border: none; }
+/* â”€â”€ Content area below the banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-page-content { padding: 56px 0; min-height: 36vh; background: var(--bg-2); }
+.w-page-content.on-white { background: #fff; }
 
-    /* ── Social media ───────────────────────────────────── */
-    .social-widget {
-      background: #fff;
-      border-radius: 12px;
-      border: 1px solid var(--gray-200);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      padding: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-    .social-widget-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+/* â”€â”€ Homepage quick links â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.w-quick-card {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow-xs);
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s;
+  cursor: pointer;
+}
+.w-quick-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--gold-300);
+}
+.w-quick-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-700);
+  margin-bottom: 10px;
+}
+.w-quick-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin: 0 0 4px;
+  letter-spacing: -.01em;
+}
+.w-quick-copy {
+  font-size: 13px;
+  color: var(--fg-3);
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.w-quick-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-2);
+}
 
-    /* ── Footer ─────────────────────────────────────────── */
-    .footer-heading { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 0.75rem; }
-    .logo-mark { font-weight: 900; font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
-    footer ul { list-style: none; padding: 0; margin: 0; }
-    footer ul li { font-size: 0.85rem; color: rgba(255,255,255,0.6); padding: 0.2rem 0; cursor: pointer; transition: color 0.15s; }
-    footer ul li:hover { color: #fff; }
-  </style>
+/* â”€â”€ Discovery filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-filter-shell {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow-xs);
+  margin-bottom: 28px;
+}
+.w-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.w-filter-row + .w-filter-row { margin-top: 12px; }
+.w-filter-search {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 240px;
+}
+.w-filter-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fg-4);
+  font-size: 14px;
+  pointer-events: none;
+}
+.w-filter-input,
+.w-filter-select {
+  width: 100%;
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--fg-1);
+  font: inherit;
+  padding: 12px 14px;
+}
+.w-filter-input { padding-left: 38px; }
+.w-filter-input::placeholder { color: var(--fg-4); }
+.w-filter-input:focus,
+.w-filter-select:focus {
+  outline: none;
+  border-color: var(--gold-500);
+  box-shadow: 0 0 0 3px rgba(212,169,66,.16);
+}
+.w-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.w-filter-pill {
+  border: 1px solid var(--border-1);
+  background: #fff;
+  color: var(--fg-2);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.w-filter-pill:hover,
+.w-filter-pill.active {
+  background: var(--gold-50);
+  border-color: var(--gold-300);
+  color: var(--gold-900);
+}
+.w-filter-meta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--fg-3);
+}
+.w-results-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* â”€â”€ People grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 220px));
+  gap: 28px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* â”€â”€ Person card v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-person-v2 {
+  background: transparent;
+  border: 0;
+  border-radius: 18px;
+  overflow: visible;
+  box-shadow: none;
+  transition: transform .22s var(--ease-out);
+  cursor: pointer;
+  text-align: center;
+  padding: 8px 10px 14px;
+}
+.w-person-v2:hover {
+  transform: translateY(-3px);
+}
+
+/* â”€â”€ Avatar ring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-avatar {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 3px solid rgba(212,169,66,.18);
+  box-shadow: 0 14px 24px rgba(15,23,42,.1);
+  transition: border-color .22s, box-shadow .22s;
+}
+.w-person-v2:hover .w-avatar { border-color: var(--gold-400); box-shadow: 0 18px 28px rgba(15,23,42,.12); }
+.w-avatar-photo {
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--gray-200);
+}
+.w-avatar-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em;
+  color: rgba(255,255,255,.92);
+  text-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+
+/* â”€â”€ Person card text slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-pv2-name { font-size: var(--text-sm); font-weight: 700; color: var(--navy-900); margin: 0 0 3px; padding: 0 12px; line-height: 1.3; }
+.w-pv2-role { font-size: 12px; color: var(--fg-3); margin: 0 0 10px; padding: 0 10px; line-height: 1.4; }
+.w-pv2-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--gold-100); color: var(--gold-900);
+  border: 1px solid rgba(184,145,42,.2);
+  margin-bottom: 16px;
+}
+
+/* â”€â”€ Research cards v2 (Research page) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-rc {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(15,23,42,.05);
+  transition: box-shadow .2s var(--ease-out), border-color .2s, transform .2s var(--ease-out);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.w-rc:hover {
+  box-shadow: 0 8px 26px rgba(15,23,42,.12);
+  border-color: var(--gold-300);
+  transform: translateY(-2px);
+}
+.w-rc-title { font-size: var(--text-base); font-weight: 700; color: var(--navy-900); line-height: 1.3; letter-spacing: -.01em; }
+.w-rc-desc  { font-size: var(--text-sm); color: var(--fg-2); line-height: 1.62; }
+
+/* â”€â”€ Icon cards (Join, Contact) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-icon-card {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(15,23,42,.06);
+  transition: box-shadow .2s var(--ease-out), transform .2s var(--ease-out);
+}
+.w-icon-card:hover { box-shadow: 0 8px 26px rgba(15,23,42,.1); transform: translateY(-2px); }
+.w-icon-card-icon { font-size: 28px; margin-bottom: 14px; display: block; line-height: 1; }
+.w-icon-card h3 { color: var(--navy-900); font-size: var(--text-base); font-weight: 700; margin: 0 0 8px; letter-spacing: -.01em; }
+.w-icon-card p  { color: var(--fg-2); font-size: var(--text-sm); line-height: 1.65; margin: 0; }
+
+/* â”€â”€ Person detail v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-person-detail-v2 {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 16px;
+  padding: 36px;
+  max-width: 680px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.w-person-detail-v2 .w-avatar { width: 120px; height: 120px; border-width: 3px; border-color: var(--border-2); }
+.w-person-detail-v2 .w-avatar-text { font-size: 2rem; }
+.w-pdetail-name { font-size: 1.5rem; font-weight: 800; color: var(--navy-900); letter-spacing: -.025em; margin: 0 0 6px; }
+.w-pdetail-sub  { color: var(--fg-3); font-size: var(--text-sm); margin: 0 0 22px; }
+.w-pdetail-bio  { font-size: var(--text-sm); color: var(--fg-2); line-height: 1.78; white-space: pre-wrap; text-align: left; padding-top: 20px; border-top: 1px solid var(--border-1); }
+.w-pdetail-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-1); }
+.w-pdetail-links a {
+  background: var(--bg-1); border: 1px solid var(--border-1);
+  padding: 6px 16px; border-radius: 999px;
+  font-size: 12px; color: var(--navy-900); text-decoration: none; font-weight: 600;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.w-pdetail-links a:hover { background: var(--gold-100); border-color: var(--gold-300); color: var(--gold-900); }
+
+/* â”€â”€ Back link v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--gold-700); cursor: pointer; text-decoration: none;
+  margin-bottom: 28px;
+  transition: color .15s;
+}
+.w-back:hover { color: var(--gold-900); }
+
+/* â”€â”€ Improved empty / loading states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.w-empty   { padding: 52px 0; color: var(--fg-4); font-size: var(--text-sm); text-align: center; }
+.w-loading { padding: 52px 0; color: var(--fg-4); font-size: var(--text-sm); font-style: italic; text-align: center; }
+
+/* â”€â”€ Focus rings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 3px; border-radius: var(--radius-xs); }
+
+/* â”€â”€ Responsive v2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 900px) {
+  .w-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .w-people-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 210px)); gap: 20px; }
+  .w-page-banner { padding: 52px 0 44px; }
+}
+@media (max-width: 600px) {
+  .w-quick-grid { grid-template-columns: 1fr; }
+  .w-people-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 210px)); gap: 16px; }
+  .w-page-banner { padding: 40px 0 36px; }
+  .w-page-banner-title { font-size: 1.6rem; }
+  .w-page-content { padding: 36px 0; }
+  .w-filter-shell { padding: 14px; }
+}
+
+/* 2026 polish pass */
+body {
+  background:
+    radial-gradient(circle at top left, rgba(212,169,66,.09), transparent 24%),
+    linear-gradient(180deg, #f8fafc 0%, #f3f6fa 100%);
+}
+.w-nav {
+  backdrop-filter: blur(18px);
+  background: rgba(8,15,36,.92);
+}
+.w-nav-inner {
+  height: 64px;
+}
+.w-nav-link,
+.w-nav-signin {
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.w-nav-link:hover,
+.w-nav-signin:hover {
+  transform: translateY(-1px);
+}
+.w-hero {
+  min-height: 640px;
+  background: linear-gradient(180deg, var(--navy-800), var(--navy-950));
+}
+.w-hero-content {
+  padding-top: 112px;
+  padding-bottom: 32px;
+}
+.w-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: end;
+}
+.w-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 760px;
+}
+.w-hero-title {
+  margin: 0;
+}
+.w-hero-lead {
+  max-width: 62ch;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  color: rgba(255,255,255,.72);
+  line-height: 1.72;
+}
+.w-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+.w-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.w-btn:hover {
+  transform: translateY(-1px);
+}
+.w-btn-primary {
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+  color: #fff;
+  box-shadow: 0 18px 30px rgba(184,145,42,.24);
+}
+.w-btn-secondary {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+.w-hero-footer {
+  padding-top: 0;
+}
+.w-hero-metrics {
+  padding-top: 20px;
+}
+.w-page-banner {
+  position: relative;
+  overflow: hidden;
+}
+.w-page-banner .max-w {
+  display: block;
+}
+.w-news-card,
+.w-fac-card,
+.w-pub-card,
+.w-card,
+.w-pub-list {
+  box-shadow: 0 16px 30px rgba(15,23,42,.05);
+}
+@media (max-width: 980px) {
+  .w-page-banner .max-w { display: block; }
+}
+@media (max-width: 760px) {
+  .w-nav-inner { height: 58px; }
+  .w-nav-links.open { top: 58px; }
+  .w-hero {
+    min-height: 0;
+  }
+  .w-hero-content {
+    padding-top: 92px;
+  }
+}
+@media (max-width: 600px) {
+  .w-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+</style>
 </head>
 <body>
-
-<!-- ══ NAVIGATION ══════════════════════════════════════════════ -->
-<nav>
-  <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
-    <!-- Logo -->
-    <div class="flex items-center gap-2 cursor-pointer" onclick="showSection('home')">
-      <div class="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0" style="background:var(--gold);color:#fff">L</div>
-      <span class="text-white font-bold text-sm hidden sm:block tracking-tight">LATFS</span>
-    </div>
-    <!-- Desktop links -->
-    <div class="hidden md:flex items-center gap-0.5">
-      <span class="nav-link active" id="nav-home" onclick="showSection('home')">Home</span>
-      <span class="nav-link" id="nav-research" onclick="showSection('research')">Research</span>
-      <span class="nav-link" id="nav-people" onclick="showSection('people')">People</span>
-      <span class="nav-link" id="nav-publications" onclick="showSection('publications')">Publications</span>
-      <span class="nav-link" id="nav-facilities" onclick="showSection('facilities')">Facilities</span>
-      <span class="nav-link" id="nav-news" onclick="showSection('news')">News</span>
-      <span class="nav-link" id="nav-sponsors" onclick="showSection('sponsors')">Sponsors</span>
-      <span class="nav-link" id="nav-collaborators" onclick="showSection('collaborators')">Collaborators</span>
-      <span class="nav-link" id="nav-join" onclick="showSection('join')">Join</span>
-      <span class="nav-link" id="nav-contact" onclick="showSection('contact')">Contact</span>
-    </div>
-    <!-- Mobile hamburger -->
-    <button id="mobileMenuBtn" class="md:hidden text-white text-xl px-2" onclick="toggleMobileMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">&#9776;</button>
-  </div>
-  <!-- Mobile menu -->
-  <div id="mobileMenu" class="md:hidden px-4 pb-3 border-t" style="border-color:rgba(255,255,255,0.07)">
-    <span class="block nav-link py-2" onclick="showSection('home');toggleMobileMenu()">Home</span>
-    <span class="block nav-link py-2" onclick="showSection('research');toggleMobileMenu()">Research</span>
-    <span class="block nav-link py-2" onclick="showSection('people');toggleMobileMenu()">People</span>
-    <span class="block nav-link py-2" onclick="showSection('publications');toggleMobileMenu()">Publications</span>
-    <span class="block nav-link py-2" onclick="showSection('facilities');toggleMobileMenu()">Facilities</span>
-    <span class="block nav-link py-2" onclick="showSection('news');toggleMobileMenu()">News</span>
-    <span class="block nav-link py-2" onclick="showSection('join');toggleMobileMenu()">Join</span>
-    <span class="block nav-link py-2" onclick="showSection('contact');toggleMobileMenu()">Contact</span>
-    <span class="block nav-link py-2" onclick="showSection('sponsors');toggleMobileMenu()">Sponsors</span>
-    <span class="block nav-link py-2" onclick="showSection('collaborators');toggleMobileMenu()">Collaborators</span>
-  </div>
-</nav>
-
-<!-- ══ HOME SECTION ════════════════════════════════════════════ -->
-<div id="sec-home">
-
-  <!-- Hero: full-width slideshow background -->
-  <section id="sec-home-hero" class="relative text-white overflow-hidden" style="min-height:520px;background:var(--navy-700)">
-    <!-- Slideshow as full-width background (slides injected by JS from /api/gallery) -->
-    <div id="slideshow" class="absolute inset-0" style="background:var(--navy-700)">
-      <button class="slide-arrow prev" onclick="changeSlide(-1)" aria-label="Previous slide">&#8249;</button>
-      <button class="slide-arrow next" onclick="changeSlide(1)" aria-label="Next slide">&#8250;</button>
-      <div id="slideDots"></div>
-    </div>
-    <!-- Text content overlay -->
-    <div class="relative z-10 max-w-7xl mx-auto px-8 flex flex-col justify-center" style="min-height:520px;padding-top:5rem;padding-bottom:5rem">
-      <p style="color:rgba(255,255,255,0.75);font-size:0.8rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem">
-        Villanova University &middot; Mechanical Engineering
-      </p>
-      <h1 style="font-size:clamp(1.75rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;max-width:620px">
-        Laboratory for Advanced Thermal &amp; Fluid Systems
-      </h1>
-      <p style="font-size:1rem;color:rgba(255,255,255,0.82);line-height:1.6;margin-bottom:2rem;max-width:560px">
-        Advancing the frontiers of heat transfer, two-phase flow, and energy technology through rigorous experimental and computational research.
-      </p>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-        <button onclick="showSection('research')" class="btn-primary-inv">Explore Research</button>
-        <button onclick="showSection('join')" class="btn-ghost-inv">Join the Lab</button>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><span class="hero-stat-num">6+</span><span class="hero-stat-label">Research Areas</span></div>
-        <div class="hero-stat"><span class="hero-stat-num">30+</span><span class="hero-stat-label">Publications</span></div>
-        <div class="hero-stat"><span class="hero-stat-num">20+</span><span class="hero-stat-label">Alumni</span></div>
-        <div class="hero-stat"><span class="hero-stat-num">NSF</span><span class="hero-stat-label">Center Partner</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- News Ticker -->
-  <div class="ticker-wrap">
-    <div class="ticker-label">News</div>
-    <div class="ticker-inner">
-      <div class="ticker-track" id="tickerTrack">
-        <span class="ticker-item">Welcome to LATFS &#8212; Laboratory for Advanced Thermal and Fluid Systems at Villanova University</span>
-        <span class="ticker-item">&bull;</span>
-        <span class="ticker-item">NSF E3S Center Partner &#8212; Energy Efficient Electronic Systems</span>
-        <span class="ticker-item">&bull;</span>
-        <span class="ticker-item">Latest research in two-phase heat transfer, thermal management, and fluid systems</span>
-        <span class="ticker-item">&bull;</span>
-        <span class="ticker-item">Welcome to LATFS &#8212; Laboratory for Advanced Thermal and Fluid Systems at Villanova University</span>
-        <span class="ticker-item">&bull;</span>
-        <span class="ticker-item">NSF E3S Center Partner &#8212; Energy Efficient Electronic Systems</span>
-        <span class="ticker-item">&bull;</span>
-        <span class="ticker-item">Latest research in two-phase heat transfer, thermal management, and fluid systems</span>
-        <span class="ticker-item">&bull;</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Research Pillars -->
-  <div class="max-w-7xl mx-auto px-4 pt-12 pb-4">
-    <div class="section-header">
-      <div class="section-header-bar"></div>
-      <h2 class="section-header-title">Research Areas</h2>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="homeResearch">
-      <p class="text-gray-400 text-sm">Loading&#8230;</p>
-    </div>
-    <div class="mt-4">
-      <button onclick="showSection('research')" class="btn-ghost text-sm">All research areas &#8594;</button>
-    </div>
-  </div>
-
-  <!-- 2-col: News + Featured Pub -->
-  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-    <!-- Left 2/3: Latest News + Social -->
-    <div class="lg:col-span-2 space-y-8">
-      <div>
-        <div class="section-header">
-          <div class="section-header-bar"></div>
-          <h2 class="section-header-title">Latest News</h2>
-        </div>
-        <div id="homeFeed"><p class="text-gray-400 text-sm">Loading news&#8230;</p></div>
-        <button onclick="showSection('news')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">View all news &#8594;</button>
-      </div>
-    </div>
-
-    <!-- Right 1/3: Featured Pub + Social -->
-    <div class="space-y-6">
-      <div>
-        <div class="section-header">
-          <div class="section-header-bar"></div>
-          <h2 class="section-header-title">Featured Publication</h2>
-        </div>
-        <div id="homePubs"><p class="text-gray-400 text-sm">Loading&#8230;</p></div>
-        <button onclick="showSection('publications')" class="mt-2 text-sm font-semibold" style="color:var(--gold)">All publications &#8594;</button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Partners & Sponsors Marquee -->
-  <div class="max-w-7xl mx-auto px-4 pb-12">
-    <div class="section-header">
-      <div class="section-header-bar"></div>
-      <h2 class="section-header-title">Partners &amp; Sponsors</h2>
-    </div>
-    <div class="marquee-wrap py-4">
-      <div class="marquee-track" id="sponsorsMarquee">
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--navy)">N</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#2d6a9f">E</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:var(--gold)">V</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#0f766e">D</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#7c3aed">D</div></div>
-        <div class="sponsor-chip"><div class="sponsor-init" style="background:#dc2626">I</div></div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /sec-home -->
-
-<!-- ══ RESEARCH SECTION ════════════════════════════════════════ -->
-<div id="sec-research" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="page-title">Research</h1>
-  <p class="page-subtitle">Exploring the frontiers of thermal and fluid systems. Click any area for details.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="researchGrid">
-    <p class="text-gray-400">Loading&#8230;</p>
-  </div>
-</div>
-
-<!-- ══ RESEARCH DETAIL SECTION ════════════════════════════════ -->
-<div id="sec-research-detail" class="section-hidden max-w-5xl mx-auto px-4 py-10">
-  <button onclick="showSection('research')" class="inline-flex items-center gap-1.5 text-sm font-semibold mb-8 hover:underline" style="color:var(--gold)">
-    &#8592; Back to Research Areas
-  </button>
-  <div id="researchDetailContent"></div>
-</div>
-
-<!-- ══ PEOPLE SECTION ══════════════════════════════════════════ -->
-<div id="sec-people" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="page-title">Our People</h1>
-  <p class="page-subtitle">Meet the researchers and students of the LATFS laboratory.</p>
-  <!-- Filter tabs -->
-  <div class="flex flex-wrap gap-2 mb-6" id="peopleFilters">
-    <button onclick="filterPeople('all')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="background:var(--navy);color:#fff;border-color:var(--navy)" data-filter="all">All</button>
-    <button onclick="filterPeople('phd')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="phd">PhD</button>
-    <button onclick="filterPeople('ms')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ms">MS</button>
-    <button onclick="filterPeople('postdoc')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="postdoc">Postdoc</button>
-    <button onclick="filterPeople('ug')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="ug">Undergrad</button>
-    <button onclick="filterPeople('faculty')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="faculty">Faculty</button>
-    <button onclick="filterPeople('former')" class="px-4 py-1.5 rounded-full text-sm font-semibold border-2" style="border-color:var(--gray-200);color:var(--navy)" data-filter="former">Alumni</button>
-  </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="peopleGrid">
-    <p class="text-gray-400">Loading&#8230;</p>
-  </div>
-</div>
-
-<!-- ══ PUBLICATIONS SECTION ════════════════════════════════════ -->
-<div id="sec-publications" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="page-title">Publications</h1>
-  <div class="flex flex-wrap gap-3 mb-6 items-center">
-    <input id="pubSearch" type="text" placeholder="Search publications&#8230;"
-      class="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] focus:outline-none"
-      oninput="filterPublications()">
-    <select id="pubYear" onchange="filterPublications()"
-      class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
-      <option value="">All Years</option>
-    </select>
-  </div>
-  <div id="pubList"><p class="text-gray-400">Loading&#8230;</p></div>
-</div>
-
-<!-- ══ FACILITIES SECTION ══════════════════════════════════════ -->
-<div id="sec-facilities" class="section-hidden max-w-7xl mx-auto px-4 py-10">
-  <h1 class="page-title">Facilities</h1>
-  <p class="page-subtitle">State-of-the-art equipment supporting cutting-edge research.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Two-Phase Flow &amp; Boiling Lab</h3>
-        <p>High-speed imaging systems, precision flow meters, and custom test sections for boiling and two-phase flow experiments.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Photron high-speed camera</li><li>Omega precision instruments</li><li>Custom heater assemblies</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Thermal Characterization Suite</h3>
-        <p>Advanced tools for measuring thermal resistance, conductivity, and transient thermal response of materials and systems.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>IR thermography system</li><li>Laser flash diffusivity</li><li>Precision calorimetry</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
-            <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
-            <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
-            <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
-            <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Computational Resources</h3>
-        <p>High-performance computing cluster and licensed CFD software for large-scale simulations.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>ANSYS Fluent &amp; CFX</li><li>OpenFOAM cluster</li><li>MATLAB / Python toolchains</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 18h8"/><path d="M3 21h18"/>
-            <path d="M14 21v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4"/>
-            <path d="M14 7l-2-5-3 1 2 5"/>
-            <circle cx="14" cy="10" r="3"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Microfluidics Lab</h3>
-        <p>Cleanroom-class fabrication and testing of microchannels and heat spreaders for electronics cooling.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Soft lithography tools</li><li>Microscopy station</li><li>Micro-PIV system</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Electronics Cooling Testbed</h3>
-        <p>Dedicated infrastructure for testing advanced cooling solutions for high-power electronics.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Power electronics test boards</li><li>Junction temperature monitors</li><li>Custom cold plates</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="facility-card">
-      <div class="facility-icon">
-        <div class="res-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </div>
-      </div>
-      <div class="facility-body text-sm text-gray-600 space-y-2">
-        <h3>Energy Systems Lab</h3>
-        <p>Research into sustainable energy conversion, heat exchangers, and thermal energy storage systems.</p>
-        <ul class="list-disc list-inside text-xs space-y-1">
-          <li>Heat exchanger test rigs</li><li>PCM storage modules</li><li>Solar thermal collectors</li>
-        </ul>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ══ NEWS SECTION ════════════════════════════════════════════ -->
-<div id="sec-news" class="section-hidden">
-  <div class="max-w-4xl mx-auto px-4 py-12">
-    <h1 class="page-title">News</h1>
-    <p class="page-subtitle">Updates from the LATFS laboratory.</p>
-    <div id="newsList"><p class="text-gray-400">Loading&#8230;</p></div>
-  </div>
-</div>
-
-<!-- ══ JOIN SECTION ════════════════════════════════════════════ -->
-<div id="sec-join" class="section-hidden">
-  <div class="max-w-4xl mx-auto px-4 py-12">
-    <h1 class="page-title">Join Our Lab</h1>
-    <p class="page-subtitle">We are seeking talented graduate students and postdoctoral researchers.</p>
-
-    <!-- Openings -->
-    <div class="content-card mb-8">
-      <h2>Open Positions</h2>
-      <div class="opening-item">
-        <span class="badge-gold">PhD</span>
-        <div>
-          <strong>Graduate Research Assistant &mdash; Thermal Management</strong>
-          <p>Fully-funded PhD position in experimental two-phase heat transfer and thermal management of electronics. Start date: Fall 2025.</p>
-        </div>
-      </div>
-      <div class="opening-item">
-        <span class="badge-gold">MS</span>
-        <div>
-          <strong>Graduate Research Assistant &mdash; Energy Systems</strong>
-          <p>Funded MS position in computational modeling of heat exchangers and energy conversion systems.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- What we offer -->
-    <div class="content-card mb-8">
-      <h2>What We Offer</h2>
-      <ul class="offer-list">
-        <li>Fully-funded PhD and MS positions (tuition + competitive stipend)</li>
-        <li>State-of-the-art experimental and computational facilities</li>
-        <li>Collaboration with NSF E3S Center and industry partners</li>
-        <li>Strong publication record and conference travel support</li>
-        <li>Mentorship and professional development opportunities</li>
-      </ul>
-    </div>
-
-    <!-- How to apply -->
-    <div class="content-card mb-8">
-      <h2>How to Apply</h2>
-      <p class="text-sm" style="color:var(--gray-700)">Send the following materials to the lab director at <a href="mailto:aortega@villanova.edu" style="color:var(--gold)">aortega@villanova.edu</a>:</p>
-      <ol class="apply-list">
-        <li>Your CV or resume</li>
-        <li>Unofficial transcripts</li>
-        <li>A brief (1&ndash;2 paragraph) research statement</li>
-        <li>Contact information for 2&ndash;3 references</li>
-      </ol>
-      <p class="text-sm mt-3" style="color:var(--gray-700)">Applications are reviewed on a rolling basis. Backgrounds in mechanical engineering, physics, or related fields are preferred.</p>
-      <button onclick="showSection('contact')" class="btn-primary mt-4">Contact the Lab &#8594;</button>
-    </div>
-
-    <!-- FAQ -->
-    <div class="content-card">
-      <h2>Frequently Asked Questions</h2>
-      <div class="faq-list">
-        <details class="faq-item">
-          <summary>Are funding packages guaranteed?</summary>
-          <p>Yes. PhD and MS positions in our lab come with full tuition coverage and a monthly stipend for the duration of your appointment, subject to satisfactory academic progress.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What backgrounds are preferred?</summary>
-          <p>We welcome students with backgrounds in mechanical engineering, chemical engineering, physics, or applied mathematics. Strong fundamentals in heat transfer, fluid mechanics, or thermodynamics are a plus.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Can international students apply?</summary>
-          <p>Absolutely. We have a diverse lab with students from around the world. Villanova University supports international students through the Office of International Students.</p>
-        </details>
-        <details class="faq-item">
-          <summary>How competitive is the application process?</summary>
-          <p>We admit a small number of students each year to maintain a mentored environment. We prioritize research fit, academic preparation, and motivation.</p>
-        </details>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ COLLABORATORS SECTION ══════════════════════════════════ -->
-<div id="sec-collaborators" class="section-hidden max-w-5xl mx-auto px-4 py-10">
-  <h1 class="page-title">Collaborators</h1>
-  <p class="page-subtitle">We collaborate with leading universities, national labs, and industry partners worldwide.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div class="content-card">
-      <h2>Academia</h2>
-      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
-        <li>MIT &mdash; Micro/Nanoscale Thermophysics</li>
-        <li>Georgia Tech &mdash; Thermal Sciences</li>
-        <li>Purdue University &mdash; Boiling and Two-Phase Flow</li>
-        <li>University of Maryland &mdash; Thermal Engineering</li>
-      </ul>
-    </div>
-    <div class="content-card">
-      <h2>National Laboratories</h2>
-      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
-        <li>Argonne National Laboratory</li>
-        <li>Oak Ridge National Laboratory</li>
-        <li>Lawrence Berkeley National Laboratory</li>
-      </ul>
-    </div>
-    <div class="content-card">
-      <h2>Industry</h2>
-      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
-        <li>Intel Corporation</li>
-        <li>IBM Research</li>
-        <li>3M Electronic Markets</li>
-        <li>Laird Thermal Systems</li>
-      </ul>
-    </div>
-    <div class="content-card">
-      <h2>Centers &amp; Consortia</h2>
-      <ul class="text-sm space-y-1 list-disc list-inside" style="color:var(--gray-700)">
-        <li>NSF E3S (Energy Efficient Electronic Systems)</li>
-        <li>ASME Heat Transfer Division</li>
-        <li>IEEE CPMT Society</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SPONSORS SECTION ════════════════════════════════════════ -->
-<div id="sec-sponsors" class="section-hidden max-w-5xl mx-auto px-4 py-10">
-  <h1 class="page-title">Sponsors</h1>
-  <p class="page-subtitle">Our research is generously supported by these organizations.</p>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" id="sponsorsGrid">
-    <p class="text-gray-400">Loading&#8230;</p>
-  </div>
-</div>
-
-<!-- ══ CONTACT SECTION ════════════════════════════════════════ -->
-<div id="sec-contact" class="section-hidden max-w-4xl mx-auto px-4 py-10">
-  <h1 class="page-title">Contact Us</h1>
-  <p class="page-subtitle">Get in touch with the LATFS laboratory.</p>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <div class="content-card space-y-4">
-      <h2>Lab Director</h2>
-      <p class="text-sm" style="color:var(--gray-700)">Department of Mechanical Engineering<br>Villanova University<br>800 Lancaster Avenue<br>Villanova, PA 19085</p>
-      <p class="text-sm"><span class="font-semibold">Email:</span> <a href="mailto:latfs@villanova.edu" style="color:var(--gold)">latfs@villanova.edu</a></p>
-      <p class="text-sm"><span class="font-semibold">Phone:</span> (610) 519-XXXX</p>
-      <p class="text-sm"><span class="font-semibold">Office:</span> Tolentine Hall, Room XXX</p>
-    </div>
-    <div class="content-card">
-      <h2>Send a Message</h2>
-      <form onsubmit="submitContact(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Your Name</label>
-          <input type="text" required placeholder="Full name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Email</label>
-          <input type="email" required placeholder="you@example.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold mb-1" style="color:var(--gray-500)">Message</label>
-          <textarea required rows="4" placeholder="Your message&#8230;" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none"></textarea>
-        </div>
-        <button type="submit" class="btn-primary w-full justify-center">Send Message</button>
-        <div id="contactSuccess" class="hidden text-sm font-semibold text-center" style="color:#065f46">&#10003; Message sent! We will get back to you soon.</div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
-<footer style="background:var(--navy)" class="text-white mt-16 py-12 px-4">
-  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
-    <div>
-      <div class="logo-mark">LATFS</div>
-      <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.5)">Laboratory for Advanced Thermal and Fluid Systems<br>Villanova University &middot; Department of Mechanical Engineering</p>
-    </div>
-    <div>
-      <div class="footer-heading">Research</div>
-      <ul>
-        <li onclick="showSection('research')">Research Areas</li>
-        <li onclick="showSection('publications')">Publications</li>
-        <li onclick="showSection('facilities')">Facilities</li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-heading">Lab</div>
-      <ul>
-        <li onclick="showSection('people')">People</li>
-        <li onclick="showSection('news')">News</li>
-        <li onclick="showSection('join')">Join</li>
-        <li onclick="showSection('contact')">Contact</li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-heading">Partners</div>
-      <ul>
-        <li onclick="showSection('sponsors')">Sponsors</li>
-        <li onclick="showSection('collaborators')">Collaborators</li>
-      </ul>
-      <p class="mt-3 text-sm" style="color:rgba(255,255,255,0.45)">NSF E3S Center Partner<br>ASME &middot; IEEE CPMT</p>
-    </div>
-  </div>
-  <div class="max-w-7xl mx-auto border-t py-8" style="border-color:rgba(255,255,255,0.08)">
-    <div class="footer-heading text-center mb-5">Partner Institutions</div>
-    <div class="flex flex-wrap justify-center items-center gap-6" id="footerLogos">
-      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
-        <img src="/images/templatemo_logo_villanova.png" alt="Villanova University" style="height:52px;object-fit:contain;opacity:0.9">
-      </div>
-      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
-        <img src="/images/sponnsf.gif" alt="NSF" style="height:52px;object-fit:contain;opacity:0.9">
-      </div>
-    </div>
-  </div>
-  <div class="max-w-7xl mx-auto border-t pt-6 text-center text-xs" style="border-color:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)">&copy; 2024 LATFS &mdash; Villanova University. All rights reserved.</div>
-</footer>
+<div id="app"></div>
 
 <script>
-  // ── Navigation ───────────────────────────────────────────────
-  const ALL_SECTIONS = ['home','research','research-detail','people','publications','facilities','news','join','contact','sponsors','collaborators'];
-  let _allPeople = [];
-  let _allResearch = [];
+/* ============================================================
+   LATFS public website â€” vanilla JS port of the website-ui-kit
+   ============================================================ */
+const IS_FILE_MODE = location.protocol === 'file:';
+const PLATFORM_URL = 'http://127.0.0.1:3000/platform';
+function platformHref() {
+  return IS_FILE_MODE ? PLATFORM_URL : '/platform';
+}
 
-  function openResearchDetail(id) {
-    const item = _allResearch.find(r => r.id === id);
-    if (!item) return;
-    renderResearchDetail(item);
-    showSection('research-detail');
+const RES = {
+  logoColor:  './assets/site-logos/latfs-icon.png',
+  latfsWhite: './assets/site-logos/latfs-logo-white.png',
+  latfsMark:  './assets/site-logos/latfs-icon.png',
+  hero1:      './assets/hero-1.png',
+  hero2:      './assets/hero-2.png',
+  hero3:      './assets/hero-3.png',
+  fac1:       './assets/facility-1.png',
+  fac2:       './assets/facility-2.png',
+  fac3:       './assets/facility-3.png',
+  fac4:       './assets/facility-4.png',
+  rDroplet:   './assets/research-droplet.png',
+  rMini:      './assets/research-minichannel.png',
+  rGeo:       './assets/research-geothermal.png',
+  spIntel:    './assets/sponsors/intel.svg',
+  spAmd:      './assets/sponsors/amd.svg',
+  spHoneywell:'./assets/sponsors/honeywell.svg',
+  spRtx:      './assets/sponsors/rtx.svg',
+  spTi:       './assets/sponsors/ti.svg',
+  spSrc:      './assets/sponsors/src.svg',
+  spNasa:     './assets/sponsors/nasa.svg',
+  spDarpa:    './assets/sponsors/darpa.svg',
+  spNsf:      './assets/site-logos/nsf-logo.png',
+  spEs2:      './assets/site-logos/es2-official.svg',
+  spVillanova:'./assets/site-logos/villanova-engineering-white.png',
+};
+
+const FALLBACK_DATA = {
+  news: [
+    { id: 1, date: '2024-03-20', title: 'LATFS joins NSF E3S Center', body: 'Villanova and LATFS formally joined the NSF Industry/University Cooperative Research Center on Energy Efficient Electronic Systems.' },
+    { id: 2, date: '2024-02-14', title: 'Paper accepted at ITherm 2024', body: 'A new study on synthetic impinging jets and high-heat-flux cooling was accepted for presentation at ITherm 2024.' },
+    { id: 3, date: '2024-01-08', title: 'Two new PhD candidates welcomed', body: 'New graduate researchers joined the lab to work on boiling heat transfer and two-phase flow instabilities.' },
+  ],
+  pubs: [
+    { id: 1, year: 2024, title: 'Simulation of Two-Phase Flow and Heat Transfer in Mini- and Micro-Channels for Concentrating Photovoltaics Cooling', authors: 'A. Ortega, S. Kim, M. Reyes', venue: 'ASME ESFuelCell 2024' },
+    { id: 2, year: 2023, title: 'Droplet Impingement Dynamics on Heated Structured Surfaces', authors: 'M. Reyes, A. Ortega', venue: 'International Journal of Heat and Mass Transfer' },
+    { id: 3, year: 2022, title: 'Compact Liquid Cooling Architectures for High-Power Electronics', authors: 'A. Ortega, J. Patel, D. Hernandez', venue: 'IEEE Transactions on Components, Packaging and Manufacturing Technology' },
+  ],
+  people: [
+    { id: 1, name: 'Alejandro Ortega', role: 'Professor', category: 'director', active: true, email: 'aortega@villanova.edu', bio: 'Directs LATFS and leads research in boiling heat transfer, compact thermal systems, and laboratory-scale diagnostics.' },
+    { id: 2, name: 'Maya Reyes', role: 'PhD Candidate', category: 'phd', active: true, bio: 'Researches droplet impingement, high-speed imaging, and transient thermal measurements.' },
+    { id: 3, name: 'Daniel Hernandez', role: 'PhD Candidate', category: 'phd', active: true, bio: 'Works on two-phase flow instabilities and experimental methods for electronics cooling.' },
+    { id: 4, name: 'Sarah Kim', role: 'Postdoctoral Researcher', category: 'postdoc', active: true, bio: 'Focuses on compact heat exchangers, model validation, and instrumentation workflows.' },
+    { id: 5, name: 'Jordan Patel', role: 'Undergraduate Researcher', category: 'ug', active: true, bio: 'Supports rig assembly, test planning, and calibration across boiling and jet-flow projects.' },
+  ],
+  research: [
+    { id: 1, title: 'Two-Phase and Boiling Heat Transfer', summary: 'Boiling, condensation, and droplet impingement in mini- and micro-channels.', tag: '12 active projects - 8 publications', image_url: RES.rDroplet },
+    { id: 2, title: 'Microchannel Heat Exchangers', summary: 'Water-cooled silicon-carbide cold plates for high-flux electronics.', tag: 'Industry partnership - Intel, AMD', image_url: RES.rMini },
+    { id: 3, title: 'Energy Efficient Electronic Systems', summary: 'Thermal management for future computing and power-dense systems.', tag: 'NSF E3S Center', image_url: RES.hero2 },
+    { id: 4, title: 'Renewable and Geothermal Energy', summary: 'Underground storage, solar-thermal, and working-fluid characterization.', tag: 'DOE funded', image_url: RES.rGeo },
+    { id: 5, title: 'Jets and Complex Flow', summary: 'Synthetic and steady jets, vortex dynamics, and convective enhancement.', tag: 'Graduate research', image_url: RES.hero3 },
+    { id: 6, title: 'Experimental Techniques', summary: 'Precision instrumentation shared across all experimental rigs.', tag: 'PIV - IR - high-speed imaging', image_url: RES.fac1 },
+  ],
+  facilities: [
+    { id: 1, name: 'Flow-Boiling Test Rig', description: 'A configurable platform for boiling and condensation studies with optical access and temperature instrumentation.', photo_url: RES.fac1, doc_name: 'Rig overview' },
+    { id: 2, name: 'Optical Diagnostics Bench', description: 'Shared imaging and illumination station for high-speed flow visualization, PIV, and infrared thermography.', photo_url: RES.fac2, doc_name: 'Instrumentation notes' },
+  ],
+  apps: [
+    { id: 1, title: 'Pressure Drop Estimator', summary: 'A browser-based calculator for quick thermal-fluid design checks during lab meetings and coursework.' },
+  ],
+  downloads: [],
+  settings: {
+    site_theme: 'navy-gold',
+    research_page_title: 'Six pillars of inquiry',
+    research_page_intro: 'LATFS investigates the thermal and fluid mechanics of high-power-density systems, from boiling in microchannels to renewable thermal storage.',
+    people_page_title: 'Lab members',
+    people_page_intro: 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.',
+    facilities_page_title: 'Lab facilities and instruments',
+    facilities_page_intro: 'Preview the rigs, instruments, and supporting documentation that power the lab.',
+    downloads_page_title: 'Downloads',
+    downloads_page_intro: 'Access published PDFs, data sheets, forms, and other downloadable resources shared by the lab.',
+    hero_metric_research_label: 'Research areas',
+    hero_metric_publications_label: 'Publications',
+    hero_metric_people_label: 'Active members',
+    hero_metric_facilities_label: 'Facilities',
+  },
+};
+
+/* ---- Avatar helpers ---- */
+const AVATAR_GRADS = [
+  'linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%)',
+  'linear-gradient(135deg,#7a5e15 0%,#b8912a 100%)',
+  'linear-gradient(135deg,#162041 0%,#4a6fa5 100%)',
+  'linear-gradient(135deg,#2d4a78 0%,#0f172a 100%)',
+  'linear-gradient(135deg,#9a7820 0%,#d4a942 100%)',
+  'linear-gradient(135deg,#1e3a5f 0%,#2d4a78 100%)',
+];
+function avatarGrad(name) { return AVATAR_GRADS[((name || '').charCodeAt(0) || 65) % AVATAR_GRADS.length]; }
+function getInitials(name) { return (name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(''); }
+
+/* ---- DOM helper ---- */
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (k === 'class') el.className = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v != null && v !== false) el.setAttribute(k, v);
   }
-
-  function resCardKeydown(event, id) {
-    if (event.key === 'Enter' || event.key === ' ') openResearchDetail(id);
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.appendChild(typeof kid === 'string' ? document.createTextNode(kid) : kid);
   }
+  return el;
+}
+function el(html) { const t = document.createElement('template'); t.innerHTML = html; return t.content.firstElementChild; }
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]); }
+async function getJSON(url) {
+  try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); }
+  catch (_) { return null; }
+}
 
-  function renderResearchDetail(item) {
-    let links = [];
-    try { links = JSON.parse(item.links || '[]'); } catch(e) {}
-    const bodyText = item.content || item.description || '';
-    document.getElementById('researchDetailContent').innerHTML = `
-      <h1 class="page-title" style="margin-bottom:1.25rem">${escHtml(item.title)}</h1>
-      ${item.image_url ? `<img src="${escHtml(item.image_url)}" alt="${escHtml(item.title)}" style="width:100%;max-height:380px;object-fit:cover;border-radius:12px;margin-bottom:1.75rem;display:block">` : ''}
-      <div class="content-card" style="margin-bottom:1.5rem">
-        <p style="color:var(--gray-700);line-height:1.8;font-size:0.9375rem;white-space:pre-wrap;margin:0">${escHtml(bodyText)}</p>
-      </div>
-      ${links.length > 0 ? `
-      <div class="content-card">
-        <h2>Links &amp; Resources</h2>
-        <ul style="list-style:none;padding:0;margin:0">
-          ${links.map(l => `
-          <li style="padding:0.5rem 0;border-bottom:1px solid var(--gray-100)">
-            <a href="${escHtml(l.url)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;font-size:0.875rem">
-              ${escHtml(l.label || l.url)} &#8599;
-            </a>
-          </li>`).join('')}
-        </ul>
-      </div>` : ''}
-    `;
-  }
+/* ---- Routes ---- */
+const NAV = [
+  ['home', 'Home'],
+  ['research', 'Research'],
+  ['people', 'People'],
+  ['publications', 'Publications'],
+  ['facilities', 'Facilities'],
+  ['gallery', 'Gallery'],
+  ['apps', 'Apps'],
+  ['downloads', 'Downloads'],
+  ['news', 'News'],
+  ['join', 'Join'],
+  ['contact', 'Contact'],
+];
 
-  function _applySection(sec, sub) {
-    ALL_SECTIONS.forEach(s => {
-      const el = document.getElementById('sec-' + s);
-      if (el) el.classList.toggle('section-hidden', s !== sec);
-    });
-    // Update nav active state
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    const navEl = document.getElementById('nav-' + sec);
-    if (navEl) navEl.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (sec === 'people') { loadPeople(sub); }
-    else if (sec === 'research') { loadResearch(); }
-    else if (sec === 'publications') { loadPublications(); }
-    else if (sec === 'sponsors') { loadSponsorsPage(); }
-    else if (sec === 'news') { loadNewsPage(); }
-  }
+let state = { route: 'home', heroSlides: [], heroIdx: 0, heroTimer: null, navOpen: false };
 
-  function showSection(sec, sub) {
-    _applySection(sec, sub);
-    if (!history.state || history.state.section !== sec) {
-      history.pushState({ section: sec }, '', '#' + sec);
-    }
-  }
+function activePeopleRows(rows) {
+  return (rows || []).filter(p => (p.active === undefined ? true : !!p.active));
+}
 
-  // Handle browser back/forward button (and Backspace-as-back in some browsers)
-  window.addEventListener('popstate', function(e) {
-    _applySection((e.state && e.state.section) || 'home');
+function formatMetricCount(value, fallback) {
+  const n = Number(value || 0);
+  if (!n) return fallback;
+  return n > 99 ? `${n}+` : String(n).padStart(2, '0');
+}
+
+function siteStats() {
+  return {
+    research: (DATA.research || []).length || 6,
+    publications: (DATA.pubs || []).length || 30,
+    people: activePeopleRows(DATA.people).length || 15,
+    facilities: (DATA.facilities || []).length || 2,
+    downloads: (DATA.downloads || []).length || 0,
+    news: (DATA.news || []).length || 0,
+  };
+}
+
+function heroMetricLabel(key, fallback) {
+  return ((DATA.settings || {})[`hero_metric_${key}_label`] || fallback || '').trim() || fallback;
+}
+
+function dedupePeople(rows) {
+  const merged = new Map();
+  [...(rows || [])].forEach(person => {
+    const key = String(person.email || person.name || person.id || '').trim().toLowerCase();
+    if (!key) return;
+    merged.set(key, Object.assign({}, merged.get(key) || {}, person));
   });
+  return Array.from(merged.values());
+}
 
-  // Prevent Backspace from triggering browser back when not in a text field
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Backspace') {
-      const activeEl = document.activeElement;
-      const tag = activeEl ? activeEl.tagName : '';
-      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !(activeEl && activeEl.isContentEditable)) {
-        e.preventDefault();
-      }
-    }
+function mergedPublicPeople(rows) {
+  const live = activePeopleRows(rows || []);
+  if (live.length >= 3) return live;
+  return dedupePeople([...(rows || []), ...FALLBACK_DATA.people]).filter(p => (p.active === undefined ? true : !!p.active));
+}
+
+function sponsorLogoSrc(src, name='') {
+  const raw = String(src || '').trim();
+  const file = raw.split('/').pop().toLowerCase();
+  const label = String(name || '').toLowerCase();
+  if (file.includes('nsf') || label.includes('nsf')) return RES.spNsf;
+  if (file.includes('es2') || file.includes('e3s') || label.includes('e3s') || label.includes('energy smart')) return RES.spEs2;
+  if (file.includes('villanova') || label.includes('villanova')) return RES.spVillanova;
+  if (file.includes('intel') || label.includes('intel')) return RES.spIntel;
+  if (file.includes('amd') || label.includes('amd')) return RES.spAmd;
+  if (file.includes('honeywell') || label.includes('honeywell')) return RES.spHoneywell;
+  if (file.includes('rtx') || file.includes('raytheon') || label.includes('raytheon') || label.includes('rtx')) return RES.spRtx;
+  if (file.includes('ti') || file.includes('texas') || label.includes('texas')) return RES.spTi;
+  if (file.includes('src') || label.includes('src')) return RES.spSrc;
+  if (file.includes('nasa') || label.includes('nasa')) return RES.spNasa;
+  if (file.includes('darpa') || label.includes('darpa')) return RES.spDarpa;
+  return raw || RES.spEs2;
+}
+
+function latestGalleryItems(gallery, limit=5) {
+  return (gallery || [])
+    .slice()
+    .sort((a, b) => Number(b.id || 0) - Number(a.id || 0))
+    .slice(0, limit);
+}
+
+function fileLabelFromUrl(url) {
+  const file = String(url || '').split('/').pop() || '';
+  return decodeURIComponent(file);
+}
+
+function assetUrl(url) {
+  const value = String(url || '').trim();
+  if (!value) return '';
+  if (/^(https?:|mailto:|tel:|data:|blob:)/i.test(value)) return value;
+  if (value.startsWith('/')) return value;
+  return '/' + value.replace(/^\.?\//, '');
+}
+
+function isImageDownload(item) {
+  const mime = String(item?.mime_type || '').toLowerCase();
+  const file = String(item?.file_url || '').toLowerCase();
+  return mime.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(file);
+}
+
+function fileKindLabel(item) {
+  const file = String(item?.file_url || '').split('?')[0];
+  const ext = (file.split('.').pop() || item?.category || 'file').slice(0, 4).toUpperCase();
+  return ext || 'FILE';
+}
+
+function fileSizeLabel(bytes) {
+  const size = Number(bytes || 0);
+  if (!size) return '';
+  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+  if (size >= 1024) return `${Math.round(size / 1024)} KB`;
+  return `${size} B`;
+}
+
+function matchesQuery(parts, query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return true;
+  return parts.filter(Boolean).join(' ').toLowerCase().includes(q);
+}
+
+function applySiteTheme(theme) {
+  const nextTheme = theme === 'navy-copper' ? 'navy-copper' : 'navy-gold';
+  document.body.dataset.theme = nextTheme;
+}
+
+function closeInlineApp() {
+  const current = document.querySelector('.w-app-modal-bg');
+  if (current) current.remove();
+  document.removeEventListener('keydown', closeInlineAppOnEscape);
+}
+
+function closeInlineAppOnEscape(e) {
+  if (e.key === 'Escape') closeInlineApp();
+}
+
+function openInlineApp(app) {
+  closeInlineApp();
+  const bg = h('div', { class: 'w-app-modal-bg', onclick: (e) => { if (e.target === bg) closeInlineApp(); } });
+  const frameMarkup = `<base href="${escapeHtml(location.origin + '/')}" />${app.embed_html || ''}`;
+  const frame = h('iframe', {
+    class: 'w-app-frame',
+    sandbox: 'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads',
+    srcdoc: frameMarkup,
+    title: app.title || 'Lab app'
   });
+  bg.appendChild(
+    h('div', { class: 'w-app-modal' },
+      h('div', { class: 'w-app-modal-head' },
+        h('div', { class: 'w-app-modal-copy' },
+          h('h3', null, app.title || 'Lab app'),
+          h('p', null, app.summary || app.description || 'Inline lab tool')
+        ),
+        h('div', { class: 'w-app-actions', style: { marginTop: '0' } },
+          app.url ? h('a', { class: 'btn-ghost', href: app.url, target: '_blank', rel: 'noopener' }, 'Open link') : null,
+          h('button', { class: 'btn-ghost', type: 'button', onclick: closeInlineApp }, 'Close')
+        )
+      ),
+      frame
+    )
+  );
+  document.body.appendChild(bg);
+  document.addEventListener('keydown', closeInlineAppOnEscape);
+}
 
-  // Set initial history state
-  history.replaceState({ section: 'home' }, '', location.href);
+function go(route) {
+  state.route = route;
+  state.navOpen = false;
+  if (location.hash !== '#' + route) history.replaceState(null, '', '#' + route);
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
 
-  function toggleMobileMenu() {
-    const m = document.getElementById('mobileMenu');
-    const btn = document.getElementById('mobileMenuBtn');
-    const isOpen = m.classList.toggle('open');
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    btn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-  }
+window.addEventListener('hashchange', () => {
+  const r = location.hash.replace('#', '') || 'home';
+  if (r !== state.route) { state.route = r; render(); }
+});
 
-  // ── XSS prevention ───────────────────────────────────────────
-  function escHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => render(), 120);
+});
 
-  // ── SVG icons for research cards ─────────────────────────────
-  const RES_ICONS = [
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z"/></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+/* ---- Components ---- */
+function Nav() {
+  const links = NAV.map(([id, label]) =>
+    h('span', {
+      class: 'w-nav-link' + (state.route === id ? ' active' : ''),
+      onclick: () => go(id),
+    }, label)
+  );
+  const wrap = h('nav', { class: 'w-nav' },
+      h('div', { class: 'w-nav-inner' },
+        h('div', { class: 'w-brand', onclick: () => go('home') },
+          h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' })
+        ),
+      h('div', { class: 'w-nav-links' + (state.navOpen ? ' open' : '') },
+        ...links,
+        h('a', { class: 'w-nav-signin', href: platformHref() }, 'Sign in')
+      ),
+      h('button', { class: 'w-nav-toggle', 'aria-label': 'Menu', onclick: () => { state.navOpen = !state.navOpen; render(); } }, 'â˜°')
+    )
+  );
+  return wrap;
+}
+
+function Hero(slides) {
+  const usable = (slides && slides.length) ? slides : [
+    { image_url: RES.hero2, title: '', subtitle: '' },
+    { image_url: RES.hero3, title: '', subtitle: '' },
+  ];
+  state.heroSlides = usable;
+  const stats = siteStats();
+  const focusAreas = (DATA.research || [])
+    .map(item => item.title || item.name || '')
+    .filter(Boolean)
+    .slice(0, 3);
+  const highlightLines = focusAreas.length ? focusAreas : [
+    'Two-phase flow and boiling heat transfer',
+    'Compact thermal systems and electronics cooling',
+    'Diagnostics, instrumentation, and lab-built rigs',
   ];
 
-  // ── Home data ─────────────────────────────────────────────────
-  async function loadHomeData() {
-    const [newsRes, resRes, pubRes, spRes, galRes] = await Promise.allSettled([
-      fetch('/api/news').then(r => r.json()),
-      fetch('/api/research').then(r => r.json()),
-      fetch('/api/publications').then(r => r.json()),
-      fetch('/api/sponsors').then(r => r.json()),
-      fetch('/api/gallery').then(r => r.json())
-    ]);
-    if (newsRes.status === 'fulfilled') { renderNewsFeed(newsRes.value); renderTicker(newsRes.value); }
-    if (resRes.status === 'fulfilled') renderHomeResearch(resRes.value);
-    if (pubRes.status === 'fulfilled') renderHomePubs(pubRes.value);
-    if (spRes.status === 'fulfilled') { renderSponsorsMarquee(spRes.value); renderFooterLogos(spRes.value); }
-    const galleryPhotos = galRes.status === 'fulfilled' && galRes.value.length ? galRes.value : null;
-    initSlideshow(galleryPhotos);
-  }
+  const slideEls = usable.map((s, i) =>
+    h('div', { class: 'w-hero-slide' + (i === state.heroIdx ? ' active' : ''),
+      style: { backgroundImage: `url(${s.image_url || s})` } })
+  );
 
-  function renderNewsFeed(items) {
-    const el = document.getElementById('homeFeed');
-    if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No news yet.</p>'; return; }
-    el.innerHTML = items.slice(0, 3).map(n => `
-      <div class="news-card">
-        <div class="news-date">${escHtml(n.date || '')}</div>
-        <div class="news-title">${escHtml(n.title)}</div>
-        <div class="news-body">${escHtml((n.content || '').slice(0, 120))}${(n.content||'').length>120?'&#8230;':''}</div>
-      </div>`).join('');
-  }
+  const dotEls = usable.map((_, i) =>
+    h('button', {
+      class: 'w-dot' + (i === state.heroIdx ? ' active' : ''),
+      'aria-label': 'Slide ' + (i+1),
+      onclick: () => { state.heroIdx = i; restartHeroTimer(); render(); }
+    })
+  );
 
-  function renderTicker(news) {
-    if (!news || !news.length) return;
-    const track = document.getElementById('tickerTrack');
-    const items = news.map(n => `<span class="ticker-item">${escHtml(n.title)}</span><span class="ticker-item">&bull;</span>`).join('');
-    track.innerHTML = items + items;
-  }
+  const metrics = h('div', { class: 'w-hero-metrics' },
+    metric(formatMetricCount(stats.research, '06'), heroMetricLabel('research', 'Research areas')),
+    metric(formatMetricCount(stats.publications, '30+'), heroMetricLabel('publications', 'Publications')),
+    metric(formatMetricCount(stats.people, '15'), heroMetricLabel('people', 'Active members')),
+    metric(formatMetricCount(stats.facilities, '02'), heroMetricLabel('facilities', 'Facilities'))
+  );
 
-  function renderHomeResearch(items) {
-    const el = document.getElementById('homeResearch');
-    if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No research areas yet.</p>'; return; }
-    _allResearch = items;
-    el.innerHTML = items.slice(0, 6).map((r, i) => `
-      <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="resCardKeydown(event,${r.id})">
-        <div class="res-icon">${RES_ICONS[i % 6]}</div>
-        <div class="res-card-title">${escHtml(r.title)}</div>
-        <div class="res-card-desc">${escHtml((r.description||'').slice(0,100))}${(r.description||'').length>100?'&#8230;':''}</div>
-      </div>`).join('');
-  }
+  const hero = h('section', { class: 'w-hero' },
+    ...slideEls,
+    h('div', { class: 'w-hero-overlay' }),
+    h('div', { class: 'w-hero-grain' }),
+    h('div', { class: 'w-hero-content' },
+      h('div', { class: 'w-hero-grid' },
+        h('div', { class: 'w-hero-copy' },
+          h('div', { class: 'w-hero-eyebrow' },
+            h('span', { class: 'w-hero-dot' }),
+            'Villanova University Â· Department of Mechanical Engineering'
+          ),
+          h('h1', { class: 'w-hero-title', html: 'Laboratory for Advanced<br>Thermal <span class="w-amp">&amp;</span> Fluid Systems' }),
+          h('p', { class: 'w-hero-lead' }, 'LATFS studies boiling, compact thermal systems, and experimental fluid mechanics for high-power-density energy technologies through hands-on rigs, diagnostics, and modeling.'),
+          h('div', { class: 'w-hero-actions' },
+            h('button', { class: 'w-btn w-btn-primary', onclick: () => go('research') }, 'Explore research'),
+            h('button', { class: 'w-btn w-btn-secondary', onclick: () => go('people') }, 'Meet the team')
+          )
+        ),
+        h('aside', { class: 'w-hero-panel' },
+          h('div', { class: 'w-hero-panel-heading' }, 'Lab snapshot'),
+          h('div', { class: 'w-hero-panel-title' }, 'Hands-on thermal-fluid systems research'),
+          h('p', { class: 'w-hero-panel-copy' }, 'The lab connects instrumentation, analysis, and translational engineering across electronics cooling, two-phase flow, and energy systems.'),
+          h('div', { class: 'w-hero-panel-grid' },
+            heroMini(formatMetricCount(stats.publications, '30+'), 'Publications'),
+            heroMini(formatMetricCount(stats.people, '15'), 'Active members'),
+            heroMini(formatMetricCount(stats.facilities, '02'), 'Facilities'),
+            heroMini(stats.apps ? formatMetricCount(stats.apps, '01') : 'NSF', stats.apps ? 'Live apps' : 'Center partner')
+          ),
+          h('div', { class: 'w-hero-list' },
+            ...highlightLines.map(line => h('div', { class: 'w-hero-list-item' }, line))
+          )
+        )
+      )
+    ),
+    h('div', { class: 'w-hero-footer' },
+      metrics,
+      h('div', { class: 'w-hero-dots' }, ...dotEls)
+    ),
+  );
+  return hero;
+}
+function heroMini(num, label) {
+  return h('div', { class: 'w-hero-mini' },
+    h('div', { class: 'w-hero-mini-num' }, num),
+    h('div', { class: 'w-hero-mini-lbl' }, label)
+  );
+}
+function metric(num, label, badge) {
+  return h('div', { class: 'w-metric' + (badge ? ' w-metric-badge' : '') },
+    num ? h('span', { class: 'w-metric-num' }, num) : null,
+    h('span', { class: 'w-metric-lbl' }, label),
+  );
+}
+function restartHeroTimer() {
+  if (state.heroTimer) clearInterval(state.heroTimer);
+  state.heroTimer = setInterval(() => {
+    if (!state.heroSlides.length) return;
+    state.heroIdx = (state.heroIdx + 1) % state.heroSlides.length;
+    const slides = document.querySelectorAll('.w-hero-slide');
+    slides.forEach((el,i) => el.classList.toggle('active', i === state.heroIdx));
+    document.querySelectorAll('.w-hero-dots .w-dot').forEach((el,i) => el.classList.toggle('active', i === state.heroIdx));
+  }, 6000);
+}
 
-  function renderHomePubs(items) {
-    const el = document.getElementById('homePubs');
-    if (!items || !items.length) { el.innerHTML = '<p class="text-gray-400 text-sm">No publications yet.</p>'; return; }
-    el.innerHTML = items.slice(0, 1).map(p => `
-      <div class="pub-row">
-        <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
-        <div>
-          <div class="pub-title">
-            ${p.doi_url ? `<a href="${escHtml(p.doi_url)}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold)">${escHtml(p.title)}</a>` : escHtml(p.title)}
-          </div>
-          <div class="pub-authors">${escHtml(p.authors)}</div>
-          <div class="pub-venue">${escHtml(p.venue)}</div>
-          <div class="flex gap-3 mt-1">
-            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">PDF &#8599;</a>`:''}
-            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Cite &#8599;</a>`:''}
-          </div>
-        </div>
-      </div>`).join('');
-  }
+function SectionHeader(title, action) {
+  const inner = h('div', { class: 'w-sh-inner' },
+    h('div', { class: 'w-sh-bar' }),
+    h('h2', { class: 'w-sh-title' }, title),
+  );
+  return action
+    ? h('div', { class: 'w-sh' }, inner, h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' â†’'))
+    : h('div', { class: 'w-sh' }, inner);
+}
 
-  function renderSponsorsMarquee(sponsors) {
-    if (!sponsors || !sponsors.length) return;
-    const track = document.getElementById('sponsorsMarquee');
-    const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c','#0369a1','#065f46'];
-    const chips = sponsors.map((s, i) => `
-      <div class="sponsor-chip">
-        ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;width:auto;object-fit:contain">` :
-          `<div class="sponsor-init" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
-      </div>`).join('');
-    track.innerHTML = chips + chips;
+function PageBanner(eyebrow, title, intro) {
+  return h('div', { class: 'w-page-banner' },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-page-banner-copy' },
+        h('span', { class: 'eyebrow' }, eyebrow),
+        h('h1',   { class: 'w-page-banner-title' }, title),
+        intro ? h('p', { class: 'w-page-banner-intro' }, intro) : null
+      )
+    )
+  );
+}
+function pageBannerSummary() {
+  const stats = siteStats();
+  const route = String(state.route || '');
+  if (route === 'people' || route.startsWith('person/')) {
+    return {
+      label: 'Lab roster',
+      note: 'Browse the people behind LATFS across faculty, graduate researchers, undergraduates, alumni, and collaborators.',
+      pills: [`${stats.people} profiles`, `${stats.publications} publications`],
+    };
   }
-
-  function renderFooterLogos(sponsors) {
-    if (!sponsors || !sponsors.length) return;
-    const el = document.getElementById('footerLogos');
-    if (!el) return;
-    const withLogos = sponsors.filter(s => s.logo_url);
-    if (!withLogos.length) return;
-    el.innerHTML = withLogos.map(s => `
-      <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem 1.5rem">
-        <img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" style="height:52px;object-fit:contain;opacity:0.9">
-      </div>`).join('');
+  if (route === 'publications') {
+    return {
+      label: 'Research output',
+      note: "Track papers, venues, and citation links from the lab's published work.",
+      pills: [`${stats.publications} publications`, `${stats.research} research areas`],
+    };
   }
-
-  // ── News page ─────────────────────────────────────────────────
-  async function loadNewsPage() {
-    const el = document.getElementById('newsList');
-    if (!el) return;
-    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
-    try {
-      const data = await fetch('/api/news').then(r => r.json());
-      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No news yet.</p>'; return; }
-      el.innerHTML = data.map(n => `
-        <div class="news-full-card">
-          <div class="news-date" style="margin-bottom:0.35rem">${escHtml(n.date||'')}</div>
-          <div class="news-title" style="font-size:1.05rem;margin-bottom:0.5rem">${escHtml(n.title)}</div>
-          <div class="news-body">${escHtml(n.content||'')}</div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load news.</p>'; }
+  if (route === 'facilities' || route.startsWith('facility/')) {
+    return {
+      label: 'Lab infrastructure',
+      note: 'See the rigs, instruments, and supporting documentation that make the experiments possible.',
+      pills: [`${stats.facilities} facilities`, stats.apps ? `${stats.apps} live apps` : 'Tools and docs'],
+    };
   }
-
-  // ── People ────────────────────────────────────────────────────
-  async function loadPeople(cat) {
-    const el = document.getElementById('peopleGrid');
-    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
-    try {
-      const data = await fetch('/api/people').then(r => r.json());
-      _allPeople = data;
-      filterPeople(cat || 'all');
-    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load people.</p>'; }
+  if (route === 'news' || route.startsWith('news/')) {
+    return {
+      label: 'What is new',
+      note: 'Follow milestones, conference activity, awards, and day-to-day progress from the lab.',
+      pills: [`${(DATA.news || []).length} updates`, `${stats.people} active members`],
+    };
   }
-
-  function filterPeople(cat) {
-    document.querySelectorAll('#peopleFilters button').forEach(b => {
-      const active = b.dataset.filter === cat;
-      b.style.background = active ? 'var(--navy)' : '';
-      b.style.color = active ? '#fff' : 'var(--navy)';
-      b.style.borderColor = active ? 'var(--navy)' : 'var(--gray-200)';
-    });
-    const filtered = cat === 'all' ? _allPeople : _allPeople.filter(p => (p.category||'').toLowerCase() === cat);
-    renderPeople(filtered);
+  if (route === 'apps') {
+    return {
+      label: 'Interactive tools',
+      note: 'Use LATFS teaching and research tools without digging through internal resources.',
+      pills: [(DATA.apps || []).length ? `${(DATA.apps || []).length} apps` : 'Tools rolling out', `${stats.research} research pillars`],
+    };
   }
-
-  function categoryLabel(cat) {
-    const map = { director:'Director', faculty:'Faculty', postdoc:'PostDoc', phd:'PhD Student', ms:'MS Student', ug:'Undergrad', former:'Alumni' };
-    return map[(cat||'').toLowerCase()] || cat;
+  if (route === 'gallery') {
+    return {
+      label: 'From the lab',
+      note: 'Browse lab photos, experimental setups, team activity, and recent gallery uploads.',
+      pills: [`${(DATA.gallery || []).length} photos`, `${stats.people} members`],
+    };
   }
-  function categoryBadgeStyle(cat) {
-    const map = { director:'background:#e0f2fe;color:#0369a1', faculty:'background:#e0f2fe;color:#0369a1',
-      postdoc:'background:#ede9fe;color:#7c3aed', phd:'background:#dcfce7;color:#166534',
-      ms:'background:#fef3c7;color:#92400e', ug:'background:#fce7f3;color:#9d174d',
-      former:'background:#f1f5f9;color:#64748b' };
-    return map[(cat||'').toLowerCase()] || '';
+  if (route === 'downloads') {
+    return {
+      label: 'Download library',
+      note: 'Published files, PDFs, office documents, media, and other downloadable resources from the lab.',
+      pills: [`${stats.downloads} downloads`, `${stats.publications} publications`],
+    };
   }
+  return {
+    label: 'LATFS at a glance',
+    note: 'Experimental and computational work in thermal-fluid systems, anchored at Villanova and built for practical engineering impact.',
+    pills: [`${stats.research} research areas`, `${stats.people} members`],
+  };
+}
 
-  function renderPeople(people) {
-    const el = document.getElementById('peopleGrid');
-    if (!people || !people.length) { el.innerHTML = '<p class="text-gray-400 col-span-4">No people found.</p>'; return; }
-    el.innerHTML = people.map((p) => {
-      const initials = (p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-      const badgeStyle = categoryBadgeStyle(p.category);
-      return `<div class="person-card">
-        <div class="person-avatar">
-          ${p.photo_url ? `<img src="${escHtml(p.photo_url)}" alt="${escHtml(p.name)}" loading="lazy">` : `<span>${escHtml(initials)}</span>`}
-        </div>
-        <div class="person-body">
-          <div class="person-name">${escHtml(p.name)}</div>
-          <div class="person-role">${escHtml(p.role||'')}</div>
-          <span class="category-badge"${badgeStyle ? ` style="${badgeStyle}"` : ''}>${escHtml(categoryLabel(p.category))}</span>
-          ${p.bio ? `<p class="text-xs mt-2 leading-relaxed" style="color:var(--gray-500)">${escHtml(p.bio.slice(0,100))}${p.bio.length>100?'&#8230;':''}</p>`:''}
-          ${p.email ? `<a href="mailto:${escHtml(p.email)}" class="text-xs mt-1 block" style="color:var(--gold)">${escHtml(p.email)}</a>`:''}
-          <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:0.5rem">
-            ${p.linkedin_url ? `<a href="${escHtml(p.linkedin_url)}" target="_blank" rel="noopener" title="LinkedIn" style="color:#0077b5;display:inline-flex;align-items:center" aria-label="${escHtml(p.name)} LinkedIn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            </a>` : ''}
-            ${p.website_url ? `<a href="${escHtml(p.website_url)}" target="_blank" rel="noopener" title="Personal Website" style="color:var(--navy);display:inline-flex;align-items:center" aria-label="${escHtml(p.name)} website">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-            </a>` : ''}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── Research ──────────────────────────────────────────────────
-  async function loadResearch() {
-    const el = document.getElementById('researchGrid');
-    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
-    try {
-      const data = await fetch('/api/research').then(r => r.json());
-      _allResearch = data;
-      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No research areas yet.</p>'; return; }
-      el.innerHTML = data.map((r, i) => `
-        <div class="res-card" onclick="openResearchDetail(${r.id})" role="button" tabindex="0" onkeydown="resCardKeydown(event,${r.id})">
-          <div class="res-icon">${RES_ICONS[i % 6]}</div>
-          <div class="res-card-title">${escHtml(r.title)}</div>
-          <div class="res-card-desc">${escHtml(r.description||'')}</div>
-          <div style="margin-top:0.75rem;font-size:0.78rem;font-weight:600;color:var(--gold)">View details &#8594;</div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load research.</p>'; }
-  }
-
-  // ── Publications ──────────────────────────────────────────────
-  let _allPubs = [];
-  async function loadPublications() {
-    const el = document.getElementById('pubList');
-    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
-    try {
-      _allPubs = await fetch('/api/publications').then(r => r.json());
-      const years = [...new Set(_allPubs.map(p => p.year))].sort((a,b) => b-a);
-      const sel = document.getElementById('pubYear');
-      sel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
-      renderPublications(_allPubs);
-    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load publications.</p>'; }
-  }
-
-  function filterPublications() {
-    const q = (document.getElementById('pubSearch').value||'').toLowerCase();
-    const yr = document.getElementById('pubYear').value;
-    const filtered = _allPubs.filter(p => {
-      const matchQ = !q || (p.title||'').toLowerCase().includes(q) || (p.authors||'').toLowerCase().includes(q) || (p.venue||'').toLowerCase().includes(q);
-      const matchY = !yr || String(p.year) === yr;
-      return matchQ && matchY;
-    });
-    renderPublications(filtered);
-  }
-
-  function renderPublications(pubs) {
-    const el = document.getElementById('pubList');
-    if (!pubs.length) { el.innerHTML = '<p class="text-gray-400">No publications found.</p>'; return; }
-    el.innerHTML = pubs.map(p => `
-      <div class="pub-row">
-        <span class="pub-year-badge">${escHtml(String(p.year||''))}</span>
-        <div class="flex-1">
-          <div class="pub-title">
-            ${p.doi_url ? `<a href="${escHtml(p.doi_url)}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold)">${escHtml(p.title)}</a>` : escHtml(p.title)}
-          </div>
-          <div class="pub-authors">${escHtml(p.authors)}</div>
-          <div class="pub-venue">${escHtml(p.venue)}</div>
-          <div class="flex gap-3 mt-1">
-            ${p.pdf_url ? `<a href="${escHtml(p.pdf_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">PDF &#8599;</a>`:''}
-            ${p.citation_url ? `<a href="${escHtml(p.citation_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Cite &#8599;</a>`:''}
-          </div>
-        </div>
-      </div>`).join('');
-  }
-
-  // ── Sponsors page ─────────────────────────────────────────────
-  async function loadSponsorsPage() {
-    const el = document.getElementById('sponsorsGrid');
-    el.innerHTML = '<p class="text-gray-400">Loading&#8230;</p>';
-    try {
-      const data = await fetch('/api/sponsors').then(r => r.json());
-      const COLORS = ['#0f172a','#2d6a9f','#0f766e','#7c3aed','#b45309','#be123c'];
-      if (!data.length) { el.innerHTML = '<p class="text-gray-400">No sponsors yet.</p>'; return; }
-      el.innerHTML = data.map((s, i) => `
-        <div class="content-card flex flex-col items-center gap-3 text-center">
-          ${s.logo_url ? `<img src="${escHtml(s.logo_url)}" alt="${escHtml(s.name)}" class="h-20 object-contain">` :
-            `<div class="w-20 h-20 rounded-xl flex items-center justify-center font-black text-2xl text-white" style="background:${COLORS[i%COLORS.length]}">${escHtml((s.name||'?')[0].toUpperCase())}</div>`}
-          <div class="font-bold text-sm" style="color:var(--navy)">${escHtml(s.name)}</div>
-          ${s.website_url ? `<a href="${escHtml(s.website_url)}" target="_blank" rel="noopener" class="text-xs font-semibold" style="color:var(--gold)">Visit &#8594;</a>`:''}
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<p class="text-sm" style="color:#f87171">Failed to load sponsors.</p>'; }
-  }
-
-  // ── Contact ───────────────────────────────────────────────────
-  function submitContact(e) {
-    e.preventDefault();
-    document.getElementById('contactSuccess').classList.remove('hidden');
-    e.target.reset();
-    setTimeout(() => document.getElementById('contactSuccess').classList.add('hidden'), 5000);
-  }
-
-  // ── Init ──────────────────────────────────────────────────────
-  loadHomeData();
-
-  // ── Slideshow ─────────────────────────────────────────────────
-  // Fallback images used when the gallery API returns nothing
-  const FALLBACK_SLIDES = [
-    'images/top1a.png', 'images/top2a.png', 'images/top3a.png',
-    'images/CSP123_20130911_0195-Edit.jpg', 'images/IMG_1526.JPG'
+function HomeQuickLinks() {
+  const stats = siteStats();
+  const cards = [
+    { route: 'people', kicker: 'People', title: 'Meet the lab', copy: 'Browse current researchers, collaborators, and alumni with clearer profiles.', meta: `${stats.people} active members` },
+    { route: 'publications', kicker: 'Outputs', title: 'Scan publications', copy: 'Jump straight into papers, venues, and citation links without digging.', meta: `${stats.publications} publications` },
+    { route: 'facilities', kicker: 'Infrastructure', title: 'See the facilities', copy: 'Preview the rigs, instruments, and documentation available in the lab.', meta: `${stats.facilities} facilities` },
+    { route: 'apps', kicker: 'Tools', title: 'Use lab apps', copy: 'Open interactive calculators and teaching tools tied to LATFS research.', meta: stats.apps ? `${stats.apps} live app${stats.apps === 1 ? '' : 's'}` : 'Apps coming online' },
   ];
+  return h('section', { class: 'w-section', style: { paddingTop: '24px', paddingBottom: '0', background: 'var(--bg-2)' } },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-quick-grid' },
+        ...cards.map(card =>
+          h('article', { class: 'w-quick-card', onclick: () => go(card.route) },
+            h('div', { class: 'w-quick-kicker' }, card.kicker),
+            h('h3', { class: 'w-quick-title' }, card.title),
+            h('p', { class: 'w-quick-copy' }, card.copy),
+            h('div', { class: 'w-quick-meta' }, `${card.meta} â†’`)
+          )
+        )
+      )
+    )
+  );
+}
 
-  function initSlideshow(galleryPhotos) {
-    const ss = document.getElementById('slideshow');
-    const dotsContainer = document.getElementById('slideDots');
-    if (!ss || !dotsContainer) return;
+const PEOPLE_GROUPS = [
+  ['director',     'Director'],
+  ['manager',      'Lab manager / assistant'],
+  ['faculty',      'Faculty & senior researchers'],
+  ['postdoc',      'Postdoctoral researchers'],
+  ['phd',          'PhD candidates'],
+  ['ms',           'MS students'],
+  ['ug',           'Undergraduate researchers'],
+  ['alumni',       'Alumni'],
+  ['collaborator', 'Collaborators'],
+];
 
-    // Build slides
-    const urls = galleryPhotos
-      ? galleryPhotos.map(g => g.image_url)
-      : FALLBACK_SLIDES;
+function renderPeopleSections(people) {
+  const sections = PEOPLE_GROUPS.map(([key, label]) => {
+    const ours = people.filter(p => (p.category || '').toLowerCase() === key);
+    if (!ours.length) return null;
+    return h('div', { class: 'w-page-section' },
+      h('h2', null, label),
+      h('div', { class: 'w-people-grid' },
+        ...ours.map(p => {
+          const inits = getInitials(p.name);
+          const grad  = avatarGrad(p.name);
+          return h('div', { class: 'w-person-v2', onclick: () => go('person/' + p.id) },
+            h('div', { class: 'w-avatar' },
+              h('div', { class: 'w-avatar-photo', style: p.photo_url
+                ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' }
+                : { background: grad } }),
+              p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+            ),
+            h('div', { class: 'w-pv2-name' }, p.name || ''),
+            h('div', { class: 'w-pv2-role' }, p.role || ''),
+            h('span', { class: 'w-pv2-badge' }, label),
+          );
+        })
+      )
+    );
+  }).filter(Boolean);
+  return sections.length ? sections : [h('div', { class: 'w-empty' }, 'No people match this search yet.')];
+}
 
-    // Remove any existing slide divs (re-init safe)
-    ss.querySelectorAll('.slide').forEach(el => el.remove());
-    dotsContainer.innerHTML = '';
+function publicationCitationText(p) {
+  return [p.authors, p.year ? `(${p.year}).` : '', p.title, p.venue].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+}
 
-    urls.forEach((url, i) => {
-      const div = document.createElement('div');
-      div.className = 'slide' + (i === 0 ? ' active' : '');
-      div.style.backgroundImage = `url(${JSON.stringify(url)})`;
-      div.innerHTML = '<div class="slide-overlay"></div>';
-      // Insert before the first arrow button
-      ss.insertBefore(div, ss.querySelector('.slide-arrow'));
-    });
-
-    const slides = ss.querySelectorAll('.slide');
-    const INTERVAL_MS = 5000;
-    let slideIdx = 0;
-
-    slides.forEach((_, i) => {
-      const d = document.createElement('button');
-      d.className = 'dot' + (i === 0 ? ' active' : '');
-      d.setAttribute('aria-label', 'Slide ' + (i + 1));
-      d.onclick = () => goToSlide(i);
-      dotsContainer.appendChild(d);
-    });
-
-    function goToSlide(n) {
-      slides[slideIdx].classList.remove('active');
-      dotsContainer.children[slideIdx].classList.remove('active');
-      slideIdx = (n + slides.length) % slides.length;
-      slides[slideIdx].classList.add('active');
-      dotsContainer.children[slideIdx].classList.add('active');
-    }
-
-    window.changeSlide = function(dir) { goToSlide(slideIdx + dir); };
-    let timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS);
-    ss.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; });
-    ss.addEventListener('mouseleave', () => { timer = setInterval(() => goToSlide(slideIdx + 1), INTERVAL_MS); });
+function copyPublicationCitation(p) {
+  const text = publicationCitationText(p);
+  if (!text) return;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => alert('Citation copied to clipboard.'));
+  } else {
+    window.prompt('Copy citation', text);
   }
+}
+
+function publicationButtons(p) {
+  return [
+    p.pdf_url ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF') : null,
+    p.doi_url ? h('a', { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' }, 'DOI') : null,
+    (p.citation_url || p.ris_url)
+      ? h('a', { class: 'w-pub-btn ghost', href: p.citation_url || p.ris_url, target: '_blank', rel: 'noopener' }, 'Cite')
+      : h('button', { class: 'w-pub-btn ghost', type: 'button', onclick: () => copyPublicationCitation(p) }, 'Cite')
+  ];
+}
+
+function renderPublicationSections(pubs) {
+  const byYear = {};
+  pubs.forEach(p => { const y = p.year || 'n.d.'; (byYear[y] ||= []).push(p); });
+  const years = Object.keys(byYear).sort((a, b) => String(b).localeCompare(String(a)));
+  if (!years.length) return [h('div', { class: 'w-empty' }, 'No publications match this search.')];
+  return years.map(y =>
+    h('div', { class: 'w-page-section' },
+      h('h2', null, y === 'n.d.' ? 'Other' : y),
+      h('div', { class: 'w-pub-list' }, ...byYear[y].map(p =>
+        h('article', { class: 'w-pub-row2' },
+          h('div', { class: 'w-pub-left' },
+            h('div', { class: 'w-pub-yr' }, String(p.year || '')),
+            h('div', { class: 'w-pub-spine' })
+          ),
+          h('div', { class: 'w-pub-mid' },
+            h('div', { class: 'w-pub-title2 display-serif' }, p.title || ''),
+            h('div', { class: 'w-pub-authors' }, p.authors || ''),
+            h('div', { class: 'w-pub-venue' }, p.venue || ''),
+          ),
+          h('div', { class: 'w-pub-right' }, ...publicationButtons(p))
+        )
+      ))
+    )
+  );
+}
+
+function renderFacilityCards(items) {
+  if (!items.length) return h('div', { class: 'w-empty' }, 'No facilities match this search.');
+  return h('div', { class: 'w-grid-2' },
+    ...items.map(f => h('div', { class: 'w-fac-card', onclick: () => go('facility/' + f.id), style: { cursor: 'pointer' } },
+      f.photo_url
+        ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } })
+        : h('div', { class: 'w-fac-img w-fac-img-empty' }),
+      h('div', { class: 'w-fac-body' },
+        h('h3',  { class: 'w-fac-title' }, f.name || ''),
+        h('p',   { class: 'w-fac-desc'  }, (f.description || '').slice(0, 220) + ((f.description||'').length > 220 ? 'â€¦' : '')),
+        h('span', { class: 'w-fac-cta'  }, f.doc_url ? 'View facility + docs â†’' : 'View facility â†’')
+      )
+    ))
+  );
+}
+
+function renderNewsCards(items) {
+  if (!items.length) return h('div', { class: 'w-empty' }, 'No news items match this search.');
+  return h('div', { class: 'w-news-stack', style: { gap: '14px' } },
+    ...items.map(n => h('article', { class: 'w-news-card', onclick: () => go('news/' + n.id), style: { cursor: 'pointer' } },
+      n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
+      h('div', { class: 'w-news-body-wrap' },
+        h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
+        h('h3',  { class: 'w-news-title' }, n.title || ''),
+        h('p',   { class: 'w-news-body' }, (n.content || n.body || n.summary || '').slice(0, 220) + (((n.content || n.body || n.summary || '').length > 220) ? 'â€¦' : '')),
+      )
+    ))
+  );
+}
+
+function ResearchGrid(rows) {
+  // Map server rows (from /api/research) into the kit's 6-pillar shape.
+  const fallback = [
+    { n: '01', title: 'Two-Phase & Boiling Heat Transfer', meta: '12 active projects Â· 8 publications', desc: 'Boiling, condensation, and droplet impingement in mini- and micro-channels.', img: RES.rDroplet },
+    { n: '02', title: 'Microchannel Heat Exchangers', meta: 'Industry partnership Â· Intel, AMD', desc: 'Water-cooled silicon-carbide cold plates for high-flux electronics.', img: RES.rMini },
+    { n: '03', title: 'Energy Efficient Electronic Systems', meta: 'NSF EÂ³S Center', desc: 'Thermal management for future computing â€” the Villanova node of the multi-university center.', img: RES.hero2 },
+    { n: '04', title: 'Renewable & Geothermal Energy', meta: 'DOE funded Â· 2022â€“2025', desc: 'Underground storage, solar-thermal, and working-fluid characterization.', img: RES.rGeo },
+    { n: '05', title: 'Jets & Complex Flow', meta: 'Graduate research', desc: 'Synthetic and steady jets, vortex dynamics, and convective enhancement.', img: RES.hero3 },
+    { n: '06', title: 'Experimental Techniques', meta: 'PIV Â· IR Â· high-speed imaging', desc: 'Precision instrumentation shared across all experimental rigs.', img: RES.fac1 },
+  ];
+  let areas;
+  if (Array.isArray(rows) && rows.length) {
+    const imgs = [RES.rDroplet, RES.rMini, RES.hero2, RES.rGeo, RES.hero3, RES.fac1];
+    areas = rows.slice(0, 6).map((r, i) => ({
+      n: String(i+1).padStart(2, '0'),
+      title: r.title || r.name || ('Pillar ' + (i+1)),
+      desc: r.summary || r.description || r.desc || '',
+      meta: r.meta || (r.tag || ''),
+      img: r.image_url || imgs[i % imgs.length],
+    }));
+    while (areas.length < 6) areas.push(fallback[areas.length]);
+  } else {
+    areas = fallback;
+  }
+
+  let hover = null;
+  const peekImgs = areas.map((a, i) =>
+    h('div', { class: 'w-research-peek-img' + (i === 0 ? ' is-active' : ''),
+               style: { backgroundImage: `url(${a.img})` }, 'data-idx': i })
+  );
+  const labelTitle = h('div', { class: 'w-research-peek-title' }, areas[0].title);
+  const peekFrame = h('div', { class: 'w-research-peek-frame' },
+    ...peekImgs,
+    h('div', { class: 'w-research-peek-overlay' }),
+    h('div', { class: 'w-research-peek-label' }, labelTitle),
+  );
+
+  const setHover = (i) => {
+    hover = i;
+    peekImgs.forEach((el, idx) => el.classList.toggle('is-active', idx === i));
+    peekFrame.classList.add('is-row-hovered');
+    labelTitle.textContent = areas[i].title;
+    rowEls.forEach((el, idx) => el.classList.toggle('is-hover', idx === i));
+  };
+
+  const rowEls = areas.map((a, i) =>
+    h('a', {
+      class: 'w-research-row',
+      href: '#research',
+      onclick: (e) => { e.preventDefault(); go('research'); },
+      onmouseenter: () => setHover(i),
+      onfocus: () => setHover(i),
+    },
+      h('div', { class: 'w-research-copy' },
+        h('h3', { class: 'w-research-title' }, a.title),
+        h('p',  { class: 'w-research-desc' },  a.desc),
+        h('div',{ class: 'w-research-meta' }, a.meta),
+      ),
+    )
+  );
+
+  const s = DATA.settings || {};
+  return h('section', { class: 'w-section w-research' },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-sh', style: { marginBottom: '32px' } },
+        h('div', { class: 'w-sh-inner' },
+          h('div', { class: 'w-sh-bar' }),
+          h('h2',  { class: 'w-sh-title' }, s.research_section_title || 'Research Areas'),
+        ),
+        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Six pillars Â· updated quarterly'),
+      ),
+      h('div', { class: 'w-research-layout' },
+        h('div', { class: 'w-research-list' }, ...rowEls),
+        h('div', { class: 'w-research-peek' }, peekFrame),
+      )
+    )
+  );
+}
+
+function NewsList(news) {
+  const items = (news && news.length) ? news.slice(0,3) : [
+    { date: 'MAR 20, 2024', title: 'LATFS joins NSF E3S Center', body: 'Villanova and LATFS formally join the NSF Industry/University Cooperative Research Center on Energy Efficient Electronic Systems.' },
+    { date: 'FEB 14, 2024', title: 'Paper accepted at ITherm 2024', body: 'Numerical investigation of synthetic impinging jets on a heated surface, led by PhD candidate M. Reyes.' },
+    { date: 'JAN 08, 2024', title: 'Two new PhD candidates welcomed', body: 'A. Park and D. Hernandez join the lab working on boiling heat transfer and two-phase flow instabilities.' },
+  ];
+  const formatted = items.map(n => {
+    const d = n.date || n.published_at || n.created_at;
+    let when = d;
+    if (d && /^\d{4}-\d{2}-\d{2}/.test(d)) {
+      const dt = new Date(d);
+      when = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+    }
+    return { date: when || '', title: n.title || '', body: n.body || n.summary || n.description || '' };
+  });
+  return h('div', null,
+    SectionHeader('Latest News'),
+    h('div', { class: 'w-news-stack' },
+      ...formatted.map(n =>
+        h('article', { class: 'w-news-card' },
+          h('div', { class: 'w-news-date' }, n.date),
+          h('h3',  { class: 'w-news-title' }, n.title),
+          h('p',   { class: 'w-news-body' },  n.body),
+        )
+      )
+    ),
+    h('button', { class: 'w-link-gold', style: { marginTop: '10px' }, onclick: () => go('news') }, 'View all news â†’')
+  );
+}
+
+function FeaturedPub(pubs) {
+  const top = (pubs && pubs.length) ? pubs[0] : {
+    title: 'Simulation of Two-Phase Flow and Heat Transfer in Mini- and Micro-Channels for Concentrating Photovoltaics Cooling',
+    authors: 'A. Ortega, S. Kim, M. Reyes',
+    venue: 'ASME ESFuelcell Â· 2024',
+    year: 2024,
+  };
+  return h('div', null,
+    SectionHeader('Featured Publication'),
+    h('div', { class: 'w-pub-card' },
+      h('div', { class: 'w-pub-year' }, String(top.year || 'â€”')),
+      h('h3',  { class: 'w-pub-title' }, top.title || ''),
+      h('p',   { class: 'w-pub-authors' }, top.authors || ''),
+      h('p',   { class: 'w-pub-venue' }, top.venue || ''),
+      top.pdf_url
+        ? h('a', { class: 'btn-ghost', style: { marginTop: '8px', display: 'inline-block' }, href: top.pdf_url, target: '_blank' }, 'Download PDF â†“')
+        : h('span', { class: 'btn-ghost', style: { marginTop: '8px', display: 'inline-block', opacity: 0.7, cursor: 'default' }, 'aria-disabled': 'true', title: 'PDF not uploaded yet' }, 'PDF coming soon')
+    )
+  );
+}
+
+function PhotoGallery(gallery) {
+  const photos = (gallery && gallery.length) ? gallery.map(g => ({
+    id: g.id, src: g.image_url || g.src || RES.fac1,
+    cat: g.category || 'Lab life', title: g.caption || g.title || ''
+  })) : [
+    { id:1,  src: RES.fac1,     cat: 'Facilities', title: 'Flow-boiling test rig' },
+    { id:2,  src: RES.rDroplet, cat: 'Research',   title: 'Droplet impingement' },
+    { id:3,  src: RES.hero1,    cat: 'Lab life',   title: 'Student assembling test section' },
+    { id:4,  src: RES.fac2,     cat: 'Facilities', title: 'Optical PIV bench' },
+    { id:5,  src: RES.rMini,    cat: 'Research',   title: 'Microchannel array' },
+    { id:6,  src: RES.hero2,    cat: 'Lab life',   title: 'Group seminar' },
+    { id:7,  src: RES.fac3,     cat: 'Facilities', title: 'Environmental chamber' },
+    { id:8,  src: RES.rGeo,     cat: 'Research',   title: 'Borehole rig' },
+    { id:9,  src: RES.hero3,    cat: 'Lab life',   title: 'Poster session' },
+    { id:10, src: RES.fac4,     cat: 'Facilities', title: 'IR thermography' },
+  ];
+  let stripRef;
+  const scroll = (dir) => {
+    if (!stripRef) return;
+    const tile = stripRef.querySelector('.w-gallery-slide');
+    const step = tile ? tile.getBoundingClientRect().width + 16 : 320;
+    stripRef.scrollBy({ left: dir * step * 2, behavior: 'smooth' });
+  };
+  const strip = h('div', { class: 'w-gallery-strip' },
+    ...photos.map(p =>
+      h('a', { class: 'w-gallery-slide', href: '#', onclick: (e) => e.preventDefault() },
+        h('img', { src: p.src, alt: p.title, loading: 'lazy' }),
+        h('div', { class: 'w-gallery-scrim' }),
+        h('div', { class: 'w-gallery-meta' },
+          h('div', { class: 'w-gallery-cat' }, p.cat),
+          h('div', { class: 'w-gallery-title' }, p.title),
+        )
+      )
+    )
+  );
+  stripRef = strip;
+  return h('section', { class: 'w-section w-gallery' },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-sh', style: { marginBottom: '16px' } },
+        h('div', { class: 'w-sh-inner' },
+          h('div', { class: 'w-sh-bar' }),
+          h('h2', { class: 'w-sh-title' }, 'From the Lab'),
+        ),
+        h('div', { class: 'w-gallery-nav' },
+          h('button', { class: 'w-gallery-arrow', 'aria-label': 'Previous', onclick: () => scroll(-1) }, '<'),
+          h('button', { class: 'w-gallery-arrow', 'aria-label': 'Next',     onclick: () => scroll(1)  }, '>'),
+        )
+      ),
+      strip
+    )
+  );
+}
+
+function SponsorMarquee(sponsors) {
+  const logos = (sponsors && sponsors.length)
+    ? sponsors.map(s => sponsorLogoSrc(s.logo_url || s.image_url, s.name)).filter(Boolean)
+    : [RES.spEs2, RES.spNsf, RES.spIntel, RES.spAmd, RES.spHoneywell, RES.spRtx, RES.spTi, RES.spSrc, RES.spNasa, RES.spDarpa];
+  const doubled = [...logos, ...logos];
+  return h('section', { class: 'w-section' },
+    h('div', { class: 'max-w' },
+      SectionHeader('Research Collaborators'),
+      h('div', { class: 'w-marquee-wrap' },
+        h('div', { class: 'w-marquee' },
+          ...doubled.map(src => h('img', { src, alt: 'Partner', class: 'w-sponsor-logo' }))
+        )
+      )
+    )
+  );
+}
+
+function Footer() {
+  return h('footer', { class: 'w-footer' },
+    h('div', { class: 'max-w w-footer-anchor' },
+      h('div', { class: 'w-anchor-label' }, 'Home institutions'),
+      h('div', { class: 'w-anchor-row' },
+        h('a', { class: 'w-anchor-logo-link', href: 'http://www.es2.villanova.edu/', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spEs2, alt: 'ES2 Center for Energy-Smart Electronic Systems', class: 'w-anchor-logo is-es2' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www.nsf.gov/eng/iip/iucrc/home.jsp', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spNsf, alt: 'National Science Foundation', class: 'w-anchor-logo is-nsf' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www1.villanova.edu/university/engineering.html', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spVillanova, alt: 'Villanova University', class: 'w-anchor-logo is-villanova' })
+        ),
+      )
+    ),
+    h('div', { class: 'max-w w-footer-grid' },
+      h('div', null,
+        h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
+        h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems - Villanova University - 800 Lancaster Ave, Villanova PA 19085'),
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Explore'),
+        h('ul', null,
+          h('li', { onclick: () => go('research') }, 'Research'),
+          h('li', { onclick: () => go('people') }, 'People'),
+          h('li', { onclick: () => go('apps') }, 'Apps'),
+          h('li', { onclick: () => go('gallery') }, 'Gallery'),
+          h('li', { onclick: () => go('downloads') }, 'Downloads'),
+        ),
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Resources'),
+        h('ul', null,
+          h('li', { onclick: () => go('publications') }, 'Publications'),
+          h('li', { onclick: () => go('facilities') }, 'Facilities'),
+          h('li', { onclick: () => go('news') }, 'News'),
+          h('li', { onclick: () => go('join') }, 'Join the lab'),
+        ),
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Contact'),
+        h('ul', null,
+          h('li', null, 'aortega@villanova.edu'),
+          h('li', null, '+1 (610) 519-4996'),
+          h('li', null, 'Tolentine Hall 344'),
+          h('li', { onclick: () => go('contact') }, 'Contact page'),
+        ),
+      ),
+    ),
+    h('div', { class: 'w-footer-bottom' }, '© 2026 LATFS - Villanova University - College of Engineering'),
+  );
+}
+
+function galleryEntries(gallery) {
+  return (gallery && gallery.length) ? gallery.map(g => ({
+    id: g.id,
+    src: g.image_url || g.src || RES.fac1,
+    cat: g.category || 'Lab life',
+    title: g.caption || g.title || 'Gallery image',
+  })) : [
+    { id: 1, src: RES.fac1, cat: 'Facilities', title: 'Lab overview' },
+    { id: 2, src: RES.rMini, cat: 'Research', title: 'Research equipment' },
+    { id: 3, src: RES.hero1, cat: 'Lab life', title: 'Experiments' },
+    { id: 4, src: RES.hero2, cat: 'Lab life', title: 'Team moment' },
+    { id: 5, src: RES.fac2, cat: 'Facilities', title: 'Diagnostics bench' },
+  ];
+}
+
+function HomeGalleryCarousel(gallery) {
+  const photos = latestGalleryItems(galleryEntries(gallery), 5);
+  let start = 0;
+  const strip = h('div', { class: 'w-gallery-strip' });
+  const visibleCount = () => {
+    if (window.innerWidth <= 760) return 1;
+    if (window.innerWidth <= 1180) return 2;
+    return 3;
+  };
+  const renderVisible = () => {
+    const count = Math.min(photos.length, visibleCount());
+    strip.replaceChildren(...Array.from({ length: count }, (_, idx) => {
+      const p = photos[(start + idx) % photos.length];
+      return h('button', { class: 'w-gallery-slide', type: 'button', onclick: () => go('gallery') },
+        h('img', { src: p.src, alt: p.title, loading: 'lazy' }),
+        h('div', { class: 'w-gallery-scrim' }),
+        h('div', { class: 'w-gallery-meta' },
+          h('div', { class: 'w-gallery-cat' }, p.cat),
+          h('div', { class: 'w-gallery-title' }, p.title),
+          h('div', { class: 'w-gallery-sub' }, 'Latest gallery upload')
+        )
+      );
+    }));
+  };
+  const rotate = (dir) => {
+    if (!photos.length) return;
+    start = (start + dir + photos.length) % photos.length;
+    renderVisible();
+  };
+  renderVisible();
+  return h('section', { class: 'w-section w-gallery' },
+    h('div', { class: 'max-w' },
+      h('div', { class: 'w-sh', style: { marginBottom: '16px' } },
+        h('div', { class: 'w-sh-inner' },
+          h('div', { class: 'w-sh-bar' }),
+          h('h2', { class: 'w-sh-title' }, 'From the Lab')
+        ),
+        h('div', { class: 'w-gallery-nav' },
+          h('button', { class: 'w-gallery-arrow', type: 'button', 'aria-label': 'Previous', onclick: () => rotate(-1) }, '<'),
+          h('button', { class: 'w-gallery-arrow', type: 'button', 'aria-label': 'Next', onclick: () => rotate(1) }, '>')
+        )
+      ),
+      strip,
+      h('button', { class: 'w-link-gold', style: { marginTop: '14px' }, onclick: () => go('gallery') }, 'Open full gallery')
+    )
+  );
+}
+
+function renderPublicationTable(pubs) {
+  const ordered = (pubs || [])
+    .slice()
+    .sort((a, b) => Number(b.year || 0) - Number(a.year || 0) || String(a.title || '').localeCompare(String(b.title || '')));
+  if (!ordered.length) return [h('div', { class: 'w-empty' }, 'No publications match this search.')];
+  return [
+    h('div', { class: 'w-page-section' },
+      h('div', { class: 'w-pub-list' },
+        h('div', { class: 'w-pub-row2 w-pub-head' },
+          h('div', { class: 'w-pub-colhead' }, 'Year'),
+          h('div', { class: 'w-pub-colhead' }, 'Title'),
+          h('div', { class: 'w-pub-colhead w-pub-colhead-actions' }, 'Links')
+        ),
+        ...ordered.map(p =>
+          h('article', { class: 'w-pub-row2' },
+            h('div', { class: 'w-pub-left' },
+              h('div', { class: 'w-pub-yr' }, String(p.year || 'â€”'))
+            ),
+            h('div', { class: 'w-pub-mid' },
+              h('div', { class: 'w-pub-title2' }, p.title || ''),
+              h('div', { class: 'w-pub-authors' }, p.authors || ''),
+              h('div', { class: 'w-pub-venue' }, p.venue || '')
+            ),
+            h('div', { class: 'w-pub-right' }, ...publicationButtons(p))
+          )
+        )
+      )
+    )
+  ];
+}
+
+function openGalleryPreview(photo) {
+  const close = () => overlay.remove();
+  const overlay = h('div', {
+    class: 'w-lightbox-bg',
+    onclick: event => { if (event.target === overlay) close(); }
+  },
+    h('div', { class: 'w-lightbox', role: 'dialog', 'aria-modal': 'true', 'aria-label': photo.title || 'Gallery image' },
+      h('img', { class: 'w-lightbox-img', src: photo.src, alt: photo.title || 'Gallery image' }),
+      h('div', { class: 'w-lightbox-meta' },
+        h('div', null,
+          h('strong', null, photo.title || 'Gallery image'),
+          h('span', null, photo.cat || 'Lab photo')
+        ),
+        h('button', { class: 'w-lightbox-close', type: 'button', onclick: close }, 'Close')
+      )
+    )
+  );
+  document.body.appendChild(overlay);
+  const closeButton = overlay.querySelector('button');
+  closeButton && closeButton.focus();
+}
+
+function renderGalleryGrid(items) {
+  if (!items.length) return h('div', { class: 'w-empty' }, 'No gallery images published yet.');
+  return h('div', { class: 'w-gallery-strip is-gallery-page' },
+    ...items.map(p =>
+      h('button', { class: 'w-gallery-slide', type: 'button', onclick: () => openGalleryPreview(p) },
+        h('img', { src: p.src, alt: p.title, loading: 'lazy' }),
+        h('div', { class: 'w-gallery-scrim' }),
+        h('div', { class: 'w-gallery-meta' },
+          h('div', { class: 'w-gallery-cat' }, p.cat),
+          h('div', { class: 'w-gallery-title' }, p.title)
+        )
+      )
+    )
+  );
+}
+
+function renderDownloadList(items) {
+  if (!items.length) return [h('div', { class: 'w-empty' }, 'No downloads published yet.')];
+  return [
+    h('div', { class: 'w-page-section' },
+      h('div', { class: 'w-pub-list' },
+        ...items.map(item => {
+          const href = assetUrl(item.file_url);
+          const preview = isImageDownload(item)
+            ? h('img', { class: 'w-download-thumb', src: href, alt: item.title || item.name || 'Download preview' })
+            : h('div', { class: 'w-download-fileicon' }, fileKindLabel(item));
+          return h('article', { class: 'w-pub-row2 w-download-row' },
+            h('div', { class: 'w-pub-left' },
+              h('div', { class: 'w-pub-yr' }, (item.category || 'File').slice(0, 4).toUpperCase())
+            ),
+            h('div', { class: 'w-pub-mid' },
+              h('div', { class: 'w-download-title' },
+                preview,
+                h('div', null,
+                  h('div', { class: 'w-pub-title2' }, item.title || item.name || fileLabelFromUrl(item.file_url)),
+                  h('div', { class: 'w-pub-authors' }, item.description || 'Downloadable lab resource'),
+                  h('div', { class: 'w-pub-venue' }, [item.category, fileSizeLabel(item.file_size), item.mime_type].filter(Boolean).join(' - '))
+                )
+              )
+            ),
+            h('div', { class: 'w-pub-right' },
+              href
+                ? h('a', { class: 'w-pub-btn', href, target: '_blank', rel: 'noopener', download: fileLabelFromUrl(href) || '' }, 'Download')
+                : h('span', { class: 'w-pub-btn', style: { opacity: '.45', pointerEvents: 'none' } }, 'Unavailable')
+            )
+          );
+        })
+      )
+    )
+  ];
+}
+
+function PublicFooter() {
+  return h('footer', { class: 'w-footer' },
+    h('div', { class: 'max-w w-footer-anchor' },
+      h('div', { class: 'w-anchor-label' }, 'Home institutions'),
+      h('div', { class: 'w-anchor-row' },
+        h('a', { class: 'w-anchor-logo-link', href: 'http://www.es2.villanova.edu/', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spEs2, alt: 'ES2 Center for Energy-Smart Electronic Systems', class: 'w-anchor-logo is-es2' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www.nsf.gov/eng/iip/iucrc/home.jsp', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spNsf, alt: 'National Science Foundation', class: 'w-anchor-logo is-nsf' })
+        ),
+        h('div', { class: 'w-anchor-div' }),
+        h('a', { class: 'w-anchor-logo-link', href: 'https://www1.villanova.edu/university/engineering.html', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spVillanova, alt: 'Villanova University College of Engineering', class: 'w-anchor-logo is-villanova' })
+        )
+      )
+    ),
+    h('div', { class: 'max-w w-footer-grid' },
+      h('div', null,
+        h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
+        h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems - Villanova University - 800 Lancaster Ave, Villanova PA 19085')
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Explore'),
+        h('ul', null,
+          h('li', { onclick: () => go('research') }, 'Research'),
+          h('li', { onclick: () => go('people') }, 'People'),
+          h('li', { onclick: () => go('apps') }, 'Apps'),
+          h('li', { onclick: () => go('gallery') }, 'Gallery'),
+          h('li', { onclick: () => go('downloads') }, 'Downloads')
+        )
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Resources'),
+        h('ul', null,
+          h('li', { onclick: () => go('publications') }, 'Publications'),
+          h('li', { onclick: () => go('facilities') }, 'Facilities'),
+          h('li', { onclick: () => go('news') }, 'News'),
+          h('li', { onclick: () => go('join') }, 'Join the lab')
+        )
+      ),
+      h('div', null,
+        h('h4', { class: 'w-foot-h' }, 'Contact'),
+        h('ul', null,
+          h('li', null, 'aortega@villanova.edu'),
+          h('li', null, '+1 (610) 519-4996'),
+          h('li', null, 'Tolentine Hall 344'),
+          h('li', { onclick: () => go('contact') }, 'Contact page')
+        )
+      )
+    ),
+    h('div', { class: 'w-footer-bottom' }, '© 2026 LATFS - Villanova University - College of Engineering')
+  );
+}
+
+/* ---- Cached data ---- */
+let DATA = {
+  news: FALLBACK_DATA.news,
+  pubs: FALLBACK_DATA.pubs,
+  people: FALLBACK_DATA.people,
+  research: FALLBACK_DATA.research,
+  gallery: null,
+  sponsors: null,
+  hero: null,
+  facilities: FALLBACK_DATA.facilities,
+  apps: FALLBACK_DATA.apps,
+  settings: FALLBACK_DATA.settings,
+};
+
+function pickRows(rows, fallback) {
+  return Array.isArray(rows) && rows.length ? rows : fallback;
+}
+
+async function loadAll() {
+  if (IS_FILE_MODE) {
+    DATA = {
+      news: FALLBACK_DATA.news,
+      pubs: FALLBACK_DATA.pubs,
+      people: FALLBACK_DATA.people,
+      research: FALLBACK_DATA.research,
+      gallery: null,
+      sponsors: null,
+      hero: null,
+      facilities: FALLBACK_DATA.facilities,
+      apps: FALLBACK_DATA.apps,
+      downloads: FALLBACK_DATA.downloads,
+      settings: FALLBACK_DATA.settings,
+    };
+    return;
+  }
+  const [news, pubs, people, research, gallery, sponsors, hero, facilities, apps, downloads, settings] = await Promise.all([
+    getJSON('/api/news'),
+    getJSON('/api/publications'),
+    getJSON('/api/people/public'),
+    getJSON('/api/research'),
+    getJSON('/api/gallery'),
+    getJSON('/api/sponsors'),
+    getJSON('/api/hero-slides'),
+    getJSON('/api/facilities'),
+    getJSON('/api/apps'),
+    getJSON('/api/downloads'),
+    getJSON('/api/site-settings'),
+  ]);
+  DATA = {
+    news: pickRows(news, FALLBACK_DATA.news),
+    pubs: pickRows(pubs, FALLBACK_DATA.pubs),
+    people: pickRows(people, FALLBACK_DATA.people),
+    research: pickRows(research, FALLBACK_DATA.research),
+    gallery: gallery || null,
+    sponsors: sponsors || null,
+    hero: pickRows(hero, null),
+    facilities: pickRows(facilities, FALLBACK_DATA.facilities),
+    apps: pickRows(apps, FALLBACK_DATA.apps),
+    downloads: pickRows(downloads, FALLBACK_DATA.downloads),
+    settings: settings || FALLBACK_DATA.settings,
+  };
+}
+
+/* ---- Pages ---- */
+function Home() {
+  const homeBody = h('div', null,
+    Hero(DATA.hero),
+    ResearchGrid(DATA.research),
+    h('section', { class: 'w-section', style: { background: 'var(--bg-2)', paddingTop: '0' } },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-two' },
+          NewsList(DATA.news),
+          FeaturedPub(DATA.pubs),
+        )
+      )
+    ),
+    HomeGalleryCarousel(DATA.gallery),
+    SponsorMarquee(DATA.sponsors),
+  );
+  return homeBody;
+}
+
+function PageResearch() {
+  const items = (DATA.research && DATA.research.length) ? DATA.research : [];
+  const s = DATA.settings || {};
+  const cards = items.length
+    ? items.map((r, i) =>
+        h('div', { class: 'w-rc' },
+          h('div', { class: 'w-rc-title' }, r.title || r.name || ''),
+          h('p',   { class: 'w-rc-desc'  }, r.summary || r.description || r.desc || ''),
+        )
+      )
+    : [h('div', { class: 'w-empty' }, 'No research areas yet.')];
+  return h('div', null,
+    PageBanner('Research', s.research_page_title || 'Six pillars of inquiry',
+      s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems â€” from boiling in microchannels to renewable thermal storage.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-grid-3' }, ...cards)
+      )
+    )
+  );
+}
+
+function PagePeople() {
+  const people = mergedPublicPeople(DATA.people);
+  let activeCategory = 'all';
+  const s = DATA.settings || {};
+  const categoryCounts = [['all', 'All members', people.length], ...PEOPLE_GROUPS
+    .map(([key, label]) => [key, label, people.filter(p => (p.category || '').toLowerCase() === key).length])
+    .filter(([, , count]) => count)];
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search by name, role, or research area' });
+  const meta = h('div', { class: 'w-filter-meta' });
+  const pills = h('div', { class: 'w-filter-pills' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const filtered = people.filter(p => {
+      const inCategory = activeCategory === 'all' || (p.category || '').toLowerCase() === activeCategory;
+      return inCategory && matchesQuery([p.name, p.role, p.bio, p.category], query);
+    });
+    meta.textContent = `${filtered.length} member${filtered.length === 1 ? '' : 's'} shown`;
+    results.replaceChildren(...renderPeopleSections(filtered));
+    pills.querySelectorAll('.w-filter-pill').forEach(btn => btn.classList.toggle('active', btn.dataset.value === activeCategory));
+  };
+  categoryCounts.forEach(([value, label, count]) => {
+    const btn = h('button', {
+      class: 'w-filter-pill' + (value === activeCategory ? ' active' : ''),
+      type: 'button',
+      'data-value': value,
+      onclick: () => { activeCategory = value; applyFilters(); }
+    }, `${label} (${count})`);
+    pills.appendChild(btn);
+  });
+  searchInput.addEventListener('input', applyFilters);
+  applyFilters();
+  return h('div', null,
+    PageBanner('People', s.people_page_title || 'Lab members',
+      s.people_page_intro || 'A small, hands-on lab of faculty, postdocs, and graduate researchers working at the intersection of heat transfer, fluid mechanics, and electronic systems.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            meta
+          ),
+          h('div', { class: 'w-filter-row' }, pills)
+        ),
+        results
+      )
+    )
+  );
+}
+
+function PagePersonDetail(id) {
+  const p = mergedPublicPeople(DATA.people).find(x => String(x.id) === String(id));
+  if (!p) return h('div', null,
+    PageBanner('People', 'Person not found', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('people') }, 'â† Back to People'),
+        h('div', { class: 'w-empty' }, 'Person not found.')
+      )
+    )
+  );
+  const inits = getInitials(p.name);
+  const grad  = avatarGrad(p.name);
+  const links = [];
+  if (p.email)        links.push(h('a', { href: 'mailto:' + p.email }, 'Email'));
+  if (p.linkedin_url) links.push(h('a', { href: p.linkedin_url, target: '_blank', rel: 'noopener' }, 'LinkedIn'));
+  if (p.website_url)  links.push(h('a', { href: p.website_url,  target: '_blank', rel: 'noopener' }, 'Website'));
+  return h('div', null,
+    PageBanner(p.role || 'People', p.name || '', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('people') }, 'â† Back to People'),
+        h('div', { class: 'w-person-detail-v2' },
+          h('div', { class: 'w-avatar' },
+            h('div', { class: 'w-avatar-photo', style: p.photo_url
+              ? { backgroundImage: `url(${p.photo_url})`, backgroundPosition: p.photo_position || 'center center' }
+              : { background: grad } }),
+            p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+          ),
+          h('h2', { class: 'w-pdetail-name' }, p.name || ''),
+          h('div', { class: 'w-pdetail-sub' }, [p.role, p.category].filter(Boolean).join(' Â· ')),
+          p.bio
+            ? h('div', { class: 'w-pdetail-bio' }, p.bio)
+            : h('div', { class: 'w-pdetail-bio', style: { color: 'var(--fg-4)', fontStyle: 'italic' } }, 'Biography coming soon.'),
+          links.length ? h('div', { class: 'w-pdetail-links' }, ...links) : null,
+        )
+      )
+    )
+  );
+}
+
+function PagePublications() {
+  const pubs = DATA.pubs || [];
+  const yearOptions = ['all', ...Array.from(new Set(pubs.map(p => String(p.year || 'n.d.')))).sort((a, b) => String(b).localeCompare(String(a)))];
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search title, authors, or venue' });
+  const yearSelect = h('select', { class: 'w-filter-select' },
+    ...yearOptions.map(y => h('option', { value: y }, y === 'all' ? 'All years' : (y === 'n.d.' ? 'Other' : y)))
+  );
+  const meta = h('div', { class: 'w-filter-meta' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const year = yearSelect.value;
+    const filtered = pubs.filter(p => {
+      const matchesYear = year === 'all' || String(p.year || 'n.d.') === year;
+      return matchesYear && matchesQuery([p.title, p.authors, p.venue], query);
+    });
+    meta.textContent = `${filtered.length} publication${filtered.length === 1 ? '' : 's'} shown`;
+        results.replaceChildren(...renderPublicationTable(filtered));
+  };
+  searchInput.addEventListener('input', applyFilters);
+  yearSelect.addEventListener('change', applyFilters);
+  applyFilters();
+  return h('div', null,
+    PageBanner('Publications', 'Selected publications',
+      'Peer-reviewed journal articles, conference proceedings, and invited talks. Reach out for any preprint not linked here.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            yearSelect,
+            meta
+          )
+        ),
+        results
+      )
+    )
+  );
+}
+
+function PageFacilities() {
+  const facs = DATA.facilities || [];
+  const s = DATA.settings || {};
+  let docsOnly = false;
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search equipment, rigs, or documentation' });
+  const meta = h('div', { class: 'w-filter-meta' });
+  const pills = h('div', { class: 'w-filter-pills' });
+  const results = h('div', { class: 'w-results-stack' });
+  const pillDefs = [
+    ['all', 'All facilities'],
+    ['docs', 'With documentation'],
+  ];
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const filtered = facs.filter(f => {
+      const passesDocs = !docsOnly || !!f.doc_url;
+      return passesDocs && matchesQuery([f.name, f.description, f.content, f.doc_name], query);
+    });
+    meta.textContent = `${filtered.length} facilit${filtered.length === 1 ? 'y' : 'ies'} shown`;
+    results.replaceChildren(renderFacilityCards(filtered));
+    pills.querySelectorAll('.w-filter-pill').forEach(btn => {
+      const active = docsOnly ? btn.dataset.value === 'docs' : btn.dataset.value === 'all';
+      btn.classList.toggle('active', active);
+    });
+  };
+  pillDefs.forEach(([value, label]) => {
+    pills.appendChild(h('button', {
+      class: 'w-filter-pill' + (value === 'all' ? ' active' : ''),
+      type: 'button',
+      'data-value': value,
+      onclick: () => { docsOnly = value === 'docs'; applyFilters(); }
+    }, label));
+  });
+  searchInput.addEventListener('input', applyFilters);
+  applyFilters();
+  return h('div', null,
+    PageBanner('Facilities', s.facilities_page_title || 'Lab facilities & instruments',
+      s.facilities_page_intro || 'Click any facility to see photos, the full description, and any documentation we have on it.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            meta
+          ),
+          h('div', { class: 'w-filter-row' }, pills)
+        ),
+        results
+      )
+    )
+  );
+}
+
+function PageFacilityDetail(id) {
+  const f = (DATA.facilities || []).find(x => String(x.id) === String(id));
+  if (!f) return h('div', null,
+    PageBanner('Facilities', 'Facility not found', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('facilities') }, 'â† Back to Facilities'),
+        h('div', { class: 'w-empty' }, 'Facility not found.')
+      )
+    )
+  );
+  const docs = [];
+  if (f.doc_url) docs.push(h('a', { class: 'w-doc-link', href: f.doc_url, target: '_blank', rel: 'noopener' },
+    h('span', { class: 'w-doc-icon' }, 'ðŸ“„'),
+    h('span', { class: 'w-doc-name' }, f.doc_name || 'Documentation'),
+    h('span', { class: 'w-doc-sub' },  'Open file')
+  ));
+  return h('div', null,
+    PageBanner('Facility', f.name || '', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('facilities') }, 'â† Back to Facilities'),
+        h('article', { class: 'w-fac-detail' },
+          f.photo_url ? h('img', { src: f.photo_url, alt: '', class: 'w-fac-detail-img' }) : null,
+          h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
+          docs.length ? h('div', { class: 'w-page-section' }, h('h2', null, 'Documentation'), ...docs) : null,
+        )
+      )
+    )
+  );
+}
+
+function PageApps() {
+  const apps = DATA.apps || [];
+  return h('div', null,
+    PageBanner('Apps', 'Lab apps & calculators',
+      'Browser-based mini-applications produced by the lab â€” calculators, regime maps, and interactive teaching tools tied to our research.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        apps.length
+          ? h('div', { class: 'w-grid-2' },
+              ...apps.map(a => h('div', { class: 'w-card' },
+                h('h3', null, a.title || ''),
+                h('p',  null, a.summary || a.description || ''),
+                h('div', { class: 'w-app-actions' },
+                  a.embed_html
+                    ? h('button', { class: 'btn-primary', type: 'button', onclick: () => openInlineApp(a) }, 'Launch app')
+                    : null,
+                  a.url
+                    ? h('a', { class: a.embed_html ? 'btn-ghost' : 'btn-primary', href: assetUrl(a.url), target: '_blank', rel: 'noopener' }, a.embed_html ? 'Open link' : 'Launch app')
+                    : null,
+                  !a.url && !a.embed_html
+                    ? h('span', { class: 'eyebrow', style: { color: 'var(--fg-4)' } }, 'Coming soon')
+                    : null
+                )
+              )))
+          : h('div', { class: 'w-empty' }, 'No apps published yet.')
+      )
+    )
+  );
+}
+
+function PageGallery() {
+  const photos = galleryEntries(DATA.gallery);
+  return h('div', null,
+    PageBanner('Gallery', 'From the lab',
+      'The latest lab photos, setups, people, and research moments from the gallery.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        renderGalleryGrid(photos)
+      )
+    )
+  );
+}
+
+function PageDownloads() {
+  const s = DATA.settings || {};
+  const items = (DATA.downloads || []).slice().sort((a, b) =>
+    String(a.category || '').localeCompare(String(b.category || '')) ||
+    String(a.title || a.name || '').localeCompare(String(b.title || b.name || ''))
+  );
+  const cats = Array.from(new Set(items.map(item => item.category || 'File'))).sort((a, b) => a.localeCompare(b));
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search downloads by title, description, type, or file name' });
+  const categorySelect = h('select', { class: 'w-filter-select' },
+    h('option', { value: 'all' }, 'All categories'),
+    ...cats.map(cat => h('option', { value: cat }, cat))
+  );
+  const meta = h('div', { class: 'w-filter-meta' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const category = categorySelect.value;
+    const filtered = items.filter(item =>
+      (category === 'all' || (item.category || 'File') === category) &&
+      matchesQuery([item.title, item.name, item.description, item.category, item.mime_type, item.file_url], query)
+    );
+    meta.textContent = `${filtered.length} download${filtered.length === 1 ? '' : 's'} shown`;
+    results.replaceChildren(...renderDownloadList(filtered));
+  };
+  searchInput.addEventListener('input', applyFilters);
+  categorySelect.addEventListener('change', applyFilters);
+  applyFilters();
+  return h('div', null,
+    PageBanner('Downloads', s.downloads_page_title || 'Downloads',
+      s.downloads_page_intro || 'Access published PDFs, documents, media, and downloadable resources shared by the lab.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            categorySelect,
+            meta
+          )
+        ),
+        results
+      )
+    )
+  );
+}
+
+function fmtNewsDate(when) {
+  if (!when) return '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(when)) {
+    const dt = new Date(when);
+    return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+  }
+  return when;
+}
+
+function PageNews() {
+  const news = DATA.news || [];
+  const searchInput = h('input', { class: 'w-filter-input', type: 'search', placeholder: 'Search titles, announcements, or milestones' });
+  const meta = h('div', { class: 'w-filter-meta' });
+  const results = h('div', { class: 'w-results-stack' });
+  const applyFilters = () => {
+    const query = searchInput.value.trim();
+    const filtered = news.filter(n => matchesQuery([n.title, n.content, n.body, n.summary, n.date], query));
+    meta.textContent = `${filtered.length} update${filtered.length === 1 ? '' : 's'} shown`;
+    results.replaceChildren(renderNewsCards(filtered));
+  };
+  searchInput.addEventListener('input', applyFilters);
+  applyFilters();
+  return h('div', null,
+    PageBanner('News', 'Updates from the lab',
+      'New papers, awards, and milestones. Click any item to read the full story.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-filter-shell' },
+          h('div', { class: 'w-filter-row' },
+            h('div', { class: 'w-filter-search' },
+              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              searchInput
+            ),
+            meta
+          )
+        ),
+        results
+      )
+    )
+  );
+}
+
+function PageNewsDetail(id) {
+  const n = (DATA.news || []).find(x => String(x.id) === String(id));
+  if (!n) return h('div', null,
+    PageBanner('News', 'Not found', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('news') }, 'â† Back to News'),
+        h('div', { class: 'w-empty' }, 'News item not found.')
+      )
+    )
+  );
+  return h('div', null,
+    PageBanner(fmtNewsDate(n.date || n.published_at || n.created_at), n.title || '', ''),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('a', { class: 'w-back', onclick: () => go('news') }, 'â† Back to News'),
+        h('article', { class: 'w-news-detail' },
+          n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
+          h('div', { class: 'w-news-body-rich' }, n.content || n.body || ''),
+        )
+      )
+    )
+  );
+}
+
+function PageJoin() {
+  const cards = [
+    { icon: 'ðŸŽ“', title: 'Prospective PhD students', body: 'Apply through the Villanova ME PhD program and email Prof. Ortega with a CV, transcripts, and a one-paragraph research statement.' },
+    { icon: 'ðŸ“', title: 'MS / Undergraduate', body: 'Course-based research projects available. Contact the lab to discuss what you would like to learn.' },
+    { icon: 'ðŸ­', title: 'Industry collaboration', body: 'We partner with industry on directed research, often through the NSF EÂ³S Center. Reach out for membership and project framing.' },
+    { icon: 'âœˆï¸', title: 'Visiting scholars', body: 'Short and long visits are arranged on a case-by-case basis with the right alignment and bench space.' },
+  ];
+  return h('div', null,
+    PageBanner('Join', 'Work with LATFS',
+      'We welcome motivated graduate, undergraduate, and visiting researchers. Funded positions are announced on the news page.'),
+    h('section', { class: 'w-page-content' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-grid-2' },
+          ...cards.map(c =>
+            h('div', { class: 'w-icon-card' },
+              h('span', { class: 'w-icon-card-icon' }, c.icon),
+              h('h3', null, c.title),
+              h('p',  null, c.body),
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+function PageContact() {
+  return h('div', null,
+    PageBanner('Contact', 'Get in touch',
+      'For research collaborations, prospective student inquiries, and press, the fastest route is email.'),
+    h('section', { class: 'w-page-content on-white' },
+      h('div', { class: 'max-w' },
+        h('div', { class: 'w-grid-2' },
+          h('div', { class: 'w-icon-card' },
+            h('span', { class: 'w-icon-card-icon' }, 'ðŸ‘¤'),
+            h('h3', null, 'Director'),
+            h('p',  null, 'Dr. Alfonso Ortega', h('br'), 'aortega@villanova.edu', h('br'), '+1 (610) 519-4996'),
+          ),
+          h('div', { class: 'w-icon-card' },
+            h('span', { class: 'w-icon-card-icon' }, 'ðŸ›ï¸'),
+            h('h3', null, 'Mailing address'),
+            h('p',  null, 'Tolentine Hall 344', h('br'), 'Villanova University', h('br'), '800 Lancaster Avenue', h('br'), 'Villanova, PA 19085'),
+          ),
+        )
+      )
+    )
+  );
+}
+
+const PAGES = { home: Home, research: PageResearch, people: PagePeople, publications: PagePublications, facilities: PageFacilities, gallery: PageGallery, apps: PageApps, downloads: PageDownloads, news: PageNews, join: PageJoin, contact: PageContact };
+
+function render() {
+  const root = document.getElementById('app');
+  applySiteTheme((DATA.settings || FALLBACK_DATA.settings || {}).site_theme);
+  root.innerHTML = '';
+  root.appendChild(Nav());
+  const m = /^([a-z]+)\/(.+)$/.exec(state.route || '');
+  let pageEl;
+  if (m) {
+    const [, kind, id] = m;
+    if (kind === 'person')        pageEl = PagePersonDetail(id);
+    else if (kind === 'news')     pageEl = PageNewsDetail(id);
+    else if (kind === 'facility') pageEl = PageFacilityDetail(id);
+    else pageEl = (PAGES[kind] || Home)();
+  } else {
+    const Page = PAGES[state.route] || Home;
+    pageEl = Page();
+  }
+  root.appendChild(pageEl);
+  root.appendChild(PublicFooter());
+  if (state.route === 'home') restartHeroTimer();
+  else if (state.heroTimer) { clearInterval(state.heroTimer); state.heroTimer = null; }
+}
+
+(async function init() {
+  state.route = (location.hash.replace('#','') || 'home');
+  applySiteTheme(FALLBACK_DATA.settings.site_theme);
+  render();
+  await loadAll();
+  applySiteTheme((DATA.settings || FALLBACK_DATA.settings || {}).site_theme);
+  render();
+})();
 </script>
 </body>
 </html>
+

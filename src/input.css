@@ -1,7 +1,33 @@
 @import "tailwindcss";
 
+/* LATFS Design System — color, type, motion tokens
+   (synced with latfs-design-system/colors_and_type.css) */
+
 @theme {
-  --color-primary: #1e3a5f;
-  --color-secondary: #2d6a9f;
-  --color-accent: #e8a020;
+  /* Navy */
+  --color-navy-950: #080f24;
+  --color-navy-900: #0f172a;
+  --color-navy-800: #162041;
+  --color-navy-700: #1e3a5f;
+  --color-navy-600: #2d4a78;
+  --color-navy-500: #4a6fa5;
+
+  /* Gold */
+  --color-gold-900: #7a5e15;
+  --color-gold-700: #9a7820;
+  --color-gold-600: #b8912a;
+  --color-gold-500: #d4a942;
+  --color-gold-300: #e8c972;
+  --color-gold-100: #fef7e4;
+  --color-gold-50:  #fdfbf4;
+
+  /* Legacy aliases */
+  --color-primary:   #0f172a;
+  --color-secondary: #1e3a5f;
+  --color-accent:    #b8912a;
+
+  /* Typography */
+  --font-sans:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

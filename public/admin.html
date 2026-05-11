@@ -1,742 +1,2720 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LATFS Admin Panel</title>
-  <link rel="stylesheet" href="/tailwind.css">
-  <style>
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem; display: none; }
-    .modal-overlay.modal-open { display: flex; }
-    .tab-active { background: #1e3a5f; color: white; }
-    .tab-inactive { background: white; color: #374151; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LATFS · Website Admin</title>
+<link rel="canonical" href="https://latfs.villanova.edu/admin">
+<link rel="icon" href="/assets/favicon.gif">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+/* ============================================================
+   LATFS Design System — Colors & Type
+   Laboratory for Advanced Thermal and Fluid Systems
+   Villanova University
+   ============================================================ */
+/* ── Font imports ──────────────────────────────────────────── */
+:root {
+  /* ── Brand Colors ─────────────────────────────────────────
+     LATFS is a Villanova-aligned research lab. The palette
+     anchors on deep navy (institutional authority), academic
+     gold (heritage / accent), and a warm cream (softens the
+     academic tone so it feels approachable, not stuffy).
+  */
+  /* Primary — Navy */
+  --navy-950: #080f24;
+  --navy-900: #0f172a;    /* Primary brand navy (headers, nav) */
+  --navy-800: #162041;
+  --navy-700: #1e3a5f;    /* Legacy secondary navy (hovers) */
+  --navy-600: #2d4a78;
+  --navy-500: #4a6fa5;
+  /* Accent — Academic Gold */
+  --gold-900: #7a5e15;
+  --gold-700: #9a7820;
+  --gold-600: #b8912a;    /* Primary gold (accent bars, badges) */
+  --gold-500: #d4a942;
+  --gold-300: #e8c972;
+  --gold-100: #fef7e4;    /* Soft gold tint for badges */
+  --gold-50:  #fdfbf4;    /* Cream background */
+  /* Neutrals — Warm gray (paired with navy, not cold blue-gray) */
+  --gray-950: #0a0d13;
+  --gray-900: #111827;
+  --gray-800: #1f2937;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #64748b;
+  --gray-400: #94a3b8;
+  --gray-300: #cbd5e1;
+  --gray-200: #e2e8f0;
+  --gray-100: #f1f5f9;
+  --gray-50:  #f8fafc;
+  /* Lab-status semantic colors (for inventory, tasks, etc.) */
+  --status-ok:      #16a34a;    /* green — in stock, on track */
+  --status-warn:    #d97706;    /* amber — low, at risk */
+  --status-alert:   #dc2626;    /* red — out, blocked */
+  --status-info:    #0284c7;    /* blue — neutral info */
+  --status-ok-tint:    #dcfce7;
+  --status-warn-tint:  #fef3c7;
+  --status-alert-tint: #fee2e2;
+  --status-info-tint:  #e0f2fe;
+  /* ── Semantic tokens ──────────────────────────────────── */
+  --fg-1: var(--navy-900);     /* primary text */
+  --fg-2: var(--gray-700);     /* body text */
+  --fg-3: var(--gray-500);     /* muted text */
+  --fg-4: var(--gray-400);     /* tertiary / timestamps */
+  --fg-inv: #ffffff;
+  --bg-1: #ffffff;
+  --bg-2: var(--gray-50);      /* page background */
+  --bg-3: var(--gray-100);     /* subtle cards, fill inputs */
+  --bg-dark: var(--navy-900);  /* nav, footer */
+  --border-1: var(--gray-200); /* default borders */
+  --border-2: var(--gray-300); /* stronger borders / dividers */
+  --accent: var(--gold-600);
+  --accent-soft: var(--gold-100);
+  --accent-hover: var(--gold-700);
+  /* ── Elevation ────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.18);
+  --shadow-inset: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+  /* ── Radii ────────────────────────────────────────────── */
+  --radius-xs: 4px;     /* small inline chips */
+  --radius-sm: 6px;     /* inputs, small buttons */
+  --radius-md: 8px;     /* default buttons, tags */
+  --radius-lg: 12px;    /* cards */
+  --radius-xl: 16px;    /* feature cards, modals */
+  --radius-pill: 999px; /* badges */
+  /* ── Spacing (8-point grid, with 4 for inline) ──────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  /* ── Typography families ──────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif; /* serif display for editorial flourishes — publication titles, quote blocks */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* ── Type scale ──────────────────────────────────────── */
+  --text-xs:   0.75rem;   /* 12px — meta, timestamps */
+  --text-sm:   0.875rem;  /* 14px — secondary body */
+  --text-base: 1rem;      /* 16px — body default */
+  --text-lg:   1.125rem;  /* 18px — lead body */
+  --text-xl:   1.25rem;   /* 20px — small headings */
+  --text-2xl:  1.5rem;    /* 24px — h3 */
+  --text-3xl:  1.875rem;  /* 30px — h2 */
+  --text-4xl:  2.25rem;   /* 36px — h1 */
+  --text-5xl:  3rem;      /* 48px — hero */
+  --text-6xl:  3.75rem;   /* 60px — display */
+  /* ── Motion ───────────────────────────────────────────── */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:   150ms;
+  --dur-base:   220ms;
+  --dur-slow:   400ms;
+}
+/* ============================================================
+   Semantic element styles — drop into any page
+   ============================================================ */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--fg-1);
+  background: var(--bg-2);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1 {
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 4vw, var(--text-5xl));
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-4);
+}
+h2 {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-3);
+}
+h3 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-2);
+}
+h4 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--fg-1);
+  margin: 0 0 var(--space-2);
+}
+h5, h6 {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin: 0 0 var(--space-2);
+}
+p {
+  font-size: var(--text-base);
+  color: var(--fg-2);
+  line-height: 1.65;
+  margin: 0 0 var(--space-4);
+  text-wrap: pretty;
+}
+small, .text-meta {
+  font-size: var(--text-xs);
+  color: var(--fg-4);
+}
+a {
+  color: var(--navy-700);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--gold-700); }
+code, kbd, pre {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+code {
+  background: var(--gray-100);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-xs);
+  color: var(--navy-800);
+}
+/* Serif display — use sparingly: publication titles, editorial quotes */
+.display-serif {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+/* Eyebrow / overline label — classic academic styling */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-700);
+}
+/* Section-header pattern: gold bar + title (used across lab site) */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.section-header::before {
+  content: "";
+  width: 3px;
+  height: 1.5rem;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Login overlay (kit doesn't define this — we add a simple navy gate) */
+.login-screen { position:fixed; inset:0; background: var(--navy-900); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.login-card   { background:#fff; border-radius: var(--radius-xl); padding: 36px 32px; width: 360px; box-shadow: var(--shadow-xl); }
+.login-card h1{ font-family: var(--font-display); font-size: 24px; color: var(--navy-900); margin: 0 0 4px; }
+.login-card p { font-size: 13px; color: var(--fg-3); margin: 0 0 20px; }
+.login-card label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 12px 0 4px; }
+.login-card input{ width:100%; padding: 9px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; box-sizing:border-box; }
+.login-card button{ width:100%; margin-top: 18px; background: var(--gold-600); color:#fff; border:none; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; cursor:pointer; font-family:inherit; }
+.login-card button:hover{ background: var(--gold-700); }
+.login-card .err{ color:#dc2626; font-size: 12px; margin-top: 10px; min-height: 14px; }
+/* Sidebar logout button */
+.p-logout { background:none; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; font-family:inherit; }
+.p-logout:hover{ background:rgba(255,255,255,0.05); color:#fff; }
+/* Modal (used for forms) */
+.modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
+.modal { background:#fff; border-radius: var(--radius-lg); padding:24px; width: 480px; max-width:100%; max-height: 90vh; overflow:auto; box-shadow: var(--shadow-xl); }
+.modal.is-wide { width: min(780px, 96vw); }
+.modal h2 { font-size:18px; font-weight:700; color: var(--navy-900); margin:0 0 6px; }
+.modal-sub{ font-size:12px; color: var(--fg-3); margin:0 0 16px; }
+.modal label{ display:block; font-size:12px; font-weight:600; color:var(--fg-2); margin: 10px 0 4px; }
+.modal input, .modal select, .modal textarea{ width:100%; padding: 8px 10px; border:1px solid var(--border-1); border-radius: var(--radius-sm); font-family:inherit; font-size:13px; box-sizing:border-box; }
+.modal textarea{ min-height: 80px; resize: vertical; }
+.modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+.modal input[type="range"] { padding: 0; border: none; background: transparent; }
+/* Empty state */
+.empty { padding: 40px 20px; text-align:center; color: var(--fg-4); font-size: 13px; }
+/* List item with delete button */
+.row-actions { display:flex; gap:6px; }
+.row-actions button { background:none; border:1px solid var(--border-1); color: var(--fg-3); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor:pointer; font-family:inherit; }
+.row-actions button:hover { background: var(--bg-2); color: var(--navy-900); }
+.row-actions button.danger:hover { background: #fee2e2; color: #991b1b; border-color:#fca5a5; }
+.p-btn-tight { padding: 7px 12px; font-size: 12px; border-radius: 999px; }
+.p-inline-meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; font-size:11px; color:var(--fg-4); }
+.p-inline-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; font-size:11px; }
+.p-inline-links a { color: var(--gold-700); font-weight: 700; }
+.p-photo-tool { display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:16px; align-items:start; margin-top:6px; }
+.p-photo-stage { position:relative; width:100%; aspect-ratio:1/1; border:1px solid var(--border-1); border-radius:12px; overflow:hidden; background:linear-gradient(180deg, var(--bg-1), var(--bg-2)); cursor:crosshair; }
+.p-photo-stage img { width:100%; height:100%; object-fit:cover; display:block; }
+.p-photo-stage::after { content:""; position:absolute; inset:14%; border:2px dashed rgba(200,162,74,.7); border-radius:50%; pointer-events:none; }
+.p-photo-stage::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(15,23,42,.04), rgba(15,23,42,.18)); pointer-events:none; }
+.p-photo-dot { position:absolute; width:18px; height:18px; border:2px solid var(--gold-600); background:rgba(255,255,255,.72); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; left:50%; top:50%; box-shadow:0 6px 16px rgba(15,23,42,.18); }
+.p-photo-help { font-size:12px; color:var(--fg-3); line-height:1.55; }
+.p-photo-presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.p-photo-presets button { border:1px solid var(--border-1); background:#fff; border-radius:999px; padding:5px 10px; font-size:11px; font-weight:600; color:var(--fg-2); cursor:pointer; }
+.p-photo-presets button:hover { border-color:var(--gold-300); color:var(--gold-700); }
+.p-photo-preview-card { margin-top:12px; border:1px solid var(--border-1); border-radius:12px; background:var(--bg-2); padding:12px; }
+.p-photo-preview-card strong { display:block; font-size:12px; color:var(--fg-2); margin-bottom:10px; }
+.p-photo-preview-card img { width:120px; height:120px; border-radius:50%; object-fit:cover; display:block; border:3px solid #fff; box-shadow:var(--shadow-sm); }
+.p-photo-zoom { margin-top:10px; }
+.p-photo-zoom label { margin:0 0 6px; }
+.p-photo-zoom-value { font-size:11px; color:var(--fg-4); margin-top:4px; text-align:right; }
+.p-theme-grid { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:end; margin-top:16px; }
+.p-soft-note { font-size:12px; color:var(--fg-3); line-height:1.55; margin-top:8px; }
+
+
+/* ---- Platform layout (sidebar/main, cards, kanban, calendar, etc.) ---- */
+html, body { margin: 0; background: var(--bg-2); color: var(--fg-1); }
+  .p-app { display: flex; min-height: 100vh; }
+  .p-main { flex: 1; padding: 28px 32px; overflow: auto; }
+
+  /* Sidebar */
+  .p-sidebar { width: 240px; background: var(--navy-900); color: rgba(255,255,255,.8); display: flex; flex-direction: column; padding: 20px 12px; }
+  .p-brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 20px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 12px; }
+  .p-brand-mark { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .p-brand-wm { color: #fff; font-weight: 800; font-size: 14px; }
+  .p-brand-sub { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .08em; text-transform: uppercase; }
+  .p-nav, .p-nav-section { display: flex; flex-direction: column; gap: 2px; }
+  .p-nav-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.08); }
+  .p-nav-head { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .1em; text-transform: uppercase; padding: 4px 12px 8px; }
+  .p-nav-item { background: none; border: none; color: rgba(255,255,255,.7); text-align: left; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit; }
+  .p-nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .p-nav-item.active { background: var(--gold-600); color: #fff; }
+  .p-nav-icon { width: 16px; height: 16px; }
+  .p-user { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08); }
+  .p-user-av { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-600); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .p-user-name { color: #fff; font-size: 13px; font-weight: 600; }
+  .p-user-role { color: rgba(255,255,255,.5); font-size: 11px; }
+
+  /* Page head */
+  .p-page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+  .p-h1 { font-size: 1.5rem; font-weight: 800; color: var(--navy-900); margin: 4px 0 4px; letter-spacing: -.02em; }
+  .p-h1-sub { font-size: 13px; color: var(--fg-3); margin: 0; }
+  .p-actions { display: flex; gap: 8px; }
+  .btn-primary-sm { background: var(--gold-600); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn-primary-sm:hover { background: var(--gold-700); }
+  .btn-ghost-sm { background: #fff; border: 1px solid var(--border-1); color: var(--fg-2); border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .btn-ghost-sm:hover { background: var(--bg-1); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+  /* Cards + grid */
+  .p-card { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-xs); }
+  .p-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-1); }
+  .p-card-title { font-weight: 700; font-size: 14px; color: var(--navy-900); }
+  .p-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .p-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .p-stat-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px; position: relative; box-shadow: var(--shadow-xs); }
+  .p-stat-icon { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; color: var(--fg-4); }
+  .p-stat-num { font-size: 1.75rem; font-weight: 800; color: var(--navy-900); line-height: 1; }
+  .p-stat-lbl { font-size: 12px; color: var(--fg-3); }
+  .w-link-gold { background: none; border: none; color: var(--gold-700); font-weight: 600; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+
+  /* Slots */
+  .p-slot { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-slot:last-child { border-bottom: none; }
+  .p-slot-time { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); font-weight: 600; width: 44px; }
+  .p-slot-title { font-size: 13px; color: var(--navy-900); font-weight: 600; }
+  .p-slot-room { font-size: 11px; color: var(--fg-4); }
+  .p-slot-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+
+  /* Tasks in dashboard */
+  .p-task { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-task:last-child { border-bottom: none; }
+  .p-check { width: 14px; height: 14px; accent-color: var(--gold-600); }
+  .p-task-title { font-size: 13px; color: var(--navy-900); font-weight: 500; }
+  .p-task-due { font-size: 11px; color: var(--fg-4); }
+
+  /* Tags */
+  .p-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: .02em; }
+  .p-tag-ok { background: var(--status-ok-tint); color: #166534; }
+  .p-tag-warn { background: var(--status-warn-tint); color: #92400e; }
+  .p-tag-alert { background: var(--status-alert-tint); color: #991b1b; }
+  .p-tag-info { background: var(--status-info-tint); color: #075985; }
+  .p-tag-gold { background: var(--gold-100); color: var(--gold-700); }
+  .p-tag-outline { background: #fff; border: 1px solid var(--border-2); color: var(--fg-3); }
+  .p-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Lab status */
+  .p-lab-name { font-size: 12px; font-weight: 700; color: var(--fg-2); letter-spacing: .04em; margin-bottom: 6px; text-transform: uppercase; }
+  .p-lab-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border-1); }
+  .p-lab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .p-lab-lbl { font-size: 13px; color: var(--navy-900); font-weight: 500; }
+  .p-lab-meta { font-size: 11px; color: var(--fg-4); }
+  .p-lab-state { font-size: 11px; color: var(--fg-3); font-weight: 600; }
+
+  /* Calendar */
+  .p-cal { background: #fff; border: 1px solid var(--border-1); border-radius: 12px; overflow: hidden; }
+  .p-cal-head { display: grid; grid-template-columns: 60px repeat(5, 1fr); border-bottom: 1px solid var(--border-1); background: var(--bg-1); }
+  .p-cal-day-h { padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--navy-900); border-left: 1px solid var(--border-1); }
+  .p-cal-body { display: grid; grid-template-columns: 60px repeat(5, 1fr); position: relative; }
+  .p-cal-hours { display: flex; flex-direction: column; }
+  .p-cal-hour { height: 46px; font-size: 10px; color: var(--fg-4); padding: 2px 8px; border-bottom: 1px solid var(--border-1); font-family: var(--font-mono); }
+  .p-cal-col { position: relative; border-left: 1px solid var(--border-1); }
+  .p-cal-cell { height: 46px; border-bottom: 1px solid var(--border-1); }
+  .p-cal-event { position: absolute; left: 4px; right: 4px; border-radius: 6px; padding: 6px 8px; font-size: 11px; overflow: hidden; box-shadow: var(--shadow-xs); cursor: pointer; }
+  .p-cal-ev-title { font-weight: 700; line-height: 1.2; }
+  .p-cal-ev-room { font-size: 10px; opacity: .8; margin-top: 2px; }
+
+  /* Kanban */
+  .p-kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .p-col { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: 10px; padding: 10px; }
+  .p-col-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+  .p-col-title { font-size: 12px; font-weight: 700; color: var(--navy-900); letter-spacing: .02em; text-transform: uppercase; }
+  .p-col-count { font-size: 11px; font-weight: 700; color: var(--fg-4); background: #fff; border: 1px solid var(--border-1); border-radius: 999px; padding: 1px 8px; }
+  .p-task-card { background: #fff; border: 1px solid var(--border-1); border-left: 3px solid var(--gold-600); border-radius: 8px; padding: 10px; margin-bottom: 8px; box-shadow: var(--shadow-xs); cursor: pointer; }
+  .p-task-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+  .p-task-card-title { font-size: 13px; color: var(--navy-900); font-weight: 600; line-height: 1.35; margin-bottom: 8px; }
+  .p-task-card-foot { display: flex; justify-content: space-between; align-items: center; }
+  .p-tag-sm { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: .02em; }
+  .p-task-meta { display: flex; align-items: center; gap: 8px; }
+  .p-task-due-sm { font-size: 11px; color: var(--fg-4); }
+  .p-task-av { width: 22px; height: 22px; border-radius: 50%; background: var(--navy-700); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .p-col-add { width: 100%; border: 1px dashed var(--border-2); background: transparent; color: var(--fg-4); padding: 8px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 12px; margin-top: 4px; }
+  .p-col-add:hover { border-color: var(--gold-600); color: var(--gold-700); }
+
+  /* Inventory */
+  .p-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border-1); margin-bottom: 16px; }
+  .p-tab { background: none; border: none; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--fg-3); cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 8px; }
+  .p-tab.active { color: var(--navy-900); border-bottom-color: var(--gold-600); }
+  .p-tab-count { background: var(--bg-1); border-radius: 999px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--fg-3); }
+  .p-inv-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .p-inv-search { position: relative; flex: 1; }
+  .p-inv-search-i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--fg-4); }
+  .p-inv-input { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; box-sizing: border-box; }
+  .p-inv-select { padding: 8px 10px; border: 1px solid var(--border-1); border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; }
+  .p-inv-table { background: #fff; border: 1px solid var(--border-1); border-radius: 10px; overflow: hidden; }
+  .p-inv-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border-1); font-size: 13px; }
+  .p-inv-row:last-child { border-bottom: none; }
+  .p-inv-head { background: var(--bg-1); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-3); }
+  .p-inv-name { font-weight: 600; color: var(--navy-900); }
+  .p-inv-cat { color: var(--fg-3); }
+  .p-mono { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); background: var(--bg-1); padding: 2px 6px; border-radius: 4px; }
+  .p-qty-num { font-weight: 700; color: var(--navy-900); }
+  .p-qty-min { font-size: 11px; color: var(--fg-4); }
+  .p-qty-bar { height: 4px; background: var(--bg-1); border-radius: 2px; margin-top: 4px; overflow: hidden; max-width: 120px; }
+  .p-qty-fill { height: 100%; border-radius: 2px; }
+  .p-inv-more { background: none; border: none; color: var(--fg-4); cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: 4px; }
+  .p-inv-more:hover { background: var(--bg-1); }
+
+  /* Meetings */
+  .p-meet-list { display: flex; flex-direction: column; gap: 10px; }
+  .p-meet-card { display: flex; background: #fff; border: 1px solid var(--border-1); border-radius: 12px; padding: 16px; align-items: center; gap: 20px; box-shadow: var(--shadow-xs); }
+  .p-meet-day { display: flex; flex-direction: column; text-align: center; min-width: 110px; padding-right: 20px; border-right: 1px solid var(--border-1); }
+  .p-meet-day-lbl { font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--gold-700); }
+  .p-meet-day-time { font-size: 12px; font-weight: 600; color: var(--navy-900); margin-top: 2px; font-family: var(--font-mono); }
+  .p-meet-body { flex: 1; }
+  .p-meet-title { font-size: 15px; font-weight: 700; color: var(--navy-900); }
+  .p-meet-room { font-size: 12px; color: var(--fg-3); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .p-icon-xs { width: 12px; height: 12px; }
+  .p-avatars { display: flex; margin-top: 8px; }
+  .p-av-sm { width: 26px; height: 26px; border-radius: 50%; background: var(--navy-700); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; margin-left: -6px; }
+  .p-av-sm:first-child { margin-left: 0; }
+  .p-meet-tag-col { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .p-meet-tag { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
+
+  code { font-family: var(--font-mono); }
+
+  /* Banner / callout */
+  .p-banner { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; }
+
+  /* Schedule list */
+  .p-slot { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--border-1); }
+  .p-slot:last-child { border-bottom: none; }
+  .p-slot-time { font-size: 12px; font-weight: 700; color: var(--gold-700); min-width: 60px; }
+  .p-slot-title { font-size: 14px; font-weight: 600; color: var(--navy-900); }
+  .p-slot-room { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+
+  /* ---- 2026 polish pass ---- */
+  body {
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(212,169,66,.14), transparent 24%),
+      radial-gradient(circle at top right, rgba(74,111,165,.1), transparent 24%),
+      linear-gradient(180deg, #eef3f8 0%, #f8fafc 34%, #edf2f7 100%);
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(15,23,42,.032) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,.032) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,.2), transparent 84%);
+  }
+  .login-screen,
+  .p-app {
+    position: relative;
+    z-index: 1;
+  }
+  .p-app { background: transparent; }
+  .p-sidebar {
+    width: 272px;
+    padding: 16px 14px 18px;
+    background: linear-gradient(180deg, #08101f 0%, #0f172a 28%, #12213d 100%);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,.05), 20px 0 48px rgba(8,15,36,.16);
+  }
+  .p-brand {
+    margin-bottom: 16px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+    box-shadow: 0 18px 36px rgba(0,0,0,.18);
+  }
+  .p-brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+    box-shadow: 0 10px 24px rgba(184,145,42,.28);
+    overflow: hidden;
+  }
+  .p-brand-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+    display: block;
+  }
+  .p-nav, .p-nav-section { gap: 6px; }
+  .p-nav-section {
+    margin-top: 18px;
+    padding-top: 18px;
+  }
+  .p-nav-head {
+    padding-bottom: 10px;
+    letter-spacing: .14em;
+  }
+  .p-nav-item {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 11px 12px;
+    transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .p-nav-item:hover {
+    transform: translateX(2px);
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.08);
+  }
+  .p-nav-item.active {
+    background: linear-gradient(135deg, rgba(212,169,66,.96), rgba(154,120,32,.96));
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(154,120,32,.24);
+  }
+  .p-user {
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  }
+  .p-user-av {
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+    box-shadow: 0 10px 20px rgba(184,145,42,.26);
+  }
+  .p-main {
+    padding: 30px 34px 42px;
+    background: transparent;
+  }
+  .p-page-head {
+    position: relative;
+    overflow: hidden;
+    padding: 26px 28px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255,255,255,.97) 0%, rgba(254,247,228,.92) 46%, rgba(244,248,252,.94) 100%);
+    box-shadow: 0 24px 50px rgba(15,23,42,.08);
+  }
+  .p-page-head::before {
+    content: "";
+    position: absolute;
+    top: -70px;
+    right: -30px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,169,66,.24), transparent 64%);
+    pointer-events: none;
+  }
+  .p-page-head::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(184,145,42,.34), transparent 65%);
+  }
+  .p-page-head > * {
+    position: relative;
+    z-index: 1;
+  }
+  .p-h1 {
+    margin: 6px 0;
+    font-size: clamp(1.85rem, 2.8vw, 2.5rem);
+  }
+  .p-h1-sub {
+    margin: 0;
+    max-width: 64ch;
+    font-size: 14px;
+  }
+  .p-actions {
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-primary-sm,
+  .btn-ghost-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.15;
+    white-space: nowrap;
+    min-height: 38px;
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+  .btn-primary-sm {
+    box-shadow: 0 12px 22px rgba(184,145,42,.22);
+  }
+  .btn-ghost-sm {
+    background: rgba(255,255,255,.82);
+    border-color: rgba(203,213,225,.9);
+  }
+  .btn-ghost-sm:hover { background: #fff; }
+  .p-card,
+  .p-stat-card,
+  .p-tabs,
+  .p-inv-toolbar,
+  .p-inv-table,
+  .p-banner,
+  .login-card {
+    backdrop-filter: blur(10px);
+  }
+  .p-card,
+  .login-card {
+    border-radius: 20px;
+    box-shadow: 0 18px 34px rgba(15,23,42,.07);
+  }
+  .p-card {
+    padding: 20px;
+    background: rgba(255,255,255,.92);
+  }
+  .p-card-head {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+  .p-grid-2, .p-grid-3, .p-grid-4 { gap: 18px; }
+  .p-stat-card {
+    min-height: 132px;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-left: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,250,252,.96));
+    box-shadow: 0 16px 30px rgba(15,23,42,.06);
+    overflow: hidden;
+  }
+  .p-stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--gold-500), var(--navy-700));
+  }
+  .p-stat-num {
+    font-size: clamp(1.7rem, 3vw, 2rem);
+  }
+  .p-stat-icon {
+    width: 20px;
+    height: 20px;
+    opacity: .9;
+  }
+  .p-tabs {
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 6px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 16px;
+    background: rgba(255,255,255,.82);
+  }
+  .p-tab {
+    margin-bottom: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
+  .p-tab.active {
+    color: #fff;
+    border-bottom-color: transparent;
+    background: var(--navy-900);
+    box-shadow: 0 8px 18px rgba(15,23,42,.18);
+  }
+  .p-inv-toolbar {
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 16px;
+    background: rgba(255,255,255,.84);
+  }
+  .p-inv-table {
+    border-radius: 18px;
+    border-color: rgba(226,232,240,.95);
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 14px 28px rgba(15,23,42,.05);
+  }
+  .p-banner {
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(184,145,42,.12);
+  }
+  .p-admin-ribbon {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(226,232,240,.95);
+    border-radius: 18px;
+    background: rgba(255,255,255,.84);
+    box-shadow: 0 14px 28px rgba(15,23,42,.05);
+  }
+  .p-admin-kicker {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold-700);
+  }
+  .p-admin-title {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy-900);
+    letter-spacing: -.015em;
+  }
+  .p-admin-copy {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--fg-3);
+    line-height: 1.6;
+  }
+  .p-admin-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .p-admin-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--navy-900);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+  .p-admin-pill.soft {
+    background: var(--gold-100);
+    color: var(--gold-900);
+  }
+  .p-overview-grid {
+    display: grid;
+    grid-template-columns: 1.2fr .9fr;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  .p-action-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .p-action-tile {
+    display: block;
+    padding: 16px;
+    border: 1px solid var(--border-1);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.94));
+    color: inherit;
+    text-decoration: none;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+  .p-action-tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold-300);
+    box-shadow: 0 14px 26px rgba(15,23,42,.08);
+  }
+  .p-action-tile-kicker {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold-700);
+  }
+  .p-action-tile-title {
+    margin-top: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy-900);
+  }
+  .p-action-tile-copy {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--fg-3);
+    line-height: 1.55;
+  }
+  .p-link-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .p-link-item {
+    padding: 14px 16px;
+    border: 1px solid var(--border-1);
+    border-radius: 14px;
+    background: rgba(248,250,252,.92);
+    font-size: 13px;
+    color: var(--fg-2);
+    line-height: 1.6;
+  }
+  .p-link-item strong {
+    color: var(--navy-900);
+  }
+  @media (max-width: 1100px) {
+    .p-overview-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .p-main { padding: 16px; }
+    .p-page-head { padding: 22px 20px; border-radius: 20px; }
+    .p-admin-ribbon { grid-template-columns: 1fr; }
+    .p-admin-pill-row { justify-content: flex-start; }
+    .p-action-tiles { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body>
 
-<!-- Login Screen -->
-<div id="login-screen" class="min-h-screen flex items-center justify-center">
-  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-        </svg>
+<!-- Login gate -->
+<div id="loginScreen" class="login-screen" style="display:flex">
+  <div class="login-card">
+    <h1>LATFS Website Admin</h1>
+    <p>Sign in to manage the website.</p>
+    <form id="loginForm">
+      <!-- Step 1: credentials -->
+      <div id="adminStep1">
+        <label>Username</label>
+        <input id="lUser" type="text" autocomplete="username" required>
+        <label>Password</label>
+        <input id="lPass" type="password" autocomplete="current-password" required>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px;font-weight:400;">
+          <input type="checkbox" id="adminRemember" style="width:auto;margin:0;">
+          <span style="font-size:12px;">Remember me for 30 days</span>
+        </label>
       </div>
-      <h1 class="text-2xl font-bold text-primary">LATFS Admin</h1>
-      <p class="text-gray-500 mt-1">Sign in to manage content</p>
-    </div>
-    <form id="login-form" onsubmit="doLogin(event)" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-        <input type="text" id="login-user" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder="admin">
+      <!-- Step 2: TOTP (shown when server returns totp_required) -->
+      <div id="adminStep2" style="display:none;">
+        <div style="font-size:13px;color:var(--fg-2);margin:4px 0 12px;padding:10px 12px;background:var(--bg-2,#f5f5f5);border-radius:6px;border-left:3px solid #b8982a;">
+          🔐 Two-factor authentication required.<br>
+          <span style="font-size:11px;color:#888;">Enter the 6-digit code from your authenticator app, or a backup code (format <code>XXXXX-XXXXX</code>).</span>
+        </div>
+        <label>Authentication code</label>
+        <input id="lTotp" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="000000 or XXXXX-XXXXX" maxlength="11">
+        <button type="button" id="adminBackBtn" style="font-size:12px;color:#888;background:none;border:none;cursor:pointer;margin-top:6px;padding:0;text-align:left;">← Back</button>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input type="password" id="login-pass" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
-      </div>
-      <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">Invalid username or password.</div>
-      <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-secondary transition-colors font-medium text-lg">
-        Sign In
-      </button>
+      <button type="submit" id="adminSubmitBtn">Sign in</button>
+      <div class="err" id="lErr"></div>
     </form>
-    <p class="text-center text-gray-400 text-xs mt-4">Default: admin / admin123</p>
   </div>
 </div>
 
-<!-- Admin Dashboard -->
-<div id="admin-dashboard" class="hidden">
-  <!-- Top bar -->
-  <nav class="bg-primary text-white shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-primary text-sm">L</div>
-        <span class="font-bold text-lg">LATFS Admin</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <span id="admin-username" class="text-blue-200 text-sm"></span>
-        <a href="/" class="text-sm text-blue-200 hover:text-white flex items-center gap-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-          View Site
-        </a>
-        <button onclick="doLogout()" class="text-sm bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-colors">Logout</button>
+<!-- App shell -->
+<div id="appShell" class="p-app" style="display:none">
+  <aside class="p-sidebar">
+    <div class="p-brand">
+      <div class="p-brand-mark"><img src="/assets/site-logos/latfs-icon.png" alt="LATFS mark"></div>
+      <div>
+        <div class="p-brand-wm">LATFS</div>
+        <div class="p-brand-sub">Website Admin</div>
       </div>
     </div>
-  </nav>
-
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Stats cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">News Items</div>
-        <div id="stat-news" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Publications</div>
-        <div id="stat-pubs" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">People</div>
-        <div id="stat-people" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Research Areas</div>
-        <div id="stat-research" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Sponsors</div>
-        <div id="stat-sponsors" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
-      <div class="bg-white rounded-xl shadow p-4">
-        <div class="text-gray-500 text-sm">Gallery Photos</div>
-        <div id="stat-gallery" class="text-3xl font-bold text-primary mt-1">-</div>
-      </div>
+    <nav class="p-nav" id="navMain"></nav>
+    <div class="p-nav-section">
+      <div class="p-nav-head">Other surfaces</div>
+      <a class="p-nav-item" href="/platform" style="text-decoration:none;">
+        <i data-lucide="users" class="p-nav-icon"></i>
+        <span>Lab platform</span>
+      </a>
+      <a class="p-nav-item" href="/" style="text-decoration:none;">
+        <i data-lucide="globe" class="p-nav-icon"></i>
+        <span>Public website</span>
+      </a>
     </div>
-
-    <!-- Tabs -->
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-      <div class="flex border-b border-gray-200 overflow-x-auto">
-        <button onclick="switchTab('news')" id="tab-news" class="tab-active px-6 py-3 font-medium text-sm whitespace-nowrap">&#128240; News</button>
-        <button onclick="switchTab('publications')" id="tab-publications" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128218; Publications</button>
-        <button onclick="switchTab('people')" id="tab-people" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128101; People</button>
-        <button onclick="switchTab('research')" id="tab-research" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128300; Research</button>
-        <button onclick="switchTab('sponsors')" id="tab-sponsors" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#127970; Sponsors</button>
-        <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap">&#128248; Gallery</button>
+    <div class="p-user">
+      <div class="p-user-av" id="userInitials">AO</div>
+      <div style="flex:1">
+        <div class="p-user-name" id="userName">Dr. A. Ortega</div>
+        <div class="p-user-role" id="userRole">PI · Director</div>
       </div>
-      
-      <!-- NEWS TAB -->
-      <div id="content-news" class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">News Items</h2>
-          <button onclick="openModal('news')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add News</button>
-        </div>
-        <div id="news-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- PUBLICATIONS TAB -->
-      <div id="content-publications" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">Publications</h2>
-          <button onclick="openModal('publication')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Publication</button>
-        </div>
-        <div id="pub-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- PEOPLE TAB -->
-      <div id="content-people" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">People</h2>
-          <button onclick="openModal('person')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Person</button>
-        </div>
-        <div id="people-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- RESEARCH TAB -->
-      <div id="content-research" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">Research Areas</h2>
-          <button onclick="openModal('research')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Research Area</button>
-        </div>
-        <div id="research-table" class="space-y-2"></div>
-      </div>
-      
-      <!-- SPONSORS TAB -->
-      <div id="content-sponsors" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-primary">Sponsors &amp; Partners</h2>
-          <button onclick="openModal('sponsor')" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary text-sm font-medium">+ Add Sponsor</button>
-        </div>
-        <div id="sponsors-table" class="space-y-2"></div>
-      </div>
-
-      <!-- GALLERY TAB -->
-      <div id="content-gallery" class="p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-lg font-bold text-primary">Hero Slideshow Gallery</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Photos appear in the hero slideshow on the home page. Drag &amp; drop or click to upload.</p>
-          </div>
-        </div>
-        <!-- Upload area -->
-        <div id="gallery-upload-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 mb-6 text-center cursor-pointer hover:border-secondary transition-colors"
-             onclick="document.getElementById('gallery-file-input').click()"
-             ondragover="event.preventDefault();this.classList.add('border-secondary')"
-             ondragleave="this.classList.remove('border-secondary')"
-             ondrop="handleGalleryDrop(event)">
-          <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <p class="text-gray-600 font-medium text-sm">Click or drag photos here to upload</p>
-          <p class="text-gray-400 text-xs mt-1">JPEG, PNG, GIF or WebP &bull; max 5 MB each</p>
-          <div id="gallery-upload-status" class="mt-2 text-sm font-medium text-gray-500"></div>
-        </div>
-        <input type="file" id="gallery-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" multiple onchange="handleGalleryFileSelect(event)">
-        <!-- Photo grid -->
-        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
-      </div>
-  </div>
-</div>
-
-<!-- Modal -->
-<div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-6">
-        <h3 id="modal-title" class="text-xl font-bold text-primary"></h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div id="modal-body"></div>
+      <button class="p-logout" id="logoutBtn" title="Sign out">⎋</button>
     </div>
-  </div>
-</div>
+  </aside>
 
-<!-- Delete Confirm Modal -->
-<div id="delete-modal" class="modal-overlay">
-  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
-    <h3 class="text-lg font-bold text-gray-800 mb-2">Confirm Delete</h3>
-    <p class="text-gray-600 mb-6">Are you sure you want to delete this item? This action cannot be undone.</p>
-    <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-      <button id="delete-confirm-btn" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Delete</button>
-    </div>
-  </div>
+  <main class="p-main" id="mainContent">
+    <div class="empty">Loading…</div>
+  </main>
 </div>
 
 <script>
-let currentTab = 'news';
-let editingId = null;
-let editingType = null;
-let deleteCallback = null;
-let csrfToken = '';
+/* ===========================================================
+   LATFS Platform — vanilla JS port of the React UI Kit
+   =========================================================== */
 
-// Auth
+let CSRF = '';
+let SESSION_USER = { name:'Dr. A. Ortega', role:'PI · Director', initials:'AO', first:'Alfonso' };
+let LAB_NAMES = { lab_a_name:'Lab A', lab_a_room:'Tolentine 344', lab_b_name:'Lab B', lab_b_room:'Mendel 270' };
+const labLabel = (ab) => ab === 'A'
+  ? `${LAB_NAMES.lab_a_name}${LAB_NAMES.lab_a_room ? ' · ' + LAB_NAMES.lab_a_room : ''}`
+  : `${LAB_NAMES.lab_b_name}${LAB_NAMES.lab_b_room ? ' · ' + LAB_NAMES.lab_b_room : ''}`;
+
+const $ = (s, root=document) => root.querySelector(s);
+const escHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const initials = (name) => (name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase();
+const fmtDT = (d) => { if(!d) return ''; const x = new Date(d); if(isNaN(x)) return d; return x.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); };
+const ADMIN_SURFACE_ROLES = new Set(['admin', 'professor', 'moderator']);
+const LAB_STAFF_ROLES = new Set(['admin', 'professor']);
+const ALL_NAV_ITEMS = [
+  ['overview',   'Overview',     'home'],
+  ['content',    'Site content', 'edit-3'],
+];
+
+function isLabStaffRole(role) {
+  return LAB_STAFF_ROLES.has(role);
+}
+
+function canAccessAdminSurface(role) {
+  return ADMIN_SURFACE_ROLES.has(role);
+}
+
+function allowedNavItems() {
+  return ALL_NAV_ITEMS.slice();
+}
+
+function allowedContentTabs() {
+  if (isLabStaffRole(SESSION_USER.role)) {
+    return [
+      ['people','People','users'],
+      ['news','News','megaphone'],
+      ['publications','Publications','book-open'],
+      ['research','Research','flask-conical'],
+      ['facilities','Facilities','building-2'],
+      ['hero','Hero / homepage','image'],
+      ['gallery','Gallery','images'],
+      ['downloads','Downloads','download'],
+      ['sponsors','Sponsors','briefcase'],
+      ['apps','Apps','grid'],
+      ['settings','Settings','settings']
+    ];
+  }
+  return [
+    ['news','News','megaphone'],
+    ['hero','Hero / homepage','image'],
+    ['gallery','Gallery','images']
+  ];
+}
+
+async function api(path, opts={}) {
+  const headers = { 'Content-Type':'application/json' };
+  if (CSRF) headers['X-CSRF-Token'] = CSRF;
+  const r = await fetch(path, { credentials:'same-origin', ...opts, headers: {...headers, ...(opts.headers||{})} });
+  if (!r.ok) {
+    const txt = await r.text().catch(()=>'');
+    throw new Error(`${r.status} ${r.statusText} ${txt}`);
+  }
+  return r.json();
+}
+const apiGet = (p) => api(p);
+const apiPost = (p, body) => api(p, { method:'POST', body: JSON.stringify(body) });
+const apiPut  = (p, body) => api(p, { method:'PUT',  body: JSON.stringify(body) });
+const apiDel  = (p)       => api(p, { method:'DELETE' });
+async function apiRows(p) {
+  const data = await apiGet(p);
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data && data.rows)) return data.rows;
+  return [];
+}
+
+async function uploadPhoto(file) {
+  const fd = new FormData(); fd.append('photo', file);
+  const r = await fetch('/api/upload/photo', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return (await r.json()).url;
+}
+async function uploadDoc(file) {
+  const fd = new FormData(); fd.append('document', file);
+  const r = await fetch('/api/upload/document', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return await r.json();
+}
+async function uploadGallery(file, caption='', sort_order=0) {
+  const fd = new FormData(); fd.append('photo', file); fd.append('caption', caption); fd.append('sort_order', sort_order);
+  const r = await fetch('/api/gallery', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return await r.json();
+}
+async function uploadHeroSlide(file, title='', caption='', sort_order=0) {
+  const fd = new FormData(); fd.append('photo', file); fd.append('title', title); fd.append('caption', caption); fd.append('sort_order', sort_order);
+  const r = await fetch('/api/hero-slides', { method:'POST', credentials:'same-origin', headers:{ 'X-CSRF-Token': CSRF }, body: fd });
+  if(!r.ok) throw new Error('Upload failed: '+r.status);
+  return await r.json();
+}
+
+/* ── Auth ──────────────────────────────────────────────── */
 async function checkAuth() {
-  const r = await fetch('/admin/check');
-  const data = await r.json();
-  if (data.loggedIn) {
-    csrfToken = data.csrfToken || '';
-    showDashboard(data.username);
-  } else {
-    document.getElementById('login-screen').classList.remove('hidden');
-  }
-}
-
-async function doLogin(e) {
-  e.preventDefault();
-  const username = document.getElementById('login-user').value;
-  const password = document.getElementById('login-pass').value;
-  const r = await fetch('/admin/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username, password}) });
-  if (r.ok) {
-    const data = await r.json();
-    csrfToken = data.csrfToken || '';
-    showDashboard(data.username);
-  } else {
-    document.getElementById('login-error').classList.remove('hidden');
-  }
-}
-
-async function doLogout() {
-  await fetch('/admin/logout', { method: 'POST', headers: {'x-csrf-token': csrfToken} });
-  location.reload();
-}
-
-function showDashboard(username) {
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('admin-dashboard').classList.remove('hidden');
-  document.getElementById('admin-username').textContent = 'Logged in as: ' + username;
-  loadStats();
-  loadAllData();
-}
-
-// Tabs
-function switchTab(tab) {
-  currentTab = tab;
-  ['news','publications','people','research','sponsors','gallery'].forEach(t => {
-    document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium text-sm whitespace-nowrap' : 'tab-inactive px-6 py-3 font-medium text-sm whitespace-nowrap';
-    const content = document.getElementById('content-' + t);
-    if (content) content.classList.toggle('hidden', t !== tab);
-  });
-  if (tab === 'gallery') loadGalleryData();
-}
-
-// Stats
-async function loadStats() {
   try {
-    const [news, pubs, people, research, sponsors, gallery] = await Promise.all([
-      fetch('/api/news').then(r => r.json()),
-      fetch('/api/publications').then(r => r.json()),
-      fetch('/api/people').then(r => r.json()),
-      fetch('/api/research').then(r => r.json()),
-      fetch('/api/sponsors').then(r => r.json()),
-      fetch('/api/gallery').then(r => r.json()),
-    ]);
-    document.getElementById('stat-news').textContent = news.length;
-    document.getElementById('stat-pubs').textContent = pubs.length;
-    document.getElementById('stat-people').textContent = people.length;
-    document.getElementById('stat-research').textContent = research.length;
-    document.getElementById('stat-sponsors').textContent = sponsors.length;
-    document.getElementById('stat-gallery').textContent = gallery.length;
-  } catch(e) {}
+    const data = await fetch('/admin/check', { credentials:'same-origin' }).then(r=>r.json());
+    if (data.loggedIn) {
+      CSRF = data.csrfToken || '';
+      SESSION_USER.name = data.name || data.username;
+      SESSION_USER.role = data.role || 'admin';
+      SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
+      SESSION_USER.initials = initials(SESSION_USER.name);
+      return true;
+    }
+    if (data && data.message) $('#lErr').textContent = data.message;
+  } catch(e) { console.error('auth check failed', e); }
+  return false;
+}
+let _adminLoginState = { step: 1, username: '', password: '', rememberMe: false };
+
+function _resetAdminLogin() {
+  _adminLoginState = { step: 1, username: '', password: '', rememberMe: false };
+  $('#adminStep1').style.display = '';
+  $('#adminStep2').style.display = 'none';
+  $('#lTotp').value = '';
+  $('#adminSubmitBtn').textContent = 'Sign in';
+  $('#lUser').focus();
 }
 
-// Load all data
-async function loadAllData() {
-  loadNewsData();
-  loadPubData();
-  loadPeopleData();
-  loadResearchData();
-  loadSponsorsData();
+async function doLogin(user, pass, totpCode, rememberMe) {
+  const body = { username: user, password: pass, remember_me: rememberMe };
+  if (totpCode) body.totp_code = totpCode;
+  const r = await fetch('/admin/login', {
+    method:'POST',
+    credentials:'same-origin',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  const data = await r.json();
+  if (data.totp_required) return data; // caller handles step transition
+  if (!r.ok) throw new Error(data.error || 'Login failed');
+  if (!canAccessAdminSurface(data.role || 'student')) {
+    throw new Error('This account should use the Lab platform. Website Admin access is limited to moderator, professor, or admin roles.');
+  }
+  CSRF = data.csrfToken || '';
+  SESSION_USER.name = data.name || data.username;
+  SESSION_USER.role = data.role || 'admin';
+  SESSION_USER.first = (data.name || data.username || '?').split(' ')[0] || '?';
+  SESSION_USER.initials = initials(SESSION_USER.name);
+  return data;
 }
 
-async function loadNewsData() {
-  const items = await fetch('/api/news').then(r => r.json());
-  const el = document.getElementById('news-table');
-  el.innerHTML = items.length ? items.map(n => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(n.title)}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${n.date} &middot; ${escHtml(n.content.substring(0,80))}...</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('news',${n.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('news',${n.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+/* ── Sidebar nav ───────────────────────────────────────── */
+let activeRoute = 'overview';
+
+function renderNav() {
+  const items = allowedNavItems();
+  if (!items.some(([id]) => id === activeRoute)) activeRoute = items[0][0];
+  $('#navMain').innerHTML = items.map(([id,label,icon]) =>
+    `<button class="p-nav-item${id===activeRoute?' active':''}" data-route="${id}">
+      <i data-lucide="${icon}" class="p-nav-icon"></i><span>${label}</span>
+    </button>`
+  ).join('');
+  document.querySelectorAll('.p-sidebar [data-route]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.route === activeRoute);
+    btn.onclick = () => navigate(btn.dataset.route);
+  });
+}
+
+async function navigate(route) {
+  const items = allowedNavItems();
+  if (!items.some(([id]) => id === route)) route = 'overview';
+  activeRoute = route;
+  renderNav();
+  const main = $('#mainContent');
+  main.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const renderer = ROUTES[route];
+    if (!renderer) { main.innerHTML = '<div class="p-card"><em style="color:var(--fg-4)">Unknown route</em></div>'; return; }
+    await renderer(main);
+    if (window.lucide) window.lucide.createIcons();
+  } catch(e) {
+    console.error(e);
+    main.innerHTML = `<div class="p-card"><strong>Error loading ${escHtml(route)}:</strong> ${escHtml(e.message)}</div>`;
+  }
+}
+
+/* ── Modal helper ──────────────────────────────────────── */
+function modal(title, sub, body, onSave) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal">
+    <h2>${escHtml(title)}</h2>
+    <p class="modal-sub">${escHtml(sub||'')}</p>
+    <div class="modal-body">${body}</div>
+    <div class="modal-actions">
+      <button class="btn-ghost-sm" data-act="cancel">Cancel</button>
+      <button class="btn-primary-sm" data-act="save">Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+  const close = () => bg.remove();
+  bg.addEventListener('click', e => { if (e.target === bg) close(); });
+  bg.querySelector('[data-act="cancel"]').onclick = close;
+  bg.querySelector('[data-act="save"]').onclick = async () => {
+    try { await onSave(bg.querySelector('.modal-body')); close(); }
+    catch(e){ alert(e.message); }
+  };
+  if (window.lucide) window.lucide.createIcons();
+  return bg;
+}
+
+/* ───────────────────────────────────────────────────────────
+   DASHBOARD
+   ─────────────────────────────────────────────────────────── */
+async function renderDashboard(root) {
+  const [meetings, tasks, inventory] = await Promise.all([
+    apiGet('/api/meetings').catch(()=>[]),
+    apiRows('/api/tasks').catch(()=>[]),
+    apiRows('/api/inventory').catch(()=>[]),
+  ]);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayMeetings = meetings.filter(m => m.day_label === 'TODAY' || (m.scheduled_at && m.scheduled_at.startsWith(todayStr))).length;
+  const openTasks = tasks.filter(t => t.status !== 'done').length;
+  const lowInv = inventory.filter(i => i.qty < i.min_qty).length;
+  const todaySlots = meetings.filter(m => m.day_label === 'TODAY' || (m.scheduled_at && m.scheduled_at.startsWith(todayStr))).slice(0,4);
+  const myTasks = tasks.filter(t => t.status !== 'done').slice(0,4);
+  const today = new Date().toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'}).toUpperCase();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
+  const tagColor = { team:'var(--navy-900)', experiment:'var(--gold-600)', '1:1':'var(--status-info)', external:'var(--gold-600)', review:'var(--status-warn)', onboarding:'var(--gold-700)', lab:'var(--fg-3)' };
+  const taskTag = { todo:['To do','p-tag-outline'], in_progress:['In progress','p-tag-info'], blocked:['Blocked','p-tag-gold'], done:['Done','p-tag-ok'] };
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <div class="eyebrow" style="color:var(--gold-700)">${escHtml(today)}</div>
+        <h1 class="p-h1">${greeting}, ${escHtml(SESSION_USER.first || SESSION_USER.name.split(' ')[0])}.</h1>
+        <p class="p-h1-sub">${todayMeetings} meeting${todayMeetings===1?'':'s'} today · ${openTasks} open task${openTasks===1?'':'s'} · ${lowInv} inventory item${lowInv===1?'':'s'} need attention.</p>
       </div>
     </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No news items yet.</p>';
-}
 
-async function loadPubData() {
-  const items = await fetch('/api/publications').then(r => r.json());
-  const el = document.getElementById('pub-table');
-  el.innerHTML = items.length ? items.map(p => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(p.title.substring(0,80))}${p.title.length>80?'...':''}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${p.year} &middot; ${escHtml(p.venue)} &middot; ${escHtml(p.authors.substring(0,50))}</div>
+    <div class="p-grid-3">
+      <div class="p-stat-card">
+        <i data-lucide="calendar-clock" class="p-stat-icon"></i>
+        <div class="p-stat-num">${todayMeetings}</div>
+        <div class="p-stat-lbl">Meetings today</div>
       </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('publication',${p.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('publication',${p.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
+      <div class="p-stat-card">
+        <i data-lucide="check-square" class="p-stat-icon" style="color:var(--gold-600)"></i>
+        <div class="p-stat-num">${openTasks}</div>
+        <div class="p-stat-lbl">Open tasks</div>
+      </div>
+      <div class="p-stat-card">
+        <i data-lucide="alert-triangle" class="p-stat-icon" style="color:var(--status-warn)"></i>
+        <div class="p-stat-num">${lowInv}</div>
+        <div class="p-stat-lbl">Inventory low</div>
       </div>
     </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No publications yet.</p>';
-}
 
-async function loadPeopleData() {
-  const items = await fetch('/api/people').then(r => r.json());
-  const el = document.getElementById('people-table');
-  el.innerHTML = items.length ? items.map(p => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(p.name)}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${escHtml(p.role)} &middot; <span class="capitalize">${escHtml(p.category)}</span> &middot; ${p.active ? '&#9989; Active' : '&#10060; Inactive'}</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('person',${p.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('person',${p.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No people yet.</p>';
-}
-
-async function loadResearchData() {
-  const items = await fetch('/api/research').then(r => r.json());
-  const el = document.getElementById('research-table');
-  el.innerHTML = items.length ? items.map(r => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0">
-        <div class="font-medium text-gray-800 text-sm">${escHtml(r.title)}</div>
-        <div class="text-gray-500 text-xs mt-0.5">${escHtml(r.description.substring(0,100))}...</div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('research',${r.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('research',${r.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No research areas yet.</p>';
-}
-
-async function loadSponsorsData() {
-  const items = await fetch('/api/sponsors').then(r => r.json());
-  const el = document.getElementById('sponsors-table');
-  el.innerHTML = items.length ? items.map(s => `
-    <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg gap-3">
-      <div class="flex-1 min-w-0 flex items-center gap-3">
-        ${s.logo_url ? `<img src="${s.logo_url}" alt="${escHtml(s.name)}" class="h-8 object-contain flex-shrink-0">` : `<div class="w-8 h-8 rounded flex-shrink-0 flex items-center justify-center bg-primary text-white text-xs font-bold">${s.name.charAt(0)}</div>`}
-        <div>
-          <div class="font-medium text-gray-800 text-sm">${escHtml(s.name)}</div>
-          <div class="text-gray-400 text-xs">${escHtml(s.website_url || '—')}</div>
+    <div class="p-grid-2" style="margin-top:24px">
+      <section class="p-card">
+        <div class="p-card-head">
+          <div class="p-card-title">Today's schedule</div>
+          <button class="w-link-gold" data-jump="schedule">Full week →</button>
         </div>
-      </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button onclick="editItem('sponsor',${s.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200">Edit</button>
-        <button onclick="confirmDelete('sponsor',${s.id})" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200">Delete</button>
-      </div>
-    </div>
-  `).join('') : '<p class="text-gray-500 text-sm">No sponsors yet.</p>';
-}
-
-// Modal forms
-function openModal(type, data) {
-  editingId = data ? data.id : null;
-  editingType = type;
-  const modal = document.getElementById('modal');
-  const title = document.getElementById('modal-title');
-  const body = document.getElementById('modal-body');
-  
-  if (type === 'news') {
-    title.textContent = editingId ? 'Edit News' : 'Add News';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'news')" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-          <input name="date" type="date" required value="${data ? data.date : new Date().toISOString().slice(0,10)}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-          <textarea name="content" required rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.content) : ''}</textarea></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'publication') {
-    title.textContent = editingId ? 'Edit Publication' : 'Add Publication';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'publication')" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Authors *</label>
-          <input name="authors" required value="${data ? escHtml(data.authors) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Venue *</label>
-            <input name="venue" required value="${data ? escHtml(data.venue) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Year *</label>
-            <input name="year" type="number" required value="${data ? data.year : new Date().getFullYear()}" min="1990" max="2030" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">DOI / Paper URL</label>
-          <input name="doi_url" type="url" value="${data && data.doi_url ? escHtml(data.doi_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://doi.org/10..."></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">PDF URL</label>
-          <input name="pdf_url" value="${data && data.pdf_url ? escHtml(data.pdf_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. /papers/paper.pdf"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Citation URL</label>
-          <input name="citation_url" value="${data && data.citation_url ? escHtml(data.citation_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. /papers/paper.ris"></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'person') {
-    title.textContent = editingId ? 'Edit Person' : 'Add Person';
-    const photoVal = data && data.photo_url ? escHtml(data.photo_url) : '';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'person')" class="space-y-4" id="person-form">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Role/Title *</label>
-          <input name="role" required value="${data ? escHtml(data.role) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. Ph.D. Candidate"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-          <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">
-            <option value="director" ${data && data.category==='director'?'selected':''}>Director</option>
-            <option value="postdoc" ${data && data.category==='postdoc'?'selected':''}>PostDoc Fellow</option>
-            <option value="phd" ${data && data.category==='phd'?'selected':''}>Ph.D. Candidate</option>
-            <option value="ms" ${data && data.category==='ms'?'selected':''}>M.S. Student</option>
-            <option value="ug" ${data && data.category==='ug'?'selected':''}>Undergrad Student</option>
-            <option value="former" ${data && data.category==='former'?'selected':''}>Former Member</option>
-          </select></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input name="email" type="email" value="${data && data.email ? escHtml(data.email) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
-            <input name="linkedin_url" type="url" value="${data && data.linkedin_url ? escHtml(data.linkedin_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://linkedin.com/in/..."></div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Personal Website</label>
-            <input name="website_url" type="url" value="${data && data.website_url ? escHtml(data.website_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://..."></div>
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
-          <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div id="photo-preview" class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-              ${photoVal ? `<img src="${photoVal}" class="w-full h-full object-cover" alt="Photo">` : `<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`}
+        ${todaySlots.length ? todaySlots.map(s => {
+          const timeDisplay = s.time_label || (s.scheduled_at ? new Date(s.scheduled_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}) : '');
+          const roomDisplay = s.room || s.location || '';
+          return `
+          <div class="p-slot">
+            <div class="p-slot-time">${escHtml(timeDisplay.split('–')[0].trim())}</div>
+            <div style="flex:1">
+              <div class="p-slot-title">${escHtml(s.title)}</div>
+              <div class="p-slot-room">${escHtml(roomDisplay)}</div>
             </div>
-            <div class="flex-1 min-w-0">
-              <input type="file" id="photo-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="handlePhotoSelect(event)">
-              <button type="button" onclick="document.getElementById('photo-file-input').click()" class="text-sm bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-secondary mb-1">
-                ${photoVal ? 'Change Photo' : 'Upload Photo'}
-              </button>
-              <div id="photo-upload-status" class="text-xs text-gray-500">${photoVal ? 'Photo uploaded' : 'JPEG, PNG, GIF or WebP · max 5 MB'}</div>
+            <span class="p-slot-tag" style="background:${tagColor[s.type||s.meeting_type]||'var(--fg-3)'}">${escHtml(s.type||s.meeting_type||'meeting')}</span>
+          </div>`;
+        }).join('') : '<div class="empty">No meetings scheduled today.</div>'}
+      </section>
+
+      <section class="p-card">
+        <div class="p-card-head">
+          <div class="p-card-title">My tasks</div>
+          <button class="w-link-gold" data-jump="tasks">All tasks →</button>
+        </div>
+        ${myTasks.length ? myTasks.map(t => {
+          const [lbl, cls] = taskTag[t.status] || ['','p-tag-outline'];
+          return `<div class="p-task">
+            <input type="checkbox" class="p-check">
+            <div style="flex:1">
+              <div class="p-task-title">${escHtml(t.title)}</div>
+              <div class="p-task-due">Due ${escHtml(t.due_label||'—')}</div>
+            </div>
+            <span class="p-tag ${cls}">${lbl}</span>
+          </div>`;
+        }).join('') : '<div class="empty">No open tasks. ✨</div>'}
+      </section>
+    </div>
+
+    <section class="p-card" style="margin-top:24px">
+      <div class="p-card-head">
+        <div class="p-card-title">Lab status</div>
+        <span class="p-tag p-tag-ok">All systems nominal</span>
+      </div>
+      <div class="p-grid-2">
+        <div>
+          <div class="p-lab-name">${escHtml(labLabel('A'))}</div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--status-ok)"></span><div style="flex:1"><div class="p-lab-lbl">Boiling rig</div><div class="p-lab-meta">M. Reyes · ends 16:00</div></div><span class="p-lab-state">Running</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--fg-4)"></span><div style="flex:1"><div class="p-lab-lbl">PIV system</div><div class="p-lab-meta">Last used yesterday</div></div><span class="p-lab-state">Idle</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--status-info)"></span><div style="flex:1"><div class="p-lab-lbl">High-speed camera</div><div class="p-lab-meta">A. Park · tomorrow 09:00</div></div><span class="p-lab-state">Booked</span></div>
+        </div>
+        <div>
+          <div class="p-lab-name">${escHtml(labLabel('B'))}</div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--fg-4)"></span><div style="flex:1"><div class="p-lab-lbl">Thermocouple bench</div></div><span class="p-lab-state">Idle</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--status-warn)"></span><div style="flex:1"><div class="p-lab-lbl">Droplet impingement rig</div><div class="p-lab-meta">Pump replaced Mon</div></div><span class="p-lab-state">Maintenance</span></div>
+          <div class="p-lab-row"><span class="p-lab-dot" style="background:var(--fg-4)"></span><div style="flex:1"><div class="p-lab-lbl">IR thermography</div></div><span class="p-lab-state">Idle</span></div>
+        </div>
+      </div>
+    </section>
+  `;
+  root.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => navigate(b.dataset.jump));
+}
+
+/* ───────────────────────────────────────────────────────────
+   SCHEDULE — list view using real server schema
+   ─────────────────────────────────────────────────────────── */
+async function renderSchedule(root) {
+  const events = await apiGet('/api/events');
+  const now = new Date();
+  const upcoming = events
+    .filter(e => e.start_time)
+    .sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Schedule</h1>
+        <p class="p-h1-sub">${upcoming.length} upcoming event${upcoming.length===1?'':'s'}</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-primary-sm" id="newEvent">+ New event</button>
+      </div>
+    </div>
+    <div class="p-card" id="schedTable">
+      ${upcoming.length ? upcoming.map(e => `
+        <div class="p-slot">
+          <div class="p-slot-time">${new Date(e.start_time).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+          <div style="flex:1;">
+            <div class="p-slot-title">${escHtml(e.title)}</div>
+            <div class="p-slot-room">${fmtDT(e.start_time)}${e.end_time?' → '+fmtDT(e.end_time):''} · ${escHtml(e.location||'')}</div>
+          </div>
+          <span class="p-tag p-tag-outline">${escHtml(e.event_type||'event')}</span>
+          <div class="row-actions">
+            <button data-ev-edit="${e.id}">Edit</button>
+            <button class="danger" data-ev-del="${e.id}">Delete</button>
+          </div>
+        </div>`).join('') : '<div class="empty">No upcoming events.</div>'}
+    </div>
+  `;
+
+  root.querySelectorAll('[data-ev-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('Delete this event?')) return;
+    await apiDel('/api/events/'+b.dataset.evDel);
+    navigate('schedule');
+  });
+  root.querySelectorAll('[data-ev-edit]').forEach(b => b.onclick = () => {
+    const ev = events.find(x => x.id == b.dataset.evEdit);
+    openEventModal(ev);
+  });
+
+  function openEventModal(ev) {
+    const isNew = !ev;
+    ev = ev || {};
+    modal(isNew ? 'New event' : 'Edit event', '', `
+      <label>Title</label><input id="m_title" value="${escHtml(ev.title||'')}" placeholder="e.g. Boiling rig run">
+      <label>Type</label>
+      <select id="m_type">
+        ${['meeting','seminar','reservation','other'].map(t=>`<option value="${t}"${(ev.event_type||'meeting')===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <label>Start</label><input id="m_start" type="datetime-local" value="${ev.start_time?ev.start_time.slice(0,16):''}">
+      <label>End (optional)</label><input id="m_end" type="datetime-local" value="${ev.end_time?ev.end_time.slice(0,16):''}">
+      <label>Location</label><input id="m_loc" value="${escHtml(ev.location||'')}">
+    `, async (mb) => {
+      const body = {
+        title: $('#m_title',mb).value.trim(),
+        event_type: $('#m_type',mb).value,
+        start_time: $('#m_start',mb).value,
+        end_time: $('#m_end',mb).value || null,
+        location: $('#m_loc',mb).value
+      };
+      if (!body.title || !body.start_time) throw new Error('Title and start time are required');
+      if (isNew) await apiPost('/api/events', body);
+      else await apiPut('/api/events/'+ev.id, body);
+      navigate('schedule');
+    });
+  }
+
+  $('#newEvent').onclick = () => openEventModal(null);
+}
+
+/* ───────────────────────────────────────────────────────────
+   TASKS — kanban
+   ─────────────────────────────────────────────────────────── */
+async function renderTasks(root) {
+  const tasks = await apiRows('/api/tasks');
+  const COLS = [['todo','To do'], ['in_progress','In progress'], ['blocked','Blocked'], ['done','Done']];
+  const tagBg = { inventory:'var(--status-info-tint)', experiment:'var(--gold-100)', lab:'var(--gray-100)', paper:'var(--status-info-tint)', maintenance:'var(--status-warn-tint)', data:'var(--gold-100)', team:'var(--gray-100)' };
+  const tagFg = { inventory:'#075985', experiment:'var(--gold-700)', lab:'var(--fg-2)', paper:'#075985', maintenance:'#92400e', data:'var(--gold-700)', team:'var(--fg-2)' };
+
+  const open = tasks.filter(t => t.status !== 'done').length;
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Tasks</h1>
+        <p class="p-h1-sub">${open} open across the lab · ${tasks.length} total</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm">Filter</button>
+        <button class="btn-primary-sm" id="newTask">+ New task</button>
+      </div>
+    </div>
+    <div class="p-kanban">
+      ${COLS.map(([sid,sname]) => {
+        const items = tasks.filter(t=>t.status===sid);
+        return `<div class="p-col" data-status="${sid}">
+          <div class="p-col-head"><div class="p-col-title">${sname}</div><div class="p-col-count">${items.length}</div></div>
+          ${items.map(it => `<div class="p-task-card" data-id="${it.id}">
+            <div class="p-task-card-title">${escHtml(it.title)}</div>
+            <div class="p-task-card-foot">
+              <span class="p-tag-sm" style="background:${tagBg[it.tag]||'var(--gray-100)'};color:${tagFg[it.tag]||'var(--fg-2)'}">${escHtml(it.tag||'lab')}</span>
+              <div class="p-task-meta">
+                <span class="p-task-due-sm">${escHtml(it.due_label||'—')}</span>
+                <div class="p-task-av" title="${escHtml(it.assignee_display||it.assignee||it.assignee_name||'')}">${escHtml(initials(it.assignee_display||it.assignee||it.assignee_name))}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+          <button class="p-col-add" data-add="${sid}">+ Add task</button>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  // Click a task card → edit/delete
+  root.querySelectorAll('.p-task-card').forEach(card => {
+    card.onclick = async () => {
+      const t = tasks.find(x => x.id == card.dataset.id);
+      if (!t) return;
+      const bg = modal('Edit task', '', `
+        <label>Title</label><input id="m_title" value="${escHtml(t.title)}">
+        <label>Assignee</label><input id="m_who" value="${escHtml(t.assignee_display||t.assignee||t.assignee_name||'')}">
+        <label>Tag</label>
+        <select id="m_tag">
+          ${['inventory','experiment','lab','paper','maintenance','data','team'].map(x=>`<option value="${x}"${x===t.tag?' selected':''}>${x}</option>`).join('')}
+        </select>
+        <label>Due</label><input id="m_due" value="${escHtml(t.due_label||'')}">
+        <label>Status</label>
+        <select id="m_st">
+          ${COLS.map(([value,label])=>`<option value="${value}"${value===t.status?' selected':''}>${label}</option>`).join('')}
+        </select>
+        <label>&nbsp;</label>
+        <div class="row-actions"><button class="danger" id="m_del">Delete</button></div>
+      `, async (mb) => {
+        await apiPut('/api/tasks/'+t.id, {
+          title: $('#m_title',mb).value, assignee: $('#m_who',mb).value,
+          tag: $('#m_tag',mb).value, due_label: $('#m_due',mb).value,
+          status: $('#m_st',mb).value, sort_order: t.sort_order||0
+        });
+        navigate('tasks');
+      });
+      // hook delete button directly on the returned modal element
+      const delBtn = bg.querySelector('#m_del');
+      if (delBtn) delBtn.onclick = async (e) => {
+        e.preventDefault();
+        if (!confirm('Delete this task?')) return;
+        await apiDel('/api/tasks/'+t.id);
+        bg.remove();
+        navigate('tasks');
+      };
+    };
+  });
+
+  root.querySelectorAll('[data-add]').forEach(btn => btn.onclick = () => {
+    const status = btn.dataset.add;
+    modal('New task', `Adding to "${status}".`, `
+      <label>Title</label><input id="m_title" placeholder="Calibrate PIV camera">
+      <label>Assignee</label><input id="m_who" placeholder="A. Park">
+      <label>Tag</label>
+      <select id="m_tag">${['inventory','experiment','lab','paper','maintenance','data','team'].map(x=>`<option value="${x}">${x}</option>`).join('')}</select>
+      <label>Due</label><input id="m_due" placeholder="Fri">
+    `, async (mb) => {
+      await apiPost('/api/tasks', {
+        title: $('#m_title',mb).value, assignee: $('#m_who',mb).value,
+        tag: $('#m_tag',mb).value, due_label: $('#m_due',mb).value, status
+      });
+      navigate('tasks');
+    });
+  });
+
+  $('#newTask').onclick = () => $('[data-add="todo"]').click();
+}
+
+/* ───────────────────────────────────────────────────────────
+   MEETINGS — list
+   ─────────────────────────────────────────────────────────── */
+async function renderMeetings(root) {
+  const meetings = await apiGet('/api/meetings');
+  const typeColor = { team:'var(--navy-900)', '1:1':'var(--status-info)', external:'var(--gold-600)', review:'var(--status-warn)', onboarding:'var(--gold-700)' };
+
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Meetings</h1>
+        <p class="p-h1-sub">${meetings.length} upcoming · 15 lab members</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm">Calendar view</button>
+        <button class="btn-primary-sm" id="newMeet">+ Schedule meeting</button>
+      </div>
+    </div>
+    <div class="p-meet-list">
+      ${meetings.map(m => {
+        const att = (m.attendees||'').split(',').filter(Boolean);
+        return `<div class="p-meet-card" data-id="${m.id}">
+          <div class="p-meet-day">
+            <div class="p-meet-day-lbl">${escHtml(m.day_label)}</div>
+            <div class="p-meet-day-time">${escHtml(m.time_label)}</div>
+          </div>
+          <div class="p-meet-body">
+            <div class="p-meet-title">${escHtml(m.title)}</div>
+            <div class="p-meet-room"><i data-lucide="map-pin" class="p-icon-xs"></i>${escHtml(m.room||'')}</div>
+            <div class="p-avatars">
+              ${att.map((a,j)=>`<div class="p-av-sm" style="z-index:${att.length-j}">${escHtml(a.trim())}</div>`).join('')}
             </div>
           </div>
-          <input type="hidden" name="photo_url" id="photo-url-hidden" value="${photoVal}">
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-          <textarea name="bio" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data && data.bio ? escHtml(data.bio) : ''}</textarea></div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" name="active" id="active-check" ${!data || data.active ? 'checked' : ''} class="w-4 h-4">
-          <label for="active-check" class="text-sm font-medium text-gray-700">Currently Active Member</label>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" id="person-save-btn" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  } else if (type === 'research') {
-    title.textContent = editingId ? 'Edit Research Area' : 'Add Research Area';
-    let existingLinks = [];
-    try { existingLinks = JSON.parse(data && data.links ? data.links : '[]'); } catch(e) {}
-    body.innerHTML = `
-      <form onsubmit="saveResearch(event)" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input name="title" required value="${data ? escHtml(data.title) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Short Description * <span class="text-xs text-gray-400">(shown on cards)</span></label>
-          <textarea name="description" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none">${data ? escHtml(data.description) : ''}</textarea></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Content <span class="text-xs text-gray-400">(shown on detail page)</span></label>
-          <textarea name="content" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="Detailed description, methods, results...">${data && data.content ? escHtml(data.content) : ''}</textarea></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-          <input name="image_url" value="${data && data.image_url ? escHtml(data.image_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="/images/research.jpg"></div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Links &amp; Resources</label>
-          <div id="links-container" class="space-y-2"></div>
-          <button type="button" onclick="addLinkRow()" class="mt-2 text-xs font-semibold px-3 py-1.5 rounded border border-dashed border-gray-300 hover:border-secondary text-gray-600">+ Add Link</button>
-          <input type="hidden" name="links" id="links-json" value="${escHtml(data && data.links ? data.links : '[]')}">
-        </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-    // Populate existing links
-    existingLinks.forEach(l => addLinkRow(l.label, l.url));
-    if (!existingLinks.length) addLinkRow();
-  } else if (type === 'sponsor') {
-    title.textContent = editingId ? 'Edit Sponsor' : 'Add Sponsor';
-    body.innerHTML = `
-      <form onsubmit="saveItem(event,'sponsor')" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
-          <input name="name" required value="${data ? escHtml(data.name) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-          <input name="logo_url" value="${data && data.logo_url ? escHtml(data.logo_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. images/nsf-logo.png"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-          <input name="website_url" type="url" value="${data && data.website_url ? escHtml(data.website_url) : ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="https://..."></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-          <input name="sort_order" type="number" value="${data ? data.sort_order : 0}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:outline-none"></div>
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-secondary">${editingId ? 'Update' : 'Add'}</button>
-        </div>
-      </form>`;
-  }
-  
-  modal.classList.add('modal-open');
-}
-
-async function editItem(type, id) {
-  const endpointMap = { news:'news', publication:'publications', person:'people', research:'research', sponsor:'sponsors' };
-  const endpoint = endpointMap[type] || type;
-  const items = await fetch('/api/' + endpoint).then(r => r.json());
-  const item = items.find(i => i.id === id);
-  if (item) openModal(type, item);
-}
-
-async function handlePhotoSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById('photo-upload-status');
-  const btnEl = event.target.closest('.flex-1').querySelector('button');
-  statusEl.textContent = 'Uploading…';
-  if (btnEl) btnEl.disabled = true;
-  try {
-    const fd = new FormData();
-    fd.append('photo', file);
-    const r = await fetch('/api/upload/photo', {
-      method: 'POST',
-      headers: { 'x-csrf-token': csrfToken },
-      body: fd
-    });
-    if (!r.ok) throw new Error('Upload failed');
-    const { url } = await r.json();
-    document.getElementById('photo-url-hidden').value = url;
-    const preview = document.getElementById('photo-preview');
-    preview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" alt="Photo">`;
-    statusEl.textContent = '\u2713 Photo uploaded';
-    statusEl.className = 'text-xs text-green-600';
-    if (btnEl) { btnEl.textContent = 'Change Photo'; btnEl.disabled = false; }
-  } catch(err) {
-    statusEl.textContent = '\u2717 Upload failed \u2014 ' + err.message;
-    statusEl.className = 'text-xs text-red-500';
-    if (btnEl) btnEl.disabled = false;
-  }
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('modal-open');
-  editingId = null;
-  editingType = null;
-}
-
-async function saveItem(e, type) {
-  e.preventDefault();
-  const form = e.target;
-  const fd = new FormData(form);
-  let data = Object.fromEntries(fd.entries());
-  
-  if (type === 'person') data.active = form.querySelector('[name=active]').checked;
-  
-  let endpoint;
-  if (type === 'news') endpoint = 'news';
-  else if (type === 'publication') endpoint = 'publications';
-  else if (type === 'person') endpoint = 'people';
-  else if (type === 'research') endpoint = 'research';
-  else if (type === 'sponsor') endpoint = 'sponsors';
-  
-  const method = editingId ? 'PUT' : 'POST';
-  const url = '/api/' + endpoint + (editingId ? '/' + editingId : '');
-  
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json', 'x-csrf-token': csrfToken}, body: JSON.stringify(data) });
-  if (r.ok) {
-    closeModal();
-    loadAllData();
-    loadStats();
-  } else {
-    alert('Error saving item');
-  }
-}
-
-function confirmDelete(type, id) {
-  deleteCallback = async () => {
-    let endpoint = type === 'publication' ? 'publications' : type === 'person' ? 'people' : type === 'sponsor' ? 'sponsors' : type;
-    await fetch('/api/' + endpoint + '/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
-    closeDeleteModal();
-    loadAllData();
-    loadStats();
-  };
-  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
-  document.getElementById('delete-modal').classList.add('modal-open');
-}
-
-function closeDeleteModal() {
-  document.getElementById('delete-modal').classList.remove('modal-open');
-  deleteCallback = null;
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Research links builder ──────────────────────────────────
-function addLinkRow(label, url) {
-  const container = document.getElementById('links-container');
-  if (!container) return;
-  const row = document.createElement('div');
-  row.className = 'flex gap-2 link-row items-center';
-  row.innerHTML = `
-    <input type="text" placeholder="Label (e.g. Related Paper)" class="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm link-label" value="${escHtml(label||'')}">
-    <input type="url" placeholder="https://..." class="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm link-url" value="${escHtml(url||'')}">
-    <button type="button" onclick="this.closest('.link-row').remove();updateLinksJson()" class="flex-shrink-0 w-7 h-7 rounded text-red-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center text-lg leading-none">&times;</button>
-  `;
-  row.querySelectorAll('input').forEach(i => i.addEventListener('input', updateLinksJson));
-  container.appendChild(row);
-  updateLinksJson();
-}
-
-function updateLinksJson() {
-  const container = document.getElementById('links-container');
-  const jsonInput = document.getElementById('links-json');
-  if (!container || !jsonInput) return;
-  const links = [];
-  container.querySelectorAll('.link-row').forEach(row => {
-    const labelVal = row.querySelector('.link-label').value.trim();
-    const urlVal = row.querySelector('.link-url').value.trim();
-    if (urlVal) links.push({ label: labelVal || urlVal, url: urlVal });
-  });
-  jsonInput.value = JSON.stringify(links);
-}
-
-// saveResearch is a specialized handler (instead of generic saveItem) because it must
-// call updateLinksJson() first to serialize the dynamic link-builder rows into JSON.
-async function saveResearch(e) {
-  e.preventDefault();
-  updateLinksJson();
-  const form = e.target;
-  const fd = new FormData(form);
-  const data = Object.fromEntries(fd.entries());
-  const method = editingId ? 'PUT' : 'POST';
-  const url = '/api/research' + (editingId ? '/' + editingId : '');
-  const r = await fetch(url, { method, headers: {'Content-Type':'application/json','x-csrf-token':csrfToken}, body: JSON.stringify(data) });
-  if (r.ok) { closeModal(); loadAllData(); loadStats(); }
-  else alert('Error saving research area');
-}
-
-// ── Gallery ─────────────────────────────────────────────────
-async function loadGalleryData() {
-  const items = await fetch('/api/gallery').then(r => r.json());
-  const el = document.getElementById('gallery-grid');
-  if (!items.length) {
-    el.innerHTML = '<p class="text-gray-500 text-sm col-span-4">No photos yet. Upload one above.</p>';
-    return;
-  }
-  el.innerHTML = items.map(g => `
-    <div class="relative group rounded-xl overflow-hidden bg-gray-100 aspect-video shadow">
-      <img src="${escHtml(g.image_url)}" alt="${escHtml(g.caption||'Gallery photo')}" class="w-full h-full object-cover">
-      ${g.caption ? `<div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-2 py-1 truncate">${escHtml(g.caption)}</div>` : ''}
-      <button onclick="deleteGalleryPhoto(${g.id})"
-        class="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-        title="Delete photo" aria-label="Delete photo">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
+          <div class="p-meet-tag-col">
+            <span class="p-meet-tag" style="background:${typeColor[m.type]||'var(--navy-900)'}">${escHtml(m.type)}</span>
+            <div class="row-actions">
+              <button data-edit="${m.id}">Edit</button>
+              <button class="danger" data-del="${m.id}">Delete</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('') || '<div class="empty">No meetings scheduled.</div>'}
     </div>
-  `).join('');
-}
+  `;
 
-function deleteGalleryPhoto(id) {
-  deleteCallback = async () => {
-    await fetch('/api/gallery/' + id, { method: 'DELETE', headers: {'x-csrf-token': csrfToken} });
-    closeDeleteModal();
-    loadGalleryData();
-    loadStats();
-  };
-  document.getElementById('delete-confirm-btn').onclick = deleteCallback;
-  document.getElementById('delete-modal').classList.add('modal-open');
-}
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = async (e) => {
+    e.stopPropagation();
+    if (!confirm('Delete meeting?')) return;
+    await apiDel('/api/meetings/'+b.dataset.del);
+    navigate('meetings');
+  });
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = (e) => {
+    e.stopPropagation();
+    const m = meetings.find(x=>x.id==b.dataset.edit);
+    openMeetingModal(m);
+  });
 
-async function uploadGalleryFiles(files) {
-  const statusEl = document.getElementById('gallery-upload-status');
-  if (!files || !files.length) return;
-  const fileArr = Array.from(files);
-  statusEl.textContent = `Uploading ${fileArr.length} photo${fileArr.length > 1 ? 's' : ''}…`;
-  statusEl.className = 'mt-2 text-sm font-medium text-blue-600';
-  let succeeded = 0;
-  for (const file of fileArr) {
-    try {
-      const fd = new FormData();
-      fd.append('photo', file);
-      const r = await fetch('/api/gallery', { method: 'POST', headers: {'x-csrf-token': csrfToken}, body: fd });
-      if (r.ok) succeeded++;
-    } catch(e) {}
+  function openMeetingModal(m) {
+    const isNew = !m;
+    m = m || { day_label:'TODAY', time_label:'09:30 – 10:30', title:'', room:'', attendees:'', type:'team' };
+    modal(isNew?'Schedule meeting':'Edit meeting','',`
+      <label>Day label</label><input id="m_day" value="${escHtml(m.day_label)}" placeholder="TODAY, TUE, WED…">
+      <label>Time</label><input id="m_time" value="${escHtml(m.time_label)}" placeholder="09:30 – 10:30">
+      <label>Title</label><input id="m_title" value="${escHtml(m.title)}">
+      <label>Room</label><input id="m_room" value="${escHtml(m.room||'')}">
+      <label>Attendees (comma-sep initials)</label><input id="m_att" value="${escHtml(m.attendees||'')}" placeholder="AO,SK,MR">
+      <label>Type</label>
+      <select id="m_type">${['team','1:1','external','review','onboarding'].map(x=>`<option value="${x}"${x===m.type?' selected':''}>${x}</option>`).join('')}</select>
+    `, async (mb) => {
+      const body = {
+        day_label: $('#m_day',mb).value, time_label: $('#m_time',mb).value,
+        title: $('#m_title',mb).value, room: $('#m_room',mb).value,
+        attendees: $('#m_att',mb).value, type: $('#m_type',mb).value, sort_order: m.sort_order||0
+      };
+      if (isNew) await apiPost('/api/meetings', body);
+      else await apiPut('/api/meetings/'+m.id, body);
+      navigate('meetings');
+    });
   }
-  statusEl.textContent = succeeded === fileArr.length
-    ? `✓ ${succeeded} photo${succeeded > 1 ? 's' : ''} uploaded`
-    : `⚠ ${succeeded}/${fileArr.length} uploaded`;
-  statusEl.className = 'mt-2 text-sm font-medium ' + (succeeded === fileArr.length ? 'text-green-600' : 'text-yellow-600');
-  loadGalleryData();
-  loadStats();
-  setTimeout(() => { statusEl.textContent = ''; }, 4000);
+  $('#newMeet').onclick = () => openMeetingModal(null);
 }
 
-function handleGalleryFileSelect(event) {
-  uploadGalleryFiles(event.target.files);
-  event.target.value = '';
+/* ───────────────────────────────────────────────────────────
+   INVENTORY — tabs + table
+   ─────────────────────────────────────────────────────────── */
+let _invLab = 'A';
+async function renderInventory(root, embedded=false) {
+  const response = await apiGet('/api/inventory').catch(()=>({ rows: [] }));
+  const suppliers = await apiGet('/api/suppliers').catch(()=>[]);
+  const items = Array.isArray(response) ? response : (response.rows || []);
+  const labA = items.filter(i => i.lab==='A');
+  const labB = items.filter(i => i.lab==='B');
+  const list = _invLab==='A'?labA:labB;
+  const stateOf = (it) => it.qty <= 0 ? 'alert' : it.qty <= it.min_qty ? 'warn' : 'ok';
+  const stateMap = { ok:{cls:'p-tag-ok',lbl:'In stock',c:'var(--status-ok)'}, warn:{cls:'p-tag-warn',lbl:'Low',c:'var(--status-warn)'}, alert:{cls:'p-tag-alert',lbl:'Out',c:'var(--status-alert)'} };
+  const low = list.filter(i => stateOf(i)!=='ok').length;
+
+  root.innerHTML = `
+    ${!embedded ? `<div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Inventory</h1>
+        <p class="p-h1-sub">Tracked across two lab spaces · ${low} item${low===1?'':'s'} need attention</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-ghost-sm p-btn-tight" id="editSpaces" type="button">Edit lab spaces</button>
+        <a class="btn-ghost-sm p-btn-tight" href="/api/inventory/export.csv" download style="text-decoration:none;">Export CSV</a>
+        <button class="btn-primary-sm p-btn-tight" id="newInv" type="button">Add item</button>
+      </div>
+    </div>` : `<div class="p-inv-toolbar" style="justify-content:flex-end;">
+      <button class="btn-primary-sm p-btn-tight" id="newInv" type="button">Add item</button>
+    </div>`}
+
+    <div class="p-tabs">
+      <button class="p-tab${_invLab==='A'?' active':''}" data-lab="A">${escHtml(labLabel('A'))} <span class="p-tab-count">${labA.length}</span></button>
+      <button class="p-tab${_invLab==='B'?' active':''}" data-lab="B">${escHtml(labLabel('B'))} <span class="p-tab-count">${labB.length}</span></button>
+    </div>
+
+    <div class="p-inv-toolbar">
+      <div class="p-inv-search">
+        <i data-lucide="search" class="p-inv-search-i"></i>
+        <input id="invSearch" class="p-inv-input" placeholder="Search SKU, name, category…">
+      </div>
+      <select class="p-inv-select"><option>All categories</option></select>
+      <select class="p-inv-select"><option>All status</option></select>
+    </div>
+
+    <div class="p-inv-table" id="invTable">
+      <div class="p-inv-row p-inv-head">
+        <div style="flex-basis:140px">SKU</div>
+        <div style="flex:2.2">Item</div>
+        <div style="flex:1">Category</div>
+        <div style="flex:1">Quantity</div>
+        <div style="flex:1">Status</div>
+        <div style="flex-basis:80px"></div>
+      </div>
+      ${list.map(it => {
+        const st = stateOf(it); const sm = stateMap[st];
+        const supplierBits = [it.supplier_name, it.location].filter(Boolean).map(escHtml).join(' · ');
+        const links = [];
+        if (it.supplier_url) links.push(`<a href="${escHtml(it.supplier_url)}" target="_blank" rel="noopener">Vendor</a>`);
+        if (it.reorder_url) links.push(`<a href="${escHtml(it.reorder_url)}" target="_blank" rel="noopener">Reorder</a>`);
+        if (it.sds_url) links.push(`<a href="${escHtml(it.sds_url)}" target="_blank" rel="noopener">SDS</a>`);
+        return `<div class="p-inv-row" data-id="${it.id}">
+          <div style="flex-basis:140px"><code class="p-mono">${escHtml(it.sku)}</code></div>
+          <div style="flex:2.2">
+            <div class="p-inv-name">${escHtml(it.name)}</div>
+            ${supplierBits ? `<div class="p-inline-meta"><span>${supplierBits}</span></div>` : ''}
+            ${links.length ? `<div class="p-inline-links">${links.join('')}</div>` : ''}
+          </div>
+          <div style="flex:1" class="p-inv-cat">${escHtml(it.category||'')}</div>
+          <div style="flex:1">
+            <div><span class="p-qty-num">${it.qty}</span><span class="p-qty-min"> ${escHtml(it.unit || 'each')} / min ${it.min_qty}</span></div>
+            <div class="p-qty-bar"><div class="p-qty-fill" style="width:${Math.min(100,(it.qty/Math.max(it.min_qty,1))*60)}%;background:${sm.c}"></div></div>
+          </div>
+          <div style="flex:1">
+            <span class="p-tag ${sm.cls}"><span class="p-dot" style="background:${sm.c}"></span>${sm.lbl}</span>
+          </div>
+          <div style="flex-basis:80px;text-align:right" class="row-actions">
+            <button data-edit="${it.id}">Edit</button>
+            <button class="danger" data-del="${it.id}">×</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  root.querySelectorAll('[data-lab]').forEach(b => b.onclick = () => { _invLab = b.dataset.lab; renderInventory(root, embedded); if(window.lucide) window.lucide.createIcons(); });
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!confirm('Delete item?')) return;
+    await apiDel('/api/inventory/'+b.dataset.del);
+    renderInventory(root, embedded);
+  });
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openInvModal(items.find(x=>x.id==b.dataset.edit)));
+  $('#newInv').onclick = () => openInvModal(null);
+  if ($('#editSpaces')) {
+    $('#editSpaces').onclick = () => {
+      _adminTab = 'settings';
+      navigate('content');
+    };
+  }
+  $('#invSearch').oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+    root.querySelectorAll('#invTable .p-inv-row:not(.p-inv-head)').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  };
+
+  function openInvModal(it) {
+    const isNew = !it;
+    it = it || { lab:_invLab, sku:'', name:'', category:'', qty:0, min_qty:0, unit:'each', supplier_id:'', reorder_url:'', notes:'', expiry_date:'', location:'', sds_url:'' };
+    const bg = modal(isNew?'Add inventory item':'Edit item','',`
+      <label>Lab</label><select id="m_lab"><option value="A"${it.lab==='A'?' selected':''}>${escHtml(labLabel('A'))}</option><option value="B"${it.lab==='B'?' selected':''}>${escHtml(labLabel('B'))}</option></select>
+      <label>SKU</label><input id="m_sku" value="${escHtml(it.sku)}" placeholder="SN-LAT-00000">
+      <label>Name</label><input id="m_name" value="${escHtml(it.name)}">
+      <label>Category</label><input id="m_cat" value="${escHtml(it.category||'')}" placeholder="Sensors / Hardware / Consumables / Fluids / Optics / PPE">
+      <div class="p-grid-2" style="gap:12px;">
+        <div><label>Quantity</label><input id="m_qty" type="number" value="${it.qty}"></div>
+        <div><label>Min quantity</label><input id="m_min" type="number" value="${it.min_qty}"></div>
+      </div>
+      <div class="p-grid-2" style="gap:12px;">
+        <div><label>Unit</label><input id="m_unit" value="${escHtml(it.unit||'each')}" placeholder="each / bottles / packs"></div>
+        <div><label>Expiry date</label><input id="m_exp" type="date" value="${escHtml(it.expiry_date||'')}"></div>
+      </div>
+      <label>Location</label><input id="m_loc" value="${escHtml(it.location||'')}" placeholder="Cabinet, shelf, freezer, or bench">
+      <label>Supplier</label>
+      <select id="m_sup">
+        <option value="">No supplier linked</option>
+        ${suppliers.map(s => `<option value="${s.id}"${String(s.id)===String(it.supplier_id||'')?' selected':''}>${escHtml(s.name)}</option>`).join('')}
+      </select>
+      <label>Vendor / reorder URL</label><input id="m_reorder" value="${escHtml(it.reorder_url||'')}" placeholder="https://vendor.example/item">
+      <label>SDS / reference URL</label><input id="m_sds" value="${escHtml(it.sds_url||'')}" placeholder="https://...">
+      <label>Notes</label><textarea id="m_notes" style="min-height:110px;">${escHtml(it.notes||'')}</textarea>
+    `, async (mb) => {
+      const body = {
+        lab: $('#m_lab',mb).value, sku: $('#m_sku',mb).value, name: $('#m_name',mb).value,
+        category: $('#m_cat',mb).value, qty: +$('#m_qty',mb).value, min_qty: +$('#m_min',mb).value,
+        unit: $('#m_unit',mb).value || 'each',
+        supplier_id: $('#m_sup',mb).value ? +$('#m_sup',mb).value : null,
+        reorder_url: $('#m_reorder',mb).value,
+        notes: $('#m_notes',mb).value,
+        expiry_date: $('#m_exp',mb).value || null,
+        location: $('#m_loc',mb).value,
+        sds_url: $('#m_sds',mb).value,
+        sort_order: it.sort_order||0
+      };
+      if (isNew) await apiPost('/api/inventory', body);
+      else await apiPut('/api/inventory/'+it.id, body);
+      renderInventory(root, embedded); if(window.lucide) window.lucide.createIcons();
+    });
+    bg.querySelector('.modal').classList.add('is-wide');
+  }
 }
 
-function handleGalleryDrop(event) {
-  event.preventDefault();
-  document.getElementById('gallery-upload-zone').classList.remove('border-secondary');
-  uploadGalleryFiles(event.dataTransfer.files);
+/* ───────────────────────────────────────────────────────────
+   PROJECTS
+   ─────────────────────────────────────────────────────────── */
+async function renderProjects(root) {
+  const projs = await apiGet('/api/projects');
+  const statusTag = { active:['Active','p-tag-ok','var(--status-ok)'], paused:['Paused','p-tag-warn','var(--status-warn)'], completed:['Completed','p-tag-info','var(--status-info)'] };
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <h1 class="p-h1">Projects</h1>
+        <p class="p-h1-sub">${projs.length} active project${projs.length===1?'':'s'} across the lab</p>
+      </div>
+      <div class="p-actions">
+        <button class="btn-primary-sm" id="newProj">+ New project</button>
+      </div>
+    </div>
+
+    <div class="p-grid-2">
+      ${projs.map(p => {
+        const [lbl,cls,c] = statusTag[p.status] || statusTag.active;
+        return `<div class="p-card">
+          <div class="p-card-head">
+            <div class="p-card-title">${escHtml(p.title)}</div>
+            <span class="p-tag ${cls}"><span class="p-dot" style="background:${c}"></span>${lbl}</span>
+          </div>
+          <div style="font-size:13px;color:var(--fg-2);line-height:1.55;margin-bottom:12px">${escHtml(p.description||'')}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--fg-3)">
+            <div><strong>Lead:</strong> ${escHtml(p.lead||'—')}</div>
+            <div class="row-actions">
+              <button data-edit="${p.id}">Edit</button>
+              <button class="danger" data-del="${p.id}">Delete</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('') || '<div class="empty p-card">No projects yet.</div>'}
+    </div>
+  `;
+  root.querySelectorAll('[data-del]').forEach(b => b.onclick = async ()=>{
+    if(!confirm('Delete project?')) return;
+    await apiDel('/api/projects/'+b.dataset.del); navigate('projects');
+  });
+  root.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openProj(projs.find(x=>x.id==b.dataset.edit)));
+  $('#newProj').onclick = () => openProj(null);
+
+  function openProj(p) {
+    const isNew = !p;
+    p = p || { title:'', lead:'', status:'active', description:'' };
+    modal(isNew?'New project':'Edit project','',`
+      <label>Title</label><input id="m_t" value="${escHtml(p.title)}">
+      <label>Lead</label><input id="m_l" value="${escHtml(p.lead||'')}">
+      <label>Status</label>
+      <select id="m_s">${['active','paused','completed'].map(x=>`<option value="${x}"${x===p.status?' selected':''}>${x}</option>`).join('')}</select>
+      <label>Description</label><textarea id="m_d">${escHtml(p.description||'')}</textarea>
+    `, async (mb) => {
+      const body = { title:$('#m_t',mb).value, lead:$('#m_l',mb).value, status:$('#m_s',mb).value, description:$('#m_d',mb).value, sort_order:p.sort_order||0 };
+      if(isNew) await apiPost('/api/projects', body); else await apiPut('/api/projects/'+p.id, body);
+      navigate('projects');
+    });
+  }
 }
 
-// Init
-checkAuth();
+/* ───────────────────────────────────────────────────────────
+   ADMIN — Members / Content / Apps / Settings / Audit
+   Members + Content + Apps render real lab data (people/news/publications/research/sponsors)
+   ─────────────────────────────────────────────────────────── */
+let _adminTab = 'people';
+const ADMIN_TAB_META = {
+  people:        { title: 'People and profiles', copy: 'Keep bios, roles, contact links, and photos aligned with the current lab roster.' },
+  news:          { title: 'News publishing', copy: 'Highlight milestones, conference activity, awards, and lab announcements with strong cover images.' },
+  publications:  { title: 'Publication archive', copy: 'Maintain the paper list, outbound links, and venue metadata for researchers and visitors.' },
+  research:      { title: 'Research pillars', copy: 'Shape the homepage research narrative with concise themes and compelling supporting imagery.' },
+  facilities:    { title: 'Facility showcase', copy: 'Document rigs, instruments, and reference materials so collaborators know what is available.' },
+  hero:          { title: 'Homepage hero', copy: 'Refresh the first impression with seasonal photography, clear positioning, and disciplined copy.' },
+  gallery:       { title: 'Gallery curation', copy: 'Surface candid lab work, team moments, and conference images that make the site feel alive.' },
+  downloads:     { title: 'Download library', copy: 'Manage PDFs, office files, media, and other downloadable resources shown on the public site.' },
+  sponsors:      { title: 'Sponsors and collaborators', copy: 'Present funding partners and collaborators with clean, current acknowledgements.' },
+  apps:          { title: 'App launcher', copy: 'Organize tools, calculators, and linked experiences so students can find them quickly.' },
+  settings:      { title: 'Site and platform copy', copy: 'Tune labels, section intros, and surface-level messaging used across the website and platform.' },
+};
+async function renderAdmin(root) {
+  const tabs = allowedContentTabs();
+  if (!tabs.some(([id]) => id === _adminTab)) _adminTab = tabs[0][0];
+  const activeMeta = ADMIN_TAB_META[_adminTab] || { title: 'Content operations', copy: 'Manage the public-facing LATFS website.' };
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <div class="eyebrow" style="color:var(--gold-700)">Administration</div>
+        <h1 class="p-h1">Admin Panel</h1>
+        <p class="p-h1-sub">Members, content publishing, and site settings.</p>
+      </div>
+      <div class="p-actions">
+        <a class="btn-ghost-sm" href="/" target="_blank" rel="noopener" style="text-decoration:none;">Preview public site</a>
+        <button class="btn-ghost-sm" id="logoutTop"><i data-lucide="log-out" style="width:12px;height:12px;margin-right:4px"></i>Sign out</button>
+      </div>
+    </div>
+
+    <div class="p-admin-ribbon">
+      <div>
+        <div class="p-admin-kicker">Current focus</div>
+        <div class="p-admin-title">${escHtml(activeMeta.title)}</div>
+        <div class="p-admin-copy">${escHtml(activeMeta.copy)}</div>
+      </div>
+      <div class="p-admin-pill-row">
+        <span class="p-admin-pill">${escHtml(SESSION_USER.role || 'admin')}</span>
+        <span class="p-admin-pill soft">${isLabStaffRole(SESSION_USER.role) ? 'Full content access' : 'Moderator-safe access'}</span>
+      </div>
+    </div>
+
+    <div class="p-tabs" id="adminTabs">
+      ${tabs.map(([id,lbl,icn]) =>
+        `<button class="p-tab${id===_adminTab?' active':''}" data-tab="${id}"><i data-lucide="${icn}" style="width:14px;height:14px"></i> ${lbl}</button>`
+      ).join('')}
+    </div>
+
+    <div id="adminBody"></div>
+  `;
+  root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { _adminTab = b.dataset.tab; renderAdmin(root); if(window.lucide) window.lucide.createIcons(); });
+  $('#logoutTop').onclick = doLogout;
+
+  const body = $('#adminBody');
+  if (_adminTab === 'news') renderNewsTab(body, await apiGet('/api/news').catch(()=>[]));
+  else if (_adminTab === 'publications' && isLabStaffRole(SESSION_USER.role)) renderPubsTab(body, await apiGet('/api/publications').catch(()=>[]));
+  else if (_adminTab === 'research' && isLabStaffRole(SESSION_USER.role)) renderResearchTab(body);
+  else if (_adminTab === 'people' && isLabStaffRole(SESSION_USER.role)) renderPeopleTab(body, await apiGet('/api/people').catch(()=>[]));
+  else if (_adminTab === 'facilities' && isLabStaffRole(SESSION_USER.role)) renderFacilitiesTab(body);
+  else if (_adminTab === 'hero') renderHeroTab(body);
+  else if (_adminTab === 'gallery') renderGalleryTab(body);
+  else if (_adminTab === 'downloads' && isLabStaffRole(SESSION_USER.role)) renderDownloadsTab(body);
+  else if (_adminTab === 'sponsors' && isLabStaffRole(SESSION_USER.role)) renderSponsorsTab(body);
+  else if (_adminTab === 'apps' && isLabStaffRole(SESSION_USER.role)) renderAppsTab(body);
+  else if (_adminTab === 'settings' && isLabStaffRole(SESSION_USER.role)) renderSettingsTab(body);
+  else body.innerHTML = '<div class="p-card"><p style="color:var(--fg-3);font-size:13px;">This account has limited website-moderator access. News, hero, and gallery remain available here.</p></div>';
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+
+
+function renderNewsTab(body, news) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar">
+      <button class="btn-primary-sm" id="newNews">+ New news item</button>
+    </div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head">
+        <div style="flex-basis:120px">Date</div>
+        <div style="flex:2">Title</div>
+        <div style="flex-basis:100px;text-align:right"></div>
+      </div>
+      ${news.map(n => `<div class="p-inv-row" data-id="${n.id}">
+        <div style="flex-basis:120px"><code class="p-mono">${escHtml(n.date)}</code></div>
+        <div style="flex:2"><div class="p-inv-name">${escHtml(n.title)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml((n.content||'').slice(0,100))}${(n.content||'').length>100?'…':''}</div></div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${n.id}">Edit</button><button class="danger" data-del="${n.id}">×</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if(confirm('Delete?')) { await apiDel('/api/news/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openNews(news.find(n=>n.id==b.dataset.edit)));
+  $('#newNews').onclick = () => openNews(null);
+  function openNews(n) {
+    const isNew = !n; n = n || {title:'',content:'',date: new Date().toISOString().slice(0,10), image_url:''};
+    modal(isNew?'New news item':'Edit news','',`
+      <label>Date</label><input id="m_date" type="date" value="${escHtml(n.date)}">
+      <label>Title</label><input id="m_t" value="${escHtml(n.title)}">
+      <label>Cover image (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${n.image_url ? `<img src="${escHtml(n.image_url)}" alt="" style="height:48px;border-radius:6px;border:1px solid var(--border-1);">` : ''}
+        <input type="file" id="m_img_file" accept="image/*" style="flex:1;">
+      </div>
+      <label>Cover image URL</label><input id="m_img" value="${escHtml(n.image_url||'')}">
+      <label>Content</label><textarea id="m_c" style="min-height:160px;">${escHtml(n.content)}</textarea>
+    `, async (mb) => {
+      const f = $('#m_img_file', mb);
+      if (f && f.files && f.files[0]) { const url = await uploadPhoto(f.files[0]); $('#m_img', mb).value = url; }
+      const body = { date:$('#m_date',mb).value, title:$('#m_t',mb).value, content:$('#m_c',mb).value, image_url:$('#m_img',mb).value };
+      if (isNew) await apiPost('/api/news', body); else await apiPut('/api/news/'+n.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+function renderPubsTab(body, pubs) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newPub">+ Add publication</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex-basis:60px">Year</div><div style="flex:3">Title</div><div style="flex:1">Venue</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${pubs.map(p => `<div class="p-inv-row">
+        <div style="flex-basis:60px"><code class="p-mono">${p.year}</code></div>
+        <div style="flex:3"><div class="p-inv-name">${escHtml(p.title)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(p.authors||'')}</div></div>
+        <div style="flex:1;font-size:12px;color:var(--fg-3)">${escHtml(p.venue||'')}</div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${p.id}">Edit</button><button class="danger" data-del="${p.id}">×</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async ()=>{ if(confirm('Delete?')){ await apiDel('/api/publications/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = ()=>openPub(pubs.find(x=>x.id==b.dataset.edit)));
+  $('#newPub').onclick = () => openPub(null);
+  function openPub(p) {
+    const isNew = !p; p = p || {title:'',authors:'',venue:'',year:new Date().getFullYear(),pdf_url:'',doi_url:''};
+    modal(isNew?'Add publication':'Edit publication','',`
+      <label>Title</label><input id="m_t" value="${escHtml(p.title)}">
+      <label>Authors</label><input id="m_a" value="${escHtml(p.authors)}">
+      <label>Venue</label><input id="m_v" value="${escHtml(p.venue)}">
+      <label>Year</label><input id="m_y" type="number" value="${p.year}">
+      <label>PDF file (upload, optional)</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="file" id="m_pdf_file" accept=".pdf,application/pdf" style="flex:1;">
+        <span id="m_pdf_status" style="font-size:11px; color:var(--fg-4);"></span>
+      </div>
+      <label>PDF URL (or use upload above)</label><input id="m_pdf" value="${escHtml(p.pdf_url||'')}">
+      <label>DOI URL</label><input id="m_doi" value="${escHtml(p.doi_url||'')}">
+    `, async (mb) => {
+      const fileInput = $('#m_pdf_file', mb);
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        $('#m_pdf_status', mb).textContent = 'Uploading...';
+        try { const u = await uploadDoc(fileInput.files[0]); $('#m_pdf', mb).value = u.url; $('#m_pdf_status', mb).textContent = 'Uploaded.'; }
+        catch(e){ $('#m_pdf_status', mb).textContent = e.message; throw e; }
+      }
+      const body = { title:$('#m_t',mb).value, authors:$('#m_a',mb).value, venue:$('#m_v',mb).value, year:+$('#m_y',mb).value, pdf_url:$('#m_pdf',mb).value, doi_url:$('#m_doi',mb).value };
+      if(isNew) await apiPost('/api/publications', body); else await apiPut('/api/publications/'+p.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderResearchTab(body) {
+  const areas = await apiGet('/api/research');
+  body.innerHTML = `
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newR">+ Add research area</button></div>
+    <div class="p-grid-2">
+      ${areas.map(r => `<div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">${escHtml(r.title)}</div></div>
+        <div style="font-size:13px;color:var(--fg-2);margin-bottom:10px">${escHtml(r.description||'')}</div>
+        <div class="row-actions"><button data-edit="${r.id}">Edit</button><button class="danger" data-del="${r.id}">Delete</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async()=>{ if(confirm('Delete?')){ await apiDel('/api/research/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openR(areas.find(x=>x.id==b.dataset.edit)));
+  $('#newR').onclick = () => openR(null);
+  function openR(r) {
+    const isNew = !r; r = r || {title:'',description:'',image_url:'',sort_order:0};
+    modal(isNew?'Add research area':'Edit research area','',`
+      <label>Title</label><input id="m_t" value="${escHtml(r.title)}">
+      <label>Description</label><textarea id="m_d" style="min-height:140px;">${escHtml(r.description||'')}</textarea>
+      <label>Cover image (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${r.image_url ? `<img src="${escHtml(r.image_url)}" alt="" style="height:48px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
+        <input type="file" id="m_i_file" accept="image/*" style="flex:1;">
+      </div>
+      <label>Image URL (or use upload above)</label><input id="m_i" value="${escHtml(r.image_url||'')}">
+      <label>Sort order</label><input id="m_s" type="number" value="${r.sort_order||0}">
+    `, async (mb) => {
+      const f = $('#m_i_file', mb);
+      if (f && f.files && f.files[0]) { const url = await uploadPhoto(f.files[0]); $('#m_i', mb).value = url; }
+      const body = { title:$('#m_t',mb).value, description:$('#m_d',mb).value, image_url:$('#m_i',mb).value, sort_order:+$('#m_s',mb).value };
+      if(isNew) await apiPost('/api/research', body); else await apiPut('/api/research/'+r.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+function renderPeopleTab(body, people) {
+  body.innerHTML = `
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newP">+ Add person</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">Name</div><div style="flex:1">Role</div><div style="flex:1">Category</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${people.map(p => `<div class="p-inv-row">
+        <div style="flex:2;display:flex;align-items:center;gap:12px">
+          ${p.photo_url ? `<img src="${escHtml(p.photo_url)}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--border-1);">`
+          : `<div class="p-task-av" style="width:36px;height:36px;font-size:12px;background:var(--gold-600)">${escHtml(initials(p.name))}</div>`}
+          <div><div class="p-inv-name">${escHtml(p.name)}</div><div style="font-size:11px;color:var(--fg-4)">${escHtml(p.email||'')}</div></div>
+        </div>
+        <div style="flex:1;font-size:12px;color:var(--fg-2)">${escHtml(p.role||'')}</div>
+        <div style="flex:1"><span class="p-tag p-tag-outline">${escHtml(p.category||'')}</span></div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit="${p.id}">Edit</button><button class="danger" data-del="${p.id}">×</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async ()=>{ if(confirm('Remove?')){ await apiDel('/api/people/'+b.dataset.del); renderAdmin($('#mainContent')); }});
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = ()=>openP(people.find(x=>x.id==b.dataset.edit)));
+  $('#newP').onclick = ()=>openP(null);
+  function openP(p) {
+    const isNew = !p; p = p || {name:'',role:'',category:'phd',email:'',bio:'',photo_url:'',active:1};
+    const bg = modal(isNew?'Add person':'Edit person','',`
+      <label>Name</label><input id="m_n" value="${escHtml(p.name)}">
+      <label>Role</label><input id="m_r" value="${escHtml(p.role)}">
+      <label>Category</label>
+      <select id="m_c">${['director','manager','faculty','postdoc','phd','ms','ug','alumni','collaborator'].map(x=>`<option value="${x}"${x===p.category?' selected':''}>${x}</option>`).join('')}</select>
+      <label>Email</label><input id="m_e" value="${escHtml(p.email||'')}">
+      <label>Profile photo (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <img id="m_ph_prev" src="${escHtml(p.photo_url||'')}" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:${escHtml(p.photo_position||'center center')};background:var(--bg-1);border:1px solid var(--border-1);${p.photo_url?'':'visibility:hidden;'}">
+        <input type="file" id="m_ph_file" accept="image/*" style="flex:1;">
+      </div>
+      <label>Photo URL (or use upload above)</label><input id="m_ph" value="${escHtml(p.photo_url||'')}">
+      <label>Photo focal point — click on the image to choose what should be centered in the circle</label>
+      <div id="m_ph_picker" style="position:relative; width:300px; height:300px; border:1px solid var(--border-1); border-radius:8px; overflow:hidden; background:var(--bg-1); cursor:crosshair;">
+        <img id="m_ph_picker_img" src="${escHtml(p.photo_url||'')}" alt="" style="width:100%; height:100%; object-fit:contain; ${p.photo_url?'':'display:none;'}">
+        <div id="m_ph_picker_dot" style="position:absolute; width:18px; height:18px; border:2px solid var(--gold-600); background:rgba(255,255,255,.6); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; left:50%; top:50%;"></div>
+      </div>
+      <input id="m_pp" type="hidden" value="${escHtml(p.photo_position||'center center')}">
+      <label>Result preview</label>
+      <img id="m_ph_result" src="${escHtml(p.photo_url||'')}" alt="" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:${escHtml(p.photo_position||'center center')};border:3px solid #fff; box-shadow:var(--shadow-sm); ${p.photo_url?'':'display:none;'}">
+      <label>LinkedIn URL</label><input id="m_li" value="${escHtml(p.linkedin_url||'')}" placeholder="https://linkedin.com/in/...">
+      <label>Personal website (optional)</label><input id="m_ws" value="${escHtml(p.website_url||'')}">
+      <label>Bio</label><textarea id="m_b" style="min-height:120px;">${escHtml(p.bio||'')}</textarea>
+    `, async (mb) => {
+      const f = $('#m_ph_file', mb);
+      if (f && f.files && f.files[0]) {
+        const url = await uploadPhoto(f.files[0]);
+        $('#m_ph', mb).value = url;
+        $('#m_ph_picker_img', mb).src = url; $('#m_ph_picker_img', mb).style.display = 'block';
+        $('#m_ph_result', mb).src = url; $('#m_ph_result', mb).style.display = 'inline-block';
+      }
+      const body = { name:$('#m_n',mb).value, role:$('#m_r',mb).value, category:$('#m_c',mb).value, email:$('#m_e',mb).value, photo_url:$('#m_ph',mb).value, photo_position:$('#m_pp',mb).value, linkedin_url:$('#m_li',mb).value, website_url:$('#m_ws',mb).value, bio:$('#m_b',mb).value, active:1 };
+      if(isNew) await apiPost('/api/people', body); else await apiPut('/api/people/'+p.id, body);
+      renderAdmin($('#mainContent'));
+    });
+    bg.querySelector('.modal').classList.add('is-wide');
+    // Upgrade the focal-point picker into a larger drag-to-frame tool.
+    setTimeout(() => {
+      const picker = document.getElementById('m_ph_picker');
+      if (!picker) return;
+      const img = document.getElementById('m_ph_picker_img');
+      const dot = document.getElementById('m_ph_picker_dot');
+      const result = document.getElementById('m_ph_result');
+      const preview = document.getElementById('m_ph_prev');
+      const hidden = document.getElementById('m_pp');
+      const urlInput = document.getElementById('m_ph');
+      const fileInput = document.getElementById('m_ph_file');
+      const resultLabel = result ? result.previousElementSibling : null;
+      picker.className = 'p-photo-stage';
+      picker.style.width = '100%';
+      picker.style.maxWidth = '360px';
+      picker.style.height = 'auto';
+      if (img) {
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+      }
+      if (dot) dot.className = 'p-photo-dot';
+      if (resultLabel && resultLabel.tagName === 'LABEL') resultLabel.textContent = 'Circle preview';
+      if (result) {
+        result.style.width = '120px';
+        result.style.height = '120px';
+        result.style.display = result.src ? 'block' : 'none';
+      }
+      const xMap = { left: '0%', center: '50%', right: '100%' };
+      const yMap = { top: '0%', center: '50%', bottom: '100%' };
+      const applySource = (src) => {
+        const visible = !!src;
+        if (img) {
+          img.src = src || '';
+          img.style.display = visible ? 'block' : 'none';
+        }
+        if (result) {
+          result.src = src || '';
+          result.style.display = visible ? 'block' : 'none';
+        }
+        if (preview) {
+          preview.src = src || '';
+          preview.style.visibility = visible ? 'visible' : 'hidden';
+        }
+      };
+      const applyFocus = (pos) => {
+        const parts = String(pos || 'center center').split(' ');
+        const x = xMap[parts[0]] || parts[0] || '50%';
+        const y = yMap[parts[1]] || parts[1] || '50%';
+        hidden.value = `${x} ${y}`;
+        if (dot) {
+          dot.style.left = x;
+          dot.style.top = y;
+        }
+        if (img) img.style.objectPosition = `${x} ${y}`;
+        if (result) result.style.objectPosition = `${x} ${y}`;
+        if (preview) preview.style.objectPosition = `${x} ${y}`;
+      };
+      const setFromPointer = (clientX, clientY) => {
+        if (!img || !img.src) return;
+        const rect = picker.getBoundingClientRect();
+        const xPct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)).toFixed(1) + '%';
+        const yPct = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)).toFixed(1) + '%';
+        applyFocus(`${xPct} ${yPct}`);
+      };
+      const modalBody = picker.parentElement;
+      const leftCol = document.createElement('div');
+      const toolWrap = document.createElement('div');
+      toolWrap.className = 'p-photo-tool';
+      const infoCol = document.createElement('div');
+      infoCol.innerHTML = `
+        <div class="p-photo-help">Click or drag on the image to choose what stays centered in the circular crop. The preview reflects the same cover-style framing used on the public site.</div>
+        <div class="p-photo-presets">
+          <button type="button" data-photo-pos="50% 50%">Center</button>
+          <button type="button" data-photo-pos="50% 26%">Raise</button>
+          <button type="button" data-photo-pos="35% 50%">Left</button>
+          <button type="button" data-photo-pos="65% 50%">Right</button>
+        </div>
+      `;
+      const previewCard = document.createElement('div');
+      previewCard.className = 'p-photo-preview-card';
+      if (resultLabel && result) {
+        resultLabel.remove();
+        previewCard.appendChild(resultLabel);
+        previewCard.appendChild(result);
+      }
+      infoCol.appendChild(previewCard);
+      modalBody.insertBefore(toolWrap, picker);
+      leftCol.appendChild(picker);
+      if (hidden) leftCol.appendChild(hidden);
+      toolWrap.appendChild(leftCol);
+      toolWrap.appendChild(infoCol);
+      let dragging = false;
+      applyFocus(hidden.value || 'center center');
+      applySource(urlInput.value.trim() || p.photo_url || '');
+      picker.addEventListener('pointerdown', e => {
+        dragging = true;
+        setFromPointer(e.clientX, e.clientY);
+      });
+      picker.addEventListener('pointermove', e => {
+        if (dragging) setFromPointer(e.clientX, e.clientY);
+      });
+      ['pointerup','pointerleave','pointercancel'].forEach(evt =>
+        picker.addEventListener(evt, () => { dragging = false; })
+      );
+      infoCol.querySelectorAll('[data-photo-pos]').forEach(btn => btn.onclick = () => applyFocus(btn.dataset.photoPos));
+      urlInput.addEventListener('input', () => applySource(urlInput.value.trim()));
+      if (fileInput) {
+        fileInput.addEventListener('change', () => {
+          const file = fileInput.files && fileInput.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => applySource(String(reader.result || ''));
+          reader.readAsDataURL(file);
+        });
+      }
+    }, 0);
+  }
+}
+
+
+async function renderFacilitiesTab(body) {
+  const facs = await apiGet('/api/facilities').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Each facility has its own page on the public site (Facilities → click a card). Add photos and PDF documentation per facility.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newFac">+ Add facility</button></div>
+    <div class="p-grid-2">
+      ${facs.length ? facs.map(f => `
+        <div class="p-card" style="padding:0; overflow:hidden;">
+          ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="" style="width:100%; height:160px; object-fit:cover; display:block; background:var(--bg-1);">` : '<div style="height:160px;background:var(--bg-1);"></div>'}
+          <div style="padding:14px 16px;">
+            <div class="p-inv-name">${escHtml(f.name||'(untitled)')}</div>
+            <div style="font-size:12px;color:var(--fg-3); margin:4px 0 10px;">${escHtml((f.description||'').slice(0,120))}${(f.description||'').length>120?'...':''}</div>
+            <div style="font-size:11px;color:var(--fg-4); margin-bottom:8px;">${f.doc_url?'<a href="'+escHtml(f.doc_url)+'" target="_blank" style="color:var(--gold-700);">'+escHtml(f.doc_name||'document')+'</a>':'no document'}</div>
+            <div class="row-actions"><button data-edit="${f.id}">Edit</button><button class="danger" data-del="${f.id}">Delete</button></div>
+          </div>
+        </div>`).join('') : '<div class="empty">No facilities yet.</div>'}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Delete this facility?')) return;
+    await apiDel('/api/facilities/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openFac(facs.find(f=>f.id==b.dataset.edit)));
+  $('#newFac').onclick = () => openFac(null);
+  function openFac(f) {
+    const isNew = !f; f = f || {name:'', description:'', content:'', photo_url:'', doc_url:'', doc_name:'', sort_order:0};
+    modal(isNew?'Add facility':'Edit facility','',`
+      <label>Name</label><input id="m_n" value="${escHtml(f.name||'')}">
+      <label>Short description (one or two lines)</label><textarea id="m_d">${escHtml(f.description||'')}</textarea>
+      <label>Long description (shown on detail page)</label><textarea id="m_c" style="min-height:160px;">${escHtml(f.content||'')}</textarea>
+      <label>Cover photo (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="" style="height:50px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
+        <input type="file" id="m_pf" accept="image/*" style="flex:1;">
+      </div>
+      <label>Photo URL (or use upload above)</label><input id="m_p" value="${escHtml(f.photo_url||'')}">
+      <label>Documentation file (PDF, upload)</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="file" id="m_df" accept=".pdf,application/pdf" style="flex:1;">
+        <span id="m_df_status" style="font-size:11px; color:var(--fg-4);">${f.doc_url ? '<a href="'+escHtml(f.doc_url)+'" target="_blank" style="color:var(--gold-700);">current: '+escHtml(f.doc_name||'doc')+'</a>' : ''}</span>
+      </div>
+      <label>Doc URL (or use upload above)</label><input id="m_du" value="${escHtml(f.doc_url||'')}">
+      <label>Doc display name</label><input id="m_dn" value="${escHtml(f.doc_name||'')}">
+      <label>Sort order</label><input id="m_s" type="number" value="${f.sort_order||0}">
+    `, async (mb) => {
+      const pf = $('#m_pf', mb);
+      if (pf && pf.files && pf.files[0]) { const url = await uploadPhoto(pf.files[0]); $('#m_p', mb).value = url; }
+      const df = $('#m_df', mb);
+      if (df && df.files && df.files[0]) {
+        const u = await uploadDoc(df.files[0]);
+        $('#m_du', mb).value = u.url;
+        if (!$('#m_dn', mb).value) $('#m_dn', mb).value = u.name;
+      }
+      const body = { name:$('#m_n',mb).value, description:$('#m_d',mb).value, content:$('#m_c',mb).value, photo_url:$('#m_p',mb).value, doc_url:$('#m_du',mb).value, doc_name:$('#m_dn',mb).value, sort_order:+$('#m_s',mb).value };
+      if(isNew) await apiPost('/api/facilities', body); else await apiPut('/api/facilities/'+f.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderHeroTab(body) {
+  const slides = await apiGet('/api/hero-slides').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Images shown behind the lab name on the public homepage. The slideshow rotates through these. Drop in 1600x900+ photos for best quality.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newSlide">+ Add hero slide</button></div>
+    <div class="p-grid-3">
+      ${slides.length ? slides.map(s => `
+        <div class="p-card" style="padding:0; overflow:hidden;">
+          <img src="${escHtml(s.image_url)}" alt="" style="width:100%; height:170px; object-fit:cover; display:block; background:var(--bg-1);">
+          <div style="padding:12px;">
+            <div class="p-inv-name">${escHtml(s.title||'(untitled)')}</div>
+            <div style="font-size:12px;color:var(--fg-3); margin:4px 0 10px;">${escHtml(s.caption||'')}</div>
+            <div class="row-actions"><button data-edit="${s.id}">Edit</button><button class="danger" data-del="${s.id}">Delete</button></div>
+          </div>
+        </div>`).join('') : '<div class="empty">No hero slides yet.</div>'}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Delete this slide?')) return;
+    await apiDel('/api/hero-slides/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openSlide(slides.find(s=>s.id==b.dataset.edit)));
+  $('#newSlide').onclick = () => openSlide(null);
+  function openSlide(s) {
+    const isNew = !s; s = s || {title:'', caption:'', image_url:'', sort_order:0};
+    modal(isNew?'Add hero slide':'Edit hero slide','',`
+      <label>Title</label><input id="m_t" value="${escHtml(s.title||'')}">
+      <label>Caption</label><textarea id="m_c">${escHtml(s.caption||'')}</textarea>
+      <label>Sort order</label><input id="m_s" type="number" value="${s.sort_order||0}">
+      ${isNew ? `<label>Image (required)</label><input type="file" id="m_f" accept="image/*">` :
+                `<label>Replace image (optional)</label><input type="file" id="m_f" accept="image/*">
+                 <div style="margin-top:8px;"><img src="${escHtml(s.image_url)}" alt="" style="max-width:100%; max-height:140px; border-radius:6px; border:1px solid var(--border-1);"></div>`}
+    `, async (mb) => {
+      const f = $('#m_f', mb);
+      const title = $('#m_t', mb).value;
+      const caption = $('#m_c', mb).value;
+      const sort_order = +$('#m_s', mb).value;
+      if (isNew) {
+        if(!f.files[0]) throw new Error('Please pick an image file');
+        await uploadHeroSlide(f.files[0], title, caption, sort_order);
+      } else {
+        let image_url = s.image_url;
+        if (f.files[0]) image_url = await uploadPhoto(f.files[0]);
+        await apiPut('/api/hero-slides/'+s.id, { title, caption, image_url, sort_order });
+      }
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderGalleryTab(body) {
+  const photos = await apiGet('/api/gallery').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Photos shown in the homepage gallery strip. Add candid lab shots, conferences, and milestones.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newPic">+ Add photo</button></div>
+    <div class="p-grid-3">
+      ${photos.length ? photos.map(g => `
+        <div class="p-card" style="padding:0; overflow:hidden;">
+          <img src="${escHtml(g.image_url)}" alt="" style="width:100%; height:170px; object-fit:cover; display:block; background:var(--bg-1);">
+          <div style="padding:10px 12px;">
+            <div style="font-size:12px;color:var(--fg-2);">${escHtml(g.caption||'(no caption)')}</div>
+            <div class="row-actions" style="margin-top:8px;"><button class="danger" data-del="${g.id}">Delete</button></div>
+          </div>
+        </div>`).join('') : '<div class="empty">No gallery photos yet.</div>'}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Delete this photo?')) return;
+    await apiDel('/api/gallery/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  $('#newPic').onclick = () => {
+    modal('Add gallery photo','',`
+      <label>Image file (required)</label><input type="file" id="m_f" accept="image/*">
+      <label>Caption</label><input id="m_c" value="">
+      <label>Sort order</label><input id="m_s" type="number" value="0">
+    `, async (mb) => {
+      const f = $('#m_f', mb);
+      if (!f.files[0]) throw new Error('Please pick an image file');
+      await uploadGallery(f.files[0], $('#m_c', mb).value, +$('#m_s', mb).value);
+      renderAdmin($('#mainContent'));
+    });
+  };
+}
+
+async function renderSponsorsTab(body) {
+  const sponsors = await apiGet('/api/sponsors').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Sponsors and collaborators. Logo and name appear on the homepage marquee. URL links the logo. Mark "show in footer" to also display in the footer.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newSp">+ Add sponsor / collaborator</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">Name</div><div style="flex:2">Logo</div><div style="flex:2">Website</div><div style="flex-basis:80px;text-align:center">Footer</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${sponsors.map(sp => `<div class="p-inv-row">
+        <div style="flex:2"><div class="p-inv-name">${escHtml(sp.name)}</div></div>
+        <div style="flex:2">${sp.logo_url ? `<img src="${escHtml(sp.logo_url)}" alt="" style="max-height:34px; max-width:140px;">` : '<span style="color:var(--fg-4); font-size:12px;">no logo</span>'}</div>
+        <div style="flex:2; font-size:12px; color:var(--fg-3); word-break:break-all;">${escHtml(sp.website_url||'')}</div>
+        <div style="flex-basis:80px; text-align:center; font-size:12px; color:${sp.show_in_footer?'var(--status-ok)':'var(--fg-4)'};">${sp.show_in_footer?'Yes':'-'}</div>
+        <div style="flex-basis:100px; text-align:right" class="row-actions"><button data-edit="${sp.id}">Edit</button><button class="danger" data-del="${sp.id}">x</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Remove this sponsor?')) return;
+    await apiDel('/api/sponsors/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openSp(sponsors.find(s=>s.id==b.dataset.edit)));
+  $('#newSp').onclick = () => openSp(null);
+  function openSp(sp) {
+    const isNew = !sp; sp = sp || {name:'', logo_url:'', website_url:'', sort_order:0, show_in_footer:0};
+    modal(isNew?'Add sponsor':'Edit sponsor','',`
+      <label>Name</label><input id="m_n" value="${escHtml(sp.name||'')}">
+      <label>Website URL</label><input id="m_w" value="${escHtml(sp.website_url||'')}">
+      <label>Logo (upload)</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        ${sp.logo_url ? `<img src="${escHtml(sp.logo_url)}" alt="" style="max-height:40px; max-width:120px;">` : ''}
+        <input type="file" id="m_lf" accept="image/*">
+      </div>
+      <label>Logo URL (or use upload above)</label><input id="m_l" value="${escHtml(sp.logo_url||'')}">
+      <label>Sort order</label><input id="m_s" type="number" value="${sp.sort_order||0}">
+      <label><input type="checkbox" id="m_sf" ${sp.show_in_footer?'checked':''}> Show in footer</label>
+    `, async (mb) => {
+      const lf = $('#m_lf', mb);
+      if (lf && lf.files && lf.files[0]) {
+        const url = await uploadPhoto(lf.files[0]);
+        $('#m_l', mb).value = url;
+      }
+      const body = { name:$('#m_n',mb).value, logo_url:$('#m_l',mb).value, website_url:$('#m_w',mb).value, sort_order:+$('#m_s',mb).value, show_in_footer: $('#m_sf', mb).checked ? 1 : 0 };
+      if(isNew) await apiPost('/api/sponsors', body); else await apiPut('/api/sponsors/'+sp.id, body);
+      renderAdmin($('#mainContent'));
+    });
+  }
+}
+
+async function renderAppsTab(body) {
+  const apps = await apiGet('/api/apps/all').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Publish either a linked app URL, inline HTML, or both. Inline HTML entries launch directly on the public Apps page, and you can also paste or import a full HTML file.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newApp">+ Add app</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">App</div><div style="flex:1">Slug</div><div style="flex:2">Summary</div><div style="flex-basis:110px;text-align:center">Mode</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${apps.map(a => `<div class="p-inv-row">
+        <div style="flex:2">
+          <div class="p-inv-name">${escHtml(a.title)}</div>
+          <div style="font-size:11px;color:var(--fg-4)">${a.url ? `<a href="${escHtml(a.url)}" target="_blank" style="color:var(--fg-4); text-decoration:underline;">${escHtml(a.url)}</a>` : '(no linked URL)'}</div>
+          ${a.embed_html ? '<div class="p-inline-meta"><span>Inline HTML ready</span></div>' : ''}
+        </div>
+        <div style="flex:1"><code class="p-mono">${escHtml(a.slug)}</code></div>
+        <div style="flex:2; font-size:12px; color:var(--fg-2);">${escHtml(a.summary||'')}</div>
+        <div style="flex-basis:110px; text-align:center; font-size:11px; color:var(--fg-3);">${a.url && a.embed_html ? 'Link + inline' : a.embed_html ? 'Inline HTML' : a.url ? 'Linked URL' : 'Draft shell'}</div>
+        <div style="flex-basis:80px; text-align:center; font-size:12px; color:${a.published?'var(--status-ok)':'var(--fg-4)'};">${a.published?'Yes':'Draft'}</div>
+        <div style="flex-basis:100px; text-align:right" class="row-actions"><button data-edit="${a.id}">Edit</button><button class="danger" data-del="${a.id}">x</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if(!confirm('Remove this app?')) return;
+    await apiDel('/api/apps/'+b.dataset.del); renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openApp(apps.find(a=>a.id==b.dataset.edit)));
+  $('#newApp').onclick = () => openApp(null);
+  function openApp(a) {
+    const isNew = !a; a = a || {slug:'', title:'', summary:'', description:'', url:'', embed_html:'', thumbnail:'', sort_order:0, published:1};
+    const bg = modal(isNew?'Add app':'Edit app','',`
+      <label>Title</label><input id="m_t" value="${escHtml(a.title||'')}">
+      <label>Slug (URL-safe id)</label><input id="m_sl" value="${escHtml(a.slug||'')}">
+      <label>Summary (one line)</label><input id="m_su" value="${escHtml(a.summary||'')}">
+      <label>Description</label><textarea id="m_d">${escHtml(a.description||'')}</textarea>
+      <label>App URL (optional)</label><input id="m_u" value="${escHtml(a.url||'')}" placeholder="https://... or /apps/your-app">
+      <label>Inline HTML (optional)</label><textarea id="m_html" style="min-height:180px;" placeholder="<div>...</div><script>...<\/script>">${escHtml(a.embed_html||'')}</textarea>
+      <label>Import HTML file (optional)</label><input id="m_html_file" type="file" accept=".html,text/html">
+      <div class="p-soft-note">Choose a standalone HTML file and its contents will be loaded into the inline HTML field.</div>
+      <label>Thumbnail image URL (optional)</label><input id="m_thumb" value="${escHtml(a.thumbnail||'')}" placeholder="https://...">
+      <label>Sort order</label><input id="m_so" type="number" value="${a.sort_order||0}">
+      <label><input type="checkbox" id="m_pub" ${a.published?'checked':''}> Published (visible on public site)</label>
+    `, async (mb) => {
+      const body = {
+        slug: $('#m_sl',mb).value.trim(),
+        title: $('#m_t',mb).value,
+        summary: $('#m_su',mb).value,
+        description: $('#m_d',mb).value,
+        url: $('#m_u',mb).value,
+        embed_html: $('#m_html',mb).value,
+        thumbnail: $('#m_thumb',mb).value,
+        sort_order: +$('#m_so',mb).value,
+        published: $('#m_pub', mb).checked ? 1 : 0
+      };
+      if(!body.slug || !body.title) throw new Error('Slug and title required');
+      if(!body.url && !body.embed_html) throw new Error('Add either a URL or inline HTML');
+      if(isNew) await apiPost('/api/apps', body); else await apiPut('/api/apps/'+a.id, body);
+      renderAdmin($('#mainContent'));
+    });
+    bg.querySelector('.modal').classList.add('is-wide');
+    const htmlFileInput = $('#m_html_file', bg);
+    if(htmlFileInput){
+      htmlFileInput.addEventListener('change', () => {
+        const file = htmlFileInput.files && htmlFileInput.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = () => { $('#m_html', bg).value = String(reader.result || ''); };
+        reader.readAsText(file);
+      });
+    }
+  }
+}
+
+async function renderDownloadsTab(body) {
+  const rows = await apiGet('/api/downloads/all').catch(()=>[]);
+  body.innerHTML = `
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Publish downloadable PDFs, Office files, text files, media, and other resources up to 25 MB each.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newDownload">+ Add download</button></div>
+    <div class="p-inv-table">
+      <div class="p-inv-row p-inv-head"><div style="flex:2">Title</div><div style="flex:1">Category</div><div style="flex:1">File</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
+      ${rows.map(item => `<div class="p-inv-row">
+        <div style="flex:2">
+          <div class="p-inv-name">${escHtml(item.title || '')}</div>
+          <div style="font-size:11px;color:var(--fg-4)">${escHtml(item.description || '')}</div>
+        </div>
+        <div style="flex:1;font-size:12px;color:var(--fg-2)">${escHtml(item.category || 'General')}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--fg-2)">${escHtml(item.file_name || 'Uploaded file')}</div>
+          <div style="font-size:11px;color:var(--fg-4)">${escHtml(item.mime_type || '')}${item.file_size ? ` · ${Math.max(1, Math.round(item.file_size / 1024))} KB` : ''}</div>
+        </div>
+        <div style="flex-basis:80px;text-align:center;font-size:12px;color:${item.published ? 'var(--status-ok)' : 'var(--fg-4)'};">${item.published ? 'Yes' : 'Draft'}</div>
+        <div style="flex-basis:100px;text-align:right" class="row-actions"><button data-edit-download="${item.id}">Edit</button><button class="danger" data-del-download="${item.id}">x</button></div>
+      </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-del-download]').forEach(btn => btn.onclick = async () => {
+    if(!confirm('Remove this download?')) return;
+    await apiDel('/api/downloads/' + btn.dataset.delDownload);
+    renderAdmin($('#mainContent'));
+  });
+  body.querySelectorAll('[data-edit-download]').forEach(btn => btn.onclick = () => {
+    const item = rows.find(row => row.id == btn.dataset.editDownload);
+    if(item) openDownloadEditor(item);
+  });
+  $('#newDownload').onclick = () => openDownloadEditor(null);
+
+  function openDownloadEditor(item) {
+    const isNew = !item;
+    item = item || { title:'', description:'', category:'', file_url:'', file_name:'', mime_type:'', file_size:0, sort_order:0, published:1 };
+    const bg = modal(isNew ? 'Add download' : 'Edit download', '', `
+      <label>Title</label><input id="d_title" value="${escHtml(item.title || '')}">
+      <label>Description</label><textarea id="d_desc">${escHtml(item.description || '')}</textarea>
+      <label>Category</label><input id="d_cat" value="${escHtml(item.category || '')}" placeholder="PDF, Form, Video, Data, Office file...">
+      <label>Upload file (optional if keeping current file)</label><input id="d_file" type="file" accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls,.ppt,.pptx,.mp4,.mov,.zip,.html,.json,.png,.jpg,.jpeg,.gif,.webp">
+      <label>File URL</label><input id="d_url" value="${escHtml(item.file_url || '')}" placeholder="/uploads/your-file.pdf">
+      <label>Visible file name</label><input id="d_name" value="${escHtml(item.file_name || '')}" placeholder="Original file name">
+      <label>Sort order</label><input id="d_sort" type="number" value="${item.sort_order || 0}">
+      <label><input type="checkbox" id="d_pub" ${item.published ? 'checked' : ''}> Published (visible on public site)</label>
+    `, async (mb) => {
+      let fileUrl = $('#d_url', mb).value.trim();
+      let fileName = $('#d_name', mb).value.trim();
+      let mimeType = item.mime_type || '';
+      let fileSize = Number(item.file_size || 0);
+      const file = $('#d_file', mb).files && $('#d_file', mb).files[0];
+      if(file){
+        const uploaded = await uploadDoc(file);
+        fileUrl = uploaded.url;
+        fileName = uploaded.name || fileName;
+        mimeType = uploaded.mime_type || mimeType;
+        fileSize = Number(uploaded.file_size || fileSize || 0);
+      }
+      const payload = {
+        title: $('#d_title', mb).value.trim(),
+        description: $('#d_desc', mb).value.trim(),
+        category: $('#d_cat', mb).value.trim(),
+        file_url: fileUrl,
+        file_name: fileName,
+        mime_type: mimeType,
+        file_size: fileSize,
+        sort_order: Number($('#d_sort', mb).value || 0),
+        published: $('#d_pub', mb).checked ? 1 : 0
+      };
+      if(!payload.title || !payload.file_url) throw new Error('Title and file are required');
+      if(isNew) await apiPost('/api/downloads', payload);
+      else await apiPut('/api/downloads/' + item.id, payload);
+      renderAdmin($('#mainContent'));
+    });
+    bg.querySelector('.modal').classList.add('is-wide');
+  }
+}
+
+async function renderSettingsTab(body) {
+  let s = Object.assign({}, LAB_NAMES);
+  try { const fresh = await apiGet('/api/settings'); Object.assign(s, fresh); Object.assign(LAB_NAMES, fresh); } catch(_){}
+
+  const fieldRow = (id, label, val, placeholder='') =>
+    `<div style="margin-bottom:12px;">
+       <label style="font-size:12px;font-weight:700;color:var(--fg-3);display:block;margin-bottom:4px;">${escHtml(label)}</label>
+       <input id="${id}" class="p-inv-input" value="${escHtml(val||'')}" placeholder="${escHtml(placeholder)}">
+     </div>`;
+
+  body.innerHTML = `
+    <div class="p-grid-2">
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Site</div></div>
+        ${[['globe','Public domain','latfs.villanova.edu'],['image','Homepage hero','from Hero tab'],['mail','Contact inbox','info@latfs.villanova.edu']].map(([icn,lbl,val])=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border-1)">
+            <i data-lucide="${icn}" style="width:16px;height:16px;color:var(--fg-4);flex-shrink:0"></i>
+            <div style="flex:1;font-size:13px;color:var(--navy-900);font-weight:600">${lbl}</div>
+            <div style="font-size:12px;color:var(--fg-3)">${val}</div>
+          </div>`).join('')}
+        <div class="p-theme-grid">
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--fg-3);display:block;margin-bottom:4px;">Website theme</label>
+            <select id="st_theme" class="p-inv-input">
+              <option value="navy-gold"${(s.site_theme||'navy-gold')==='navy-gold'?' selected':''}>Navy + Gold</option>
+              <option value="navy-copper"${(s.site_theme||'navy-gold')==='navy-copper'?' selected':''}>Navy + Copper</option>
+            </select>
+            <div class="p-soft-note">Navy + Copper keeps the navy base and swaps the accent color to a warmer editorial tone.</div>
+          </div>
+          <div>
+            <button class="btn-primary-sm p-btn-tight" id="saveThemeBtn" type="button">Save theme</button>
+            <div id="themeSaveMsg" style="font-size:12px;color:var(--status-ok);margin-top:8px;display:none;">Saved!</div>
+          </div>
+        </div>
+      </div>
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Account</div></div>
+        <div style="padding:10px 0;border-bottom:1px dashed var(--border-1);font-size:13px;color:var(--fg-2)">Signed in as <strong>${escHtml(SESSION_USER.name)}</strong></div>
+        <button class="btn-ghost-sm" id="logoutSet" style="margin-top:12px">Sign out</button>
+      </div>
+    </div>
+
+    <div class="p-card" style="margin-top:24px;">
+      <div class="p-card-head"><div class="p-card-title">Lab spaces</div></div>
+      <p style="font-size:13px;color:var(--fg-3);margin-bottom:16px;">These names flow into the lab platform and shared operational labels.</p>
+      <div class="p-grid-2" style="gap:16px;">
+        <div>
+          ${fieldRow('st_la_name','Lab A — short name', s.lab_a_name, 'Lab A')}
+          ${fieldRow('st_la_room','Lab A — room / building', s.lab_a_room, 'Tolentine 344')}
+        </div>
+        <div>
+          ${fieldRow('st_lb_name','Lab B — short name', s.lab_b_name, 'Lab B')}
+          ${fieldRow('st_lb_room','Lab B — room / building', s.lab_b_room, 'Mendel 270')}
+        </div>
+      </div>
+      <button class="btn-primary-sm" id="saveLabNames" style="margin-top:4px;">Save lab names</button>
+      <span id="labSaveMsg" style="font-size:12px;color:var(--status-ok);margin-left:10px;display:none;">Saved!</span>
+    </div>
+
+    <div class="p-card" style="margin-top:24px;">
+      <div class="p-card-head"><div class="p-card-title">Public page headers</div></div>
+      <p style="font-size:13px;color:var(--fg-3);margin-bottom:16px;">Titles and intro paragraphs shown on the public website pages.</p>
+      <div class="p-grid-2" style="gap:16px;">
+        <div>
+          ${fieldRow('st_res_sec','Research section title (home)', s.research_section_title, 'Research Areas')}
+          ${fieldRow('st_res_ey','Research section eyebrow (home)', s.research_eyebrow, 'Six pillars · updated quarterly')}
+          ${fieldRow('st_metric_res','Hero metric label · research', s.hero_metric_research_label, 'Research areas')}
+          ${fieldRow('st_metric_pub','Hero metric label · publications', s.hero_metric_publications_label, 'Publications')}
+          ${fieldRow('st_res_pt','Research page title', s.research_page_title, 'Six pillars of inquiry')}
+          ${fieldRow('st_res_pi','Research page intro', s.research_page_intro, 'LATFS investigates…')}
+        </div>
+        <div>
+          ${fieldRow('st_metric_people','Hero metric label · people', s.hero_metric_people_label, 'Active members')}
+          ${fieldRow('st_metric_fac','Hero metric label · facilities', s.hero_metric_facilities_label, 'Facilities')}
+          ${fieldRow('st_ppl_pt','People page title', s.people_page_title, 'Lab members')}
+          ${fieldRow('st_ppl_pi','People page intro', s.people_page_intro, 'A small, hands-on lab…')}
+          ${fieldRow('st_fac_pt','Facilities page title', s.facilities_page_title, 'Lab facilities & instruments')}
+          ${fieldRow('st_fac_pi','Facilities page intro', s.facilities_page_intro, 'Click any facility…')}
+          ${fieldRow('st_dl_pt','Downloads page title', s.downloads_page_title, 'Downloads')}
+          ${fieldRow('st_dl_pi','Downloads page intro', s.downloads_page_intro, 'Access published PDFs…')}
+        </div>
+      </div>
+      <button class="btn-primary-sm" id="savePageHeaders" style="margin-top:4px;">Save page headers</button>
+      <span id="pageHdrMsg" style="font-size:12px;color:var(--status-ok);margin-left:10px;display:none;">Saved!</span>
+    </div>
+
+    <div class="p-card" style="margin-top:24px;">
+      <div class="p-card-head"><div class="p-card-title">Platform section descriptions</div></div>
+      <p style="font-size:13px;color:var(--fg-3);margin-bottom:16px;">Subtitle text shown under each section heading in the platform (/platform) for all users.</p>
+      <div class="p-grid-2" style="gap:16px;">
+        <div>
+          ${fieldRow('st_pl_dash','Dashboard subtitle', s.platform_dashboard_sub, "Here is today's snapshot.")}
+          ${fieldRow('st_pl_sched','Schedule subtitle', s.platform_schedule_sub, 'Calendar of meetings, sessions and reservations.')}
+          ${fieldRow('st_pl_tasks','Tasks subtitle', s.platform_tasks_sub, 'Drag-style kanban (open / in progress / blocked / done).')}
+          ${fieldRow('st_pl_meet','Meetings subtitle', s.platform_meetings_sub, 'Group meetings, seminars and announcements from the PI.')}
+        </div>
+        <div>
+          ${fieldRow('st_pl_equip','Equipment subtitle', s.platform_equipment_sub, 'Check items out and check them back in. Last-user is tracked.')}
+          ${fieldRow('st_pl_iss','Issues subtitle', s.platform_issues_sub, 'Report broken equipment, request supplies, flag facility issues.')}
+          ${fieldRow('st_pl_inv','Inventory subtitle', s.platform_inventory_sub, 'Track consumables, chemicals, reagents and supplies.')}
+          ${fieldRow('st_pl_prof','Profile subtitle', s.platform_profile_sub, 'Your details, assigned tasks and equipment.')}
+          ${fieldRow('st_pl_mem','Members subtitle', s.platform_members_sub, 'Manage accounts. Only admins / professors can edit.')}
+        </div>
+      </div>
+      <button class="btn-primary-sm" id="savePlatformSubs" style="margin-top:4px;">Save platform descriptions</button>
+      <span id="platSubMsg" style="font-size:12px;color:var(--status-ok);margin-left:10px;display:none;">Saved!</span>
+    </div>
+  `;
+
+  const showSaved = (id) => { const el = $('#'+id); if(el){ el.style.display=''; setTimeout(()=>{ el.style.display='none'; }, 2500); } };
+
+  $('#logoutSet').onclick = doLogout;
+  $('#saveThemeBtn').onclick = async () => {
+    const upd = { site_theme: $('#st_theme').value };
+    try { await apiPut('/api/settings', upd); showSaved('themeSaveMsg'); }
+    catch(e) { alert(e.message); }
+  };
+
+  $('#saveLabNames').onclick = async () => {
+    const upd = {
+      lab_a_name: $('#st_la_name').value.trim() || 'Lab A',
+      lab_a_room: $('#st_la_room').value.trim(),
+      lab_b_name: $('#st_lb_name').value.trim() || 'Lab B',
+      lab_b_room: $('#st_lb_room').value.trim(),
+    };
+    try { await apiPut('/api/settings', upd); Object.assign(LAB_NAMES, upd); showSaved('labSaveMsg'); }
+    catch(e) { alert(e.message); }
+  };
+
+  $('#savePageHeaders').onclick = async () => {
+    const upd = {
+      research_section_title: $('#st_res_sec').value.trim(),
+      research_eyebrow:       $('#st_res_ey').value.trim(),
+      hero_metric_research_label: $('#st_metric_res').value.trim(),
+      hero_metric_publications_label: $('#st_metric_pub').value.trim(),
+      research_page_title:    $('#st_res_pt').value.trim(),
+      research_page_intro:    $('#st_res_pi').value.trim(),
+      hero_metric_people_label: $('#st_metric_people').value.trim(),
+      hero_metric_facilities_label: $('#st_metric_fac').value.trim(),
+      people_page_title:      $('#st_ppl_pt').value.trim(),
+      people_page_intro:      $('#st_ppl_pi').value.trim(),
+      facilities_page_title:  $('#st_fac_pt').value.trim(),
+      facilities_page_intro:  $('#st_fac_pi').value.trim(),
+      downloads_page_title:   $('#st_dl_pt').value.trim(),
+      downloads_page_intro:   $('#st_dl_pi').value.trim(),
+    };
+    try { await apiPut('/api/settings', upd); Object.assign(LAB_NAMES, upd); showSaved('pageHdrMsg'); }
+    catch(e) { alert(e.message); }
+  };
+
+  $('#savePlatformSubs').onclick = async () => {
+    const upd = {
+      platform_dashboard_sub: $('#st_pl_dash').value.trim(),
+      platform_schedule_sub:  $('#st_pl_sched').value.trim(),
+      platform_tasks_sub:     $('#st_pl_tasks').value.trim(),
+      platform_meetings_sub:  $('#st_pl_meet').value.trim(),
+      platform_equipment_sub: $('#st_pl_equip').value.trim(),
+      platform_issues_sub:    $('#st_pl_iss').value.trim(),
+      platform_inventory_sub: $('#st_pl_inv').value.trim(),
+      platform_profile_sub:   $('#st_pl_prof').value.trim(),
+      platform_members_sub:   $('#st_pl_mem').value.trim(),
+    };
+    try { await apiPut('/api/settings', upd); Object.assign(LAB_NAMES, upd); showSaved('platSubMsg'); }
+    catch(e) { alert(e.message); }
+  };
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+async function renderOverview(root){
+  const [people, news, pubs, gallery, downloads, apps] = await Promise.all([
+    apiGet('/api/people').catch(()=>[]),
+    apiGet('/api/news').catch(()=>[]),
+    apiGet('/api/publications').catch(()=>[]),
+    apiGet('/api/gallery').catch(()=>[]),
+    apiGet('/api/downloads/all').catch(()=>[]),
+    apiGet('/api/apps/all').catch(()=>[])
+  ]);
+  root.innerHTML = `
+    <div class="p-page-head">
+      <div>
+        <div class="eyebrow" style="color:var(--gold-700)">Website admin</div>
+        <h1 class="p-h1">Content overview</h1>
+        <p class="p-h1-sub">This panel manages the public LATFS website. For day-to-day lab use, use the Lab platform.</p>
+      </div>
+      <div class="p-actions">
+        <a class="btn-ghost-sm p-btn-tight" href="/platform" style="text-decoration:none;">Open lab platform</a>
+        <button class="btn-ghost-sm p-btn-tight" id="ovLogout">Sign out</button>
+      </div>
+    </div>
+    <div class="p-overview-grid">
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Quick edits</div></div>
+        <div class="p-action-tiles">
+          <button class="p-action-tile" type="button" data-ov-tab="hero">
+            <div class="p-action-tile-kicker">Homepage</div>
+            <div class="p-action-tile-title">Hero and front page</div>
+            <div class="p-action-tile-copy">Jump straight to the homepage hero, research labels, and public-first content.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="publications">
+            <div class="p-action-tile-kicker">Archive</div>
+            <div class="p-action-tile-title">Publications</div>
+            <div class="p-action-tile-copy">Edit the publication table, PDF links, DOI links, and year ordering from one place.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="downloads">
+            <div class="p-action-tile-kicker">Library</div>
+            <div class="p-action-tile-title">Downloads</div>
+            <div class="p-action-tile-copy">Manage PDFs, documents, media, and any public file you want visitors to download.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="gallery">
+            <div class="p-action-tile-kicker">Media</div>
+            <div class="p-action-tile-title">Gallery</div>
+            <div class="p-action-tile-copy">Keep the homepage carousel and gallery page synced to the latest uploaded lab images.</div>
+          </button>
+          <button class="p-action-tile" type="button" data-ov-tab="apps">
+            <div class="p-action-tile-kicker">Apps</div>
+            <div class="p-action-tile-title">Apps and calculators</div>
+            <div class="p-action-tile-copy">Add linked tools, paste inline HTML, or import a standalone HTML calculator file.</div>
+          </button>
+        </div>
+      </div>
+      <div class="p-card">
+        <div class="p-card-head"><div class="p-card-title">Content status</div></div>
+        <div class="p-link-stack">
+          <div class="p-link-item"><strong>${people.length}</strong> people profiles are currently published on the public site.</div>
+          <div class="p-link-item"><strong>${pubs.length}</strong> publications are live in the public archive table.</div>
+          <div class="p-link-item"><strong>${gallery.length}</strong> gallery images, <strong>${downloads.length}</strong> downloads, and <strong>${apps.length}</strong> apps are ready to manage.</div>
+          <div class="p-link-item"><strong>${news.length}</strong> public news items are available for homepage and news-page surfacing.</div>
+        </div>
+      </div>
+    </div>
+  `;
+  $('#ovLogout').onclick = doLogout;
+  root.querySelectorAll('[data-ov-tab]').forEach(btn => btn.onclick = () => { _adminTab = btn.dataset.ovTab; navigate('content'); });
+}
+
+const ROUTES = { overview: renderOverview, content: renderAdmin, schedule: renderSchedule, tasks: renderTasks, meetings: renderMeetings, inventory: renderInventory, projects: renderProjects };
+
+async function doLogout() {
+  await fetch('/admin/logout',{method:'POST',credentials:'same-origin', headers:{'x-csrf-token': CSRF||''}}).catch(()=>{});
+  CSRF = '';
+  _resetAdminLogin();
+  $('#appShell').style.display = 'none';
+  $('#loginScreen').style.display = 'flex';
+}
+
+async function boot() {
+  $('#loginForm').onsubmit = async (e) => {
+    e.preventDefault();
+    $('#lErr').textContent = '';
+    try {
+      let result;
+      if (_adminLoginState.step === 1) {
+        _adminLoginState.username  = $('#lUser').value;
+        _adminLoginState.password  = $('#lPass').value;
+        _adminLoginState.rememberMe = $('#adminRemember').checked;
+        result = await doLogin(_adminLoginState.username, _adminLoginState.password, null, _adminLoginState.rememberMe);
+      } else {
+        result = await doLogin(_adminLoginState.username, _adminLoginState.password, $('#lTotp').value.trim(), _adminLoginState.rememberMe);
+      }
+      if (result && result.totp_required) {
+        _adminLoginState.step = 2;
+        $('#adminStep1').style.display = 'none';
+        $('#adminStep2').style.display = '';
+        $('#adminSubmitBtn').textContent = 'Verify';
+        $('#lTotp').focus();
+        return;
+      }
+      $('#loginScreen').style.display = 'none';
+      $('#appShell').style.display = 'flex';
+      $('#userInitials').textContent = SESSION_USER.initials;
+      $('#userName').textContent = SESSION_USER.name;
+      $('#userRole').textContent = SESSION_USER.role;
+      renderNav();
+      navigate('overview');
+    } catch(err) { $('#lErr').textContent = err.message; }
+  };
+  $('#adminBackBtn').onclick = () => { $('#lErr').textContent = ''; _resetAdminLogin(); };
+  $('#logoutBtn').onclick = doLogout;
+  const ok = await checkAuth();
+  if (ok) {
+    // Load lab names from settings before rendering
+    try { const s = await apiGet('/api/settings'); Object.assign(LAB_NAMES, s); } catch(_){}
+    $('#loginScreen').style.display = 'none';
+    $('#appShell').style.display = 'flex';
+    $('#userInitials').textContent = SESSION_USER.initials;
+    $('#userName').textContent = SESSION_USER.name;
+    $('#userRole').textContent = SESSION_USER.role;
+    renderNav();
+    navigate('overview');
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+boot();
 </script>
 </body>
 </html>
