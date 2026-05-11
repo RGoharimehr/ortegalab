@@ -1086,18 +1086,32 @@ function renderPeopleTab(body, people) {
       }
       const xMap = { left: '0%', center: '50%', right: '100%' };
       const yMap = { top: '0%', center: '50%', bottom: '100%' };
+      const safeImageSrc = (value) => {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        if (raw.startsWith('/')) return raw;
+        if (raw.startsWith('blob:') || raw.startsWith('data:image/')) return raw;
+        try {
+          const parsed = new URL(raw, window.location.origin);
+          if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.origin === window.location.origin) {
+            return parsed.href;
+          }
+        } catch (_) {}
+        return '';
+      };
       const applySource = (src) => {
-        const visible = !!src;
+        const safeSrc = safeImageSrc(src);
+        const visible = !!safeSrc;
         if (img) {
-          img.src = src || '';
+          img.src = safeSrc;
           img.style.display = visible ? 'block' : 'none';
         }
         if (result) {
-          result.src = src || '';
+          result.src = safeSrc;
           result.style.display = visible ? 'block' : 'none';
         }
         if (preview) {
-          preview.src = src || '';
+          preview.src = safeSrc;
           preview.style.visibility = visible ? 'visible' : 'hidden';
         }
       };

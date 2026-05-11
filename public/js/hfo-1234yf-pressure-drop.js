@@ -2139,9 +2139,9 @@
 
       document.getElementById('resultsGrid').innerHTML = cards.map((card) => `
         <div class="result-card">
-          <div class="result-label">${card.label}</div>
-          <div class="result-value">${card.value}</div>
-          ${card.secondary ? `<div class="result-secondary">${card.secondary}</div>` : ''}
+          <div class="result-label">${escapeHtml(card.label)}</div>
+          <div class="result-value">${escapeHtml(card.value)}</div>
+          ${card.secondary ? `<div class="result-secondary">${escapeHtml(card.secondary)}</div>` : ''}
         </div>
       `).join('');
     }
@@ -2149,8 +2149,8 @@
     function kvRow(label, value) {
       return `
         <div class="kv-row">
-          <div class="kv-key">${label}</div>
-          <div class="kv-value">${value}</div>
+          <div class="kv-key">${escapeHtml(label)}</div>
+          <div class="kv-value">${escapeHtml(value)}</div>
         </div>
       `;
     }

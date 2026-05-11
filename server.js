@@ -1474,7 +1474,7 @@ function publicLimit(value, fallback = 250, max = 250) {
 
 const LOGIN_EVENTS_RETENTION_DAYS = envInt('LOGIN_EVENTS_RETENTION_DAYS', 180, { min: 7, max: 3650 });
 const LOGIN_EVENTS_MAX_ROWS = envInt('LOGIN_EVENTS_MAX_ROWS', 50000, { min: 1000, max: 500000 });
-const LOGIN_EVENTS_PRUNE_MS = envInt('LOGIN_EVENTS_PRUNE_INTERVAL_MS', 6 * 60 * 60 * 1000, { min: 60000, max: 7 * 24 * 60 * 60 * 1000 });
+const LOGIN_EVENTS_PRUNE_INTERVAL_MS = envInt('LOGIN_EVENTS_PRUNE_INTERVAL_MS', 6 * 60 * 60 * 1000, { min: 60000, max: 7 * 24 * 60 * 60 * 1000 });
 
 function pruneLoginEvents() {
   try {
@@ -2247,12 +2247,13 @@ app.delete('/api/meetings/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 // INVENTORY
 // CSV export — must be before parameterised routes to avoid conflict
 app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => {
+  // Limit export payloads to reduce memory pressure and accidental oversized downloads.
   const rowLimit = clampInt(req.query.limit, 1000, { min: 1, max: 5000 });
   const rows = db.prepare(`
     SELECT i.id, i.lab, i.sku, i.name, i.category, i.qty, i.min_qty, i.unit,
            i.location, i.expiry_date, i.chemical_cas, i.hazard_class, i.sds_url,
            i.reorder_url, i.notes, s.name AS supplier_name, s.email AS supplier_email,
-            s.phone AS supplier_phone, i.created_at
+           s.phone AS supplier_phone, i.created_at
     FROM inventory i
     LEFT JOIN suppliers s ON s.id = i.supplier_id
     ORDER BY i.lab, i.sort_order, i.id
@@ -2271,6 +2272,7 @@ app.get('/api/inventory/export.csv', apiReadLimiter, requireAuth, (req, res) => 
   }
   const csv = lines.join('\r\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  // Echo the applied server-side cap so callers can detect truncation expectations.
   res.setHeader('X-Export-Row-Limit', String(rowLimit));
   res.setHeader('Content-Disposition', `attachment; filename="inventory-${new Date().toISOString().slice(0,10)}.csv"`);
   res.send(csv);
@@ -4045,7 +4047,7 @@ app.use((err, req, res, next) => {
 
 const server = app.listen(PORT, () => {
   pruneLoginEvents();
-  setInterval(pruneLoginEvents, LOGIN_EVENTS_PRUNE_MS).unref();
+  setInterval(pruneLoginEvents, LOGIN_EVENTS_PRUNE_INTERVAL_MS).unref();
   console.log(`LATFS Website running at http://localhost:${PORT}`);
   console.log(`Admin panel: http://localhost:${PORT}/admin`);
   console.log(`Platform:    http://localhost:${PORT}/platform`);
