@@ -39,6 +39,12 @@ The Docker Compose setup stores SQLite at `/app/data/latfs.db` on a persistent d
 
 This app requires a persistent Node process, native SQLite, sessions, and writable uploads. A static site host cannot run the admin and lab platform directly.
 
+### Render web service
+
+Use a **web service**, with build command `npm ci && npm run build:css`, start command `npm start`, and health check path `/healthz`. Set `NODE_ENV=production`, `SESSION_SECRET` (a long random secret), `ADMIN_SEED_PASSWORD` (a unique password for a fresh database), and `BASE_URL` (the public URL). Do not commit those values.
+
+For native Node, attach one persistent disk at `/opt/render/project/src/data` and set `DATABASE_PATH=/opt/render/project/src/data/latfs.db` and `UPLOADS_PATH=/opt/render/project/src/data/uploads`. For the Docker runtime, use `/app/data` for the disk mount and corresponding `/app/data/latfs.db` and `/app/data/uploads` paths. Only files under the mount survive a redeploy. If a database or uploads already exist at another path, migrate them before changing these values; otherwise the app will appear to start with fresh content. The SQLite design expects a single running instance.
+
 ## Project Structure
 
 ```

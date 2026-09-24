@@ -56,12 +56,13 @@ function hashResetToken(token) {
   return crypto.createHash('sha256').update(String(token || '')).digest('hex');
 }
 
-// Ensure uploads directory exists
-if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
+// Keep writable files together on a persistent mount when configured.
+const UPLOADS_PATH = path.resolve(process.env.UPLOADS_PATH || path.join(__dirname, 'uploads'));
+fs.mkdirSync(UPLOADS_PATH, { recursive: true });
 
 // Photo upload storage: preserve extension, unique name
 const photoStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, './uploads/'),
+  destination: (req, file, cb) => cb(null, UPLOADS_PATH),
   filename: (req, file, cb) => {
     const rawExt = path.extname(file.originalname).toLowerCase();
     const ext = /^\.[a-z0-9]+$/.test(rawExt) ? rawExt : '';
@@ -79,7 +80,7 @@ const photoUpload = multer({
 
 // Document upload storage: common downloadable files, up to 25 MB
 const docStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, './uploads/'),
+  destination: (req, file, cb) => cb(null, UPLOADS_PATH),
   filename: (req, file, cb) => {
     const rawExt = path.extname(file.originalname).toLowerCase();
     const ext = /^\.[a-z0-9]+$/.test(rawExt) ? rawExt : '';
@@ -135,6 +136,7 @@ const docUpload = multer({
 
 // Database setup — path can be overridden via DATABASE_PATH env var (useful in Docker)
 const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'latfs.db');
+fs.mkdirSync(path.dirname(path.resolve(DB_PATH)), { recursive: true });
 const db = new Database(DB_PATH);
 
 // Create tables
@@ -479,8 +481,8 @@ function warnDefaultPassword(username, defaultPw) {
     console.warn(`[security] ⚠️  User "${username}" still has the default seed password. Change it via Lab Members → Reset PW.`);
   }
 }
-if (ADMIN_SEED_PW) warnDefaultPassword('admin', ADMIN_SEED_PW);
-if (LAB_SEED_PW) for (const a of seedAccounts) warnDefaultPassword(a.username, LAB_SEED_PW);
+warnDefaultPassword('admin', 'admin123');
+for (const a of seedAccounts) warnDefaultPassword(a.username, 'latfs2024');
 if (!process.env.SESSION_SECRET) {
   if (process.env.NODE_ENV === 'production') {
     console.error('[security] FATAL: SESSION_SECRET env var is not set. Refusing to start in production without a secure secret.');
@@ -1005,6 +1007,14 @@ app.use((req, res, next) => {
 });
 
 // Only the intended public directory is web accessible. Never serve the app root.
+app.get('/healthz', (req, res) => {
+  try {
+    db.prepare('SELECT 1').get();
+    res.json({ ok: true });
+  } catch (_) {
+    res.status(503).json({ ok: false });
+  }
+});
 app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'deny' }));
 
 // Rate limiters
@@ -1796,7 +1806,7 @@ app.delete('/api/sponsors/:id', apiWriteLimiter, requireStaff, requireCsrf, (req
 });
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(UPLOADS_PATH, { dotfiles: 'deny' }));
 
 // PHOTO UPLOAD API
 const uploadRateLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
