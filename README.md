@@ -27,13 +27,23 @@ npm start
 
 The site will be available at **http://localhost:3000**
 
-## Default Admin Credentials
+## Development credentials
 
 - **URL:** http://localhost:3000/admin
 - **Username:** `admin`
 - **Password:** `admin123`
 
-> Change the admin password after first login via the database or by extending the admin panel.
+These credentials are for local development only. On a fresh production database, set a unique `ADMIN_SEED_PASSWORD`; startup fails without it. Demo lab accounts are created in production only when `LAB_SEED_PASSWORD` is explicitly set. Set `SESSION_SECRET` to a long random value. Existing accounts keep their passwords when these environment variables change.
+
+The Docker Compose setup stores SQLite at `/app/data/latfs.db` on a persistent directory volume. Back up the database and uploads before changing volumes on an existing deployment.
+
+This app requires a persistent Node process, native SQLite, sessions, and writable uploads. A static site host cannot run the admin and lab platform directly.
+
+### Render web service
+
+Use a **web service**, with build command `npm ci && npm run build:css`, start command `npm start`, and health check path `/healthz`. Set `NODE_ENV=production`, `SESSION_SECRET` (a long random secret), `ADMIN_SEED_PASSWORD` (a unique password for a fresh database), and `BASE_URL` (the public URL). Do not commit those values.
+
+For native Node, attach one persistent disk at `/opt/render/project/src/data` and set `DATABASE_PATH=/opt/render/project/src/data/latfs.db` and `UPLOADS_PATH=/opt/render/project/src/data/uploads`. For the Docker runtime, use `/app/data` for the disk mount and corresponding `/app/data/latfs.db` and `/app/data/uploads` paths. Only files under the mount survive a redeploy. If a database or uploads already exist at another path, migrate them before changing these values; otherwise the app will appear to start with fresh content. The SQLite design expects a single running instance.
 
 ## Project Structure
 

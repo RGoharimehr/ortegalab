@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LATFS Â· Laboratory for Advanced Thermal & Fluid Systems</title>
+<title>LATFS · Laboratory for Advanced Thermal & Fluid Systems</title>
 <meta name="description" content="Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University Â· two-phase flow, microchannel cooling, energy-efficient electronic systems.">
 <link rel="canonical" href="https://latfs.villanova.edu/">
 <meta property="og:type" content="website">
@@ -800,6 +800,32 @@ body {
     align-items: stretch;
   }
 }
+
+/* Refined public navigation and accessible reading sizes. */
+.w-nav { box-shadow: 0 10px 28px rgba(8,15,36,.12); }
+.w-nav-inner { min-height: 72px; height: auto; }
+.w-brand-img { height: 48px; max-width: 70px; }
+.w-nav-links { align-items: center; gap: 2px; }
+.w-nav-link { font-size: .875rem; padding: 11px 12px; border-radius: 9px; }
+.w-nav-link:hover { background: rgba(255,255,255,.08); }
+.w-nav-signin { font-size: .875rem; padding: 10px 17px; }
+.w-nav-link:focus-visible, .w-brand:focus-visible, .w-nav-toggle:focus-visible,
+.w-btn:focus-visible, .w-dot:focus-visible { outline: 3px solid var(--gold-300); outline-offset: 3px; }
+.w-sh-title { font-size: clamp(1.35rem, 2vw, 1.75rem); }
+.w-research-desc, .w-news-body, .w-fac-desc, .w-pub-authors, .w-hero-lead { font-size: 1rem; }
+.w-research-meta, .w-metric-lbl, .w-news-date, .w-fac-cta { font-size: .8125rem; }
+.w-research-row { border-radius: 16px; }
+.w-research-peek-frame { border-radius: 20px; }
+.w-news-card, .w-pub-card, .w-fac-card { border-radius: 16px; }
+@media (max-width:1180px) {
+  .w-nav-inner { min-height: 64px; }
+  .w-nav-toggle { min-width: 44px; min-height: 44px; }
+  .w-nav-links.open { top: 64px; max-height: calc(100dvh - 64px); overflow-y: auto; box-shadow: 0 22px 32px rgba(8,15,36,.2); }
+  .w-nav-link { width: 100%; font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
 </style>
 </head>
 <body>
@@ -1119,19 +1145,21 @@ function Nav() {
   const links = NAV.map(([id, label]) =>
     h('span', {
       class: 'w-nav-link' + (state.route === id ? ' active' : ''),
+      role: 'link', tabindex: '0', 'aria-current': state.route === id ? 'page' : null,
       onclick: () => go(id),
+      onkeydown: (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); go(id); } },
     }, label)
   );
   const wrap = h('nav', { class: 'w-nav' },
       h('div', { class: 'w-nav-inner' },
-        h('div', { class: 'w-brand', onclick: () => go('home') },
+        h('div', { class: 'w-brand', role: 'link', tabindex: '0', 'aria-label': 'LATFS home', onclick: () => go('home'), onkeydown: (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); go('home'); } } },
           h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' })
         ),
       h('div', { class: 'w-nav-links' + (state.navOpen ? ' open' : '') },
         ...links,
         h('a', { class: 'w-nav-signin', href: platformHref() }, 'Sign in')
       ),
-      h('button', { class: 'w-nav-toggle', 'aria-label': 'Menu', onclick: () => { state.navOpen = !state.navOpen; render(); } }, 'â˜°')
+      h('button', { class: 'w-nav-toggle', type: 'button', 'aria-label': 'Toggle menu', 'aria-expanded': String(state.navOpen), onclick: () => { state.navOpen = !state.navOpen; render(); } }, '☰')
     )
   );
   return wrap;
@@ -2514,4 +2542,3 @@ function render() {
 </script>
 </body>
 </html>
-

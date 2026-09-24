@@ -12,7 +12,8 @@ services:
       NODE_ENV: production
       PORT: 3000
       # Required — override with a strong random value
-      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-production}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in your environment}
+      DATABASE_PATH: /app/data/latfs.db
       BASE_URL: ${BASE_URL:-https://latfs.villanova.edu}
       # Optional: seed passwords (only used on first-run DB creation)
       ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}
@@ -25,7 +26,7 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
     volumes:
       # Persist the SQLite database and uploaded files outside the container
-      - latfs_db:/app/latfs.db
+      - latfs_db:/app/data
       - latfs_uploads:/app/uploads
 
 volumes:
