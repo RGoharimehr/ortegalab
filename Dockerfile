@@ -19,7 +19,7 @@ COPY server.js ./
 COPY public ./public/
 
 # Create directories that must persist across restarts (mount as volumes)
-RUN mkdir -p uploads
+RUN mkdir -p uploads data
 
 # Run as a non-root user for security
 RUN addgroup -S latfs && adduser -S latfs -G latfs && \

@@ -27,13 +27,17 @@ npm start
 
 The site will be available at **http://localhost:3000**
 
-## Default Admin Credentials
+## Development credentials
 
 - **URL:** http://localhost:3000/admin
 - **Username:** `admin`
 - **Password:** `admin123`
 
-> Change the admin password after first login via the database or by extending the admin panel.
+These credentials are for local development only. On a fresh production database, set a unique `ADMIN_SEED_PASSWORD`; startup fails without it. Demo lab accounts are created in production only when `LAB_SEED_PASSWORD` is explicitly set. Set `SESSION_SECRET` to a long random value. Existing accounts keep their passwords when these environment variables change.
+
+The Docker Compose setup stores SQLite at `/app/data/latfs.db` on a persistent directory volume. Back up the database and uploads before changing volumes on an existing deployment.
+
+This app requires a persistent Node process, native SQLite, sessions, and writable uploads. A static site host cannot run the admin and lab platform directly.
 
 ## Project Structure
 

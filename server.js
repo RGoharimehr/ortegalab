@@ -439,10 +439,14 @@ try {
   db.prepare("UPDATE sponsors SET logo_url = '/' || logo_url WHERE logo_url != '' AND logo_url NOT LIKE '/%' AND logo_url NOT LIKE 'http%'").run();
 } catch(e) { console.error('Data migration error:', e.message); }
 
-// Seed admin user — password can be overridden by ADMIN_SEED_PASSWORD env var
-const ADMIN_SEED_PW = process.env.ADMIN_SEED_PASSWORD || 'admin123';
+// New production installations must supply credentials explicitly.
+const isProduction = process.env.NODE_ENV === 'production';
+const ADMIN_SEED_PW = process.env.ADMIN_SEED_PASSWORD || (isProduction ? '' : 'admin123');
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
 if (!adminExists) {
+  if (!ADMIN_SEED_PW || (isProduction && ADMIN_SEED_PW === 'admin123')) {
+    throw new Error('Set a unique ADMIN_SEED_PASSWORD before starting a new production installation.');
+  }
   const hash = bcrypt.hashSync(ADMIN_SEED_PW, BCRYPT_ROUNDS);
   db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run('admin', hash);
 }
@@ -451,7 +455,7 @@ if (!adminExists) {
 try { db.prepare("UPDATE users SET role='admin', name=COALESCE(NULLIF(name,''),'Site administrator') WHERE username='admin'").run(); } catch(_){}
 
 // Seed sample lab accounts — password can be overridden by LAB_SEED_PASSWORD env var
-const LAB_SEED_PW = process.env.LAB_SEED_PASSWORD || 'latfs2024';
+const LAB_SEED_PW = process.env.LAB_SEED_PASSWORD || (isProduction ? '' : 'latfs2024');
 const seedAccounts = [
   { username: 'aortega',   name: 'Dr. Alfonso Ortega', role: 'professor', email: 'aortega@villanova.edu' },
   { username: 'mreyes',    name: 'M. Reyes',           role: 'student',   email: 'mreyes@villanova.edu' },
@@ -459,8 +463,8 @@ const seedAccounts = [
   { username: 'dhernandez',name: 'D. Hernandez',       role: 'student',   email: 'dhernandez@villanova.edu' },
   { username: 'apark',     name: 'A. Park',            role: 'student',   email: 'apark@villanova.edu' },
 ];
-const seedHash = bcrypt.hashSync(LAB_SEED_PW, BCRYPT_ROUNDS);
-for (const a of seedAccounts) {
+const seedHash = LAB_SEED_PW ? bcrypt.hashSync(LAB_SEED_PW, BCRYPT_ROUNDS) : null;
+for (const a of seedHash ? seedAccounts : []) {
   const exists = db.prepare('SELECT id FROM users WHERE username=?').get(a.username);
   if (!exists) {
     db.prepare('INSERT INTO users (username, password, name, role, email, active) VALUES (?,?,?,?,?,1)')
@@ -475,8 +479,8 @@ function warnDefaultPassword(username, defaultPw) {
     console.warn(`[security] ⚠️  User "${username}" still has the default seed password. Change it via Lab Members → Reset PW.`);
   }
 }
-warnDefaultPassword('admin', ADMIN_SEED_PW);
-for (const a of seedAccounts) warnDefaultPassword(a.username, LAB_SEED_PW);
+if (ADMIN_SEED_PW) warnDefaultPassword('admin', ADMIN_SEED_PW);
+if (LAB_SEED_PW) for (const a of seedAccounts) warnDefaultPassword(a.username, LAB_SEED_PW);
 if (!process.env.SESSION_SECRET) {
   if (process.env.NODE_ENV === 'production') {
     console.error('[security] FATAL: SESSION_SECRET env var is not set. Refusing to start in production without a secure secret.');
@@ -1000,24 +1004,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve legacy ortegalab website files from the repo root (HTML, CSS, JS, images).
-// A blocklist middleware runs first so that sensitive server files are never exposed.
-const BLOCKED_ROOT_PATHS = new Set([
-  'server.js', 'package.json', 'package-lock.json',
-  'latfs.db', 'Dockerfile', 'docker-compose.yml',
-  'README', 'README.md', 'tailwind.config.js', 'license.txt',
-]);
-app.use((req, res, next) => {
-  const first = req.path.split('/').filter(Boolean)[0] || '';
-  if (BLOCKED_ROOT_PATHS.has(first)) return res.status(404).end();
-  if (first === 'node_modules' || first === 'src') return res.status(404).end();
-  // Block dotfiles (e.g. .env, .gitignore) — express dotfiles:'deny' also handles this below
-  if (first.startsWith('.')) return res.status(404).end();
-  next();
-});
-app.use(express.static(__dirname, { dotfiles: 'deny' }));
+// Only the intended public directory is web accessible. Never serve the app root.
+app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'deny' }));
 
 // Rate limiters
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
