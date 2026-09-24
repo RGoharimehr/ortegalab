@@ -1566,7 +1566,7 @@ function ResearchGrid(rows) {
           h('div', { class: 'w-sh-bar' }),
           h('h2',  { class: 'w-sh-title' }, s.research_section_title || 'Research Areas'),
         ),
-        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Six pillars · updated quarterly'),
+        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Thermal & fluid systems'),
       ),
       h('div', { class: 'w-research-layout' },
         h('div', { class: 'w-research-list' }, ...rowEls),
@@ -2065,7 +2065,6 @@ function PageResearch() {
   const cards = items.length
     ? items.map((r, i) =>
         h('article', { class: 'w-rc' },
-          h('div', { class: 'w-rc-media', style: { backgroundImage: `url(${r.image_url || RES.rMini})` }, 'aria-hidden': 'true' }),
           h('div', { class: 'w-rc-content' },
             h('span', { class: 'w-rc-index' }, String(i + 1).padStart(2, '0') + ' / RESEARCH AREA'),
             h('h2', { class: 'w-rc-title' }, r.title || r.name || ''),

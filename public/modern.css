@@ -188,3 +188,19 @@ body.dm .p-app { background: var(--bg-2); }
   .w-research-index .w-rc { grid-template-columns: 1fr; }
   .w-rc-media { min-height: 180px; }
 }
+
+/* Research assets in the archive are thumbnail sized; keep the index crisp. */
+.w-research-layout { display: block; }
+.w-research-peek { display: none; }
+.w-research-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; border: 0; counter-reset: research; }
+.w-research-row { counter-increment: research; margin: 0; min-height: 196px; padding: 28px 30px; border: 1px solid var(--border-1); border-left: 1px solid var(--border-1); border-radius: 16px; background: #fff; }
+.w-research-row::before { content: counter(research, decimal-leading-zero); position: static; inset: auto; display: block; opacity: 1; background: none; color: var(--gold-700); font-size: .82rem; font-weight: 850; letter-spacing: .12em; margin-bottom: 16px; }
+.w-research-row:hover, .w-research-row.is-hover { border-color: var(--gold-500); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.w-research-row:hover::before, .w-research-row.is-hover::before { opacity: 1; }
+.w-research-index .w-rc { display: block; min-height: 225px; padding: 0; }
+.w-rc-content { padding: clamp(24px, 2.7vw, 36px); }
+.w-rc-index { margin-bottom: 22px; }
+@media (max-width: 700px) {
+  .w-research-list { grid-template-columns: 1fr; }
+  .w-research-row { min-height: 0; }
+}
