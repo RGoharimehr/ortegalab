@@ -15,6 +15,9 @@ const { authenticator } = require('otplib');
 const QRCode = require('qrcode');
 
 const app = express();
+// Render terminates TLS at one reverse proxy. Trust that hop so rate limits
+// identify visitors correctly instead of treating every request as one IP.
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || 'https://latfs.villanova.edu';
 const SESSION_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? '' : crypto.randomBytes(64).toString('hex'));
@@ -753,11 +756,56 @@ if (db.prepare('SELECT COUNT(*) as cnt FROM projects').get().cnt === 0) {
   for (const p of projs) stmt.run(...p);
 }
 
+// The legacy image directory is absent from this repository. Update only the
+// known seed paths, preserving anything editors uploaded or entered themselves.
+const legacyImages = {
+  '/images/top1a.png': '/assets/hero-1.png',
+  '/images/top2a.png': '/assets/hero-2.png',
+  '/images/top3a.png': '/assets/hero-3.png',
+  '/images/CSP123_20130911_0195-Edit.jpg': '/assets/facility-1.png',
+  '/images/IMG_1526.JPG': '/assets/facility-2.png',
+  '/images/re01.png': '/assets/hero-3.png',
+  '/images/re02.gif': '/assets/research-droplet.png',
+  '/images/re03.png': '/assets/research-minichannel.png',
+  '/images/re04.png': '/assets/research-geothermal.png',
+  '/images/re05.png': '/assets/facility-3.png',
+  '/images/facilities_1a.png': '/assets/facility-1.png',
+  '/images/facilities_2a.png': '/assets/facility-2.png',
+  '/images/facilities_3a.png': '/assets/facility-3.png',
+  '/images/facilities_4a.png': '/assets/facility-4.png',
+  '/images/facilities_5a.png': '/assets/research-minichannel.png',
+  '/images/facil01.png': '/assets/research-geothermal.png',
+  '/images/sponnsf.gif': '/assets/sponsors/nsf.svg',
+  '/images/sponintel.gif': '/assets/sponsors/intel.svg',
+  '/images/sponamd.gif': '/assets/sponsors/amd.svg',
+  '/images/sponhon.gif': '/assets/sponsors/honeywell.svg',
+  '/images/sponray.gif': '/assets/sponsors/rtx.svg',
+  '/images/sponti.gif': '/assets/sponsors/ti.svg',
+  '/images/sponsrc.gif': '/assets/sponsors/src.svg',
+  '/images/templatemo_logo_villanova.png': '/assets/sponsors/villanova.svg',
+  '/images/sponses2.svg': '/assets/sponsors/e3s.svg',
+  '/images/sponcis.gif': '',
+  '/images/sponde.gif': '',
+};
+const repairSeedImages = db.transaction(() => {
+  for (const [table, column] of [
+    ['research', 'image_url'], ['sponsors', 'logo_url'],
+    ['gallery', 'image_url'], ['hero_slides', 'image_url'],
+    ['facilities', 'photo_url']
+  ]) {
+    const update = db.prepare(`UPDATE ${table} SET ${column}=? WHERE ${column}=? OR ${column}=?`);
+    for (const [oldPath, newPath] of Object.entries(legacyImages)) {
+      update.run(newPath, oldPath, oldPath.slice(1));
+    }
+  }
+});
+repairSeedImages();
+
 // Post-seed data migration: add ES2 sponsor if it doesn't exist in an existing DB
 try {
   const es2Exists = db.prepare("SELECT id, show_in_footer FROM sponsors WHERE name LIKE '%ES2%' OR name LIKE '%E3S%' OR name LIKE '%Energy Efficient Electronic%'").get();
   if (!es2Exists) {
-    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run('ES2 - Energy Efficient Electronic Systems', '/images/sponses2.svg', 'https://www.e3s-center.org', 11, 1);
+    db.prepare('INSERT INTO sponsors (name, logo_url, website_url, sort_order, show_in_footer) VALUES (?, ?, ?, ?, ?)').run('ES2 - Energy Efficient Electronic Systems', '/assets/sponsors/e3s.svg', 'https://www.e3s-center.org', 11, 1);
   } else if (!es2Exists.show_in_footer) {
     db.prepare('UPDATE sponsors SET show_in_footer=1 WHERE id=?').run(es2Exists.id);
   }
