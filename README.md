@@ -33,7 +33,7 @@ The site will be available at **http://localhost:3000**
 - **Username:** `admin`
 - **Password:** `admin123`
 
-These credentials are for local development only. On a fresh production database, set a unique `ADMIN_SEED_PASSWORD`; startup fails without it. Demo lab accounts are created in production only when `LAB_SEED_PASSWORD` is explicitly set. Set `SESSION_SECRET` to a long random value. Existing accounts keep their passwords when these environment variables change.
+These credentials are for local development only. On a fresh production database, set a unique `ADMIN_SEED_PASSWORD` to create an admin account. Without it, the public site starts but no admin account is created; add the variable and restart to enable admin access. Demo lab accounts are created in production only when `LAB_SEED_PASSWORD` is explicitly set. Set `SESSION_SECRET` to a long random value. Existing accounts keep their passwords when these environment variables change.
 
 The Docker Compose setup stores SQLite at `/app/data/latfs.db` on a persistent directory volume. Back up the database and uploads before changing volumes on an existing deployment.
 

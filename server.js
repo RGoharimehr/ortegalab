@@ -445,12 +445,11 @@ try {
 const isProduction = process.env.NODE_ENV === 'production';
 const ADMIN_SEED_PW = process.env.ADMIN_SEED_PASSWORD || (isProduction ? '' : 'admin123');
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
-if (!adminExists) {
-  if (!ADMIN_SEED_PW || (isProduction && ADMIN_SEED_PW === 'admin123')) {
-    throw new Error('Set a unique ADMIN_SEED_PASSWORD before starting a new production installation.');
-  }
+if (!adminExists && ADMIN_SEED_PW && !(isProduction && ADMIN_SEED_PW === 'admin123')) {
   const hash = bcrypt.hashSync(ADMIN_SEED_PW, BCRYPT_ROUNDS);
   db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run('admin', hash);
+} else if (!adminExists) {
+  console.warn('[security] No admin account created. Set a unique ADMIN_SEED_PASSWORD and restart to enable admin access.');
 }
 
 // Make sure admin row has role + name
