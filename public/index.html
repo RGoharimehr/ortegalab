@@ -1143,27 +1143,21 @@ window.addEventListener('resize', () => {
 
 /* ---- Components ---- */
 function Nav() {
-  const makeLink = ([id, label]) =>
+  const links = NAV.map(([id, label]) =>
     h('span', {
       class: 'w-nav-link' + (state.route === id ? ' active' : ''),
       role: 'link', tabindex: '0', 'aria-current': state.route === id ? 'page' : null,
       onclick: () => go(id),
       onkeydown: (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); go(id); } },
-    }, label);
-  const primary = NAV.slice(0, 5).map(makeLink);
-  const more = NAV.slice(5).map(makeLink);
+    }, label)
+  );
   const wrap = h('nav', { class: 'w-nav' },
       h('div', { class: 'w-nav-inner' },
         h('div', { class: 'w-brand', role: 'link', tabindex: '0', 'aria-label': 'LATFS home', onclick: () => go('home'), onkeydown: (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); go('home'); } } },
-          h('span', { class: 'w-brand-monogram', 'aria-hidden': 'true' }, 'L'),
-          h('span', { class: 'w-brand-name' }, 'LATFS', h('small', null, 'VILLANOVA UNIVERSITY'))
+          h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' })
         ),
       h('div', { class: 'w-nav-links' + (state.navOpen ? ' open' : '') },
-        ...primary,
-        h('details', { class: 'w-nav-more' + (NAV.slice(5).some(([id]) => state.route === id) ? ' active' : '') },
-          h('summary', null, 'Explore'),
-          h('div', { class: 'w-nav-menu' }, ...more)
-        ),
+        ...links,
         h('a', { class: 'w-nav-signin', href: platformHref() }, 'Sign in')
       ),
       h('button', { class: 'w-nav-toggle', type: 'button', 'aria-label': 'Toggle menu', 'aria-expanded': String(state.navOpen), onclick: () => { state.navOpen = !state.navOpen; render(); } }, '☰')
@@ -1220,7 +1214,7 @@ function Hero(slides) {
             h('span', { class: 'w-hero-dot' }),
             'Villanova University · Department of Mechanical Engineering'
           ),
-          h('h1', { class: 'w-hero-title', html: 'Laboratory for<br>Advanced Thermal<br><span class="w-amp">&amp;</span> Fluid Systems' }),
+          h('h1', { class: 'w-hero-title', html: 'Laboratory for Advanced<br>Thermal <span class="w-amp">&amp;</span> Fluid Systems' }),
           h('p', { class: 'w-hero-lead' }, 'LATFS studies boiling, compact thermal systems, and experimental fluid mechanics for high-power-density energy technologies through hands-on rigs, diagnostics, and modeling.'),
           h('div', { class: 'w-hero-actions' },
             h('button', { class: 'w-btn w-btn-primary', onclick: () => go('research') }, 'Explore research'),
@@ -1566,7 +1560,7 @@ function ResearchGrid(rows) {
           h('div', { class: 'w-sh-bar' }),
           h('h2',  { class: 'w-sh-title' }, s.research_section_title || 'Research Areas'),
         ),
-        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Thermal & fluid systems'),
+        h('div', { class: 'w-research-eyebrow' }, s.research_eyebrow || 'Six pillars · updated quarterly'),
       ),
       h('div', { class: 'w-research-layout' },
         h('div', { class: 'w-research-list' }, ...rowEls),
@@ -2064,12 +2058,9 @@ function PageResearch() {
   const s = DATA.settings || {};
   const cards = items.length
     ? items.map((r, i) =>
-        h('article', { class: 'w-rc' },
-          h('div', { class: 'w-rc-content' },
-            h('span', { class: 'w-rc-index' }, String(i + 1).padStart(2, '0') + ' / RESEARCH AREA'),
-            h('h2', { class: 'w-rc-title' }, r.title || r.name || ''),
-            h('p',   { class: 'w-rc-desc'  }, r.summary || r.description || r.desc || '')
-          )
+        h('div', { class: 'w-rc' },
+          h('div', { class: 'w-rc-title' }, r.title || r.name || ''),
+          h('p',   { class: 'w-rc-desc'  }, r.summary || r.description || r.desc || ''),
         )
       )
     : [h('div', { class: 'w-empty' }, 'No research areas yet.')];
@@ -2078,7 +2069,7 @@ function PageResearch() {
       s.research_page_intro || 'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage.'),
     h('section', { class: 'w-page-content' },
       h('div', { class: 'max-w' },
-        h('div', { class: 'w-research-index' }, ...cards)
+        h('div', { class: 'w-grid-3' }, ...cards)
       )
     )
   );
