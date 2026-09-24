@@ -1,0 +1,117 @@
+/* LATFS 2026 visual refresh. Shared across the public site and lab tools. */
+:root {
+  --navy-950: #071524;
+  --navy-900: #10263b;
+  --navy-800: #16344c;
+  --navy-700: #245370;
+  --gold-900: #685018;
+  --gold-700: #86651c;
+  --gold-600: #a77b23;
+  --gold-500: #d4a941;
+  --gold-300: #ead28b;
+  --gold-100: #fbf5e5;
+  --gray-50: #f6f8fb;
+  --gray-100: #edf2f7;
+  --gray-200: #dce5ec;
+  --gray-300: #c9d5df;
+  --fg-3: #526477;
+  --border-1: #dce5ec;
+  --border-2: #c9d5df;
+  --radius-sm: 9px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 8px 22px rgba(16,38,59,.055);
+  --shadow-md: 0 18px 38px rgba(16,38,59,.09);
+}
+
+body { background: var(--gray-50); }
+button, input, select, textarea { font: inherit; }
+button, a, [role="link"] { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #b88a2d; outline-offset: 3px; }
+
+/* Public site: a restrained editorial frame with readable research content. */
+.w-nav { background: rgba(7,21,36,.97); border-bottom: 1px solid rgba(255,255,255,.12); }
+.w-nav-inner { max-width: 1440px; }
+.w-brand-img { height: 50px; max-width: 76px; }
+.w-nav-link { font-size: .91rem; font-weight: 600; }
+.w-nav-link.active { background: rgba(255,255,255,.09); }
+.w-nav-link.active::after { left: 14px; right: 14px; bottom: 3px; }
+.w-nav-signin { background: var(--gold-500); border-color: var(--gold-500); color: var(--navy-950); font-weight: 800; }
+.w-nav-signin:hover { background: var(--gold-300); color: var(--navy-950); }
+.w-hero { min-height: min(730px, 78vh); background: var(--navy-950); }
+.w-hero-overlay { background: linear-gradient(90deg, rgba(7,21,36,.94) 0%, rgba(7,21,36,.79) 48%, rgba(7,21,36,.3) 100%); }
+.w-hero-grain { opacity: .045; }
+.w-hero-content { min-height: 515px; padding-top: 96px; padding-bottom: 40px; }
+.w-hero-copy { max-width: 850px; }
+.w-hero-title { font-size: clamp(2.75rem, 5.7vw, 5.6rem); line-height: 1.02; letter-spacing: -.055em; font-weight: 750; max-width: 940px; }
+.w-amp { color: var(--gold-300); }
+.w-hero-lead { color: rgba(255,255,255,.86); font-size: clamp(1.05rem, 1.4vw, 1.25rem); max-width: 61ch; }
+.w-btn { min-height: 50px; padding-inline: 24px; font-size: .95rem; }
+.w-btn-primary { background: var(--gold-500); color: var(--navy-950); box-shadow: none; }
+.w-btn-primary:hover { background: var(--gold-300); color: var(--navy-950); }
+.w-btn-secondary { background: rgba(255,255,255,.1); }
+.w-hero-metrics { gap: clamp(20px, 4vw, 64px); }
+.w-metric-num { font-size: clamp(1.55rem, 2.3vw, 2.2rem); }
+.w-metric-lbl { color: rgba(255,255,255,.75); }
+.w-section { padding-block: clamp(56px, 7vw, 96px); }
+.w-sh { margin-bottom: 30px; }
+.w-sh-title { font-size: clamp(1.6rem, 2.7vw, 2.35rem); line-height: 1.16; }
+.w-sh-bar { height: 30px; width: 4px; }
+.w-research-row { padding: 24px; border: 1px solid var(--border-1); border-left: 4px solid transparent; margin-bottom: 10px; border-radius: 16px; box-shadow: 0 3px 12px rgba(16,38,59,.025); }
+.w-research-title { font-size: 1.08rem; }
+.w-research-desc, .w-fac-desc, .w-news-body { font-size: 1rem; line-height: 1.68; }
+.w-research-peek-frame { border-radius: 18px; }
+.w-news-card, .w-fac-card, .w-pub-card, .w-quick-card { border: 1px solid var(--border-1); box-shadow: var(--shadow-sm); }
+.w-news-card:hover, .w-fac-card:hover, .w-quick-card:hover { box-shadow: var(--shadow-md); }
+.w-page-banner { padding-block: clamp(54px, 7vw, 94px); background: linear-gradient(125deg, var(--navy-950), var(--navy-800)); }
+.w-page-banner-title { font-size: clamp(2.25rem, 4vw, 4rem); max-width: 18ch; }
+.w-page-banner-intro { color: rgba(255,255,255,.82); max-width: 68ch; }
+.w-page-content { padding-block: clamp(48px, 6vw, 84px); }
+
+/* Admin and platform: quieter surfaces, clearer hierarchy and larger controls. */
+.p-app { background: var(--gray-50); }
+body.dm .p-app { background: var(--bg-2); }
+.p-sidebar { background: #0b2236; box-shadow: inset -1px 0 rgba(255,255,255,.08); }
+.p-brand { background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; }
+.p-brand-mark { border-radius: 12px; }
+.p-brand-wm { font-size: 1rem; letter-spacing: -.02em; }
+.p-brand-sub, .p-nav-head { font-size: .75rem; }
+.p-nav-item { min-height: 42px; font-size: .9rem; border-radius: 10px; }
+.p-nav-item.active { background: #d4a941; color: #10263b; box-shadow: none; font-weight: 750; }
+.p-nav-item:hover { transform: none; }
+.p-main { padding: clamp(20px, 2.8vw, 44px); }
+.p-page-head { border-radius: 18px; background: #fff; border: 1px solid var(--border-1); box-shadow: var(--shadow-sm); }
+.p-h1 { font-size: clamp(1.65rem, 2.4vw, 2.4rem); letter-spacing: -.04em; }
+.p-h1-sub { font-size: .95rem; }
+.p-card, .p-stat-card { border-radius: 16px; border-color: var(--border-1); box-shadow: var(--shadow-sm); }
+.p-card { padding: clamp(18px, 2vw, 26px); }
+.p-card-title { font-size: 1rem; }
+.p-stat-card { padding: 22px; }
+.p-stat-num { font-size: 2rem; }
+.p-stat-lbl { font-size: .9rem; }
+.btn-primary-sm, .p-bigbtn { min-height: 42px; padding: 9px 16px; border-radius: 10px; font-size: .9rem; }
+.btn-ghost-sm { min-height: 42px; padding: 9px 14px; border-radius: 10px; font-size: .9rem; }
+.p-tbl th, .p-tbl td { font-size: .875rem; }
+.p-tbl td { padding-block: 14px; }
+.login-screen { background: radial-gradient(circle at 80% 15%, #234866, transparent 38%), #071524; }
+.login-card { border-radius: 22px; box-shadow: 0 24px 70px rgba(0,0,0,.2); }
+.login-card input { min-height: 44px; }
+.login-card button[type="submit"] { min-height: 46px; font-size: .95rem; background: var(--navy-900); }
+.login-card button[type="submit"]:hover { background: var(--navy-700); }
+
+@media (max-width: 760px) {
+  .w-nav-inner { min-height: 64px; }
+  .w-nav-links.open { top: 64px; }
+  .w-hero { min-height: 0; }
+  .w-hero-content { min-height: 410px; padding-top: 72px; }
+  .w-hero-title { font-size: clamp(2.35rem, 8vw, 3.5rem); }
+  .w-hero-overlay { background: linear-gradient(90deg, rgba(7,21,36,.93), rgba(7,21,36,.6)); }
+  .w-hero-metrics { gap: 16px 24px; }
+  .w-research-row { padding: 18px; }
+  .p-main { padding: 18px; }
+  .p-page-head { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
