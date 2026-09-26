@@ -1,111 +1,116 @@
-# LATFS Website v2.0
+# LATFS website and lab platform
 
-**Laboratory for Advanced Thermal and Fluid Systems**  
-Villanova University · College of Engineering
+The public research website, content management interface, and internal lab platform for the Laboratory for Advanced Thermal and Fluid Systems at Villanova University.
 
-## Overview
+The application uses Express, SQLite, and browser JavaScript. It runs as one Node.js service with durable database and upload storage. Existing API URLs, hash links, database tables, and lab workflows are retained by this refactor.
 
-Modern Node.js/Express web application for the LATFS research lab. Features a dynamic SPA frontend, SQLite database, REST API, and an admin panel for content management.
+## Local development
 
-## Requirements
+Requirements: Node.js 22.13+ on the 22 LTS line, or Node.js 24+. The CI matrix checks Node 22 and 24. Use the committed npm lockfile.
 
-- Node.js 16+
-- npm
-
-## Setup & Running
-
-```bash
-# Install dependencies
-npm install
-
-# Build the CSS (required before starting)
-npm run build:css
-
-# Start the server
-npm start
+```sh
+npm ci
+cp .env.example .env
+# Set ADMIN_SEED_PASSWORD in .env to create your initial admin account.
+npm run build
+npm run dev
 ```
 
-The site will be available at **http://localhost:3000**
+Open `http://localhost:3000` for the website, `/platform` for the lab workspace, and `/admin` for website administration. The initial administrator username is `admin`. There are no default accounts or sample lab records unless local demo mode is explicitly enabled.
 
-## Development credentials
+`npm start` and `npm run dev` load `.env` using Node's built-in environment-file support. Existing process environment variables take precedence. Never commit `.env`.
 
-- **URL:** http://localhost:3000/admin
-- **Username:** `admin`
-- **Password:** `admin123`
+For a disposable local demo, set `SEED_DEMO_DATA=true` before starting with a separate database. This enables sample content and the documented demo accounts in `src/server/db/seed-demo.js`; production rejects demo mode. Changing seed settings does not change existing passwords or remove existing records. Reuse your real database path when upgrading.
 
-These credentials are for local development only. On a fresh production database, set a unique `ADMIN_SEED_PASSWORD` to create an admin account. Without it, the public site starts but no admin account is created; add the variable and restart to enable admin access. Demo lab accounts are created in production only when `LAB_SEED_PASSWORD` is explicitly set. Set `SESSION_SECRET` to a long random value. Existing accounts keep their passwords when these environment variables change.
+## Commands
 
-The Docker Compose setup stores SQLite at `/app/data/latfs.db` on a persistent directory volume. Back up the database and uploads before changing volumes on an existing deployment.
+| Command                | Purpose                                                    |
+| ---------------------- | ---------------------------------------------------------- |
+| `npm start`            | Run the application                                        |
+| `npm run dev`          | Restart automatically on server changes                    |
+| `npm run build`        | Compile Tailwind CSS and copy the locked local icon bundle |
+| `npm run watch:css`    | Rebuild Tailwind styles while editing                      |
+| `npm test`             | Run HTTP integration, frontend DOM, and service tests      |
+| `npm run lint`         | Check JavaScript with ESLint                               |
+| `npm run check:syntax` | Parse JavaScript files and remaining inline app scripts    |
+| `npm run format`       | Apply the repository's formatting rules                    |
+| `npm run check`        | Build, syntax check, lint, format check, and tests         |
 
-This app requires a persistent Node process, native SQLite, sessions, and writable uploads. A static site host cannot run the admin and lab platform directly.
+The build creates `public/vendor/` from the version of Lucide recorded in the lockfile. This directory is generated and ignored by Git. Build before running or deploying; there is no executable icon dependency on an unversioned CDN.
 
-### Render web service
+## Code organization
 
-Use a **web service**, with build command `npm ci && npm run build:css`, start command `npm start`, and health check path `/healthz`. Set `NODE_ENV=production`, `SESSION_SECRET` (a long random secret), `ADMIN_SEED_PASSWORD` (a unique password for a fresh database), and `BASE_URL` (the public URL). Do not commit those values.
-
-For native Node, attach one persistent disk at `/opt/render/project/src/data` and set `DATABASE_PATH=/opt/render/project/src/data/latfs.db` and `UPLOADS_PATH=/opt/render/project/src/data/uploads`. For the Docker runtime, use `/app/data` for the disk mount and corresponding `/app/data/latfs.db` and `/app/data/uploads` paths. Only files under the mount survive a redeploy. If a database or uploads already exist at another path, migrate them before changing these values; otherwise the app will appear to start with fresh content. The SQLite design expects a single running instance.
-
-## Project Structure
-
+```text
+server.js                     Process startup and graceful shutdown
+src/server/
+  app.js                      Application factory and dependency wiring
+  config.js                   Validated runtime configuration
+  db/                         Schema, additive migrations, seeds, connection lifecycle
+  middleware/                 HTTP security, sessions, authentication, rate limits
+  routes/                     Feature routers, preserving existing API paths
+  services/                   Shared business rules, validation, email, uploads
+  session-store.js             Persistent SQLite-backed session storage
+public/
+  index.html                  Public website shell
+  platform.html               Lab platform shell
+  admin.html                  CMS shell
+  reset-password.html         Password-reset form
+  js/site/                    Native ES modules for public pages, data, and routing
+  js/platform/                Lab feature scripts
+  js/admin/                   Content-management feature scripts
+  js/shared/                  Same-origin HTTP/CSRF client and dialog helpers
+  js/reset-password/          Password-reset controller
+  css/                        Styles separated by application surface
+  assets/                     Existing lab images and brand assets
+  apps/                       Standalone research calculator
+scripts/                      Reproducible asset build and syntax validation
+test/                         Automated regression checks
 ```
-├── server.js          # Express server + REST API + SQLite setup
-├── package.json
-├── tailwind.config.js # Tailwind CSS configuration
-├── src/
-│   └── input.css      # Tailwind CSS source
-├── public/
-│   ├── index.html     # Main SPA (responsive)
-│   ├── admin.html     # Admin dashboard
-│   └── tailwind.css   # Compiled Tailwind CSS (built via npm run build:css)
-├── uploads/           # File uploads (auto-created)
-├── latfs.db           # SQLite database (auto-created, gitignored)
-└── .gitignore
+
+See [architecture and maintenance](docs/architecture.md) for the module contracts and upgrade details.
+
+## Configuration
+
+| Variable                                                        | Purpose                                                                          |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `NODE_ENV`                                                      | Set to `production` on the server to require a session secret and secure cookies |
+| `PORT`                                                          | Listening port; defaults to `3000`                                               |
+| `BASE_URL`                                                      | Trusted public origin for generated links and sitemap                            |
+| `SESSION_SECRET`                                                | Stable random secret; required in production                                     |
+| `ADMIN_SEED_PASSWORD`                                           | Initial admin password; at least 12 characters in production                     |
+| `SEED_DEMO_DATA`                                                | Explicit local-only demo mode; defaults to disabled                              |
+| `LAB_SEED_PASSWORD`                                             | Optional password override for local demo lab accounts                           |
+| `DATABASE_PATH`                                                 | SQLite file path; defaults to `latfs.db` in the project                          |
+| `UPLOADS_PATH`                                                  | Upload directory; defaults to `uploads/` in the project                          |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Optional SMTP notifications; no emails are sent without `SMTP_HOST`              |
+
+Generate a session secret using `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`. Keep it stable across deploys so signed session cookies remain valid. SQLite stores sessions beside the application data, with expiration and cleanup.
+
+## Production deployment
+
+Build with `npm ci && npm run build`, start with `npm start`, and use `/healthz` for health checks. Set `NODE_ENV=production`, `SESSION_SECRET`, and the actual `BASE_URL`. Set `ADMIN_SEED_PASSWORD` for the first administrator only. Deploy behind HTTPS; production trusts one reverse proxy, matching the documented Render setup. Adapt that setting before using a different proxy topology.
+
+Both SQLite and uploads require durable storage. The design supports a single application instance; do not point independent replicas at separate SQLite files and expect shared state.
+
+### Docker Compose
+
+```sh
+# Set production SESSION_SECRET and ADMIN_SEED_PASSWORD in .env or the environment.
+docker compose up --build -d
 ```
 
-## npm Scripts
+The image builds its assets in a separate stage, contains only production dependencies at runtime, and runs as a non-root user. Compose retains the existing `latfs_db` and `latfs_uploads` volume names. Back up the database and uploads before changing any volume mounts or paths.
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start the server |
-| `npm run build:css` | Compile Tailwind CSS (run after HTML changes) |
-| `npm run watch:css` | Watch and recompile CSS on HTML changes |
+### Render
 
-## API Endpoints
+Use a web service, not a static-site service. Set the build command to `npm ci && npm run build`, start command to `npm start`, and health check to `/healthz`.
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | /api/news | No | List news items |
-| POST | /api/news | Yes | Create news item |
-| PUT | /api/news/:id | Yes | Update news item |
-| DELETE | /api/news/:id | Yes | Delete news item |
-| GET | /api/publications | No | List publications |
-| POST | /api/publications | Yes | Create publication |
-| PUT | /api/publications/:id | Yes | Update publication |
-| DELETE | /api/publications/:id | Yes | Delete publication |
-| GET | /api/people | No | List people |
-| POST | /api/people | Yes | Create person |
-| PUT | /api/people/:id | Yes | Update person |
-| DELETE | /api/people/:id | Yes | Delete person |
-| GET | /api/research | No | List research areas |
-| POST | /api/research | Yes | Create research area |
-| PUT | /api/research/:id | Yes | Update research area |
-| DELETE | /api/research/:id | Yes | Delete research area |
-| POST | /admin/login | No | Login |
-| POST | /admin/logout | Yes | Logout |
-| GET | /admin/check | No | Check auth status |
+For native Node, mount a disk at `/opt/render/project/src/data`, set `DATABASE_PATH=/opt/render/project/src/data/latfs.db`, and `UPLOADS_PATH=/opt/render/project/src/data/uploads`. For Docker, mount at `/app/data` and use corresponding paths under that directory. Move existing data before changing paths; otherwise the application will open a new database.
 
-## Features
+## Access and privacy
 
-- **Single Page Application** with sections: Home, People, Research, Publications, Students, Facilities, Contact
-- **Responsive design** using Tailwind CSS (mobile-first)
-- **Sticky navigation** with dropdown menus
-- **Admin panel** with CRUD for all content types
-- **SQLite database** with seed data from original site
-- **Session-based authentication**
-- **Legacy URL support** – old static files still served
+Public content APIs serve the research website. Lab records require an authenticated session. Content and lab mutations retain their role checks and require the `X-CSRF-Token` returned by login or session-check endpoints. The application refreshes account status and role from the database on requests, so disabled accounts and role changes take effect for existing sessions.
 
-## Environment Variables
+The public calendar feed includes only events explicitly marked `public`. Direct upload URLs require authentication unless the file is referenced by published public content. Unpublishing a download removes anonymous access to the underlying file, unless another public record also references it.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| PORT | 3000 | Server port |
+Public pages distinguish loading, empty, and error states and never substitute sample people, papers, or news for missing live data. Browser Back and Forward work with the existing hash links. The public site remains a client-rendered application; server-rendered, individually indexable pages would be a separate architectural change.

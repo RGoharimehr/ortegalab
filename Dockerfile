@@ -1,36 +1,22 @@
-# ── Build stage ───────────────────────────────────────────────────────────────
-FROM node:20-alpine AS build
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
+COPY scripts ./scripts
+COPY src ./src
+COPY public ./public
+RUN npm run build && npm prune --omit=dev
 
-# ── Runtime stage ─────────────────────────────────────────────────────────────
-FROM node:20-alpine
-LABEL org.opencontainers.image.title="LATFS Website"
-LABEL org.opencontainers.image.description="Laboratory for Advanced Thermal and Fluid Systems — Villanova University"
-
-WORKDIR /app
-
-# Copy production dependencies from build stage
-COPY --from=build /app/node_modules ./node_modules
-
-# Copy source files (excluding uploads, db, and secrets)
-COPY server.js ./
-COPY public ./public/
-
-# Create directories that must persist across restarts (mount as volumes)
-RUN mkdir -p uploads data
-
-# Run as a non-root user for security
-RUN addgroup -S latfs && adduser -S latfs -G latfs && \
-    chown -R latfs:latfs /app
-USER latfs
-
-EXPOSE 3000
+FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production
-
-# Health check: ping the server every 30 s
+WORKDIR /app
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/public ./public
+COPY --from=build /app/src ./src
+COPY package*.json server.js ./
+RUN mkdir -p data uploads && chown -R node:node data uploads
+USER node
+EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -qO- http://localhost:3000/ || exit 1
-
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "server.js"]

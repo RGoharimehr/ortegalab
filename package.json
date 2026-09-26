@@ -1,13 +1,21 @@
 {
   "name": "latfs-website",
   "version": "2.0.0",
-  "description": "LATFS Lab Website - Laboratory for Advanced Thermal and Fluid Systems",
+  "description": "LATFS public research website and lab management platform",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --env-file-if-exists=.env --watch server.js",
     "build:css": "tailwindcss -i ./src/input.css -o ./public/tailwind.css --minify",
-    "watch:css": "tailwindcss -i ./src/input.css -o ./public/tailwind.css --watch"
+    "watch:css": "tailwindcss -i ./src/input.css -o ./public/tailwind.css --watch",
+    "build:vendor": "node scripts/build-vendor.js",
+    "build": "npm run build:css && npm run build:vendor",
+    "lint": "eslint .",
+    "check:syntax": "node scripts/check-syntax.js",
+    "test": "node --test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run build && npm run check:syntax && npm run lint && npm run format:check && npm test"
   },
   "keywords": [
     "LATFS",
@@ -24,12 +32,24 @@
     "express-session": "^1.17.3",
     "helmet": "^8.1.0",
     "multer": "^2.0.2",
-    "nodemailer": "^8.0.7",
+    "nodemailer": "^10.0.10",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/cli": "^4.2.1",
+    "eslint": "^10.11.0",
+    "globals": "^16.5.0",
+    "jsdom": "^26.1.0",
+    "lucide": "^1.48.0",
+    "prettier": "^3.9.9",
     "tailwindcss": "^4.2.1"
+  },
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }
