@@ -75,9 +75,9 @@ async function loadTraining() {
             days === null
               ? ''
               : days < 0
-                ? 'color:#dc2626;font-weight:600;'
+                ? 'color:var(--status-alert);font-weight:600;'
                 : days <= 60
-                  ? 'color:#c2410c;'
+                  ? 'color:var(--status-warn);'
                   : '';
           return `<div class="p-inv-row">
           <div style="flex:2;">

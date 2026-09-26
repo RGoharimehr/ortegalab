@@ -8,13 +8,17 @@ COPY public ./public
 RUN npm run build && npm prune --omit=dev
 
 FROM node:22-bookworm-slim AS runtime
-ENV NODE_ENV=production
+# Keep writable state outside the root-owned application directory. These paths
+# match the existing Compose volume destinations and can be overridden by Render.
+ENV NODE_ENV=production \
+    DATABASE_PATH=/app/data/latfs.db \
+    UPLOADS_PATH=/app/uploads
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/public ./public
 COPY --from=build /app/src ./src
 COPY package*.json server.js ./
-RUN mkdir -p data uploads && chown -R node:node data uploads
+RUN install -d -o node -g node -m 0750 /app/data /app/uploads
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \

@@ -12,28 +12,34 @@ import { PEOPLE_GROUPS } from './config.mjs';
 import { DATA } from './data.mjs';
 import { PageBanner } from './layout.mjs';
 import { openInlineApp } from './overlays.mjs';
-import {
-  avatarGrad,
-  getInitials,
-  activePeopleRows,
-  assetUrl,
-  matchesQuery,
-  fmtNewsDate,
-} from './utils.mjs';
+import { getInitials, activePeopleRows, assetUrl, matchesQuery, fmtNewsDate } from './utils.mjs';
 
 export function PageResearch() {
   const items = DATA.research && DATA.research.length ? DATA.research : [];
   const s = DATA.settings || {};
   const cards = items.length
-    ? items.map((r) =>
+    ? items.map((r, index) =>
         h(
-          'div',
+          'article',
           { class: 'w-rc' },
-          h('div', { class: 'w-rc-title' }, r.title || r.name || ''),
+          h(
+            'div',
+            { class: 'w-rc-heading' },
+            h(
+              'span',
+              { class: 'w-rc-number', 'aria-hidden': 'true' },
+              String(index + 1).padStart(2, '0'),
+            ),
+            h('h2', { class: 'w-rc-title' }, r.title || r.name || ''),
+          ),
+          r.image_url
+            ? h('img', { class: 'w-rc-image', src: r.image_url, alt: '', loading: 'lazy' })
+            : null,
           h('p', { class: 'w-rc-desc' }, r.summary || r.description || r.desc || ''),
+          r.tag || r.meta ? h('div', { class: 'w-rc-tag' }, r.tag || r.meta) : null,
         ),
       )
-    : [h('div', { class: 'w-empty' }, 'No research areas yet.')];
+    : [h('div', { class: 'w-empty' }, 'No research areas published yet.')];
   return h(
     'div',
     null,
@@ -46,7 +52,7 @@ export function PageResearch() {
     h(
       'section',
       { class: 'w-page-content' },
-      h('div', { class: 'max-w' }, h('div', { class: 'w-grid-3' }, ...cards)),
+      h('div', { class: 'max-w' }, h('div', { class: 'w-research-index' }, ...cards)),
     ),
   );
 }
@@ -76,7 +82,11 @@ export function PagePeople() {
     placeholder: 'Search by name, role, or research area',
   });
   const meta = h('div', { class: 'w-filter-meta', role: 'status', 'aria-live': 'polite' });
-  const pills = h('div', { class: 'w-filter-pills' });
+  const pills = h('div', {
+    class: 'w-filter-pills',
+    role: 'group',
+    'aria-label': 'Filter options',
+  });
   const results = h('div', { class: 'w-results-stack' });
   const applyFilters = () => {
     const query = searchInput.value.trim();
@@ -127,20 +137,20 @@ export function PagePeople() {
     ),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
         h(
           'div',
-          { class: 'w-filter-shell' },
+          { class: 'w-filter-shell', role: 'search', 'aria-label': 'Filter this collection' },
           h(
             'div',
             { class: 'w-filter-row' },
             h(
               'div',
               { class: 'w-filter-search' },
-              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              h('span', { class: 'w-filter-icon', 'aria-hidden': 'true' }, '\u2315'),
               searchInput,
             ),
             meta,
@@ -162,7 +172,7 @@ export function PagePersonDetail(id) {
       PageBanner('People', 'Person not found', ''),
       h(
         'section',
-        { class: 'w-page-content on-white' },
+        { class: 'w-page-content' },
         h(
           'div',
           { class: 'max-w' },
@@ -172,51 +182,53 @@ export function PagePersonDetail(id) {
       ),
     );
   const inits = getInitials(p.name);
-  const grad = avatarGrad(p.name);
   const links = [];
-  if (p.email) links.push(h('a', { href: 'mailto:' + p.email }, 'Email'));
+  if (p.email) links.push(h('a', { href: 'mailto:' + p.email }, 'Email ↗'));
   if (p.linkedin_url)
-    links.push(h('a', { href: p.linkedin_url, target: '_blank', rel: 'noopener' }, 'LinkedIn'));
+    links.push(h('a', { href: p.linkedin_url, target: '_blank', rel: 'noopener' }, 'LinkedIn ↗'));
   if (p.website_url)
-    links.push(h('a', { href: p.website_url, target: '_blank', rel: 'noopener' }, 'Website'));
+    links.push(h('a', { href: p.website_url, target: '_blank', rel: 'noopener' }, 'Website ↗'));
+  const category = PEOPLE_GROUPS.find(([key]) => key === p.category)?.[1] || p.category || '';
   return h(
     'div',
     null,
-    PageBanner(p.role || 'People', p.name || '', ''),
+    PageBanner('People', p.name || '', p.role || ''),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
-        h('a', { class: 'w-back', href: '#' + 'people' }, '← Back to People'),
+        h('a', { class: 'w-back', href: '#people' }, '← All lab members'),
         h(
-          'div',
+          'article',
           { class: 'w-person-detail-v2' },
           h(
-            'div',
-            { class: 'w-avatar' },
-            h('div', {
-              class: 'w-avatar-photo',
-              style: p.photo_url
-                ? {
-                    backgroundImage: `url(${p.photo_url})`,
-                    backgroundPosition: p.photo_position || 'center center',
-                  }
-                : { background: grad },
-            }),
-            p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+            'aside',
+            { class: 'w-person-aside', 'aria-label': 'Profile and contact' },
+            h(
+              'div',
+              { class: 'w-avatar w-avatar-detail' },
+              p.photo_url
+                ? h('img', {
+                    class: 'w-avatar-photo',
+                    src: p.photo_url,
+                    alt: p.name || 'Lab member',
+                    style: { objectPosition: p.photo_position || 'center center' },
+                  })
+                : h('div', { class: 'w-avatar-text', 'aria-hidden': 'true' }, inits),
+            ),
+            category ? h('span', { class: 'w-pv2-badge' }, category) : null,
+            links.length ? h('div', { class: 'w-pdetail-links' }, ...links) : null,
           ),
-          h('h2', { class: 'w-pdetail-name' }, p.name || ''),
-          h('div', { class: 'w-pdetail-sub' }, [p.role, p.category].filter(Boolean).join(' · ')),
-          p.bio
-            ? h('div', { class: 'w-pdetail-bio' }, p.bio)
-            : h(
-                'div',
-                { class: 'w-pdetail-bio', style: { color: 'var(--fg-4)', fontStyle: 'italic' } },
-                'Biography coming soon.',
-              ),
-          links.length ? h('div', { class: 'w-pdetail-links' }, ...links) : null,
+          h(
+            'div',
+            { class: 'w-person-story' },
+            h('div', { class: 'w-card-kicker' }, 'About'),
+            h('h2', { class: 'w-pdetail-name' }, p.name || ''),
+            p.role ? h('p', { class: 'w-pdetail-sub' }, p.role) : null,
+            h('div', { class: 'w-pdetail-bio' }, p.bio || 'Biography coming soon.'),
+          ),
         ),
       ),
     ),
@@ -269,20 +281,20 @@ export function PagePublications() {
     ),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
         h(
           'div',
-          { class: 'w-filter-shell' },
+          { class: 'w-filter-shell', role: 'search', 'aria-label': 'Filter this collection' },
           h(
             'div',
             { class: 'w-filter-row' },
             h(
               'div',
               { class: 'w-filter-search' },
-              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              h('span', { class: 'w-filter-icon', 'aria-hidden': 'true' }, '\u2315'),
               searchInput,
             ),
             yearSelect,
@@ -306,7 +318,11 @@ export function PageFacilities() {
     placeholder: 'Search equipment, rigs, or documentation',
   });
   const meta = h('div', { class: 'w-filter-meta', role: 'status', 'aria-live': 'polite' });
-  const pills = h('div', { class: 'w-filter-pills' });
+  const pills = h('div', {
+    class: 'w-filter-pills',
+    role: 'group',
+    'aria-label': 'Filter options',
+  });
   const results = h('div', { class: 'w-results-stack' });
   const pillDefs = [
     ['all', 'All facilities'],
@@ -362,14 +378,14 @@ export function PageFacilities() {
         { class: 'max-w' },
         h(
           'div',
-          { class: 'w-filter-shell' },
+          { class: 'w-filter-shell', role: 'search', 'aria-label': 'Filter this collection' },
           h(
             'div',
             { class: 'w-filter-row' },
             h(
               'div',
               { class: 'w-filter-search' },
-              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              h('span', { class: 'w-filter-icon', 'aria-hidden': 'true' }, '\u2315'),
               searchInput,
             ),
             meta,
@@ -391,7 +407,7 @@ export function PageFacilityDetail(id) {
       PageBanner('Facilities', 'Facility not found', ''),
       h(
         'section',
-        { class: 'w-page-content on-white' },
+        { class: 'w-page-content' },
         h(
           'div',
           { class: 'max-w' },
@@ -406,9 +422,9 @@ export function PageFacilityDetail(id) {
       h(
         'a',
         { class: 'w-doc-link', href: f.doc_url, target: '_blank', rel: 'noopener' },
-        h('span', { class: 'w-doc-icon' }, '▣'),
+        h('span', { class: 'w-doc-icon', 'aria-hidden': 'true' }, '▣'),
         h('span', { class: 'w-doc-name' }, f.doc_name || 'Documentation'),
-        h('span', { class: 'w-doc-sub' }, 'Open file'),
+        h('span', { class: 'w-doc-sub' }, 'Open file ↗'),
       ),
     );
   return h(
@@ -417,7 +433,7 @@ export function PageFacilityDetail(id) {
     PageBanner('Facility', f.name || '', ''),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
@@ -425,10 +441,22 @@ export function PageFacilityDetail(id) {
         h(
           'article',
           { class: 'w-fac-detail' },
-          f.photo_url ? h('img', { src: f.photo_url, alt: '', class: 'w-fac-detail-img' }) : null,
-          h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
+          f.photo_url
+            ? h('img', { src: f.photo_url, alt: f.name || '', class: 'w-fac-detail-img' })
+            : null,
+          h(
+            'div',
+            { class: 'w-detail-copy' },
+            h('h2', { class: 'w-detail-heading' }, 'About this facility'),
+            h('div', { class: 'w-news-body-rich' }, f.content || f.description || ''),
+          ),
           docs.length
-            ? h('div', { class: 'w-page-section' }, h('h2', null, 'Documentation'), ...docs)
+            ? h(
+                'div',
+                { class: 'w-detail-docs' },
+                h('h2', { class: 'w-detail-heading' }, 'Documentation'),
+                ...docs,
+              )
             : null,
         ),
       ),
@@ -459,8 +487,9 @@ export function PageApps() {
               ...apps.map((a) =>
                 h(
                   'div',
-                  { class: 'w-card' },
-                  h('h3', null, a.title || ''),
+                  { class: 'w-card w-tool-card' },
+                  h('div', { class: 'w-card-kicker' }, 'Research tool'),
+                  h('h2', null, a.title || ''),
                   h('p', null, a.summary || a.description || ''),
                   h(
                     'div',
@@ -468,7 +497,11 @@ export function PageApps() {
                     a.embed_html
                       ? h(
                           'button',
-                          { class: 'btn-primary', type: 'button', onclick: () => openInlineApp(a) },
+                          {
+                            class: 'w-btn w-btn-primary',
+                            type: 'button',
+                            onclick: () => openInlineApp(a),
+                          },
                           'Launch app',
                         )
                       : null,
@@ -476,7 +509,7 @@ export function PageApps() {
                       ? h(
                           'a',
                           {
-                            class: a.embed_html ? 'btn-ghost' : 'btn-primary',
+                            class: a.embed_html ? 'btn-ghost' : 'w-btn w-btn-primary',
                             href: assetUrl(a.url),
                             target: '_blank',
                             rel: 'noopener',
@@ -485,11 +518,7 @@ export function PageApps() {
                         )
                       : null,
                     !a.url && !a.embed_html
-                      ? h(
-                          'span',
-                          { class: 'eyebrow', style: { color: 'var(--fg-4)' } },
-                          'Coming soon',
-                        )
+                      ? h('span', { class: 'w-card-kicker' }, 'Coming soon')
                       : null,
                   ),
                 ),
@@ -573,20 +602,20 @@ export function PageDownloads() {
     ),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
         h(
           'div',
-          { class: 'w-filter-shell' },
+          { class: 'w-filter-shell', role: 'search', 'aria-label': 'Filter this collection' },
           h(
             'div',
             { class: 'w-filter-row' },
             h(
               'div',
               { class: 'w-filter-search' },
-              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              h('span', { class: 'w-filter-icon', 'aria-hidden': 'true' }, '\u2315'),
               searchInput,
             ),
             categorySelect,
@@ -629,20 +658,20 @@ export function PageNews() {
     ),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
         h(
           'div',
-          { class: 'w-filter-shell' },
+          { class: 'w-filter-shell', role: 'search', 'aria-label': 'Filter this collection' },
           h(
             'div',
             { class: 'w-filter-row' },
             h(
               'div',
               { class: 'w-filter-search' },
-              h('span', { class: 'w-filter-icon' }, '\u2315'),
+              h('span', { class: 'w-filter-icon', 'aria-hidden': 'true' }, '\u2315'),
               searchInput,
             ),
             meta,
@@ -663,7 +692,7 @@ export function PageNewsDetail(id) {
       PageBanner('News', 'Not found', ''),
       h(
         'section',
-        { class: 'w-page-content on-white' },
+        { class: 'w-page-content' },
         h(
           'div',
           { class: 'max-w' },
@@ -678,7 +707,7 @@ export function PageNewsDetail(id) {
     PageBanner(fmtNewsDate(n.date || n.published_at || n.created_at), n.title || '', ''),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
@@ -687,7 +716,7 @@ export function PageNewsDetail(id) {
           'article',
           { class: 'w-news-detail' },
           n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
-          h('div', { class: 'w-news-body-rich' }, n.content || n.body || ''),
+          h('div', { class: 'w-detail-copy w-news-body-rich' }, n.content || n.body || ''),
         ),
       ),
     ),
@@ -733,13 +762,13 @@ export function PageJoin() {
         { class: 'max-w' },
         h(
           'div',
-          { class: 'w-grid-2' },
+          { class: 'w-grid-2 w-opportunity-grid' },
           ...cards.map((c) =>
             h(
               'div',
               { class: 'w-icon-card' },
-              h('span', { class: 'w-icon-card-icon' }, c.icon),
-              h('h3', null, c.title),
+              h('span', { class: 'w-icon-card-icon', 'aria-hidden': 'true' }, c.icon),
+              h('h2', null, c.title),
               h('p', null, c.body),
               h(
                 'a',
@@ -768,7 +797,7 @@ export function PageContact() {
     ),
     h(
       'section',
-      { class: 'w-page-content on-white' },
+      { class: 'w-page-content' },
       h(
         'div',
         { class: 'max-w' },
@@ -778,8 +807,8 @@ export function PageContact() {
           h(
             'div',
             { class: 'w-icon-card' },
-            h('span', { class: 'w-icon-card-icon' }, '◉'),
-            h('h3', null, 'Director'),
+            h('span', { class: 'w-icon-card-icon', 'aria-hidden': 'true' }, '◉'),
+            h('h2', null, 'Director'),
             h(
               'p',
               null,
@@ -793,8 +822,8 @@ export function PageContact() {
           h(
             'div',
             { class: 'w-icon-card' },
-            h('span', { class: 'w-icon-card-icon' }, '▤'),
-            h('h3', null, 'Mailing address'),
+            h('span', { class: 'w-icon-card-icon', 'aria-hidden': 'true' }, '▤'),
+            h('h2', null, 'Mailing address'),
             h(
               'p',
               null,

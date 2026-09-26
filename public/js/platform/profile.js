@@ -64,7 +64,7 @@ async function loadTwoFaCard() {
           </div>
           <div style="display:flex;gap:8px;">
             <button class="btn-ghost-sm" id="regenCodesBtn">New backup codes</button>
-            <button class="btn-ghost-sm" style="color:#dc2626;" id="disable2faBtn">Disable 2FA</button>
+            <button class="btn-ghost-sm" style="color:var(--status-alert);" id="disable2faBtn">Disable 2FA</button>
           </div>
         </div>`;
       $('#regenCodesBtn').addEventListener('click', async () => {
@@ -157,14 +157,6 @@ $('#profEditBtn').addEventListener('click', () => {
       loadProfile();
     },
   );
-});
-$('#profDmToggle').addEventListener('click', () => {
-  const isDark = document.body.classList.toggle('dm');
-  try {
-    localStorage.setItem('latfs-theme', isDark ? 'dark' : 'light');
-  } catch (_) {
-    /* Storage may be disabled. */
-  }
 });
 $('#profChPwBtn').addEventListener('click', () => {
   modal(

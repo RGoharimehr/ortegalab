@@ -1,22 +1,28 @@
 /* Platform: theme. Loaded in order by platform.html. */
 
-/* ---------- Dark mode ---------- */
+/* Dark is the default; dim mode only reduces surface brightness. */
 (function () {
-  let saved = null;
+  const controls = [$('#dmToggle'), $('#profDmToggle')].filter(Boolean);
+  function applyDimDisplay(enabled) {
+    document.body.classList.toggle('dm', enabled);
+    controls.forEach((control) => control.setAttribute('aria-pressed', String(enabled)));
+  }
+  let enabled = false;
   try {
-    saved = localStorage.getItem('latfs-theme');
+    enabled = localStorage.getItem('latfs-dim-display') === 'true';
   } catch (_) {
     /* Storage may be disabled. */
   }
-  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.body.classList.add('dm');
-  }
+  applyDimDisplay(enabled);
+  controls.forEach((control) => {
+    control.addEventListener('click', () => {
+      const dimmed = !document.body.classList.contains('dm');
+      applyDimDisplay(dimmed);
+      try {
+        localStorage.setItem('latfs-dim-display', String(dimmed));
+      } catch (_) {
+        /* Keep the current in-memory preference. */
+      }
+    });
+  });
 })();
-$('#dmToggle').addEventListener('click', () => {
-  const isDark = document.body.classList.toggle('dm');
-  try {
-    localStorage.setItem('latfs-theme', isDark ? 'dark' : 'light');
-  } catch (_) {
-    /* Keep the current in-memory theme. */
-  }
-});

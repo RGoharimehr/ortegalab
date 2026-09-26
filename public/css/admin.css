@@ -193,7 +193,7 @@ code {
   background: var(--gray-100);
   padding: 0.1em 0.35em;
   border-radius: var(--radius-xs);
-  color: var(--navy-800);
+  color: var(--fg-2);
 }
 /* Serif display — use sparingly: publication titles, editorial quotes */
 .display-serif {
@@ -237,7 +237,7 @@ code {
   z-index: 9999;
 }
 .login-card {
-  background: #fff;
+  background: var(--bg-1);
   border-radius: var(--radius-xl);
   padding: 36px 32px;
   width: 360px;
@@ -246,7 +246,7 @@ code {
 .login-card h1 {
   font-family: var(--font-display);
   font-size: 24px;
-  color: var(--navy-900);
+  color: var(--fg-1);
   margin: 0 0 4px;
 }
 .login-card p {
@@ -319,7 +319,7 @@ code {
   padding: 16px;
 }
 .modal {
-  background: #fff;
+  background: var(--bg-1);
   border-radius: var(--radius-lg);
   padding: 24px;
   width: 480px;
@@ -334,7 +334,7 @@ code {
 .modal h2 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
   margin: 0 0 6px;
 }
 .modal-sub {
@@ -399,11 +399,11 @@ code {
 }
 .row-actions button:hover {
   background: var(--bg-2);
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .row-actions button.danger:hover {
   background: #fee2e2;
-  color: #991b1b;
+  color: var(--status-alert);
   border-color: #fca5a5;
 }
 .p-btn-tight {
@@ -494,7 +494,7 @@ code {
 }
 .p-photo-presets button {
   border: 1px solid var(--border-1);
-  background: #fff;
+  background: var(--bg-1);
   border-radius: 999px;
   padding: 5px 10px;
   font-size: 11px;
@@ -695,7 +695,7 @@ body {
 .p-h1 {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--navy-900);
+  color: var(--fg-1);
   margin: 4px 0 4px;
   letter-spacing: -0.02em;
 }
@@ -723,7 +723,7 @@ body {
   background: var(--gold-700);
 }
 .btn-ghost-sm {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   color: var(--fg-2);
   border-radius: 6px;
@@ -745,7 +745,7 @@ body {
 
 /* Cards + grid */
 .p-card {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-radius: 12px;
   padding: 18px;
@@ -762,7 +762,7 @@ body {
 .p-card-title {
   font-weight: 700;
   font-size: 14px;
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .p-grid-2 {
   display: grid;
@@ -775,7 +775,7 @@ body {
   gap: 16px;
 }
 .p-stat-card {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-left: 3px solid var(--gold-600);
   border-radius: 10px;
@@ -797,7 +797,7 @@ body {
 .p-stat-num {
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--navy-900);
+  color: var(--fg-1);
   line-height: 1;
 }
 .p-stat-lbl {
@@ -835,7 +835,7 @@ body {
 }
 .p-slot-title {
   font-size: 13px;
-  color: var(--navy-900);
+  color: var(--fg-1);
   font-weight: 600;
 }
 .p-slot-room {
@@ -870,7 +870,7 @@ body {
 }
 .p-task-title {
   font-size: 13px;
-  color: var(--navy-900);
+  color: var(--fg-1);
   font-weight: 500;
 }
 .p-task-due {
@@ -891,26 +891,26 @@ body {
 }
 .p-tag-ok {
   background: var(--status-ok-tint);
-  color: #166534;
+  color: var(--status-ok);
 }
 .p-tag-warn {
   background: var(--status-warn-tint);
-  color: #92400e;
+  color: var(--status-warn);
 }
 .p-tag-alert {
   background: var(--status-alert-tint);
-  color: #991b1b;
+  color: var(--status-alert);
 }
 .p-tag-info {
   background: var(--status-info-tint);
-  color: #075985;
+  color: var(--status-info);
 }
 .p-tag-gold {
   background: var(--gold-100);
   color: var(--gold-700);
 }
 .p-tag-outline {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-2);
   color: var(--fg-3);
 }
@@ -944,7 +944,7 @@ body {
 }
 .p-lab-lbl {
   font-size: 13px;
-  color: var(--navy-900);
+  color: var(--fg-1);
   font-weight: 500;
 }
 .p-lab-meta {
@@ -959,7 +959,7 @@ body {
 
 /* Calendar */
 .p-cal {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-radius: 12px;
   overflow: hidden;
@@ -974,7 +974,7 @@ body {
   padding: 10px 12px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
   border-left: 1px solid var(--border-1);
 }
 .p-cal-body {
@@ -1045,7 +1045,7 @@ body {
 .p-col-title {
   font-size: 12px;
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -1053,13 +1053,13 @@ body {
   font-size: 11px;
   font-weight: 700;
   color: var(--fg-4);
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-radius: 999px;
   padding: 1px 8px;
 }
 .p-task-card {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-left: 3px solid var(--gold-600);
   border-radius: 8px;
@@ -1074,7 +1074,7 @@ body {
 }
 .p-task-card-title {
   font-size: 13px;
-  color: var(--navy-900);
+  color: var(--fg-1);
   font-weight: 600;
   line-height: 1.35;
   margin-bottom: 8px;
@@ -1152,7 +1152,7 @@ body {
   gap: 8px;
 }
 .p-tab.active {
-  color: var(--navy-900);
+  color: var(--fg-1);
   border-bottom-color: var(--gold-600);
 }
 .p-tab-count {
@@ -1188,7 +1188,7 @@ body {
   border-radius: 6px;
   font-family: inherit;
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-1);
   box-sizing: border-box;
 }
 .p-inv-select {
@@ -1197,10 +1197,10 @@ body {
   border-radius: 6px;
   font-family: inherit;
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-1);
 }
 .p-inv-table {
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-radius: 10px;
   overflow: hidden;
@@ -1226,7 +1226,7 @@ body {
 }
 .p-inv-name {
   font-weight: 600;
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .p-inv-cat {
   color: var(--fg-3);
@@ -1241,7 +1241,7 @@ body {
 }
 .p-qty-num {
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .p-qty-min {
   font-size: 11px;
@@ -1280,7 +1280,7 @@ body {
 }
 .p-meet-card {
   display: flex;
-  background: #fff;
+  background: var(--bg-1);
   border: 1px solid var(--border-1);
   border-radius: 12px;
   padding: 16px;
@@ -1305,7 +1305,7 @@ body {
 .p-meet-day-time {
   font-size: 12px;
   font-weight: 600;
-  color: var(--navy-900);
+  color: var(--fg-1);
   margin-top: 2px;
   font-family: var(--font-mono);
 }
@@ -1315,7 +1315,7 @@ body {
 .p-meet-title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .p-meet-room {
   font-size: 12px;
@@ -1398,7 +1398,7 @@ code {
 .p-slot-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .p-slot-room {
   font-size: 12px;
@@ -1586,7 +1586,7 @@ body::before {
   border-color: rgba(203, 213, 225, 0.9);
 }
 .btn-ghost-sm:hover {
-  background: #fff;
+  background: var(--bg-1);
 }
 .p-card,
 .p-stat-card,
@@ -1702,7 +1702,7 @@ body::before {
   margin-top: 4px;
   font-size: 18px;
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
   letter-spacing: -0.015em;
 }
 .p-admin-copy {
@@ -1772,7 +1772,7 @@ body::before {
   margin-top: 8px;
   font-size: 15px;
   font-weight: 700;
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 .p-action-tile-copy {
   margin-top: 4px;
@@ -1795,7 +1795,7 @@ body::before {
   line-height: 1.6;
 }
 .p-link-item strong {
-  color: var(--navy-900);
+  color: var(--fg-1);
 }
 @media (max-width: 1100px) {
   .p-overview-grid {

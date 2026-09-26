@@ -2,7 +2,6 @@ import { h } from './dom.mjs';
 import { PEOPLE_GROUPS } from './config.mjs';
 import { openGalleryPreview } from './overlays.mjs';
 import {
-  avatarGrad,
   getInitials,
   fileLabelFromUrl,
   assetUrl,
@@ -24,34 +23,50 @@ export function renderPeopleSections(people) {
     if (!ours.length) return null;
     return h(
       'div',
-      { class: 'w-page-section' },
-      h('h2', null, label),
+      { class: 'w-page-section w-directory' },
+      h(
+        'div',
+        { class: 'w-directory-heading' },
+        h('h2', null, label),
+        h(
+          'span',
+          { class: 'w-directory-count', 'aria-label': `${ours.length} members` },
+          String(ours.length).padStart(2, '0'),
+        ),
+      ),
       h(
         'div',
         { class: 'w-people-grid' },
         ...ours.map((p) => {
           const inits = getInitials(p.name);
-          const grad = avatarGrad(p.name);
           return h(
             'a',
             { class: 'w-person-v2', href: '#' + ('person/' + p.id) },
             h(
               'div',
               { class: 'w-avatar' },
-              h('div', {
-                class: 'w-avatar-photo',
-                style: p.photo_url
-                  ? {
-                      backgroundImage: `url(${p.photo_url})`,
-                      backgroundPosition: p.photo_position || 'center center',
-                    }
-                  : { background: grad },
-              }),
-              p.photo_url ? null : h('div', { class: 'w-avatar-text' }, inits),
+              p.photo_url
+                ? h('img', {
+                    class: 'w-avatar-photo',
+                    src: p.photo_url,
+                    alt: '',
+                    loading: 'lazy',
+                    style: { objectPosition: p.photo_position || 'center center' },
+                  })
+                : h('div', { class: 'w-avatar-text', 'aria-hidden': 'true' }, inits),
             ),
-            h('div', { class: 'w-pv2-name' }, p.name || ''),
-            h('div', { class: 'w-pv2-role' }, p.role || ''),
-            h('span', { class: 'w-pv2-badge' }, label),
+            h(
+              'div',
+              { class: 'w-person-copy' },
+              h('h3', { class: 'w-pv2-name' }, p.name || ''),
+              p.role ? h('div', { class: 'w-pv2-role' }, p.role) : null,
+              h(
+                'span',
+                { class: 'w-profile-link' },
+                'View profile ',
+                h('span', { 'aria-hidden': 'true' }, '↗'),
+              ),
+            ),
           );
         }),
       ),
@@ -86,12 +101,28 @@ export function copyPublicationCitation(p) {
 export function publicationButtons(p) {
   return [
     p.pdf_url
-      ? h('a', { class: 'w-pub-btn', href: p.pdf_url, target: '_blank', rel: 'noopener' }, 'PDF')
+      ? h(
+          'a',
+          {
+            class: 'w-pub-btn',
+            'aria-label': `PDF for ${p.title || 'publication'}`,
+            href: p.pdf_url,
+            target: '_blank',
+            rel: 'noopener',
+          },
+          'PDF',
+        )
       : null,
     p.doi_url
       ? h(
           'a',
-          { class: 'w-pub-btn ghost', href: p.doi_url, target: '_blank', rel: 'noopener' },
+          {
+            class: 'w-pub-btn ghost',
+            'aria-label': `DOI for ${p.title || 'publication'}`,
+            href: p.doi_url,
+            target: '_blank',
+            rel: 'noopener',
+          },
           'DOI',
         )
       : null,
@@ -108,7 +139,12 @@ export function publicationButtons(p) {
         )
       : h(
           'button',
-          { class: 'w-pub-btn ghost', type: 'button', onclick: () => copyPublicationCitation(p) },
+          {
+            class: 'w-pub-btn ghost',
+            type: 'button',
+            'aria-label': `Copy citation for ${p.title || 'publication'}`,
+            onclick: () => copyPublicationCitation(p),
+          },
           'Cite',
         ),
   ];
@@ -118,18 +154,22 @@ export function renderFacilityCards(items) {
   if (!items.length) return h('div', { class: 'w-empty' }, 'No facilities match this search.');
   return h(
     'div',
-    { class: 'w-grid-2' },
+    { class: 'w-grid-2 w-facility-grid' },
     ...items.map((f) =>
       h(
         'a',
         { class: 'w-fac-card', href: '#facility/' + f.id },
         f.photo_url
-          ? h('div', { class: 'w-fac-img', style: { backgroundImage: `url(${f.photo_url})` } })
-          : h('div', { class: 'w-fac-img w-fac-img-empty' }),
+          ? h('img', { class: 'w-fac-img', src: f.photo_url, alt: '', loading: 'lazy' })
+          : h(
+              'div',
+              { class: 'w-fac-img w-fac-img-empty', 'aria-hidden': 'true' },
+              h('span', null, 'LATFS / FACILITIES'),
+            ),
         h(
           'div',
           { class: 'w-fac-body' },
-          h('h3', { class: 'w-fac-title' }, f.name || ''),
+          h('h2', { class: 'w-fac-title' }, f.name || ''),
           h(
             'p',
             { class: 'w-fac-desc' },
@@ -150,23 +190,26 @@ export function renderNewsCards(items) {
   if (!items.length) return h('div', { class: 'w-empty' }, 'No news items match this search.');
   return h(
     'div',
-    { class: 'w-news-stack', style: { gap: '14px' } },
+    { class: 'w-news-stack w-news-index' },
     ...items.map((n) =>
       h(
         'a',
         { class: 'w-news-card', href: '#news/' + n.id },
-        n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb' }) : null,
+        n.image_url
+          ? h('img', { src: n.image_url, alt: '', class: 'w-news-thumb', loading: 'lazy' })
+          : null,
         h(
           'div',
           { class: 'w-news-body-wrap' },
           h('div', { class: 'w-news-date' }, fmtNewsDate(n.date || n.published_at || n.created_at)),
-          h('h3', { class: 'w-news-title' }, n.title || ''),
+          h('h2', { class: 'w-news-title' }, n.title || ''),
           h(
             'p',
             { class: 'w-news-body' },
             (n.content || n.body || n.summary || '').slice(0, 220) +
               ((n.content || n.body || n.summary || '').length > 220 ? '…' : ''),
           ),
+          h('span', { class: 'w-news-read' }, 'Read story ↗'),
         ),
       ),
     ),
@@ -189,10 +232,10 @@ export function renderPublicationTable(pubs) {
       { class: 'w-page-section' },
       h(
         'div',
-        { class: 'w-pub-list' },
+        { class: 'w-pub-list w-publication-index' },
         h(
           'div',
-          { class: 'w-pub-row2 w-pub-head' },
+          { class: 'w-pub-row2 w-pub-head', 'aria-hidden': 'true' },
           h('div', { class: 'w-pub-colhead' }, 'Year'),
           h('div', { class: 'w-pub-colhead' }, 'Title'),
           h('div', { class: 'w-pub-colhead w-pub-colhead-actions' }, 'Links'),
@@ -209,7 +252,7 @@ export function renderPublicationTable(pubs) {
             h(
               'div',
               { class: 'w-pub-mid' },
-              h('div', { class: 'w-pub-title2' }, p.title || ''),
+              h('h2', { class: 'w-pub-title2' }, p.title || ''),
               h('div', { class: 'w-pub-authors' }, p.authors || ''),
               h('div', { class: 'w-pub-venue' }, p.venue || ''),
             ),
@@ -229,7 +272,12 @@ export function renderGalleryGrid(items) {
     ...items.map((p) =>
       h(
         'button',
-        { class: 'w-gallery-slide', type: 'button', onclick: () => openGalleryPreview(p) },
+        {
+          class: 'w-gallery-slide',
+          type: 'button',
+          'aria-label': `View ${p.title}`,
+          onclick: () => openGalleryPreview(p),
+        },
         h('img', { src: p.src, alt: p.title, loading: 'lazy' }),
         h('div', { class: 'w-gallery-scrim' }),
         h(
@@ -251,7 +299,7 @@ export function renderDownloadList(items) {
       { class: 'w-page-section' },
       h(
         'div',
-        { class: 'w-pub-list' },
+        { class: 'w-pub-list w-download-index' },
         ...items.map((item) => {
           const href = assetUrl(item.file_url);
           const preview = isImageDownload(item)
@@ -280,7 +328,7 @@ export function renderDownloadList(items) {
                   'div',
                   null,
                   h(
-                    'div',
+                    'h2',
                     { class: 'w-pub-title2' },
                     item.title || item.name || fileLabelFromUrl(item.file_url),
                   ),
@@ -307,6 +355,7 @@ export function renderDownloadList(items) {
                     'a',
                     {
                       class: 'w-pub-btn',
+                      'aria-label': `Download ${item.title || item.name || fileLabelFromUrl(href)}`,
                       href,
                       target: '_blank',
                       rel: 'noopener',
@@ -316,7 +365,7 @@ export function renderDownloadList(items) {
                   )
                 : h(
                     'span',
-                    { class: 'w-pub-btn', style: { opacity: '.45', pointerEvents: 'none' } },
+                    { class: 'w-download-unavailable', 'aria-disabled': 'true' },
                     'Unavailable',
                   ),
             ),

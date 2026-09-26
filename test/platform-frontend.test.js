@@ -107,6 +107,21 @@ test('all lab routes boot after extraction and history navigation remains usable
   assert.equal(document.querySelector('[data-route="tasks"]').getAttribute('aria-current'), 'page');
 });
 
+test('dim display controls stay synchronized and preserve the preference', async (t) => {
+  const { window, document } = await page(t, 'platform');
+  const sidebar = document.querySelector('#dmToggle');
+  const profile = document.querySelector('#profDmToggle');
+  assert.equal(document.body.classList.contains('dm'), false);
+  sidebar.click();
+  assert.equal(document.body.classList.contains('dm'), true);
+  assert.equal(profile.getAttribute('aria-pressed'), 'true');
+  assert.equal(window.localStorage.getItem('latfs-dim-display'), 'true');
+  profile.click();
+  assert.equal(document.body.classList.contains('dm'), false);
+  assert.equal(sidebar.getAttribute('aria-pressed'), 'false');
+  assert.equal(window.localStorage.getItem('latfs-dim-display'), 'false');
+});
+
 test('lab sign-in preserves the two-factor flow and releases passwords after success', async (t) => {
   let loggedIn = false;
   const { window, document, requests } = await page(t, 'platform', {
@@ -138,6 +153,53 @@ test('lab sign-in preserves the two-factor flow and releases passwords after suc
   assert.equal(document.querySelector('#appShell').classList.contains('hidden'), false);
   assert.equal(document.querySelector('#loginPass').value, '');
   assert.equal(requests.filter((request) => request.route === '/admin/login').length, 2);
+});
+
+test('dashboard attention labels distinguish missing dates from due-today dates', async (t) => {
+  const { window, document } = await page(t, 'platform');
+  window.renderResourceDashboard({
+    alerts: {
+      inventory: [
+        { name: 'Undated stock', stock_state: 'low', days_until_expiry: null },
+        { name: 'Due today', stock_state: 'low', days_until_expiry: 0 },
+      ],
+      equipment: [
+        {
+          name: 'Unavailable rig',
+          status: 'out_of_service',
+          maintenance_state: 'none',
+          calibration_state: 'none',
+        },
+        {
+          name: 'Scheduled rig',
+          status: 'available',
+          maintenance_state: 'due_soon',
+          calibration_state: 'overdue',
+        },
+      ],
+      training: [
+        { training_name: 'Undated training', user_name: 'Lab member', days_until_expiry: null },
+        { training_name: 'Expired training', days_until_expiry: -3 },
+      ],
+    },
+  });
+  const labels = Array.from(document.querySelectorAll('#resourceAlerts .p-alert-row'), (row) => ({
+    title: row.querySelector('.p-alert-title').textContent,
+    detail: row.querySelector('.p-alert-meta').textContent,
+  }));
+  assert.equal(labels.find((row) => row.title === 'Undated stock').detail, 'Low stock');
+  assert.equal(labels.find((row) => row.title === 'Undated training').detail, 'Lab member');
+  assert.match(labels.find((row) => row.title === 'Due today').detail, /Expires today/);
+  assert.equal(labels.find((row) => row.title === 'Unavailable rig').detail, 'out of service');
+  assert.match(
+    labels.find((row) => row.title === 'Scheduled rig').detail,
+    /Maintenance due soon \| Calibration overdue/,
+  );
+  assert.equal(labels.find((row) => row.title === 'Expired training').detail, 'Expired 3d ago');
+  assert.equal(window.expiryAttentionLabel(undefined, 30), '');
+  assert.equal(window.expiryAttentionLabel('', 30), '');
+  assert.equal(window.expiryAttentionLabel(31, 30), '');
+  assert.equal(window.expiryAttentionLabel(60, 60), 'Expires in 60d');
 });
 
 test('lab create/edit dialogs retain their handlers and keyboard dismissal', async (t) => {

@@ -17,9 +17,9 @@ function _expiryBadge(expiry_date) {
   const exp = new Date(expiry_date);
   const days = Math.round((exp - today) / 86400000);
   if (days < 0)
-    return `<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;">Expired</span>`;
+    return `<span style="font-size:10px;background:var(--status-alert-tint);color:var(--status-alert);padding:2px 5px;border-radius:3px;">Expired</span>`;
   if (days <= 30)
-    return `<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;">Exp ${days}d</span>`;
+    return `<span style="font-size:10px;background:var(--status-warn-tint);color:var(--status-warn);padding:2px 5px;border-radius:3px;">Exp ${days}d</span>`;
   return `<span style="font-size:10px;color:var(--fg-4);">Exp ${fmtDate(expiry_date)}</span>`;
 }
 

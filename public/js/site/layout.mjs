@@ -2,23 +2,49 @@ import { h } from './dom.mjs';
 import { RES, NAV, platformHref } from './config.mjs';
 import { state, activeSection } from './router.mjs';
 
+function navLink(id, label) {
+  return h(
+    'a',
+    {
+      class: 'w-nav-link' + (activeSection(state.route) === id ? ' active' : ''),
+      href: '#' + id,
+      'aria-current': activeSection(state.route) === id ? 'page' : null,
+    },
+    label,
+  );
+}
+
 export function Nav() {
-  const links = NAV.map(([id, label]) =>
+  const resourceIds = new Set(['facilities', 'gallery', 'apps', 'downloads', 'news']);
+  const resources = h(
+    'details',
+    { class: 'w-nav-resources' },
     h(
-      'a',
-      {
-        class: 'w-nav-link' + (activeSection(state.route) === id ? ' active' : ''),
-        href: '#' + id,
-        'aria-current': activeSection(state.route) === id ? 'page' : null,
-      },
-      label,
+      'summary',
+      { class: 'w-nav-link' + (resourceIds.has(activeSection(state.route)) ? ' active' : '') },
+      'Resources',
+      h('span', { 'aria-hidden': 'true' }, '⌄'),
+    ),
+    h(
+      'div',
+      { class: 'w-resource-menu' },
+      ...NAV.filter(([id]) => resourceIds.has(id)).map(([id, label]) => navLink(id, label)),
     ),
   );
   const menu = h(
     'div',
     { id: 'site-navigation', class: 'w-nav-links' },
-    ...links,
-    h('a', { class: 'w-nav-signin', href: platformHref() }, 'Sign in'),
+    navLink('research', 'Research'),
+    navLink('people', 'People'),
+    navLink('publications', 'Publications'),
+    resources,
+    navLink('join', 'Join the lab'),
+    h(
+      'a',
+      { class: 'w-nav-signin', href: platformHref() },
+      'Lab platform',
+      h('span', { 'aria-hidden': 'true' }, '↗'),
+    ),
   );
   const toggle = h(
     'button',
@@ -29,12 +55,11 @@ export function Nav() {
       'aria-expanded': 'false',
       'aria-controls': 'site-navigation',
       onclick: () => {
-        state.navOpen = !state.navOpen;
-        menu.classList.toggle('open', state.navOpen);
+        state.navOpen = menu.classList.toggle('open');
         toggle.setAttribute('aria-expanded', String(state.navOpen));
       },
     },
-    '☰',
+    h('span', { 'aria-hidden': 'true' }, '☰'),
   );
   return h(
     'nav',
@@ -42,12 +67,19 @@ export function Nav() {
       class: 'w-nav',
       'aria-label': 'Main navigation',
       onkeydown: (event) => {
-        if (event.key === 'Escape' && state.navOpen) {
+        if (event.key !== 'Escape') return;
+        if (resources.open) {
+          resources.open = false;
+          resources.querySelector('summary').focus();
+        } else if (state.navOpen) {
           state.navOpen = false;
           menu.classList.remove('open');
           toggle.setAttribute('aria-expanded', 'false');
           toggle.focus();
         }
+      },
+      onfocusout: (event) => {
+        if (!resources.contains(event.relatedTarget)) resources.open = false;
       },
     },
     h(
@@ -56,7 +88,8 @@ export function Nav() {
       h(
         'a',
         { class: 'w-brand', href: '#home', 'aria-label': 'LATFS home' },
-        h('img', { src: RES.logoColor, alt: 'LATFS', class: 'w-brand-img' }),
+        h('img', { src: RES.latfsWhite, alt: '', class: 'w-brand-img' }),
+        h('span', { class: 'w-brand-sub' }, 'VILLANOVA UNIVERSITY'),
       ),
       menu,
       toggle,
@@ -65,20 +98,14 @@ export function Nav() {
 }
 
 export function SectionHeader(title, action) {
-  const inner = h(
+  return h(
     'div',
-    { class: 'w-sh-inner' },
-    h('div', { class: 'w-sh-bar' }),
-    h('h2', { class: 'w-sh-title' }, title),
+    { class: 'w-sh' },
+    h('div', { class: 'w-sh-inner' }, h('h2', { class: 'w-sh-title' }, title)),
+    action
+      ? h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' →')
+      : null,
   );
-  return action
-    ? h(
-        'div',
-        { class: 'w-sh' },
-        inner,
-        h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' →'),
-      )
-    : h('div', { class: 'w-sh' }, inner);
 }
 
 export function PageBanner(eyebrow, title, intro) {
@@ -99,51 +126,71 @@ export function PageBanner(eyebrow, title, intro) {
   );
 }
 
+function footerColumn(title, links) {
+  return h(
+    'div',
+    null,
+    h('h3', { class: 'w-foot-h' }, title),
+    h('ul', null, ...links.map(([href, label]) => h('li', null, h('a', { href }, label)))),
+  );
+}
+
 export function PublicFooter() {
   return h(
     'footer',
     { class: 'w-footer' },
     h(
       'div',
-      { class: 'max-w w-footer-anchor' },
-      h('div', { class: 'w-anchor-label' }, 'Home institutions'),
+      { class: 'max-w w-footer-grid' },
+      h(
+        'div',
+        { class: 'w-footer-identity' },
+        h(
+          'a',
+          { href: '#home', 'aria-label': 'LATFS home' },
+          h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
+        ),
+        h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems'),
+        h(
+          'p',
+          { class: 'w-foot-address' },
+          'Villanova University',
+          h('br'),
+          '800 Lancaster Avenue',
+          h('br'),
+          'Villanova, PA 19085',
+        ),
+      ),
+      footerColumn('Discover', [
+        ['#research', 'Research'],
+        ['#people', 'People'],
+        ['#publications', 'Publications'],
+        ['#facilities', 'Facilities'],
+      ]),
+      footerColumn('Resources', [
+        ['#news', 'Lab news'],
+        ['#gallery', 'Gallery'],
+        ['#apps', 'Research tools'],
+        ['#downloads', 'Downloads'],
+        [platformHref(), 'Lab platform ↗'],
+      ]),
+      footerColumn('Connect', [
+        ['#join', 'Join the lab'],
+        ['#contact', 'Contact'],
+        ['mailto:aortega@villanova.edu', 'aortega@villanova.edu'],
+        ['tel:+16105194996', '+1 (610) 519-4996'],
+      ]),
+    ),
+    h(
+      'div',
+      { class: 'max-w w-footer-institutions' },
+      h('span', null, 'Part of a wider research community'),
       h(
         'div',
         { class: 'w-anchor-row' },
         h(
           'a',
           {
-            class: 'w-anchor-logo-link',
-            href: 'http://www.es2.villanova.edu/',
-            target: '_blank',
-            rel: 'noopener',
-          },
-          h('img', {
-            src: RES.spEs2,
-            alt: 'ES2 Center for Energy-Smart Electronic Systems',
-            class: 'w-anchor-logo is-es2',
-          }),
-        ),
-        h('div', { class: 'w-anchor-div' }),
-        h(
-          'a',
-          {
-            class: 'w-anchor-logo-link',
-            href: 'https://www.nsf.gov/eng/iip/iucrc/home.jsp',
-            target: '_blank',
-            rel: 'noopener',
-          },
-          h('img', {
-            src: RES.spNsf,
-            alt: 'National Science Foundation',
-            class: 'w-anchor-logo is-nsf',
-          }),
-        ),
-        h('div', { class: 'w-anchor-div' }),
-        h(
-          'a',
-          {
-            class: 'w-anchor-logo-link',
             href: 'https://www1.villanova.edu/university/engineering.html',
             target: '_blank',
             rel: 'noopener',
@@ -151,74 +198,35 @@ export function PublicFooter() {
           h('img', {
             src: RES.spVillanova,
             alt: 'Villanova University College of Engineering',
-            class: 'w-anchor-logo is-villanova',
+            class: 'w-anchor-logo',
+          }),
+        ),
+        h(
+          'a',
+          { href: 'http://www.es2.villanova.edu/', target: '_blank', rel: 'noopener' },
+          h('img', { src: RES.spEs2, alt: 'ES2 Center', class: 'w-anchor-logo is-es2' }),
+        ),
+        h(
+          'a',
+          { href: 'https://www.nsf.gov/', target: '_blank', rel: 'noopener' },
+          h('img', {
+            src: RES.spNsf,
+            alt: 'National Science Foundation',
+            class: 'w-anchor-logo is-nsf',
           }),
         ),
       ),
     ),
     h(
       'div',
-      { class: 'max-w w-footer-grid' },
-      h(
-        'div',
-        null,
-        h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
-        h(
-          'p',
-          { class: 'w-foot-sub' },
-          'Laboratory for Advanced Thermal & Fluid Systems - Villanova University - 800 Lancaster Ave, Villanova PA 19085',
-        ),
-      ),
-      h(
-        'div',
-        null,
-        h('h4', { class: 'w-foot-h' }, 'Explore'),
-        h(
-          'ul',
-          null,
-          h('li', null, h('a', { href: '#research' }, 'Research')),
-          h('li', null, h('a', { href: '#people' }, 'People')),
-          h('li', null, h('a', { href: '#apps' }, 'Apps')),
-          h('li', null, h('a', { href: '#gallery' }, 'Gallery')),
-          h('li', null, h('a', { href: '#downloads' }, 'Downloads')),
-        ),
-      ),
-      h(
-        'div',
-        null,
-        h('h4', { class: 'w-foot-h' }, 'Resources'),
-        h(
-          'ul',
-          null,
-          h('li', null, h('a', { href: '#publications' }, 'Publications')),
-          h('li', null, h('a', { href: '#facilities' }, 'Facilities')),
-          h('li', null, h('a', { href: '#news' }, 'News')),
-          h('li', null, h('a', { href: '#join' }, 'Join the lab')),
-        ),
-      ),
-      h(
-        'div',
-        null,
-        h('h4', { class: 'w-foot-h' }, 'Contact'),
-        h(
-          'ul',
-          null,
-          h('li', null, h('a', { href: 'mailto:aortega@villanova.edu' }, 'aortega@villanova.edu')),
-          h('li', null, h('a', { href: 'tel:+16105194996' }, '+1 (610) 519-4996')),
-          h('li', null, 'Tolentine Hall 344'),
-          h('li', null, h('a', { href: '#contact' }, 'Contact page')),
-        ),
-      ),
-    ),
-    h(
-      'div',
-      { class: 'w-footer-bottom' },
-      `© ${new Date().getFullYear()} LATFS - Villanova University - College of Engineering`,
+      { class: 'max-w w-footer-bottom' },
+      h('span', null, `© ${new Date().getFullYear()} LATFS · Villanova University`),
+      h('span', null, 'Thermal science. Shared discovery.'),
     ),
   );
 }
 
-export function applySiteTheme(theme) {
-  const nextTheme = theme === 'navy-copper' ? 'navy-copper' : 'navy-gold';
-  document.body.dataset.theme = nextTheme;
+export function applySiteTheme() {
+  // The public identity is consistently dark, including databases with legacy theme settings.
+  document.body.dataset.theme = 'graphite';
 }

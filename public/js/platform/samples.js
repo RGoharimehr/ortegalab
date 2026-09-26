@@ -104,9 +104,9 @@ async function loadSamples() {
             days === null
               ? ''
               : days < 0
-                ? 'color:#dc2626;font-weight:600;'
+                ? 'color:var(--status-alert);font-weight:600;'
                 : days <= 30
-                  ? 'color:#c2410c;'
+                  ? 'color:var(--status-warn);'
                   : 'color:var(--fg-3);';
           const approvalClass =
             s.approval_status === 'approved'
@@ -246,7 +246,7 @@ async function openSampleModal(s) {
   modal(
     `<h2>${isEdit ? 'Edit sample' : 'New sample'}</h2>
     ${!canReview ? `<p style="font-size:12px;color:var(--fg-3);margin-top:-4px;">Your sample stays hidden until approved by an admin, professor, or moderator.</p>` : ''}
-    ${isEdit && s?.approval_status === 'denied' && s?.review_note ? `<div class="p-card" style="margin-bottom:10px;background:#fff7ed;border-color:#fdba74;"><div style="font-size:12px;color:#9a3412;"><strong>Reviewer note:</strong> ${escapeHTML(s.review_note)}</div></div>` : ''}
+    ${isEdit && s?.approval_status === 'denied' && s?.review_note ? `<div class="p-card" style="margin-bottom:10px;background:var(--status-warn-tint);border-color:#fdba74;"><div style="font-size:12px;color:var(--status-warn);"><strong>Reviewer note:</strong> ${escapeHTML(s.review_note)}</div></div>` : ''}
     <label>Name<input id="smName" value="${escapeHTML(s?.name || '')}"></label>
     <label>Type<select id="smType">
       ${['solid', 'liquid', 'gas', 'biological', 'chemical', 'other'].map((t) => `<option value="${t}" ${s?.sample_type === t ? 'selected' : ''}>${t}</option>`).join('')}

@@ -1,5 +1,12 @@
 /* Platform: dashboard. Loaded in order by platform.html. */
 
+function expiryAttentionLabel(days, horizon) {
+  if (!Number.isFinite(days)) return '';
+  if (days < 0) return `Expired ${Math.abs(days)}d ago`;
+  if (days === 0) return 'Expires today';
+  return days <= horizon ? `Expires in ${days}d` : '';
+}
+
 function renderResourceDashboard(overview) {
   const pulse = $('#resourcePulse');
   const alerts = $('#resourceAlerts');
@@ -69,8 +76,8 @@ function renderResourceDashboard(overview) {
     const parts = [];
     if (item.stock_state === 'out') parts.push('Out of stock');
     else if (item.stock_state === 'low') parts.push('Low stock');
-    if (item.days_until_expiry < 0) parts.push(`Expired ${Math.abs(item.days_until_expiry)}d`);
-    else if (item.days_until_expiry <= 30) parts.push(`Expires in ${item.days_until_expiry}d`);
+    const expiry = expiryAttentionLabel(item.days_until_expiry, 30);
+    if (expiry) parts.push(expiry);
     attention.push({
       bucket: 'Inventory',
       title: item.name,
@@ -80,11 +87,11 @@ function renderResourceDashboard(overview) {
   });
   (overview?.alerts?.equipment || []).slice(0, 2).forEach((item) => {
     const parts = [];
-    if (item.status) parts.push(String(item.status).replace('_', ' '));
-    if (item.maintenance_state && item.maintenance_state !== 'ok')
-      parts.push(`Maintenance ${item.maintenance_state}`);
-    if (item.calibration_state && item.calibration_state !== 'ok')
-      parts.push(`Calibration ${item.calibration_state}`);
+    if (item.status) parts.push(String(item.status).replaceAll('_', ' '));
+    if (item.maintenance_state && !['ok', 'none'].includes(item.maintenance_state))
+      parts.push(`Maintenance ${String(item.maintenance_state).replaceAll('_', ' ')}`);
+    if (item.calibration_state && !['ok', 'none'].includes(item.calibration_state))
+      parts.push(`Calibration ${String(item.calibration_state).replaceAll('_', ' ')}`);
     attention.push({
       bucket: 'Equipment',
       title: item.name,
@@ -94,8 +101,8 @@ function renderResourceDashboard(overview) {
   });
   (overview?.alerts?.training || []).slice(0, 2).forEach((item) => {
     const parts = [];
-    if (item.days_until_expiry < 0) parts.push(`Expired ${Math.abs(item.days_until_expiry)}d`);
-    else if (item.days_until_expiry <= 60) parts.push(`Expires in ${item.days_until_expiry}d`);
+    const expiry = expiryAttentionLabel(item.days_until_expiry, 60);
+    if (expiry) parts.push(expiry);
     if (item.user_name) parts.push(item.user_name);
     if (item.equipment_name) parts.push(item.equipment_name);
     attention.push({

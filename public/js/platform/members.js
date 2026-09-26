@@ -17,7 +17,7 @@ async function loadUsers() {
           <div style="font-size:11px;color:var(--fg-4);">@${escapeHTML(u.username)} · ${escapeHTML(u.email || '')}</div>
         </div>
         <div style="flex:1;"><span class="p-tag-sm p-tag-outline">${escapeHTML(u.role || '')}</span></div>
-        <div style="flex:1;color:var(--fg-3);font-size:12px;">${u.active ? 'active' : '<span style="color:#dc2626;">disabled</span>'}</div>
+        <div style="flex:1;color:var(--fg-3);font-size:12px;">${u.active ? 'active' : '<span style="color:var(--status-alert);">disabled</span>'}</div>
         <div style="width:200px;display:flex;gap:6px;">
           <button class="btn-ghost-sm" data-user-edit="${u.id}">Edit</button>
           ${u.id !== ME.id ? `<button class="btn-ghost-sm" data-user-pw="${u.id}">Reset PW</button>` : ''}

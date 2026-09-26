@@ -14,23 +14,23 @@ function _eqMaintBadge(x) {
   const badges = [];
   if (x.maintenance_state === 'overdue')
     badges.push(
-      '<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">Maintenance overdue</span>',
+      '<span style="font-size:10px;background:var(--status-alert-tint);color:var(--status-alert);padding:2px 5px;border-radius:3px;margin-left:4px;">Maintenance overdue</span>',
     );
   else if (x.maintenance_state === 'due_soon')
     badges.push(
-      '<span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 5px;border-radius:3px;margin-left:4px;">Maintenance due soon</span>',
+      '<span style="font-size:10px;background:var(--status-warn-tint);color:var(--status-warn);padding:2px 5px;border-radius:3px;margin-left:4px;">Maintenance due soon</span>',
     );
   if (x.calibration_state === 'overdue')
     badges.push(
-      '<span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 5px;border-radius:3px;margin-left:4px;">Calibration overdue</span>',
+      '<span style="font-size:10px;background:var(--status-alert-tint);color:var(--status-alert);padding:2px 5px;border-radius:3px;margin-left:4px;">Calibration overdue</span>',
     );
   else if (x.calibration_state === 'due_soon')
     badges.push(
-      '<span style="font-size:10px;background:#eff6ff;color:#1d4ed8;padding:2px 5px;border-radius:3px;margin-left:4px;">Calibration due soon</span>',
+      '<span style="font-size:10px;background:var(--status-info-tint);color:var(--status-info);padding:2px 5px;border-radius:3px;margin-left:4px;">Calibration due soon</span>',
     );
   if (n0(x.pending_reservations) > 0)
     badges.push(
-      `<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 5px;border-radius:3px;margin-left:4px;">${n0(x.pending_reservations)} pending</span>`,
+      `<span style="font-size:10px;background:var(--status-warn-tint);color:var(--status-warn);padding:2px 5px;border-radius:3px;margin-left:4px;">${n0(x.pending_reservations)} pending</span>`,
     );
   return badges.join('');
 }
