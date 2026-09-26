@@ -1,24 +1,25 @@
 'use strict';
 
 const Database = require('better-sqlite3');
-const fs = require('node:fs');
-const path = require('node:path');
+const { prepareDatabasePath, storageError } = require('../storage');
 const { createSchema } = require('./schema');
 const { migrateColumns, migrateData } = require('./migrations');
 const { seedDatabase } = require('./seed');
 
 function openDatabase(config, logger = console) {
-  if (config.databasePath !== ':memory:') {
-    fs.mkdirSync(path.dirname(path.resolve(config.databasePath)), { recursive: true });
-  }
-  const db = new Database(config.databasePath);
+  prepareDatabasePath(config.databasePath);
+  let db;
   try {
+    db = new Database(config.databasePath);
     db.pragma('journal_mode = WAL');
     db.pragma('busy_timeout = 5000');
     initializeDatabase(db, config, logger);
     return db;
   } catch (error) {
-    db.close();
+    if (db?.open) db.close();
+    if (/^SQLITE_(CANTOPEN|READONLY|IOERR)/.test(error.code || '')) {
+      throw storageError('DATABASE_PATH', config.databasePath, error);
+    }
     throw error;
   }
 }

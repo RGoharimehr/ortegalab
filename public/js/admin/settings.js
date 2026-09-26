@@ -29,23 +29,16 @@ async function renderSettingsTab(body) {
             ([icn, lbl, val]) => `
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border-1)">
             <i data-lucide="${icn}" style="width:16px;height:16px;color:var(--fg-4);flex-shrink:0"></i>
-            <div style="flex:1;font-size:13px;color:var(--navy-900);font-weight:600">${lbl}</div>
+            <div style="flex:1;font-size:13px;color:var(--fg-1);font-weight:600">${lbl}</div>
             <div style="font-size:12px;color:var(--fg-3)">${val}</div>
           </div>`,
           )
           .join('')}
         <div class="p-theme-grid">
           <div>
-            <label style="font-size:12px;font-weight:700;color:var(--fg-3);display:block;margin-bottom:4px;">Website theme</label>
-            <select id="st_theme" class="p-inv-input">
-              <option value="navy-gold"${(s.site_theme || 'navy-gold') === 'navy-gold' ? ' selected' : ''}>Navy + Gold</option>
-              <option value="navy-copper"${(s.site_theme || 'navy-gold') === 'navy-copper' ? ' selected' : ''}>Navy + Copper</option>
-            </select>
-            <div class="p-soft-note">Navy + Copper keeps the navy base and swaps the accent color to a warmer editorial tone.</div>
-          </div>
-          <div>
-            <button class="btn-primary-sm p-btn-tight" id="saveThemeBtn" type="button">Save theme</button>
-            <div id="themeSaveMsg" style="font-size:12px;color:var(--status-ok);margin-top:8px;display:none;">Saved!</div>
+            <div style="font-size:12px;font-weight:700;color:var(--fg-3);margin-bottom:4px;">Website appearance</div>
+            <div style="color:var(--fg-1);">Graphite · Orange · Cyan</div>
+            <div class="p-soft-note">The public website and lab workspace share a dark theme.</div>
           </div>
         </div>
       </div>
@@ -134,16 +127,6 @@ async function renderSettingsTab(body) {
   };
 
   $('#logoutSet').onclick = doLogout;
-  $('#saveThemeBtn').onclick = async () => {
-    const upd = { site_theme: $('#st_theme').value };
-    try {
-      await apiPut('/api/settings', upd);
-      showSaved('themeSaveMsg');
-    } catch (e) {
-      alert(e.message);
-    }
-  };
-
   $('#saveLabNames').onclick = async () => {
     const upd = {
       lab_a_name: $('#st_la_name').value.trim() || 'Lab A',

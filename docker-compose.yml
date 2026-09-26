@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   web:
     build: .
@@ -14,6 +12,7 @@ services:
       # Required — override with a strong random value
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in your environment}
       DATABASE_PATH: /app/data/latfs.db
+      UPLOADS_PATH: /app/uploads
       BASE_URL: ${BASE_URL:-https://latfs.villanova.edu}
       # Optional: seed passwords (only used on first-run DB creation)
       ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}

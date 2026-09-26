@@ -1,0 +1,22 @@
+/* LATFS dark system — shared by the public website and lab applications. */
+:root {
+  color-scheme: dark;
+  --surface-0: #0a0e14;
+  --surface-1: #0f1520;
+  --surface-2: #121926;
+  --surface-3: #1a2433;
+  --text-primary: #e6edf3;
+  --text-secondary: #b5c0ce;
+  --text-muted: #8b98a9;
+  --accent-orange: #ff6a3d;
+  --accent-cyan: #38bdf8;
+  --line: rgba(172, 193, 218, 0.16);
+  --radius-card: 16px;
+  --bg: var(--surface-0);
+  --bg-alt: var(--surface-1);
+  --panel: var(--surface-2);
+  --text: var(--text-primary);
+  --dim: var(--text-muted);
+  --accent: var(--accent-orange);
+  --cyan: var(--accent-cyan);
+}

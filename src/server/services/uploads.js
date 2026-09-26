@@ -3,9 +3,10 @@
 const multer = require('multer');
 const path = require('node:path');
 const fs = require('node:fs');
+const { ensureWritableDirectory } = require('../storage');
 
 function createUploadService({ db, config, logger = console }) {
-  fs.mkdirSync(config.uploadsPath, { recursive: true });
+  ensureWritableDirectory(config.uploadsPath, 'UPLOADS_PATH');
   // Photo upload storage: derive safe image extensions from the accepted MIME type
   const photoStorage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, config.uploadsPath),

@@ -2,6 +2,7 @@
 
 const express = require('express');
 const { loadConfig } = require('./config');
+const { ensureWritableDirectory } = require('./storage');
 const { openDatabase, initializeDatabase } = require('./db');
 const SQLiteSessionStore = require('./session-store');
 const { configureHttp, createErrorHandler } = require('./middleware/http');
@@ -19,6 +20,9 @@ const { registerRoutes } = require('./routes');
 function createApp(options = {}) {
   const config = loadConfig(options);
   const logger = options.logger || console;
+  // Fail before allocating the database or session store if a mounted upload
+  // directory cannot be used by the configured runtime user.
+  ensureWritableDirectory(config.uploadsPath, 'UPLOADS_PATH');
   const db = options.db || openDatabase(config, logger);
   if (options.db) initializeDatabase(db, config, logger);
   const sessionStore = options.sessionStore || new SQLiteSessionStore({ db });

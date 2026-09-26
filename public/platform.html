@@ -8,17 +8,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/platform.css" />
     <link rel="stylesheet" href="/modern.css" />
   </head>
-  <body>
+  <body class="lab-console platform-surface">
     <!-- Login screen -->
     <div class="login-screen" id="loginScreen">
       <form class="login-card" id="loginForm">
-        <h1 class="display-serif">LATFS Platform</h1>
+        <a class="login-brand" href="/" aria-label="LATFS public website"
+          >LATFS<span>LAB WORKSPACE</span></a
+        >
+        <div class="eyebrow">Research, in progress</div>
+        <h1 class="display-serif">Welcome back.</h1>
         <p>
           Sign in with your lab account.<br /><span style="color: var(--fg-4); font-size: 11px"
             >No account? Ask the lab director / professor — they create accounts in
@@ -145,7 +150,9 @@
           </div>
           <button class="p-logout" id="logoutBtn">Logout</button>
         </div>
-        <button class="p-dm-toggle" id="dmToggle" title="Toggle dark mode">☀ / ☾ Dark mode</button>
+        <button class="p-dm-toggle" id="dmToggle" title="Toggle dim display" aria-pressed="false">
+          Dim display
+        </button>
       </aside>
 
       <main class="p-main">
@@ -606,12 +613,14 @@
                 "
               >
                 <div>
-                  <div style="font-weight: 600; font-size: 14px">Dark mode</div>
+                  <div style="font-weight: 600; font-size: 14px">Dim display</div>
                   <div style="font-size: 12px; color: var(--fg-3)">
-                    Switch between light and dark interface.
+                    Reduce panel brightness for low-light work.
                   </div>
                 </div>
-                <button class="btn-ghost-sm" id="profDmToggle">Toggle</button>
+                <button class="btn-ghost-sm" id="profDmToggle" aria-pressed="false">
+                  Dim display
+                </button>
               </div>
               <div
                 style="

@@ -71,18 +71,18 @@ See [architecture and maintenance](docs/architecture.md) for the module contract
 
 ## Configuration
 
-| Variable                                                        | Purpose                                                                          |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `NODE_ENV`                                                      | Set to `production` on the server to require a session secret and secure cookies |
-| `PORT`                                                          | Listening port; defaults to `3000`                                               |
-| `BASE_URL`                                                      | Trusted public origin for generated links and sitemap                            |
-| `SESSION_SECRET`                                                | Stable random secret; required in production                                     |
-| `ADMIN_SEED_PASSWORD`                                           | Initial admin password; at least 12 characters in production                     |
-| `SEED_DEMO_DATA`                                                | Explicit local-only demo mode; defaults to disabled                              |
-| `LAB_SEED_PASSWORD`                                             | Optional password override for local demo lab accounts                           |
-| `DATABASE_PATH`                                                 | SQLite file path; defaults to `latfs.db` in the project                          |
-| `UPLOADS_PATH`                                                  | Upload directory; defaults to `uploads/` in the project                          |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Optional SMTP notifications; no emails are sent without `SMTP_HOST`              |
+| Variable                                                        | Purpose                                                                             |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `NODE_ENV`                                                      | Set to `production` on the server to require a session secret and secure cookies    |
+| `PORT`                                                          | Listening port; defaults to `3000`                                                  |
+| `BASE_URL`                                                      | Trusted public origin for generated links and sitemap                               |
+| `SESSION_SECRET`                                                | Stable random secret; required in production                                        |
+| `ADMIN_SEED_PASSWORD`                                           | Initial admin password; at least 12 characters in production                        |
+| `SEED_DEMO_DATA`                                                | Explicit local-only demo mode; defaults to disabled                                 |
+| `LAB_SEED_PASSWORD`                                             | Optional password override for local demo lab accounts                              |
+| `DATABASE_PATH`                                                 | SQLite file; Node default: project `latfs.db`; Docker default: `/app/data/latfs.db` |
+| `UPLOADS_PATH`                                                  | Upload directory; Node default: project `uploads/`; Docker default: `/app/uploads`  |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Optional SMTP notifications; no emails are sent without `SMTP_HOST`                 |
 
 Generate a session secret using `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`. Keep it stable across deploys so signed session cookies remain valid. SQLite stores sessions beside the application data, with expiration and cleanup.
 
@@ -99,13 +99,33 @@ Both SQLite and uploads require durable storage. The design supports a single ap
 docker compose up --build -d
 ```
 
-The image builds its assets in a separate stage, contains only production dependencies at runtime, and runs as a non-root user. Compose retains the existing `latfs_db` and `latfs_uploads` volume names. Back up the database and uploads before changing any volume mounts or paths.
+The image builds its assets in a separate stage, contains only production dependencies at runtime, and runs as the non-root `node` user. Its writable defaults are `/app/data/latfs.db` and `/app/uploads`; the application directory remains root-owned. Compose retains the existing `latfs_db:/app/data` and `latfs_uploads:/app/uploads` volume destinations. Back up the database and uploads before changing any volume mounts or paths.
+
+GitHub Actions builds the production image and checks startup with its default paths, persistent database/uploads across container replacement, explicit path overrides, and read-only mount errors. To run the same container checks locally with Docker installed:
+
+```sh
+docker build --tag latfs:ci .
+node scripts/smoke-docker.js latfs:ci
+```
 
 ### Render
 
-Use a web service, not a static-site service. Set the build command to `npm ci && npm run build`, start command to `npm start`, and health check to `/healthz`.
+Use a web service with health check `/healthz`. For the native Node runtime, set the build command to `npm ci && npm run build` and the start command to `npm start`. For the Docker runtime, use this repository's `Dockerfile` and its default start command.
 
-For native Node, mount a disk at `/opt/render/project/src/data`, set `DATABASE_PATH=/opt/render/project/src/data/latfs.db`, and `UPLOADS_PATH=/opt/render/project/src/data/uploads`. For Docker, mount at `/app/data` and use corresponding paths under that directory. Move existing data before changing paths; otherwise the application will open a new database.
+For a new native Node deployment, mount a disk at `/opt/render/project/src/data`, set `DATABASE_PATH=/opt/render/project/src/data/latfs.db`, and set `UPLOADS_PATH=/opt/render/project/src/data/uploads`.
+
+For a new Docker deployment, mount one disk at `/app/data` and set:
+
+```text
+DATABASE_PATH=/app/data/latfs.db
+UPLOADS_PATH=/app/data/uploads
+```
+
+The upload override is required for both kinds of data to live under that single disk mount. Without it, Docker uses `/app/uploads`, which is outside the Render disk. Render preserves only files under the configured mount path; see [Render persistent disks](https://render.com/docs/disks).
+
+For an existing deployment, keep the paths pointing to its current database and uploads. If changing paths, back up and move the existing data first; pointing at an empty directory creates a new database. The application never switches database paths to work around a permissions error.
+
+A mounted disk has its own ownership and permissions, which can replace the permissions prepared in the image. Ensure its directories and existing files are writable by the `node` runtime user. SQLite also needs write access to its parent directory for WAL and journal files. Startup errors now identify `DATABASE_PATH` or `UPLOADS_PATH`, the affected path, and the runtime UID/GID. Repair the mount or ownership when these checks fail; keep the server running as a non-root user.
 
 ## Access and privacy
 
