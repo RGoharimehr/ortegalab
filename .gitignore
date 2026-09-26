@@ -24,3 +24,14 @@ _vti_pvt/
 
 # Legacy tool project files
 *.cpf
+
+# Secrets, runtime files, and generated assets
+.env
+.env.*
+!.env.example
+*.db-wal
+*.db-shm
+*.db-journal
+data/
+coverage/
+public/vendor/

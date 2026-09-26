@@ -1,0 +1,355 @@
+'use strict';
+
+const assert = require('node:assert/strict');
+const { test } = require('node:test');
+const { mkdtempSync, rmSync, writeFileSync } = require('node:fs');
+const { tmpdir } = require('node:os');
+const path = require('node:path');
+const { once } = require('node:events');
+const bcrypt = require('bcryptjs');
+const { createApp } = require('../src/server/app');
+
+const password = 'Test-only-password-123!';
+const logger = { log() {}, info() {}, warn() {}, error() {} };
+
+async function fixture(t, options = {}) {
+  const directory = mkdtempSync(path.join(tmpdir(), 'latfs-http-'));
+  const config = {
+    env: {
+      NODE_ENV: 'test',
+      SESSION_SECRET: 'test-secret-that-stays-stable-across-restarts',
+      ADMIN_SEED_PASSWORD: password,
+      BASE_URL: 'https://lab.example.org',
+    },
+    databasePath: path.join(directory, 'lab.db'),
+    uploadsPath: path.join(directory, 'uploads'),
+    seedDemo: false,
+    logger,
+    ...options,
+  };
+  let application = createApp(config);
+  let server;
+  let base;
+  async function listen() {
+    server = application.app.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    base = `http://127.0.0.1:${server.address().port}`;
+  }
+  async function stop() {
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+    application.close();
+  }
+  await listen();
+  t.after(async () => {
+    await stop();
+    rmSync(directory, { recursive: true, force: true });
+  });
+  return {
+    get db() {
+      return application.db;
+    },
+    config,
+    async restart() {
+      await stop();
+      application = createApp(config);
+      await listen();
+    },
+    async request(url, { method = 'GET', body, cookie, csrf } = {}) {
+      const headers = {};
+      if (body !== undefined) headers['Content-Type'] = 'application/json';
+      if (cookie) headers.Cookie = cookie;
+      if (csrf) headers['X-CSRF-Token'] = csrf;
+      const response = await fetch(base + url, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        /* HTML and attachments are also tested. */
+      }
+      return { status: response.status, headers: response.headers, data, text };
+    },
+  };
+}
+
+async function login(application, username = 'admin') {
+  const response = await application.request('/admin/login', {
+    method: 'POST',
+    body: { username, password },
+  });
+  assert.equal(response.status, 200, response.text);
+  assert.equal(response.data.success, true);
+  return {
+    cookie: response.headers.get('set-cookie').split(';')[0],
+    csrf: response.data.csrfToken,
+  };
+}
+
+test('public and authenticated HTTP contracts survive modularization', async (t) => {
+  const application = await fixture(t);
+  let auth;
+  let student;
+
+  await t.test('public pages, API arrays, metadata and health load', async () => {
+    for (const route of ['/', '/platform', '/admin', '/reset-password']) {
+      const response = await application.request(route);
+      assert.equal(response.status, 200, route);
+      assert.match(response.text, /<!DOCTYPE html>/i);
+      assert.ok(response.headers.get('content-security-policy'));
+    }
+    assert.deepEqual((await application.request('/healthz')).data, { ok: true });
+    for (const route of [
+      'news',
+      'publications',
+      'people/public',
+      'research',
+      'gallery',
+      'hero-slides',
+      'facilities',
+      'apps',
+      'downloads',
+    ]) {
+      const response = await application.request('/api/' + route);
+      assert.equal(response.status, 200, route);
+      assert.ok(Array.isArray(response.data), route);
+    }
+    assert.equal(
+      (await application.request('/api/news')).data.length,
+      0,
+      'No demo news in a clean non-demo database',
+    );
+    const sitemap = await application.request('/sitemap.xml');
+    assert.equal(sitemap.status, 200);
+    assert.match(sitemap.text, /https:\/\/lab.example.org/);
+  });
+
+  await t.test('lab records reject anonymous reads', async () => {
+    for (const route of [
+      'me',
+      'tasks',
+      'events',
+      'meetings',
+      'inventory',
+      'equipment',
+      'samples',
+      'lab-notebooks',
+      'training',
+      'issues',
+      'users',
+      'projects',
+      'resources/overview',
+    ]) {
+      assert.equal((await application.request('/api/' + route)).status, 401, route);
+    }
+  });
+
+  await t.test('login validates payloads and returns session and CSRF token', async () => {
+    assert.equal(
+      (await application.request('/admin/login', { method: 'POST', body: {} })).status,
+      400,
+    );
+    assert.equal(
+      (
+        await application.request('/admin/login', {
+          method: 'POST',
+          body: { username: 'admin', password: 'incorrect' },
+        })
+      ).status,
+      401,
+    );
+    auth = await login(application);
+    assert.ok(auth.csrf);
+    const me = await application.request('/api/me', auth);
+    assert.equal(me.data.role, 'admin');
+    const hash = bcrypt.hashSync(password, 4);
+    application.db
+      .prepare(
+        "INSERT INTO users (username, password, role, name, active) VALUES (?, ?, 'student', 'Test Student', 1)",
+      )
+      .run('teststudent', hash);
+    student = await login(application, 'teststudent');
+  });
+
+  await t.test('content mutations require CSRF and appropriate role', async () => {
+    const body = { title: 'Verified lab news', content: 'Test article', date: '2026-09-24' };
+    assert.equal(
+      (await application.request('/api/news', { method: 'POST', body, cookie: auth.cookie }))
+        .status,
+      403,
+    );
+    assert.equal(
+      (await application.request('/api/news', { method: 'POST', body, ...student })).status,
+      403,
+    );
+    const created = await application.request('/api/news', { method: 'POST', body, ...auth });
+    assert.equal(created.status, 200, created.text);
+    assert.ok(created.data.id);
+    assert.equal((await application.request('/api/news')).data[0].title, body.title);
+    assert.equal(
+      (await application.request('/api/news/' + created.data.id, { method: 'DELETE', ...auth }))
+        .status,
+      200,
+    );
+  });
+
+  await t.test('task workflow and inventory adjustment operate through real routes', async () => {
+    const created = await application.request('/api/tasks', {
+      method: 'POST',
+      ...auth,
+      body: { title: 'Calibrate rig', status: 'todo', priority: 'normal' },
+    });
+    assert.equal(created.status, 200, created.text);
+    const id = created.data.id;
+    assert.equal(
+      (
+        await application.request('/api/tasks/' + id, {
+          method: 'PUT',
+          ...auth,
+          body: { status: 'done' },
+        })
+      ).status,
+      200,
+    );
+    const tasks = (await application.request('/api/tasks', auth)).data.rows;
+    assert.ok(tasks.some((task) => task.id === id && task.status === 'done'));
+    const stock = await application.request('/api/inventory', {
+      method: 'POST',
+      ...auth,
+      body: { sku: 'TEST-001', name: 'Test fittings', qty: 5, min_qty: 2, lab: 'A' },
+    });
+    assert.equal(stock.status, 200, stock.text);
+    const adjusted = await application.request(`/api/inventory/${stock.data.id}/adjust`, {
+      method: 'PATCH',
+      ...auth,
+      body: { delta: -1, reason: 'Test use' },
+    });
+    assert.equal(adjusted.status, 200, adjusted.text);
+    assert.equal(
+      application.db.prepare('SELECT qty FROM inventory WHERE id=?').get(stock.data.id).qty,
+      4,
+    );
+  });
+
+  await t.test('calendar publishes only explicitly public events', async () => {
+    for (const visibility of ['public', 'lab', 'private']) {
+      const response = await application.request('/api/events', {
+        method: 'POST',
+        ...auth,
+        body: {
+          title: `${visibility} event`,
+          start_time: '2026-10-01T12:00:00Z',
+          end_time: '2026-10-01T13:00:00Z',
+          visibility,
+        },
+      });
+      assert.equal(response.status, 200, response.text);
+    }
+    const calendar = await application.request('/api/events/calendar.ics');
+    assert.equal(calendar.status, 200);
+    assert.match(calendar.text, /SUMMARY:public event/);
+    assert.doesNotMatch(calendar.text, /SUMMARY:(lab|private) event/);
+  });
+
+  await t.test('unpublished attachments stay private while published downloads load', async () => {
+    const filename = 'access-check.txt';
+    writeFileSync(path.join(application.config.uploadsPath, filename), 'Private lab attachment');
+    assert.ok([401, 403, 404].includes((await application.request('/uploads/' + filename)).status));
+    assert.equal((await application.request('/uploads/' + filename, auth)).status, 200);
+    application.db
+      .prepare(
+        "INSERT INTO documents (entity_type, entity_id, title, file_url, published) VALUES ('download', 0, 'Public test file', ?, 1)",
+      )
+      .run('/uploads/' + filename);
+    assert.equal((await application.request('/uploads/' + filename)).status, 200);
+    application.db
+      .prepare('UPDATE documents SET published=0 WHERE file_url=?')
+      .run('/uploads/' + filename);
+    assert.ok([401, 403, 404].includes((await application.request('/uploads/' + filename)).status));
+  });
+
+  await t.test('attachment endpoints cannot bypass staff-only publication controls', async () => {
+    const body = {
+      entity_type: 'download',
+      entity_id: 1,
+      title: 'Unauthorized publication',
+      file_url: '/uploads/access-check.txt',
+    };
+    assert.equal(
+      (await application.request('/api/documents', { method: 'POST', ...student, body })).status,
+      403,
+    );
+    assert.equal(
+      (await application.request('/api/downloads', { method: 'POST', ...student, body })).status,
+      403,
+    );
+    assert.equal(
+      (await application.request('/api/documents?entity_type=download&entity_id=1', student))
+        .status,
+      403,
+    );
+    assert.equal((await application.request('/uploads/access-check.txt')).status, 401);
+
+    // Even a legacy download created through the former bypass is staff-owned.
+    const studentId = application.db
+      .prepare('SELECT id FROM users WHERE username=?')
+      .get('teststudent').id;
+    const legacy = application.db
+      .prepare(
+        "INSERT INTO documents (entity_type, entity_id, file_url, created_by_user_id, published) VALUES ('download', 1, '/uploads/access-check.txt', ?, 0)",
+      )
+      .run(studentId);
+    assert.equal(
+      (
+        await application.request(`/api/documents/${legacy.lastInsertRowid}`, {
+          method: 'DELETE',
+          ...student,
+        })
+      ).status,
+      403,
+    );
+
+    const attachment = await application.request('/api/documents', {
+      method: 'POST',
+      ...student,
+      body: { ...body, entity_type: 'equipment' },
+    });
+    assert.equal(attachment.status, 200, attachment.text);
+    assert.equal(
+      application.db.prepare('SELECT published FROM documents WHERE id=?').get(attachment.data.id)
+        .published,
+      0,
+    );
+    assert.equal(
+      (
+        await application.request(`/api/documents/${attachment.data.id}`, {
+          method: 'DELETE',
+          ...student,
+        })
+      ).status,
+      200,
+    );
+  });
+
+  await t.test('session and lab records survive an application restart', async () => {
+    await application.restart();
+    assert.equal((await application.request('/api/me', auth)).data.role, 'admin');
+    assert.ok(
+      (await application.request('/api/tasks', auth)).data.rows.some(
+        (task) => task.title === 'Calibrate rig',
+      ),
+    );
+    const result = await application.request('/admin/logout', { method: 'POST', ...auth });
+    assert.equal(result.status, 200);
+    assert.equal((await application.request('/api/me', auth)).status, 401);
+  });
+});
+
+test('production refuses startup without a session secret', () => {
+  assert.throws(() => createApp({ env: { NODE_ENV: 'production' } }), /SESSION_SECRET|secret/i);
+});

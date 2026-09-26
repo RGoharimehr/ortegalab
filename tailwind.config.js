@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 // LATFS Design System tokens (handoff bundle: latfs-design-system)
 module.exports = {
-  content: ["./public/**/*.html"],
+  content: ['./public/**/*.html'],
   theme: {
     extend: {
       colors: {
@@ -22,19 +22,19 @@ module.exports = {
           500: '#d4a942',
           300: '#e8c972',
           100: '#fef7e4',
-          50:  '#fdfbf4',
+          50: '#fdfbf4',
         },
         // Legacy aliases (keep existing markup working)
-        primary:   '#0f172a',
+        primary: '#0f172a',
         secondary: '#1e3a5f',
-        accent:    '#b8912a',
+        accent: '#b8912a',
       },
       fontFamily: {
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Fraunces', 'Iowan Old Style', 'Georgia', 'serif'],
-        mono:    ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-    }
+    },
   },
   plugins: [],
-}
+};

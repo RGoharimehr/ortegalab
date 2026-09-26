@@ -1,0 +1,11 @@
+.git
+node_modules
+.env
+.env.*
+*.db
+*.db-*
+uploads
+data
+coverage
+test
+*.log
