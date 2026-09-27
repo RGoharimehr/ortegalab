@@ -1,6 +1,6 @@
 export const RES = {
   logoColor: './assets/site-logos/latfs-icon.png',
-  latfsWhite: './assets/site-logos/latfs-logo-white.png',
+  latfsWhite: './assets/site-logos/latfs-thermal.png',
   latfsMark: './assets/site-logos/latfs-icon.png',
   hero1: './assets/hero-1.png',
   hero2: './assets/hero-2.png',

@@ -5,8 +5,8 @@
   --page-bg-alt: var(--bg-alt, #0f1520);
   --page-text: var(--text, #e6edf3);
   --page-dim: var(--dim, #8b98a9);
-  --page-accent: var(--accent, #ff6a3d);
-  --page-cyan: var(--cyan, #38bdf8);
+  --page-accent: var(--accent, #ff7a18);
+  --page-cyan: var(--cyan, #00d9ef);
   --page-line: var(--line, rgba(139, 152, 169, 0.18));
   color: var(--page-text);
 }

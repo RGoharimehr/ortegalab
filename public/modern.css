@@ -14,32 +14,32 @@ body.lab-console {
   --navy-800: #121926;
   --navy-700: #214258;
   --navy-600: #2b5067;
-  --navy-500: #38bdf8;
+  --navy-500: #00d9ef;
   /* Compatibility aliases for existing component styles and templates. */
   --gold-900: #ffad91;
   --gold-700: #ff8d6c;
-  --gold-600: var(--accent-orange, #ff6a3d);
-  --gold-500: var(--accent-orange, #ff6a3d);
+  --gold-600: var(--accent-orange, #ff7a18);
+  --gold-500: var(--accent-orange, #ff7a18);
   --gold-300: #ffad91;
-  --gold-100: rgba(255, 106, 61, 0.12);
+  --gold-100: rgba(255, 122, 24, 0.12);
   --gold-50: var(--bg-3);
   --gray-50: var(--bg-2);
   --gray-100: var(--bg-3);
   --gray-200: #263140;
   --gray-300: #394658;
-  --accent: var(--accent-orange, #ff6a3d);
+  --accent: var(--accent-orange, #ff7a18);
   --accent-hover: #ff865f;
-  --accent-soft: rgba(255, 106, 61, 0.12);
+  --accent-soft: rgba(255, 122, 24, 0.12);
   --border-1: var(--line, rgba(255, 255, 255, 0.08));
   --border-2: rgba(255, 255, 255, 0.16);
   --status-ok: #6ee7a0;
   --status-warn: #fbbf66;
   --status-alert: #fb8d95;
-  --status-info: var(--accent-cyan, #38bdf8);
+  --status-info: var(--accent-cyan, #00d9ef);
   --status-ok-tint: rgba(110, 231, 160, 0.1);
   --status-warn-tint: rgba(251, 191, 102, 0.1);
   --status-alert-tint: rgba(251, 141, 149, 0.1);
-  --status-info-tint: rgba(56, 189, 248, 0.1);
+  --status-info-tint: rgba(0, 217, 239, 0.1);
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: var(--font-sans);
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -72,11 +72,11 @@ body.lab-console *::after {
   box-sizing: border-box;
 }
 body.lab-console :focus-visible {
-  outline: 2px solid var(--accent-cyan, #38bdf8);
+  outline: 2px solid var(--accent-cyan, #00d9ef);
   outline-offset: 3px;
 }
 body.lab-console ::selection {
-  background: rgba(255, 106, 61, 0.28);
+  background: rgba(255, 122, 24, 0.28);
   color: #fff;
 }
 body.lab-console button,
@@ -86,7 +86,7 @@ body.lab-console textarea {
   font-family: inherit;
 }
 body.lab-console a {
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
 }
 body.lab-console a:hover {
   color: #86d8fc;
@@ -94,12 +94,12 @@ body.lab-console a:hover {
 body.lab-console code,
 body.lab-console .p-mono {
   background: var(--bg-3);
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
   border: 1px solid var(--border-1);
   border-radius: 5px;
 }
 body.lab-console .eyebrow {
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
   font-size: 11px;
   letter-spacing: 0.16em;
 }
@@ -129,17 +129,19 @@ body.lab-console .p-brand {
   gap: 12px;
 }
 body.lab-console .p-brand-mark {
-  width: 36px;
-  height: 36px;
+  width: 96px;
+  height: 60px;
+  overflow: hidden;
+  flex-shrink: 0;
   border-radius: 9px;
-  background: var(--accent);
+  background: #000;
   box-shadow: none;
 }
 body.lab-console .p-brand-mark img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 4px;
+  transform: scale(1.45);
 }
 body.lab-console .p-brand-wm {
   font-size: 17px;
@@ -190,9 +192,9 @@ body.lab-console .p-nav-item:hover {
   transform: none;
 }
 body.lab-console .p-nav-item.active {
-  background: rgba(255, 106, 61, 0.1);
+  background: rgba(255, 122, 24, 0.1);
   color: #ff997a;
-  border-color: rgba(255, 106, 61, 0.18);
+  border-color: rgba(255, 122, 24, 0.18);
   box-shadow: inset 2px 0 var(--accent);
   font-weight: 650;
 }
@@ -210,9 +212,9 @@ body.lab-console .p-user {
 }
 body.lab-console .p-user-av,
 body.lab-console .p-prof-av {
-  background: rgba(56, 189, 248, 0.14);
-  color: var(--accent-cyan, #38bdf8);
-  border: 1px solid rgba(56, 189, 248, 0.16);
+  background: rgba(0, 217, 239, 0.14);
+  color: var(--accent-cyan, #00d9ef);
+  border: 1px solid rgba(0, 217, 239, 0.16);
   box-shadow: none;
 }
 body.lab-console .p-user-name {
@@ -242,8 +244,8 @@ body.lab-console .p-dm-toggle {
   font-size: 12px;
 }
 body.lab-console .p-dm-toggle[aria-pressed='true'] {
-  color: var(--accent-cyan, #38bdf8);
-  border-color: rgba(56, 189, 248, 0.3);
+  color: var(--accent-cyan, #00d9ef);
+  border-color: rgba(0, 217, 239, 0.3);
 }
 body.lab-console .p-main {
   min-width: 0;
@@ -350,7 +352,7 @@ body.lab-console .p-stat-lbl {
   margin-top: 5px;
 }
 body.lab-console .p-stat-icon {
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
   width: 17px;
   height: 17px;
   opacity: 0.7;
@@ -402,7 +404,7 @@ body.lab-console .p-admin-ribbon {
 body.lab-console .p-admin-kicker,
 body.lab-console .p-action-tile-kicker,
 body.lab-console .p-alert-kicker {
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
 }
 body.lab-console .p-admin-title {
   font-size: 17px;
@@ -416,7 +418,7 @@ body.lab-console .p-admin-pill.soft {
   color: #ff997a;
 }
 body.lab-console .p-action-tile:hover {
-  border-color: rgba(56, 189, 248, 0.3);
+  border-color: rgba(0, 217, 239, 0.3);
   background: var(--bg-3);
   box-shadow: none;
   transform: translateY(-1px);
@@ -472,7 +474,7 @@ body.lab-console .p-eq-btn:hover {
 }
 body.lab-console .w-link-gold,
 body.lab-console .p-inline-links a {
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
   font-size: 12px;
 }
 body.lab-console .w-link-gold:hover {
@@ -517,9 +519,9 @@ body.lab-console textarea::placeholder {
 body.lab-console input:focus,
 body.lab-console select:focus,
 body.lab-console textarea:focus {
-  border-color: var(--accent-cyan, #38bdf8);
+  border-color: var(--accent-cyan, #00d9ef);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 217, 239, 0.1);
 }
 body.lab-console input[type='checkbox'],
 body.lab-console input[type='radio'] {
@@ -620,7 +622,7 @@ body.lab-console .p-col-count {
 body.lab-console .p-task-card {
   background: var(--bg-1);
   border: 1px solid var(--border-1);
-  border-left: 3px solid var(--accent-cyan, #38bdf8);
+  border-left: 3px solid var(--accent-cyan, #00d9ef);
   border-radius: 8px;
   box-shadow: none;
 }
@@ -628,7 +630,7 @@ body.lab-console .p-task-card-title {
   color: var(--fg-1);
 }
 body.lab-console .p-task-card:hover {
-  border-color: rgba(56, 189, 248, 0.3);
+  border-color: rgba(0, 217, 239, 0.3);
 }
 body.lab-console .p-add-task {
   color: var(--fg-3);
@@ -666,12 +668,12 @@ body.lab-console .p-eq-status-maint {
 body.lab-console .p-meet-day-time,
 body.lab-console .p-meet-day-lbl,
 body.lab-console .p-slot-time {
-  color: var(--accent-cyan, #38bdf8);
+  color: var(--accent-cyan, #00d9ef);
 }
 body.lab-console .p-banner {
   background: var(--accent-soft);
   color: var(--fg-2);
-  border: 1px solid rgba(255, 106, 61, 0.15);
+  border: 1px solid rgba(255, 122, 24, 0.15);
   box-shadow: none;
 }
 body.lab-console .empty {
@@ -687,8 +689,8 @@ body.lab-console .login-screen {
   padding: 24px;
   overflow-y: auto;
   background:
-    radial-gradient(ellipse at 22% 0, rgba(56, 189, 248, 0.06), transparent 40%),
-    radial-gradient(ellipse at 85% 100%, rgba(255, 106, 61, 0.045), transparent 45%), var(--bg-2);
+    radial-gradient(ellipse at 22% 0, rgba(0, 217, 239, 0.06), transparent 40%),
+    radial-gradient(ellipse at 85% 100%, rgba(255, 122, 24, 0.045), transparent 45%), var(--bg-2);
 }
 body.lab-console .login-card {
   width: min(440px, 100%);
@@ -720,7 +722,7 @@ body.lab-console .login-brand {
   text-decoration: none;
 }
 body.lab-console .login-brand::before {
-  content: '';
+  content: none;
   width: 9px;
   height: 9px;
   background: var(--accent);
@@ -733,6 +735,33 @@ body.lab-console .login-brand span {
   font-size: 10px;
   letter-spacing: 0.12em;
   font-weight: 600;
+}
+body.lab-console .login-brand .login-logo {
+  display: flex;
+  width: 100px;
+  height: 62px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #000;
+  flex-shrink: 0;
+}
+body.lab-console .login-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.45);
+}
+@media (max-width: 480px) {
+  body.lab-console .login-brand {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  body.lab-console .login-brand .login-logo {
+    width: 88px;
+    height: 54px;
+  }
 }
 body.lab-console .login-card h1 {
   color: var(--fg-1);

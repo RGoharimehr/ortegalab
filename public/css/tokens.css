@@ -8,8 +8,11 @@
   --text-primary: #e6edf3;
   --text-secondary: #b5c0ce;
   --text-muted: #8b98a9;
-  --accent-orange: #ff6a3d;
-  --accent-cyan: #38bdf8;
+  --accent-orange: #ff7a18;
+  --accent-cyan: #00d9ef;
+  --accent-blue: #176bff;
+  --accent-yellow: #ffe34d;
+  --thermal-gradient: linear-gradient(110deg, #00d9ef 0%, #62b9ff 35%, #ffe34d 72%, #ff7a18 100%);
   --line: rgba(172, 193, 218, 0.16);
   --radius-card: 16px;
   --bg: var(--surface-0);

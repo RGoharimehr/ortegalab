@@ -37,7 +37,7 @@ async function renderSettingsTab(body) {
         <div class="p-theme-grid">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--fg-3);margin-bottom:4px;">Website appearance</div>
-            <div style="color:var(--fg-1);">Graphite · Orange · Cyan</div>
+            <div style="color:var(--fg-1);">Graphite · Thermal spectrum</div>
             <div class="p-soft-note">The public website and lab workspace share a dark theme.</div>
           </div>
         </div>

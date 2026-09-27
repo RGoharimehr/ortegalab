@@ -88,8 +88,17 @@ export function Nav() {
       h(
         'a',
         { class: 'w-brand', href: '#home', 'aria-label': 'LATFS home' },
-        h('img', { src: RES.latfsWhite, alt: '', class: 'w-brand-img' }),
-        h('span', { class: 'w-brand-sub' }, 'VILLANOVA UNIVERSITY'),
+        h(
+          'span',
+          { class: 'w-brand-mark' },
+          h('img', { src: RES.latfsWhite, alt: '', class: 'w-brand-img' }),
+        ),
+        h(
+          'span',
+          { class: 'w-brand-copy' },
+          h('strong', null, 'LATFS'),
+          h('span', { class: 'w-brand-sub' }, 'VILLANOVA UNIVERSITY'),
+        ),
       ),
       menu,
       toggle,
@@ -148,7 +157,11 @@ export function PublicFooter() {
         h(
           'a',
           { href: '#home', 'aria-label': 'LATFS home' },
-          h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-foot-logo' }),
+          h(
+            'span',
+            { class: 'w-brand-mark w-foot-logo' },
+            h('img', { src: RES.latfsWhite, alt: 'LATFS', class: 'w-brand-img' }),
+          ),
         ),
         h('p', { class: 'w-foot-sub' }, 'Laboratory for Advanced Thermal & Fluid Systems'),
         h(
