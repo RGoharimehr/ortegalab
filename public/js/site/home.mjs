@@ -36,42 +36,11 @@ export function Hero(slides) {
         'div',
         { class: 'w-hero-heading' },
         h(
-          'div',
-          { class: 'w-hero-copy' },
-          h(
-            'div',
-            { class: 'eyebrow w-hero-eyebrow' },
-            h('span', { class: 'w-status-dot', 'aria-hidden': 'true' }),
-            'VILLANOVA UNIVERSITY · LATFS',
-          ),
-          h(
-            'h1',
-            { class: 'w-hero-title' },
-            'Advancing thermal',
-            h('br'),
-            h('span', null, '& fluid systems.'),
-          ),
-        ),
-        h(
-          'div',
-          { class: 'w-hero-intro' },
-          h(
-            'p',
-            { class: 'w-hero-lead' },
-            'We study how heat and fluids move — and use that understanding to build better cooling and energy systems.',
-          ),
-          h('p', { class: 'w-hero-labname' }, 'Laboratory for Advanced Thermal & Fluid Systems'),
-          h(
-            'div',
-            { class: 'w-hero-actions' },
-            h(
-              'a',
-              { class: 'w-btn w-btn-primary', href: '#research' },
-              'Explore research',
-              h('span', { 'aria-hidden': 'true' }, '↗'),
-            ),
-            h('a', { class: 'w-btn w-btn-secondary', href: '#people' }, 'Meet the lab'),
-          ),
+          'h1',
+          { class: 'w-hero-title' },
+          'Laboratory for Advanced',
+          h('br'),
+          h('span', null, 'Thermal and Fluid Systems'),
         ),
       ),
       h(

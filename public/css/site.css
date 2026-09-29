@@ -369,7 +369,7 @@ summary {
 }
 .w-hero-heading {
   display: grid;
-  grid-template-columns: 1.65fr 1fr;
+  grid-template-columns: 1fr;
   gap: 56px;
   align-items: end;
   padding-bottom: 48px;
@@ -420,7 +420,7 @@ summary {
 }
 .w-hero-media {
   position: relative;
-  height: clamp(210px, 21vw, 300px);
+  height: clamp(360px, 38vw, 520px);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -1036,7 +1036,7 @@ summary {
   }
   .w-hero-heading {
     gap: 32px;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1fr;
   }
   .w-hero-title {
     font-size: clamp(42px, 5.7vw, 65px);
@@ -1127,7 +1127,7 @@ summary {
     gap: 48px;
   }
   .w-footer-grid {
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1fr;
     gap: 36px;
   }
   .w-join-banner {
@@ -1179,7 +1179,7 @@ summary {
     padding-bottom: 30px;
   }
   .w-hero-media {
-    height: 195px;
+    height: 300px;
   }
   .w-hero-media-bar {
     inset: auto 14px 12px;

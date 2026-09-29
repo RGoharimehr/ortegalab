@@ -60,7 +60,7 @@ function updateMetadata(main) {
     main.querySelector('h1')?.textContent || 'Laboratory for Advanced Thermal & Fluid Systems';
   document.title =
     state.route === 'home'
-      ? 'LATFS · Laboratory for Advanced Thermal & Fluid Systems'
+      ? 'Laboratory for Advanced Thermal and Fluid Systems'
       : `${heading} · LATFS`;
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', document.title);
