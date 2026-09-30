@@ -1,19 +1,17 @@
 import { h } from './dom.mjs';
 import { galleryEntries } from './collections.mjs';
 import { RES } from './config.mjs';
+import { HERO_PHOTOS, RESEARCH_PHOTOS, PARTNER_PHOTO } from './photography.mjs';
 import { DATA, siteStats, heroMetricLabel } from './data.mjs';
 import { SectionHeader } from './layout.mjs';
 import { state } from './router.mjs';
 import { formatMetricCount, latestGalleryItems, fmtNewsDate } from './utils.mjs';
 
 export function Hero(slides) {
-  const usable = slides?.length
-    ? slides
-    : [
-        { image_url: RES.hero1, title: 'Inside the laboratory' },
-        { image_url: RES.hero3, title: 'Research in practice' },
-        { image_url: RES.hero2, title: 'Thermal and fluid systems' },
-      ];
+  const published = (slides || []).filter(
+    (slide) => !/(?:^|\/)assets\/(?:hero-\d+|facility-\d+)\.png$/.test(slide.image_url || slide),
+  );
+  const usable = published.length ? published : HERO_PHOTOS;
   state.heroSlides = usable;
   state.heroIdx %= usable.length;
   const stats = siteStats();
@@ -64,12 +62,6 @@ export function Hero(slides) {
                 src: slide.image_url || slide,
                 alt: slide.title || 'LATFS research laboratory',
                 loading: i === 0 ? 'eager' : 'lazy',
-                // Frame a single photo inside the legacy panoramic collages.
-                class: /(?:^|\/)hero-2\.png$/.test(slide.image_url || slide)
-                  ? 'w-hero-photo-left'
-                  : /(?:^|\/)hero-3\.png$/.test(slide.image_url || slide)
-                    ? 'w-hero-photo-right'
-                    : null,
               }),
             ),
           ),
@@ -167,58 +159,103 @@ export function updateHeroSlides() {
   });
 }
 
-export function ResearchGrid(rows) {
-  const fallbackImages = [RES.rDroplet, RES.rMini, RES.rGeo];
+export function ResearchFeature(rows) {
+  const topics = rows || [];
+  let index = 0;
+  const image = h('img', {
+    class: 'w-research-backdrop',
+    src: RESEARCH_PHOTOS[0].image_url,
+    alt: '',
+    loading: 'lazy',
+  });
+  const story = h('div', {
+    class: 'w-research-story',
+    id: 'research-topic',
+    'aria-live': 'polite',
+  });
+  const count = h('span', { class: 'w-research-count', 'aria-live': 'polite' });
+  const paint = () => {
+    const topic = topics[index];
+    if (!topic) {
+      story.replaceChildren(
+        h('h2', null, 'Research at LATFS'),
+        h('p', null, 'No research areas published yet.'),
+        h('a', { class: 'w-feature-link', href: '#research' }, 'Visit the research page ↗'),
+      );
+      return;
+    }
+    const title = topic.title || topic.name || 'Research at LATFS';
+    const customPhoto =
+      topic.image_url &&
+      !/(?:^|\/)assets\/(?:research-(?:droplet|minichannel|geothermal)|hero-\d+|facility-\d+)\.png$/.test(
+        topic.image_url,
+      );
+    image.src = customPhoto
+      ? topic.image_url
+      : RESEARCH_PHOTOS[index % RESEARCH_PHOTOS.length].image_url;
+    story.replaceChildren(
+      h('h2', null, title),
+      h(
+        'p',
+        null,
+        topic.summary ||
+          topic.description ||
+          topic.desc ||
+          'Explore this topic on our research page.',
+      ),
+      h(
+        'a',
+        { class: 'w-feature-link', href: '#research', 'aria-label': `Read more about ${title}` },
+        'Explore this research ↗',
+      ),
+    );
+    count.textContent = `${String(index + 1).padStart(2, '0')} / ${String(topics.length).padStart(2, '0')}`;
+  };
+  const controls =
+    topics.length > 1
+      ? h(
+          'div',
+          { class: 'w-research-controls', role: 'group', 'aria-label': 'Research topics' },
+          h(
+            'button',
+            {
+              class: 'w-topic-arrow',
+              'aria-label': 'Previous research topic',
+              'aria-controls': 'research-topic',
+              onclick: () => {
+                index = (index - 1 + topics.length) % topics.length;
+                paint();
+              },
+            },
+            '←',
+          ),
+          count,
+          h(
+            'button',
+            {
+              class: 'w-topic-arrow',
+              'aria-label': 'Next research topic',
+              'aria-controls': 'research-topic',
+              onclick: () => {
+                index = (index + 1) % topics.length;
+                paint();
+              },
+            },
+            '→',
+          ),
+        )
+      : null;
+  paint();
   return h(
     'section',
-    { class: 'w-section w-research' },
+    { class: 'w-research w-research-feature', 'aria-label': 'Research' },
+    image,
     h(
       'div',
-      { class: 'max-w' },
-      h(
-        'div',
-        { class: 'w-section-heading' },
-        h(
-          'div',
-          null,
-          h('span', { class: 'eyebrow' }, DATA.settings.research_eyebrow || 'AREAS OF INQUIRY'),
-          h(
-            'h2',
-            { class: 'w-section-title' },
-            DATA.settings.research_section_title || 'Where curiosity meets application.',
-          ),
-        ),
-        h('a', { class: 'w-text-link', href: '#research' }, 'All research ↗'),
-      ),
-      rows?.length
-        ? h(
-            'div',
-            { class: 'w-research-grid' },
-            ...rows.slice(0, 6).map((r, i) =>
-              h(
-                'a',
-                { class: 'w-research-card w-research-row', href: '#research' },
-                h(
-                  'div',
-                  { class: 'w-research-card-image' },
-                  h('img', {
-                    src: r.image_url || fallbackImages[i % fallbackImages.length],
-                    alt: '',
-                    loading: 'lazy',
-                  }),
-                  h('span', { class: 'w-card-index' }, String(i + 1).padStart(2, '0')),
-                ),
-                h(
-                  'div',
-                  { class: 'w-research-card-copy' },
-                  h('h3', null, r.title || r.name || ''),
-                  h('p', null, r.summary || r.description || r.desc || ''),
-                  h('span', { class: 'w-card-arrow', 'aria-hidden': 'true' }, '↗'),
-                ),
-              ),
-            ),
-          )
-        : h('p', { class: 'w-empty' }, 'No research areas published yet.'),
+      { class: 'max-w w-research-content' },
+      h('span', { class: 'eyebrow' }, 'RESEARCH'),
+      story,
+      controls,
     ),
   );
 }
@@ -389,7 +426,13 @@ export function SponsorMarquee(sponsors) {
     );
   return h(
     'section',
-    { class: 'w-partners' },
+    { class: 'w-partners', 'aria-label': 'Research collaborators' },
+    h('img', {
+      class: 'w-partner-backdrop',
+      src: PARTNER_PHOTO.image_url,
+      alt: '',
+      loading: 'lazy',
+    }),
     h(
       'div',
       { class: 'max-w' },
@@ -398,11 +441,18 @@ export function SponsorMarquee(sponsors) {
         'div',
         { class: 'w-sponsor-grid' },
         ...logos.map((logo) =>
-          h(
-            'div',
-            { class: 'w-sponsor-item' },
-            h('img', { src: logo.src, alt: logo.name, class: 'w-sponsor-logo', loading: 'lazy' }),
-          ),
+          h('img', {
+            src: logo.src,
+            alt: logo.name,
+            class:
+              'w-sponsor-logo' +
+              (logo.src === RES.spEs2
+                ? ' w-sponsor-logo-paper'
+                : logo.src.endsWith('.svg')
+                  ? ' w-sponsor-logo-mono'
+                  : ''),
+            loading: 'lazy',
+          }),
         ),
       ),
     ),
@@ -446,14 +496,14 @@ export function Home() {
     'div',
     { class: 'w-home' },
     Hero(DATA.hero),
-    ResearchGrid(DATA.research),
+    ResearchFeature(DATA.research),
+    SponsorMarquee(DATA.sponsors),
     h(
       'section',
       { class: 'w-section w-updates' },
       h('div', { class: 'max-w w-two' }, FeaturedPub(DATA.pubs), NewsList(DATA.news)),
     ),
     HomeGalleryCarousel(DATA.gallery),
-    SponsorMarquee(DATA.sponsors),
     JoinBanner(),
   );
 }

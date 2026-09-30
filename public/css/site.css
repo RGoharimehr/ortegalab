@@ -456,9 +456,6 @@ summary {
   object-fit: cover;
   object-position: center;
 }
-.w-hero-slide .w-hero-photo-left {
-  object-position: left center;
-}
 .w-hero-slide .w-hero-photo-right {
   object-position: right center;
 }
@@ -559,80 +556,93 @@ summary {
   padding-top: 40px;
 }
 
-/* Research and current work */
-.w-research-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 30px;
-}
-.w-research-card {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition:
-    transform 0.2s,
-    border-color 0.2s;
-}
-.w-research-card:hover {
-  transform: translateY(-3px);
-  color: var(--text);
-}
-.w-research-card-image {
-  height: 230px;
-  overflow: hidden;
+/* A single editorial research feature, without a card grid. */
+.w-research-feature {
   position: relative;
-  background: var(--surface-2);
+  isolation: isolate;
+  min-height: 650px;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  padding-block: 100px;
 }
-.w-research-card-image img {
+.w-research-backdrop,
+.w-partner-backdrop {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.8;
-  transition:
-    transform 0.5s,
-    opacity 0.5s;
+  z-index: -2;
 }
-.w-research-card:hover img {
-  transform: scale(1.045);
-  opacity: 1;
+.w-research-backdrop {
+  object-position: 70% 50%;
 }
-.w-card-index {
+.w-research-feature::before {
+  content: '';
   position: absolute;
-  top: 14px;
-  left: 14px;
-  font: 700 15px var(--font-mono);
-  padding: 10px 14px;
-  border: 1px solid #ffffff30;
-  border-radius: 5px;
-  background: #0a0e14cc;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, var(--bg), transparent 20%, transparent 82%, var(--bg)),
+    linear-gradient(
+      90deg,
+      rgba(10, 15, 18, 0.93),
+      rgba(10, 15, 18, 0.79) 47%,
+      rgba(10, 15, 18, 0.24)
+    );
+}
+.w-research-content {
+  padding-block: 30px;
+}
+.w-research-story {
+  max-width: 690px;
+}
+.w-research-story h2 {
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1.12;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  margin: 22px 0;
+  text-wrap: balance;
+}
+.w-research-story p {
+  max-width: 62ch;
+  color: #d3d9d9;
+  line-height: 1.8;
+  font-size: 16px;
+}
+.w-feature-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 26px;
+  font-weight: 600;
   color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 8px;
+  text-decoration-color: #ffffff60;
 }
-.w-research-card-copy {
-  padding: 24px 0;
+.w-research-controls {
   display: flex;
-  flex-direction: column;
-  flex: 1;
+  align-items: center;
+  gap: 18px;
+  margin-top: 36px;
 }
-.w-research-card h3 {
+.w-topic-arrow {
+  min-width: 44px;
+  min-height: 44px;
   font-size: 24px;
-  font-weight: 750;
-  letter-spacing: -0.025em;
+  color: #fff;
+  border-radius: 50%;
+  background: #11191dc9;
 }
-.w-research-card p {
-  font-size: 14px;
-  color: var(--dim);
-  line-height: 1.7;
-  margin-top: 12px;
+.w-topic-arrow:hover {
+  background: #34434b;
 }
-.w-card-arrow {
-  color: var(--accent);
-  font-size: 24px;
-  margin-top: auto;
-  padding-top: 18px;
-  align-self: flex-end;
+.w-research-count {
+  font: 12px var(--font-mono);
+  color: #e0e4e4;
 }
 .w-updates {
   background: var(--surface-1);
@@ -772,42 +782,53 @@ summary {
   border-color: var(--accent);
   color: var(--accent);
 }
+/* Logos sit directly on a subdued photograph with no individual plates. */
 .w-partners {
-  padding-block: 60px;
-  background: var(--surface-1);
-  border: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: 100px;
   text-align: center;
 }
+.w-partners::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    var(--bg),
+    rgba(12, 18, 22, 0.87) 28%,
+    rgba(12, 18, 22, 0.87) 72%,
+    var(--bg)
+  );
+}
 .w-partners .eyebrow {
-  color: var(--dim);
+  color: #ced5d6;
 }
 .w-sponsor-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 28px;
-  margin-top: 30px;
-}
-.w-sponsor-item {
-  width: 170px;
-  height: 100px;
-  padding: 10px;
-  background: #252b31;
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
+  gap: 38px 44px;
+  margin-top: 46px;
 }
 .w-sponsor-logo {
-  max-height: 76px;
-  max-width: 160px;
+  width: 170px;
+  height: 76px;
   object-fit: contain;
-  filter: none;
-  opacity: 1;
 }
-.w-sponsor-item:hover .w-sponsor-logo {
-  filter: none;
-  opacity: 1;
+.w-sponsor-logo-mono {
+  filter: brightness(0) invert(1);
+  opacity: 0.88;
+}
+/* The authentic ES2 JPEG has a white canvas. Screen blending removes that canvas
+   visually while retaining the original artwork in the repository. */
+.w-sponsor-logo-paper {
+  width: 230px;
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: screen;
 }
 .w-join-banner {
   display: grid;
@@ -1103,7 +1124,6 @@ summary {
     margin-bottom: 10px;
     background: var(--surface-2);
   }
-  .w-research-grid,
   .w-grid-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1167,13 +1187,9 @@ summary {
   .w-section-title {
     font-size: 30px;
   }
-  .w-research-grid,
   .w-grid-2,
   .w-grid-3 {
     grid-template-columns: 1fr;
-  }
-  .w-research-card-image {
-    height: 190px;
   }
   .w-pub-card {
     padding: 24px;
@@ -1323,9 +1339,6 @@ summary {
   .w-hero-stage {
     min-height: 700px;
   }
-  .w-hero-slide .w-hero-photo-right {
-    object-position: 85% center;
-  }
   .w-hero-slide .w-hero-photo-left {
     object-position: 12% center;
   }
@@ -1379,13 +1392,37 @@ summary {
   .w-anchor-logo.is-es2 {
     width: 140px;
   }
-  .w-research {
-    padding-top: 28px;
+  .w-research-feature {
+    min-height: 680px;
+    padding-block: 65px;
   }
-  .w-research-grid {
-    gap: 24px;
+  .w-research-feature::before {
+    background: linear-gradient(
+      180deg,
+      var(--bg),
+      rgba(10, 15, 18, 0.8) 20%,
+      rgba(10, 15, 18, 0.8) 80%,
+      var(--bg)
+    );
   }
-  .w-research-card-copy {
-    padding: 20px 0;
+  .w-research-story h2 {
+    font-size: clamp(28px, 8vw, 36px);
+  }
+  .w-research-story p {
+    font-size: 15px;
+  }
+  .w-partners {
+    padding-block: 70px;
+  }
+  .w-sponsor-grid {
+    gap: 26px 24px;
+    margin-top: 36px;
+  }
+  .w-sponsor-logo {
+    width: 130px;
+    height: 60px;
+  }
+  .w-sponsor-logo-paper {
+    width: 190px;
   }
 }

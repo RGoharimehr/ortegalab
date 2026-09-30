@@ -4,7 +4,9 @@ import { JSDOM } from 'jsdom';
 import { DATA, ENDPOINTS, contentStatus, loadAll } from '../public/js/site/data.mjs';
 import { h } from '../public/js/site/dom.mjs';
 import { Nav } from '../public/js/site/layout.mjs';
-import { Home } from '../public/js/site/home.mjs';
+import { Home, Hero, ResearchFeature } from '../public/js/site/home.mjs';
+import { LAB_PHOTOS, HERO_PHOTOS } from '../public/js/site/photography.mjs';
+import { galleryEntries } from '../public/js/site/collections.mjs';
 import * as pages from '../public/js/site/pages.mjs';
 import { closeInlineApp, openGalleryPreview, openInlineApp } from '../public/js/site/overlays.mjs';
 import { activeSection, normalizeRoute, startRouter, state } from '../public/js/site/router.mjs';
@@ -59,7 +61,7 @@ function move(action) {
   });
 }
 
-test('empty API collections remain empty and never add sample records', async () => {
+test('empty API collections stay empty while supplied lab photographs remain available', async () => {
   await loadAll({ fetchImpl: async (url) => response(url === ENDPOINTS.settings ? {} : []) });
   assert.deepEqual(contentStatus.failed, []);
   for (const key of Object.keys(ENDPOINTS).filter((key) => key !== 'settings'))
@@ -67,9 +69,14 @@ test('empty API collections remain empty and never add sample records', async ()
   const home = Home();
   assert.match(home.textContent, /No news published yet/);
   assert.match(home.textContent, /No publications published yet/);
-  assert.equal(home.querySelectorAll('.w-research-row').length, 0);
+  assert.match(
+    home.querySelector('.w-research-feature').textContent,
+    /No research areas published yet/,
+  );
   assert.equal(home.querySelectorAll('.w-sponsor-logo').length, 9);
-  assert.equal(home.querySelectorAll('.w-gallery-slide').length, 0);
+  assert.equal(home.querySelectorAll('.w-gallery-slide').length, 3);
+  for (const img of home.querySelectorAll('.w-gallery-slide img'))
+    assert.match(img.getAttribute('src'), /^\/assets\/lab\//);
 });
 
 test('partial API failures remain visible while independent collections load', async () => {
@@ -216,7 +223,8 @@ test('published collections render their details and filter publications and dow
   DATA.sponsors = [{ id: 1, name: 'Actual partner', logo_url: '/logo.png' }];
   assert.match(Home().textContent, /Research topic/);
   assert.match(Home().textContent, /SEP 25, 2026/);
-  assert.equal(Home().querySelectorAll('.w-research-row').length, 1);
+  assert.equal(Home().querySelector('.w-research-story h2').textContent, 'Research topic');
+  assert.equal(Home().querySelectorAll('.w-research-card').length, 0);
   assert.match(pages.PageFacilityDetail(1).textContent, /Test rig/);
   assert.match(pages.PageNewsDetail(1).textContent, /News content/);
   for (const Page of [
@@ -251,4 +259,56 @@ test('join advertisement shows availability and safely renders editable position
   assert.match(page.textContent, /PhD researcher/);
   assert.match(page.textContent, /Apply by October 30/);
   assert.equal(page.querySelector('script'), null);
+});
+
+test('research feature changes topic, description and photograph without losing its link', () => {
+  const feature = ResearchFeature([
+    {
+      title: 'Cooling research',
+      summary: 'Measured cooling performance.',
+      image_url: '/uploads/cooling.jpg',
+    },
+    {
+      title: 'Fluid research',
+      summary: 'Measured fluid behavior.',
+      image_url: '/uploads/fluids.jpg',
+    },
+  ]);
+  assert.equal(feature.querySelector('h2').textContent, 'Cooling research');
+  feature.querySelector('[aria-label="Next research topic"]').click();
+  assert.equal(feature.querySelector('h2').textContent, 'Fluid research');
+  assert.match(feature.textContent, /Measured fluid behavior/);
+  assert.equal(feature.querySelector('img').getAttribute('src'), '/uploads/fluids.jpg');
+  assert.equal(feature.querySelector('a').getAttribute('href'), '#research');
+  feature.querySelector('[aria-label="Next research topic"]').click();
+  assert.equal(feature.querySelector('h2').textContent, 'Cooling research');
+  feature.querySelector('[aria-label="Previous research topic"]').click();
+  assert.equal(feature.querySelector('h2').textContent, 'Fluid research');
+});
+
+test('homepage places unboxed collaborators after research and before publications and news', () => {
+  const home = Home();
+  const sections = [...home.children];
+  assert.ok(sections[1].classList.contains('w-research-feature'));
+  assert.ok(sections[2].classList.contains('w-partners'));
+  assert.ok(sections[3].classList.contains('w-updates'));
+  assert.equal(sections[2].querySelectorAll('.w-sponsor-item').length, 0);
+  assert.equal(sections[2].querySelectorAll('.w-sponsor-logo').length, 9);
+});
+
+test('supplied photography replaces legacy slides and is available in the gallery without duplicates', () => {
+  const hero = Hero([{ image_url: '/assets/hero-1.png', title: 'Old panorama' }]);
+  assert.equal(hero.querySelector('img').getAttribute('src'), HERO_PHOTOS[0].image_url);
+  assert.equal(
+    Hero([{ image_url: '/uploads/custom.jpg' }])
+      .querySelector('img')
+      .getAttribute('src'),
+    '/uploads/custom.jpg',
+  );
+  const gallery = galleryEntries([
+    { image_url: LAB_PHOTOS[0].image_url, caption: 'Custom caption' },
+  ]);
+  assert.equal(gallery.length, 13);
+  assert.equal(gallery[0].title, 'Custom caption');
+  assert.equal(new Set(gallery.map((photo) => photo.src)).size, 13);
 });
