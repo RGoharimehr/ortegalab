@@ -459,12 +459,14 @@ summary {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(12, 16, 18, 0.92) 0%,
-    rgba(12, 16, 18, 0.74) 55%,
-    rgba(12, 16, 18, 0.3) 100%
-  );
+  background:
+    linear-gradient(0deg, rgba(12, 16, 18, 0.94), transparent 35%),
+    linear-gradient(
+      90deg,
+      rgba(12, 16, 18, 0.92) 0%,
+      rgba(12, 16, 18, 0.74) 55%,
+      rgba(12, 16, 18, 0.3) 100%
+    );
   pointer-events: none;
 }
 .w-hero-media-bar {
@@ -504,7 +506,7 @@ summary {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ffffff65;
+  background: #b5bbbc;
   margin: auto;
 }
 .w-dot.active::after {
