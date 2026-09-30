@@ -1,19 +1,17 @@
 import { h } from './dom.mjs';
 import { galleryEntries } from './collections.mjs';
 import { RES } from './config.mjs';
+import { HERO_PHOTOS, RESEARCH_PHOTOS, PARTNER_PHOTO } from './photography.mjs';
 import { DATA, siteStats, heroMetricLabel } from './data.mjs';
 import { SectionHeader } from './layout.mjs';
 import { state } from './router.mjs';
 import { formatMetricCount, latestGalleryItems, fmtNewsDate } from './utils.mjs';
 
 export function Hero(slides) {
-  const usable = slides?.length
-    ? slides
-    : [
-        { image_url: RES.hero1, title: 'Inside the laboratory' },
-        { image_url: RES.hero3, title: 'Research in practice' },
-        { image_url: RES.hero2, title: 'Thermal and fluid systems' },
-      ];
+  const published = (slides || []).filter(
+    (slide) => !/(?:^|\/)assets\/(?:hero-\d+|facility-\d+)\.png$/.test(slide.image_url || slide),
+  );
+  const usable = published.length ? published : HERO_PHOTOS;
   state.heroSlides = usable;
   state.heroIdx %= usable.length;
   const stats = siteStats();
@@ -34,91 +32,94 @@ export function Hero(slides) {
       { class: 'max-w' },
       h(
         'div',
-        { class: 'w-hero-heading' },
+        { class: 'w-hero-stage' },
         h(
-          'h1',
-          { class: 'w-hero-title' },
-          'Laboratory for Advanced',
-          h('br'),
-          h('span', null, 'Thermal and Fluid Systems'),
-        ),
-      ),
-      h(
-        'div',
-        {
-          class: 'w-hero-media',
-          role: 'region',
-          'aria-roledescription': 'carousel',
-          'aria-label': 'Laboratory photographs',
-        },
-        ...usable.map((slide, i) =>
+          'div',
+          { class: 'w-hero-heading' },
           h(
-            'div',
-            {
-              class: 'w-hero-slide' + (i === state.heroIdx ? ' active' : ''),
-              'aria-hidden': String(i !== state.heroIdx),
-            },
-            h('img', {
-              src: slide.image_url || slide,
-              alt: slide.title || 'LATFS research laboratory',
-              loading: i === 0 ? 'eager' : 'lazy',
-            }),
+            'h1',
+            { class: 'w-hero-title' },
+            h('span', { class: 'w-hero-prefix' }, 'Laboratory for Advanced'),
+            h('span', { class: 'w-hero-subject' }, 'Thermal and', h('br'), 'Fluid Systems'),
           ),
         ),
         h(
           'div',
-          { class: 'w-hero-media-bar' },
-          h(
-            'span',
-            { class: 'w-media-label' },
-            h('span', { 'aria-hidden': 'true' }, '↗'),
-            'Inside LATFS',
+          {
+            class: 'w-hero-media',
+            role: 'region',
+            'aria-roledescription': 'carousel',
+            'aria-label': 'Laboratory photographs',
+          },
+          ...usable.map((slide, i) =>
+            h(
+              'div',
+              {
+                class: 'w-hero-slide' + (i === state.heroIdx ? ' active' : ''),
+                'aria-hidden': String(i !== state.heroIdx),
+              },
+              h('img', {
+                src: slide.image_url || slide,
+                alt: slide.title || 'LATFS research laboratory',
+                loading: i === 0 ? 'eager' : 'lazy',
+              }),
+            ),
           ),
           h(
             'div',
-            { class: 'w-hero-dots' },
-            ...usable.map((_, i) =>
-              h('button', {
-                class: 'w-dot' + (i === state.heroIdx ? ' active' : ''),
-                type: 'button',
-                'aria-label': `Slide ${i + 1}`,
-                'aria-pressed': String(i === state.heroIdx),
-                onclick: () => {
-                  state.heroIdx = i;
-                  updateHeroSlides();
-                  restartHeroTimer();
-                },
-              }),
+            { class: 'w-hero-media-bar' },
+            h(
+              'span',
+              { class: 'w-media-label' },
+              h('span', { 'aria-hidden': 'true' }, '↗'),
+              'Inside LATFS',
             ),
             h(
-              'button',
-              {
-                class: 'w-carousel-pause',
-                type: 'button',
-                'aria-pressed': String(state.heroPaused),
-                onclick: (event) => {
-                  state.heroPaused = !state.heroPaused;
-                  event.currentTarget.textContent = state.heroPaused
-                    ? 'Play slides'
-                    : 'Pause slides';
-                  event.currentTarget.setAttribute('aria-pressed', String(state.heroPaused));
-                  restartHeroTimer();
+              'div',
+              { class: 'w-hero-dots' },
+              ...usable.map((_, i) =>
+                h('button', {
+                  class: 'w-dot' + (i === state.heroIdx ? ' active' : ''),
+                  type: 'button',
+                  'aria-label': `Slide ${i + 1}`,
+                  'aria-pressed': String(i === state.heroIdx),
+                  onclick: () => {
+                    state.heroIdx = i;
+                    updateHeroSlides();
+                    restartHeroTimer();
+                  },
+                }),
+              ),
+              h(
+                'button',
+                {
+                  class: 'w-carousel-pause',
+                  type: 'button',
+                  'aria-pressed': String(state.heroPaused),
+                  onclick: (event) => {
+                    state.heroPaused = !state.heroPaused;
+                    event.currentTarget.textContent = state.heroPaused
+                      ? 'Play slides'
+                      : 'Pause slides';
+                    event.currentTarget.setAttribute('aria-pressed', String(state.heroPaused));
+                    restartHeroTimer();
+                  },
                 },
-              },
-              state.heroPaused ? 'Play slides' : 'Pause slides',
+                state.heroPaused ? 'Play slides' : 'Pause slides',
+              ),
             ),
           ),
         ),
+        statistics.length
+          ? h(
+              'div',
+              { class: 'w-hero-metrics' },
+              ...statistics.map((key) =>
+                metric(formatMetricCount(stats[key], '0'), heroMetricLabel(key, labels[key])),
+              ),
+            )
+          : null,
       ),
-      statistics.length
-        ? h(
-            'div',
-            { class: 'w-hero-metrics' },
-            ...statistics.map((key) =>
-              metric(formatMetricCount(stats[key], '0'), heroMetricLabel(key, labels[key])),
-            ),
-          )
-        : null,
     ),
   );
 }
@@ -158,58 +159,103 @@ export function updateHeroSlides() {
   });
 }
 
-export function ResearchGrid(rows) {
-  const fallbackImages = [RES.rDroplet, RES.rMini, RES.rGeo];
+export function ResearchFeature(rows) {
+  const topics = rows || [];
+  let index = 0;
+  const image = h('img', {
+    class: 'w-research-backdrop',
+    src: RESEARCH_PHOTOS[0].image_url,
+    alt: '',
+    loading: 'lazy',
+  });
+  const story = h('div', {
+    class: 'w-research-story',
+    id: 'research-topic',
+    'aria-live': 'polite',
+  });
+  const count = h('span', { class: 'w-research-count', 'aria-live': 'polite' });
+  const paint = () => {
+    const topic = topics[index];
+    if (!topic) {
+      story.replaceChildren(
+        h('h2', null, 'Research at LATFS'),
+        h('p', null, 'No research areas published yet.'),
+        h('a', { class: 'w-feature-link', href: '#research' }, 'Visit the research page ↗'),
+      );
+      return;
+    }
+    const title = topic.title || topic.name || 'Research at LATFS';
+    const customPhoto =
+      topic.image_url &&
+      !/(?:^|\/)assets\/(?:research-(?:droplet|minichannel|geothermal)|hero-\d+|facility-\d+)\.png$/.test(
+        topic.image_url,
+      );
+    image.src = customPhoto
+      ? topic.image_url
+      : RESEARCH_PHOTOS[index % RESEARCH_PHOTOS.length].image_url;
+    story.replaceChildren(
+      h('h2', null, title),
+      h(
+        'p',
+        null,
+        topic.summary ||
+          topic.description ||
+          topic.desc ||
+          'Explore this topic on our research page.',
+      ),
+      h(
+        'a',
+        { class: 'w-feature-link', href: '#research', 'aria-label': `Read more about ${title}` },
+        'Explore this research ↗',
+      ),
+    );
+    count.textContent = `${String(index + 1).padStart(2, '0')} / ${String(topics.length).padStart(2, '0')}`;
+  };
+  const controls =
+    topics.length > 1
+      ? h(
+          'div',
+          { class: 'w-research-controls', role: 'group', 'aria-label': 'Research topics' },
+          h(
+            'button',
+            {
+              class: 'w-topic-arrow',
+              'aria-label': 'Previous research topic',
+              'aria-controls': 'research-topic',
+              onclick: () => {
+                index = (index - 1 + topics.length) % topics.length;
+                paint();
+              },
+            },
+            '←',
+          ),
+          count,
+          h(
+            'button',
+            {
+              class: 'w-topic-arrow',
+              'aria-label': 'Next research topic',
+              'aria-controls': 'research-topic',
+              onclick: () => {
+                index = (index + 1) % topics.length;
+                paint();
+              },
+            },
+            '→',
+          ),
+        )
+      : null;
+  paint();
   return h(
     'section',
-    { class: 'w-section w-research' },
+    { class: 'w-research w-research-feature', 'aria-label': 'Research' },
+    image,
     h(
       'div',
-      { class: 'max-w' },
-      h(
-        'div',
-        { class: 'w-section-heading' },
-        h(
-          'div',
-          null,
-          h('span', { class: 'eyebrow' }, DATA.settings.research_eyebrow || 'AREAS OF INQUIRY'),
-          h(
-            'h2',
-            { class: 'w-section-title' },
-            DATA.settings.research_section_title || 'Where curiosity meets application.',
-          ),
-        ),
-        h('a', { class: 'w-text-link', href: '#research' }, 'All research ↗'),
-      ),
-      rows?.length
-        ? h(
-            'div',
-            { class: 'w-research-grid' },
-            ...rows.slice(0, 6).map((r, i) =>
-              h(
-                'a',
-                { class: 'w-research-card w-research-row', href: '#research' },
-                h(
-                  'div',
-                  { class: 'w-research-card-image' },
-                  h('img', {
-                    src: r.image_url || fallbackImages[i % fallbackImages.length],
-                    alt: '',
-                    loading: 'lazy',
-                  }),
-                  h('span', { class: 'w-card-index' }, String(i + 1).padStart(2, '0')),
-                ),
-                h(
-                  'div',
-                  { class: 'w-research-card-copy' },
-                  h('h3', null, r.title || r.name || ''),
-                  h('p', null, r.summary || r.description || r.desc || ''),
-                  h('span', { class: 'w-card-arrow', 'aria-hidden': 'true' }, '↗'),
-                ),
-              ),
-            ),
-          )
-        : h('p', { class: 'w-empty' }, 'No research areas published yet.'),
+      { class: 'max-w w-research-content' },
+      h('span', { class: 'eyebrow' }, 'RESEARCH'),
+      story,
+      controls,
     ),
   );
 }
@@ -380,7 +426,13 @@ export function SponsorMarquee(sponsors) {
     );
   return h(
     'section',
-    { class: 'w-partners' },
+    { class: 'w-partners', 'aria-label': 'Research collaborators' },
+    h('img', {
+      class: 'w-partner-backdrop',
+      src: PARTNER_PHOTO.image_url,
+      alt: '',
+      loading: 'lazy',
+    }),
     h(
       'div',
       { class: 'max-w' },
@@ -389,11 +441,18 @@ export function SponsorMarquee(sponsors) {
         'div',
         { class: 'w-sponsor-grid' },
         ...logos.map((logo) =>
-          h(
-            'div',
-            { class: 'w-sponsor-item' },
-            h('img', { src: logo.src, alt: logo.name, class: 'w-sponsor-logo', loading: 'lazy' }),
-          ),
+          h('img', {
+            src: logo.src,
+            alt: logo.name,
+            class:
+              'w-sponsor-logo' +
+              (logo.src === RES.spEs2
+                ? ' w-sponsor-logo-paper'
+                : logo.src.endsWith('.svg')
+                  ? ' w-sponsor-logo-mono'
+                  : ''),
+            loading: 'lazy',
+          }),
         ),
       ),
     ),
@@ -437,14 +496,14 @@ export function Home() {
     'div',
     { class: 'w-home' },
     Hero(DATA.hero),
-    ResearchGrid(DATA.research),
+    ResearchFeature(DATA.research),
+    SponsorMarquee(DATA.sponsors),
     h(
       'section',
       { class: 'w-section w-updates' },
       h('div', { class: 'max-w w-two' }, FeaturedPub(DATA.pubs), NewsList(DATA.news)),
     ),
     HomeGalleryCarousel(DATA.gallery),
-    SponsorMarquee(DATA.sponsors),
     JoinBanner(),
   );
 }
