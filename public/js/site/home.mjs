@@ -34,81 +34,85 @@ export function Hero(slides) {
       { class: 'max-w' },
       h(
         'div',
-        { class: 'w-hero-heading' },
+        { class: 'w-hero-stage' },
         h(
-          'h1',
-          { class: 'w-hero-title' },
-          'Laboratory for Advanced',
-          h('br'),
-          h('span', null, 'Thermal and Fluid Systems'),
-        ),
-      ),
-      h(
-        'div',
-        {
-          class: 'w-hero-media',
-          role: 'region',
-          'aria-roledescription': 'carousel',
-          'aria-label': 'Laboratory photographs',
-        },
-        ...usable.map((slide, i) =>
+          'div',
+          { class: 'w-hero-heading' },
           h(
-            'div',
-            {
-              class: 'w-hero-slide' + (i === state.heroIdx ? ' active' : ''),
-              'aria-hidden': String(i !== state.heroIdx),
-            },
-            h('img', {
-              src: slide.image_url || slide,
-              alt: slide.title || 'LATFS research laboratory',
-              loading: i === 0 ? 'eager' : 'lazy',
-            }),
+            'h1',
+            { class: 'w-hero-title' },
+            h('span', { class: 'w-hero-prefix' }, 'Laboratory for Advanced'),
+            h('span', { class: 'w-hero-subject' }, 'Thermal and', h('br'), 'Fluid Systems'),
           ),
         ),
         h(
           'div',
-          { class: 'w-hero-media-bar' },
-          h(
-            'span',
-            { class: 'w-media-label' },
-            h('span', { 'aria-hidden': 'true' }, '↗'),
-            'Inside LATFS',
+          {
+            class: 'w-hero-media',
+            role: 'region',
+            'aria-roledescription': 'carousel',
+            'aria-label': 'Laboratory photographs',
+          },
+          ...usable.map((slide, i) =>
+            h(
+              'div',
+              {
+                class: 'w-hero-slide' + (i === state.heroIdx ? ' active' : ''),
+                'aria-hidden': String(i !== state.heroIdx),
+              },
+              h('img', {
+                src: slide.image_url || slide,
+                alt: slide.title || 'LATFS research laboratory',
+                loading: i === 0 ? 'eager' : 'lazy',
+              }),
+            ),
           ),
           h(
             'div',
-            { class: 'w-hero-dots' },
-            ...usable.map((_, i) =>
-              h('button', {
-                class: 'w-dot' + (i === state.heroIdx ? ' active' : ''),
-                type: 'button',
-                'aria-label': `Slide ${i + 1}`,
-                'aria-pressed': String(i === state.heroIdx),
-                onclick: () => {
-                  state.heroIdx = i;
-                  updateHeroSlides();
-                  restartHeroTimer();
-                },
-              }),
+            { class: 'w-hero-media-bar' },
+            h(
+              'span',
+              { class: 'w-media-label' },
+              h('span', { 'aria-hidden': 'true' }, '↗'),
+              'Inside LATFS',
             ),
             h(
-              'button',
-              {
-                class: 'w-carousel-pause',
-                type: 'button',
-                'aria-pressed': String(state.heroPaused),
-                onclick: (event) => {
-                  state.heroPaused = !state.heroPaused;
-                  event.currentTarget.textContent = state.heroPaused
-                    ? 'Play slides'
-                    : 'Pause slides';
-                  event.currentTarget.setAttribute('aria-pressed', String(state.heroPaused));
-                  restartHeroTimer();
+              'div',
+              { class: 'w-hero-dots' },
+              ...usable.map((_, i) =>
+                h('button', {
+                  class: 'w-dot' + (i === state.heroIdx ? ' active' : ''),
+                  type: 'button',
+                  'aria-label': `Slide ${i + 1}`,
+                  'aria-pressed': String(i === state.heroIdx),
+                  onclick: () => {
+                    state.heroIdx = i;
+                    updateHeroSlides();
+                    restartHeroTimer();
+                  },
+                }),
+              ),
+              h(
+                'button',
+                {
+                  class: 'w-carousel-pause',
+                  type: 'button',
+                  'aria-pressed': String(state.heroPaused),
+                  onclick: (event) => {
+                    state.heroPaused = !state.heroPaused;
+                    event.currentTarget.textContent = state.heroPaused
+                      ? 'Play slides'
+                      : 'Pause slides';
+                    event.currentTarget.setAttribute('aria-pressed', String(state.heroPaused));
+                    restartHeroTimer();
+                  },
                 },
-              },
-              state.heroPaused ? 'Play slides' : 'Pause slides',
+                state.heroPaused ? 'Play slides' : 'Pause slides',
+              ),
             ),
           ),
         ),
+        h('div', { class: 'w-hero-orbit', 'aria-hidden': 'true' }, h('span', null, '↗')),
       ),
       statistics.length
         ? h(
