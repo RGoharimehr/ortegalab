@@ -15,6 +15,9 @@ function createScheduleRouter({
   apiReadLimiter,
 }) {
   const router = Router();
+  const invalidWindow = (start, end) =>
+    !Number.isFinite(Date.parse(start)) ||
+    (end && (!Number.isFinite(Date.parse(end)) || Date.parse(end) <= Date.parse(start)));
 
   // EVENTS — schedule entries (meetings, seminars, reservations) used by /platform Schedule
   router.get('/api/events', apiReadLimiter, requireAuth, (req, res) => {
@@ -29,6 +32,8 @@ function createScheduleRouter({
       const { title, event_type, start_time, end_time, location, visibility, attendees } = req.body;
       if (!title || !start_time)
         return res.status(400).json({ error: 'Title and start time are required' });
+      if (invalidWindow(start_time, end_time))
+        return res.status(400).json({ error: 'Use valid dates with the end after the start' });
       // day/start_hour/duration_hours are legacy NOT NULL columns retained for schema compatibility; new records use start_time/end_time
       const result = db
         .prepare(
@@ -61,6 +66,8 @@ function createScheduleRouter({
       if (!isOwner && role !== 'admin' && role !== 'professor')
         return res.status(403).json({ error: 'Only the owner or staff can edit this event' });
       const { title, event_type, start_time, end_time, location, visibility, attendees } = req.body;
+      if (invalidWindow(start_time ?? ev.start_time, end_time ?? ev.end_time))
+        return res.status(400).json({ error: 'Use valid dates with the end after the start' });
       const sets = [],
         params = [];
       if (title !== undefined) {

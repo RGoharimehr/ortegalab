@@ -1,19 +1,19 @@
 /* LATFS dark system — shared by the public website and lab applications. */
 :root {
   color-scheme: dark;
-  --surface-0: #0a0e14;
-  --surface-1: #0f1520;
-  --surface-2: #121926;
-  --surface-3: #1a2433;
+  --surface-0: #10151c;
+  --surface-1: #161e28;
+  --surface-2: #1c2633;
+  --surface-3: #263444;
   --text-primary: #e6edf3;
   --text-secondary: #b5c0ce;
-  --text-muted: #8b98a9;
-  --accent-orange: #ff7a18;
-  --accent-cyan: #00d9ef;
-  --accent-blue: #176bff;
-  --accent-yellow: #ffe34d;
-  --thermal-gradient: linear-gradient(110deg, #00d9ef 0%, #62b9ff 35%, #ffe34d 72%, #ff7a18 100%);
-  --line: rgba(172, 193, 218, 0.16);
+  --text-muted: #a8b5c5;
+  --accent-orange: #d5ad80;
+  --accent-cyan: #91bdcc;
+  --accent-blue: #8cadce;
+  --accent-yellow: #d8c396;
+  --thermal-gradient: linear-gradient(110deg, #e6edf3, #a9c8d8);
+  --line: rgba(172, 193, 218, 0.26);
   --radius-card: 16px;
   --bg: var(--surface-0);
   --bg-alt: var(--surface-1);

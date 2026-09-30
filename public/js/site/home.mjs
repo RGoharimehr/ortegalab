@@ -366,7 +366,18 @@ export function SponsorMarquee(sponsors) {
       name: s.name || 'Research collaborator',
     }))
     .filter((s) => s.src);
-  if (!logos.length) return null;
+  if (!logos.length)
+    logos.push(
+      { src: RES.spNsf, name: 'National Science Foundation' },
+      { src: RES.spVillanova, name: 'Villanova University' },
+      { src: RES.spEs2, name: 'Center for Energy-Smart Electronic Systems' },
+      { src: RES.spIntel, name: 'Intel' },
+      { src: RES.spAmd, name: 'AMD' },
+      { src: RES.spHoneywell, name: 'Honeywell' },
+      { src: RES.spRtx, name: 'Raytheon' },
+      { src: RES.spTi, name: 'Texas Instruments' },
+      { src: RES.spSrc, name: 'Semiconductor Research Corporation' },
+    );
   return h(
     'section',
     { class: 'w-partners' },

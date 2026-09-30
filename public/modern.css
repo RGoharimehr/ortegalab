@@ -16,20 +16,20 @@ body.lab-console {
   --navy-600: #2b5067;
   --navy-500: #00d9ef;
   /* Compatibility aliases for existing component styles and templates. */
-  --gold-900: #ffad91;
-  --gold-700: #ff8d6c;
+  --gold-900: #dcc09e;
+  --gold-700: #d5ad80;
   --gold-600: var(--accent-orange, #ff7a18);
   --gold-500: var(--accent-orange, #ff7a18);
-  --gold-300: #ffad91;
-  --gold-100: rgba(255, 122, 24, 0.12);
+  --gold-300: #dcc09e;
+  --gold-100: rgba(213, 173, 128, 0.12);
   --gold-50: var(--bg-3);
   --gray-50: var(--bg-2);
   --gray-100: var(--bg-3);
   --gray-200: #263140;
   --gray-300: #394658;
   --accent: var(--accent-orange, #ff7a18);
-  --accent-hover: #ff865f;
-  --accent-soft: rgba(255, 122, 24, 0.12);
+  --accent-hover: #dfbd96;
+  --accent-soft: rgba(213, 173, 128, 0.12);
   --border-1: var(--line, rgba(255, 255, 255, 0.08));
   --border-2: rgba(255, 255, 255, 0.16);
   --status-ok: #6ee7a0;
@@ -39,7 +39,7 @@ body.lab-console {
   --status-ok-tint: rgba(110, 231, 160, 0.1);
   --status-warn-tint: rgba(251, 191, 102, 0.1);
   --status-alert-tint: rgba(251, 141, 149, 0.1);
-  --status-info-tint: rgba(0, 217, 239, 0.1);
+  --status-info-tint: rgba(145, 189, 204, 0.1);
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: var(--font-sans);
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -76,7 +76,7 @@ body.lab-console :focus-visible {
   outline-offset: 3px;
 }
 body.lab-console ::selection {
-  background: rgba(255, 122, 24, 0.28);
+  background: rgba(213, 173, 128, 0.28);
   color: #fff;
 }
 body.lab-console button,
@@ -192,9 +192,9 @@ body.lab-console .p-nav-item:hover {
   transform: none;
 }
 body.lab-console .p-nav-item.active {
-  background: rgba(255, 122, 24, 0.1);
-  color: #ff997a;
-  border-color: rgba(255, 122, 24, 0.18);
+  background: rgba(213, 173, 128, 0.1);
+  color: var(--accent);
+  border-color: rgba(213, 173, 128, 0.18);
   box-shadow: inset 2px 0 var(--accent);
   font-weight: 650;
 }
@@ -212,9 +212,9 @@ body.lab-console .p-user {
 }
 body.lab-console .p-user-av,
 body.lab-console .p-prof-av {
-  background: rgba(0, 217, 239, 0.14);
+  background: rgba(145, 189, 204, 0.14);
   color: var(--accent-cyan, #00d9ef);
-  border: 1px solid rgba(0, 217, 239, 0.16);
+  border: 1px solid rgba(145, 189, 204, 0.16);
   box-shadow: none;
 }
 body.lab-console .p-user-name {
@@ -245,7 +245,7 @@ body.lab-console .p-dm-toggle {
 }
 body.lab-console .p-dm-toggle[aria-pressed='true'] {
   color: var(--accent-cyan, #00d9ef);
-  border-color: rgba(0, 217, 239, 0.3);
+  border-color: rgba(145, 189, 204, 0.3);
 }
 body.lab-console .p-main {
   min-width: 0;
@@ -271,7 +271,7 @@ body.lab-console .p-page-head::after {
 }
 body.lab-console .p-h1 {
   color: var(--fg-1);
-  font-size: clamp(1.7rem, 2.4vw, 2.25rem);
+  font-size: clamp(1.5rem, 2vw, 1.85rem);
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1.15;
@@ -415,10 +415,10 @@ body.lab-console .p-admin-pill {
 }
 body.lab-console .p-admin-pill.soft {
   background: var(--accent-soft);
-  color: #ff997a;
+  color: var(--accent);
 }
 body.lab-console .p-action-tile:hover {
-  border-color: rgba(0, 217, 239, 0.3);
+  border-color: rgba(145, 189, 204, 0.3);
   background: var(--bg-3);
   box-shadow: none;
   transform: translateY(-1px);
@@ -521,7 +521,7 @@ body.lab-console select:focus,
 body.lab-console textarea:focus {
   border-color: var(--accent-cyan, #00d9ef);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 217, 239, 0.1);
+  box-shadow: 0 0 0 3px rgba(145, 189, 204, 0.1);
 }
 body.lab-console input[type='checkbox'],
 body.lab-console input[type='radio'] {
@@ -630,7 +630,7 @@ body.lab-console .p-task-card-title {
   color: var(--fg-1);
 }
 body.lab-console .p-task-card:hover {
-  border-color: rgba(0, 217, 239, 0.3);
+  border-color: rgba(145, 189, 204, 0.3);
 }
 body.lab-console .p-add-task {
   color: var(--fg-3);
@@ -643,7 +643,7 @@ body.lab-console .p-tag-outline {
 }
 body.lab-console .p-tag-gold {
   background: var(--accent-soft);
-  color: #ff997a;
+  color: var(--accent);
 }
 body.lab-console .p-tag-ok,
 body.lab-console .p-eq-status-available {
@@ -673,7 +673,7 @@ body.lab-console .p-slot-time {
 body.lab-console .p-banner {
   background: var(--accent-soft);
   color: var(--fg-2);
-  border: 1px solid rgba(255, 122, 24, 0.15);
+  border: 1px solid rgba(213, 173, 128, 0.15);
   box-shadow: none;
 }
 body.lab-console .empty {
@@ -689,8 +689,8 @@ body.lab-console .login-screen {
   padding: 24px;
   overflow-y: auto;
   background:
-    radial-gradient(ellipse at 22% 0, rgba(0, 217, 239, 0.06), transparent 40%),
-    radial-gradient(ellipse at 85% 100%, rgba(255, 122, 24, 0.045), transparent 45%), var(--bg-2);
+    radial-gradient(ellipse at 22% 0, rgba(145, 189, 204, 0.06), transparent 40%),
+    radial-gradient(ellipse at 85% 100%, rgba(213, 173, 128, 0.045), transparent 45%), var(--bg-2);
 }
 body.lab-console .login-card {
   width: min(440px, 100%);

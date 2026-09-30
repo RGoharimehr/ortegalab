@@ -68,7 +68,7 @@ test('empty API collections remain empty and never add sample records', async ()
   assert.match(home.textContent, /No news published yet/);
   assert.match(home.textContent, /No publications published yet/);
   assert.equal(home.querySelectorAll('.w-research-row').length, 0);
-  assert.equal(home.querySelectorAll('.w-sponsor-logo').length, 0);
+  assert.equal(home.querySelectorAll('.w-sponsor-logo').length, 9);
   assert.equal(home.querySelectorAll('.w-gallery-slide').length, 0);
 });
 
@@ -227,4 +227,18 @@ test('published collections render their details and filter publications and dow
     assert.equal(page.querySelectorAll('article').length, 0);
     assert.match(page.querySelector('[role="status"]').textContent, /^0 /);
   }
+});
+
+test('join advertisement shows availability and safely renders editable position details', () => {
+  assert.match(pages.PageJoin().textContent, /NO OPEN POSITIONS ADVERTISED/);
+  DATA.settings = {
+    join_openings_status: 'open',
+    join_openings_title: 'PhD researcher',
+    join_openings_details: '<script>unsafe()</script>\nApply by October 30.',
+  };
+  const page = pages.PageJoin();
+  assert.match(page.textContent, /APPLICATIONS OPEN/);
+  assert.match(page.textContent, /PhD researcher/);
+  assert.match(page.textContent, /Apply by October 30/);
+  assert.equal(page.querySelector('script'), null);
 });

@@ -764,17 +764,17 @@ summary {
   margin-top: 30px;
 }
 .w-sponsor-item {
-  width: 100px;
-  height: 48px;
+  width: 170px;
+  height: 90px;
   display: grid;
   place-items: center;
 }
 .w-sponsor-logo {
-  max-height: 40px;
-  max-width: 94px;
+  max-height: 76px;
+  max-width: 160px;
   object-fit: contain;
-  filter: grayscale(1);
-  opacity: 0.8;
+  filter: none;
+  opacity: 1;
 }
 .w-sponsor-item:hover .w-sponsor-logo {
   filter: none;
@@ -815,7 +815,7 @@ summary {
   border-bottom: 1px solid var(--line);
 }
 .w-page-banner-title {
-  font-size: clamp(36px, 5vw, 64px);
+  font-size: clamp(30px, 3.5vw, 44px);
   font-weight: 550;
   letter-spacing: -0.055em;
   margin-top: 20px;
@@ -999,15 +999,15 @@ summary {
   gap: 32px;
 }
 .w-anchor-logo {
-  max-width: 160px;
-  height: 38px;
+  max-width: 230px;
+  height: 64px;
   object-fit: contain;
 }
 .w-anchor-logo.is-es2 {
-  width: 76px;
+  width: 150px;
 }
 .w-anchor-logo.is-nsf {
-  width: 40px;
+  width: 70px;
 }
 .w-footer-bottom {
   display: flex;
@@ -1309,4 +1309,31 @@ summary {
     transition: none !important;
     animation: none !important;
   }
+}
+
+.w-vacancy {
+  padding: 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.w-vacancy h2 {
+  font-size: 24px;
+  margin: 12px 0;
+}
+.w-vacancy p {
+  white-space: pre-line;
+  max-width: 70ch;
+  margin-bottom: 16px;
+}
+.w-opportunity-grid .w-icon-card {
+  padding: 24px;
+}
+.w-opportunity-grid h2 {
+  font-size: 20px;
+}
+.w-anchor-row {
+  flex-wrap: wrap;
+  justify-content: center;
 }

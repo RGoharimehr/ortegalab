@@ -324,6 +324,8 @@ function createEquipmentRouter({
     (req, res) => {
       const eq = db.prepare('SELECT * FROM equipment WHERE id=?').get(req.params.id);
       if (!eq) return res.status(404).json({ error: 'not found' });
+      if (eq.status !== 'in_use' || !eq.current_user_id)
+        return res.status(409).json({ error: 'Equipment is not checked out' });
       const role = req.session.role || 'student';
       if (eq.current_user_id !== req.session.userId && role !== 'admin' && role !== 'professor') {
         return res.status(403).json({ error: 'only current holder or staff can check in' });

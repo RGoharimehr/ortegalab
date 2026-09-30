@@ -21,7 +21,7 @@ export const RES = {
   spNasa: './assets/sponsors/nasa.svg',
   spDarpa: './assets/sponsors/darpa.svg',
   spNsf: './assets/site-logos/nsf-logo.png',
-  spEs2: './assets/site-logos/es2-official.svg',
+  spEs2: './assets/site-logos/es2-official.jpg',
   spVillanova: './assets/site-logos/villanova-engineering-white.png',
 };
 

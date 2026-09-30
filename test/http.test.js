@@ -353,3 +353,86 @@ test('public and authenticated HTTP contracts survive modularization', async (t)
 test('production refuses startup without a session secret', () => {
   assert.throws(() => createApp({ env: { NODE_ENV: 'production' } }), /SESSION_SECRET|secret/i);
 });
+
+test('equipment checkout, return and conflicting reservations remain consistent', async (t) => {
+  const app = await fixture(t);
+  const auth = await login(app);
+  const write = (url, body, method = 'POST') => app.request(url, { ...auth, method, body });
+  const created = await write('/api/equipment', { name: 'Disposable QA flow meter' });
+  assert.equal(created.status, 200, created.text);
+  const url = `/api/equipment/${created.data.id}`;
+  assert.equal((await write(url + '/checkout', {})).status, 200);
+  assert.equal((await write(url + '/checkout', {})).status, 409);
+  await app.restart();
+  assert.equal((await app.request('/api/equipment', auth)).data.rows[0].status, 'in_use');
+  assert.equal((await write(url + '/checkin', {})).status, 200);
+  assert.equal((await write(url + '/checkin', {})).status, 409);
+  const log = (await app.request(url + '/log', auth)).data;
+  assert.equal(log.length, 2);
+  assert.ok(log.find((e) => e.action === 'checkout').ended_at);
+  const window = { start_at: '2030-02-12T10:00:00', end_at: '2030-02-12T11:00:00' };
+  assert.equal((await write(url + '/reservations', window)).status, 200);
+  assert.equal((await write(url + '/reservations', window)).status, 409);
+  assert.equal(
+    (await write(url + '/reservations', { ...window, end_at: '2030-02-12T09:00:00' })).status,
+    400,
+  );
+});
+
+test('calendar rejects invalid ranges on create and partial update', async (t) => {
+  const app = await fixture(t);
+  const auth = await login(app);
+  const body = {
+    title: 'QA meeting',
+    start_time: '2030-03-01T10:00:00',
+    end_time: '2030-03-01T11:00:00',
+  };
+  assert.equal(
+    (
+      await app.request('/api/events', {
+        ...auth,
+        method: 'POST',
+        body: { ...body, end_time: 'invalid' },
+      })
+    ).status,
+    400,
+  );
+  const event = await app.request('/api/events', { ...auth, method: 'POST', body });
+  assert.equal(event.status, 200);
+  assert.equal(
+    (
+      await app.request('/api/events/' + event.data.id, {
+        ...auth,
+        method: 'PUT',
+        body: { start_time: '2030-03-01T12:00:00' },
+      })
+    ).status,
+    400,
+  );
+  assert.equal((await app.request('/api/events', auth)).data[0].start_time, body.start_time);
+});
+
+test('vacancy announcements validate status and persist publicly across restart', async (t) => {
+  const app = await fixture(t);
+  const auth = await login(app);
+  const body = {
+    join_openings_status: 'open',
+    join_openings_title: 'QA position',
+    join_openings_details: 'Disposable test announcement.',
+  };
+  assert.equal((await app.request('/api/settings', { method: 'PUT', body })).status, 401);
+  assert.equal(
+    (
+      await app.request('/api/settings', {
+        ...auth,
+        method: 'PUT',
+        body: { join_openings_status: 'wrong' },
+      })
+    ).status,
+    400,
+  );
+  assert.equal((await app.request('/api/settings', { ...auth, method: 'PUT', body })).status, 200);
+  await app.restart();
+  const settings = (await app.request('/api/site-settings')).data;
+  for (const [key, value] of Object.entries(body)) assert.equal(settings[key], value);
+});

@@ -51,7 +51,7 @@ function setAvatarContent(el, user) {
     return;
   }
   el.replaceChildren(document.createTextNode(initials(name)));
-  el.style.background = 'var(--gold-600)';
+  el.style.background = 'var(--surface-3)';
 }
 function formatUsTimeZones(now = new Date()) {
   const zones = [

@@ -36,6 +36,9 @@ function createSettingsRouter({
       'hero_metric_people_label',
       'hero_metric_facilities_label',
       'site_theme',
+      'join_openings_status',
+      'join_openings_title',
+      'join_openings_details',
     ];
     const rows = db.prepare('SELECT key, value FROM app_settings').all();
     const out = {};
@@ -69,6 +72,9 @@ function createSettingsRouter({
       'contact_email',
       'contact_address',
       'site_theme',
+      'join_openings_status',
+      'join_openings_title',
+      'join_openings_details',
       'lab_a_name',
       'lab_a_room',
       'lab_b_name',
@@ -83,6 +89,12 @@ function createSettingsRouter({
       'platform_profile_sub',
       'platform_members_sub',
     ]);
+    if (
+      req.body?.join_openings_status !== undefined &&
+      !['open', 'closed'].includes(req.body.join_openings_status)
+    ) {
+      return res.status(400).json({ error: 'Opening status must be open or closed' });
+    }
     const pairs = Object.entries(req.body || {}).filter(([k]) => ALLOWED_KEYS.has(k));
     if (!pairs.length) return res.json({ success: true });
     const ups = db.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?,?)');

@@ -724,6 +724,34 @@ export function PageNewsDetail(id) {
 }
 
 export function PageJoin() {
+  const settings = DATA.settings || {};
+  const accepting = settings.join_openings_status === 'open';
+  const vacancy = h(
+    'section',
+    { class: 'w-vacancy', 'aria-label': 'Open positions' },
+    h(
+      'span',
+      { class: 'eyebrow' },
+      accepting ? 'APPLICATIONS OPEN' : 'NO OPEN POSITIONS ADVERTISED',
+    ),
+    h(
+      'h2',
+      null,
+      settings.join_openings_title ||
+        (accepting ? 'Join our research team' : 'Future opportunities'),
+    ),
+    h(
+      'p',
+      null,
+      settings.join_openings_details ||
+        'There are no positions currently advertised here. Please contact the lab about future opportunities.',
+    ),
+    h(
+      'a',
+      { class: 'w-text-link', href: 'mailto:aortega@villanova.edu?subject=Lab%20opportunities' },
+      accepting ? 'Enquire about this position →' : 'Contact the lab →',
+    ),
+  );
   const cards = [
     {
       icon: '◎',
@@ -738,7 +766,7 @@ export function PageJoin() {
     {
       icon: '▥',
       title: 'Industry collaboration',
-      body: 'We partner with industry on directed research, often through the NSF E³S Center. Reach out for membership and project framing.',
+      body: 'We partner with industry on directed research, often through the NSF ES2 Center. Reach out for membership and project framing.',
     },
     {
       icon: '✦',
@@ -752,7 +780,7 @@ export function PageJoin() {
     PageBanner(
       'Join',
       'Work with LATFS',
-      'We welcome motivated graduate, undergraduate, and visiting researchers. Funded positions are announced on the news page.',
+      'We welcome motivated graduate, undergraduate, and visiting researchers. Current position announcements appear below.',
     ),
     h(
       'section',
@@ -760,6 +788,7 @@ export function PageJoin() {
       h(
         'div',
         { class: 'max-w' },
+        vacancy,
         h(
           'div',
           { class: 'w-grid-2 w-opportunity-grid' },

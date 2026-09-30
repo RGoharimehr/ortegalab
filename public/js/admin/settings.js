@@ -17,6 +17,19 @@ async function renderSettingsTab(body) {
      </div>`;
 
   body.innerHTML = `
+    <div class="p-card" style="margin-bottom:24px">
+      <div class="p-card-head"><div class="p-card-title">Join the lab — position advertisement</div></div>
+      <label for="st_openings_status">Availability</label>
+      <select id="st_openings_status" class="p-inv-input">
+        <option value="closed" ${s.join_openings_status !== 'open' ? 'selected' : ''}>No open positions advertised</option>
+        <option value="open" ${s.join_openings_status === 'open' ? 'selected' : ''}>Applications open</option>
+      </select>
+      ${fieldRow('st_openings_title', 'Advertisement title', s.join_openings_title)}
+      <label for="st_openings_details">Position details, requirements and deadline</label>
+      <textarea id="st_openings_details" class="p-inv-input" rows="5" maxlength="2000">${escHtml(s.join_openings_details || '')}</textarea>
+      <button class="btn-primary-sm" id="saveOpenings">Save advertisement</button>
+      <span id="openingsMsg" role="status" style="display:none">Saved!</span>
+    </div>
     <div class="p-grid-2">
       <div class="p-card">
         <div class="p-card-head"><div class="p-card-title">Site</div></div>
@@ -37,7 +50,7 @@ async function renderSettingsTab(body) {
         <div class="p-theme-grid">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--fg-3);margin-bottom:4px;">Website appearance</div>
-            <div style="color:var(--fg-1);">Graphite · Thermal spectrum</div>
+            <div style="color:var(--fg-1);">Graphite · Muted blue and warm sand</div>
             <div class="p-soft-note">The public website and lab workspace share a dark theme.</div>
           </div>
         </div>
@@ -126,6 +139,18 @@ async function renderSettingsTab(body) {
     }
   };
 
+  $('#saveOpenings').onclick = async () => {
+    try {
+      await apiPut('/api/settings', {
+        join_openings_status: $('#st_openings_status').value,
+        join_openings_title: $('#st_openings_title').value.trim(),
+        join_openings_details: $('#st_openings_details').value.trim(),
+      });
+      showSaved('openingsMsg');
+    } catch (e) {
+      alert(e.message);
+    }
+  };
   $('#logoutSet').onclick = doLogout;
   $('#saveLabNames').onclick = async () => {
     const upd = {
