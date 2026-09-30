@@ -94,6 +94,10 @@ export function render({ focus = false } = {}) {
     }
     main.appendChild(pageForRoute(state.route));
   }
+  root.classList.toggle(
+    'w-home-immersive',
+    state.route === 'home' && !contentStatus.loading && contentStatus.failed.length === 0,
+  );
   root.replaceChildren(Nav(), main, PublicFooter());
   root.setAttribute('aria-busy', String(contentStatus.loading));
   updateMetadata(main);

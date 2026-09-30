@@ -64,6 +64,12 @@ export function Hero(slides) {
                 src: slide.image_url || slide,
                 alt: slide.title || 'LATFS research laboratory',
                 loading: i === 0 ? 'eager' : 'lazy',
+                // Frame a single photo inside the legacy panoramic collages.
+                class: /(?:^|\/)hero-2\.png$/.test(slide.image_url || slide)
+                  ? 'w-hero-photo-left'
+                  : /(?:^|\/)hero-3\.png$/.test(slide.image_url || slide)
+                    ? 'w-hero-photo-right'
+                    : null,
               }),
             ),
           ),
@@ -112,17 +118,16 @@ export function Hero(slides) {
             ),
           ),
         ),
-        h('div', { class: 'w-hero-orbit', 'aria-hidden': 'true' }, h('span', null, '↗')),
+        statistics.length
+          ? h(
+              'div',
+              { class: 'w-hero-metrics' },
+              ...statistics.map((key) =>
+                metric(formatMetricCount(stats[key], '0'), heroMetricLabel(key, labels[key])),
+              ),
+            )
+          : null,
       ),
-      statistics.length
-        ? h(
-            'div',
-            { class: 'w-hero-metrics' },
-            ...statistics.map((key) =>
-              metric(formatMetricCount(stats[key], '0'), heroMetricLabel(key, labels[key])),
-            ),
-          )
-        : null,
     ),
   );
 }
