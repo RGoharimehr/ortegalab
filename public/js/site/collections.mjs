@@ -24,16 +24,7 @@ export function renderPeopleSections(people) {
     return h(
       'div',
       { class: 'w-page-section w-directory' },
-      h(
-        'div',
-        { class: 'w-directory-heading' },
-        h('h2', null, label),
-        h(
-          'span',
-          { class: 'w-directory-count', 'aria-label': `${ours.length} members` },
-          String(ours.length).padStart(2, '0'),
-        ),
-      ),
+      h('div', { class: 'w-directory-heading' }, h('h2', null, label)),
       h(
         'div',
         { class: 'w-people-grid' },
