@@ -14,7 +14,7 @@ Run from the server checkout:
 flock -n /home/reza/latfs-backups/backup.lock node --env-file-if-exists=.env scripts/backup.js
 ```
 
-The daily cron runs at 03:20 server time. It retains fourteen completed archives outside the checkout, checks SQLite integrity, and includes uploads and the private `.env`. SQLite is captured using its online backup API. Uploads are copied afterwards, so avoid deleting or replacing uploads during a backup if strict cross-file consistency is needed. Archive access is restricted to the owner. Backups contain credentials; never commit or publicly share them.
+The daily cron runs at 03:20 server time. It retains the latest two completed archives outside the checkout, checks SQLite integrity, and includes uploads and the private `.env`. SQLite is captured using its online backup API. Uploads are copied afterwards, so avoid deleting or replacing uploads during a backup if strict cross-file consistency is needed. Archive access is restricted to the owner. Backups contain credentials; never commit or publicly share them.
 
 On the Mac, run `sh scripts/offsite-backup.sh`. This copies the latest completed archive over SSH into ignored `data/offsite-backups`, verifies SHA-256 against the server, and retains fourteen copies. Off-server copies are currently disabled at the owner’s request pending selection of external storage. Do not run this helper without approval. The Codex maintenance task checks website health and server backup freshness hourly while the Mac/Codex are available; it does not copy archives. This is not an always-on external monitoring service.
 

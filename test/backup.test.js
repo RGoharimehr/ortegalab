@@ -21,7 +21,19 @@ test('backup restores a live WAL database, uploads and private configuration', a
     await fs.writeFile(path.join(uploads, 'photo.txt'), 'photo');
     await fs.writeFile(path.join(root, '.env'), 'TEST_ONLY=true');
     const destination = path.join(root, 'backups');
+    await fs.mkdir(destination);
+    await fs.writeFile(path.join(destination, 'latfs-2020-01-01.tar.gz'), 'old');
+    await fs.writeFile(path.join(destination, 'latfs-2020-01-02.tar.gz'), 'previous');
+    await fs.writeFile(path.join(destination, 'unrelated.txt'), 'keep');
     const archive = await backup({ root, destination, database, uploads });
+    assert.equal(
+      (await fs.readdir(destination)).filter((name) => name.endsWith('.tar.gz')).length,
+      2,
+    );
+    assert.equal(await fs.readFile(path.join(destination, 'unrelated.txt'), 'utf8'), 'keep');
+    await assert.rejects(fs.stat(path.join(destination, 'latfs-2020-01-01.tar.gz')), {
+      code: 'ENOENT',
+    });
     assert.equal((await fs.stat(archive)).mode & 0o777, 0o600);
     const restore = path.join(root, 'restore');
     await fs.mkdir(restore);
