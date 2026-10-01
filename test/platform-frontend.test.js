@@ -214,7 +214,6 @@ test('lab create/edit dialogs retain their handlers and keyboard dismissal', asy
     'openNotebookModal',
     'openTrainingModal',
     'openIssueModal',
-    'openUserModal',
   ]) {
     await window[handler]();
     const dialog = document.querySelector('[role="dialog"]');
@@ -361,4 +360,12 @@ test('password reset enforces the server minimum and avoids duplicate submission
   await tick();
   assert.match(document.querySelector('#msg').textContent, /Password updated/);
   assert.equal(document.querySelector('#newPass').value, '');
+});
+
+test('people management directs staff to Web Admin without duplicate platform editors', async (t) => {
+  const { window, document } = await page(t, 'platform', { role: 'admin' });
+  await window.loadUsers();
+  assert.equal(typeof window.openUserModal, 'undefined');
+  assert.equal(document.querySelector('#addUserBtn'), null);
+  assert.equal(document.querySelector('#usersList a').getAttribute('href'), '/admin#content');
 });

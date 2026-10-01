@@ -1,9 +1,10 @@
+import { applyBackgrounds, backgroundChoice } from '../public/js/site/backgrounds.mjs';
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { DATA, ENDPOINTS, contentStatus, loadAll } from '../public/js/site/data.mjs';
 import { h } from '../public/js/site/dom.mjs';
-import { Nav } from '../public/js/site/layout.mjs';
+import { Nav, applySiteTheme } from '../public/js/site/layout.mjs';
 import { Home, Hero, ResearchFeature } from '../public/js/site/home.mjs';
 import { LAB_PHOTOS, HERO_PHOTOS } from '../public/js/site/photography.mjs';
 import { galleryEntries } from '../public/js/site/collections.mjs';
@@ -61,7 +62,7 @@ function move(action) {
   });
 }
 
-test('empty API collections stay empty while supplied lab photographs remain available', async () => {
+test('empty API collections stay empty, including explicitly removed gallery photographs', async () => {
   await loadAll({ fetchImpl: async (url) => response(url === ENDPOINTS.settings ? {} : []) });
   assert.deepEqual(contentStatus.failed, []);
   for (const key of Object.keys(ENDPOINTS).filter((key) => key !== 'settings'))
@@ -74,7 +75,7 @@ test('empty API collections stay empty while supplied lab photographs remain ava
     /No research areas published yet/,
   );
   assert.equal(home.querySelectorAll('.w-sponsor-logo').length, 11);
-  assert.equal(home.querySelectorAll('.w-gallery-slide').length, 3);
+  assert.equal(home.querySelectorAll('.w-gallery-slide').length, 0);
   for (const img of home.querySelectorAll('.w-gallery-slide img'))
     assert.match(img.getAttribute('src'), /^\/assets\/lab\//);
 });
@@ -310,9 +311,9 @@ test('supplied photography replaces legacy slides and is available in the galler
   const gallery = galleryEntries([
     { image_url: LAB_PHOTOS[0].image_url, caption: 'Custom caption' },
   ]);
-  assert.equal(gallery.length, LAB_PHOTOS.length);
+  assert.equal(gallery.length, 1);
   assert.equal(gallery[0].title, 'Custom caption');
-  assert.equal(new Set(gallery.map((photo) => photo.src)).size, LAB_PHOTOS.length);
+  assert.equal(new Set(gallery.map((photo) => photo.src)).size, 1);
 });
 
 test('research covers lead to dedicated pages with safe links and a useful missing-page state', () => {
@@ -356,4 +357,46 @@ test('collaborator records without artwork remain visible and known missing logo
     /delphi.svg$/,
   );
   assert.match(home.querySelector('.w-sponsor-grid').textContent, /New collaborator/);
+});
+
+test('saved palettes, inner-page Home links and named gallery sections are available', () => {
+  applySiteTheme('graphite');
+  assert.equal(document.body.dataset.theme, 'graphite');
+  assert.equal(document.documentElement.dataset.theme, 'graphite');
+  applySiteTheme('navy');
+  assert.equal(document.body.dataset.theme, 'navy');
+  applySiteTheme('legacy');
+  assert.equal(document.body.dataset.theme, 'graphite');
+  assert.equal(document.documentElement.dataset.theme, 'graphite');
+  state.route = 'people';
+  assert.equal(Nav().querySelector('.w-nav-link[href="#home"]').textContent, 'Home');
+  DATA.gallery = [{ id: 2, image_url: '/visit.jpg', category: 'Visits', caption: 'Visit photo' }];
+  const gallery = pages.PageGallery();
+  const sections = [...gallery.querySelectorAll('.w-gallery-section')];
+  assert.deepEqual(
+    sections.map((section) => section.querySelector('h2').textContent),
+    ['Inside LATFS', 'Exhibition', 'Visits', 'Villanova at a glance'],
+  );
+  assert.equal(sections[2].querySelectorAll('.w-gallery-slide').length, 1);
+  assert.equal(sections[1].querySelectorAll('.w-gallery-slide').length, 0);
+});
+
+test('section backgrounds respect custom photos, no-photo choice, and repeat with space on publications', () => {
+  const settings = {
+    site_backgrounds: JSON.stringify({ join: '/custom.jpg', home_gallery: 'none' }),
+  };
+  assert.equal(backgroundChoice(settings, 'join'), '/custom.jpg');
+  assert.equal(backgroundChoice(settings, 'home_gallery', '/default.jpg'), '');
+  const root = h(
+    'div',
+    null,
+    h('main', { id: 'main-content' }, h('div', null, h('section', { class: 'w-page-content' }))),
+  );
+  applyBackgrounds(root, settings, 'join');
+  assert.equal(root.querySelector('.w-photo-field img').getAttribute('src'), '/custom.jpg');
+  const publicationRoot = h('div', null, h('main', { id: 'main-content' }, h('div')));
+  applyBackgrounds(publicationRoot, {}, 'publications');
+  assert.equal(publicationRoot.querySelectorAll('.w-photo-field img').length, 12);
+  applySiteTheme('graphite-green');
+  assert.equal(document.documentElement.dataset.theme, 'graphite-green');
 });

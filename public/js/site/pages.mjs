@@ -369,12 +369,6 @@ export function PagePublications() {
   return h(
     'div',
     { class: 'w-publications-page' },
-    h('img', {
-      class: 'w-publications-backdrop',
-      src: '/assets/lab/lab-wide-view.png',
-      alt: '',
-      loading: 'lazy',
-    }),
     PageBanner(
       'Publications',
       'Selected publications',
@@ -633,6 +627,15 @@ export function PageApps() {
 
 export function PageGallery() {
   const photos = galleryEntries(DATA.gallery);
+  const categories = [
+    ...new Set([
+      'Inside LATFS',
+      'Exhibition',
+      'Visits',
+      'Villanova at a glance',
+      ...photos.map((photo) => photo.cat),
+    ]),
+  ];
   return h(
     'div',
     null,
@@ -644,7 +647,38 @@ export function PageGallery() {
     h(
       'section',
       { class: 'w-page-content' },
-      h('div', { class: 'max-w' }, renderGalleryGrid(photos)),
+      h(
+        'div',
+        { class: 'max-w' },
+        h(
+          'nav',
+          { class: 'w-gallery-sections-nav', 'aria-label': 'Gallery sections' },
+          ...categories.map((category, index) =>
+            h(
+              'button',
+              {
+                class: 'btn-ghost',
+                type: 'button',
+                onclick: () =>
+                  document.getElementById('gallery-section-' + index)?.scrollIntoView({
+                    behavior: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+                      ? 'instant'
+                      : 'smooth',
+                  }),
+              },
+              category,
+            ),
+          ),
+        ),
+        ...categories.map((category, index) =>
+          h(
+            'section',
+            { class: 'w-gallery-section', id: 'gallery-section-' + index },
+            h('h2', { class: 'w-section-title' }, category),
+            renderGalleryGrid(photos.filter((photo) => photo.cat === category)),
+          ),
+        ),
+      ),
     ),
   );
 }

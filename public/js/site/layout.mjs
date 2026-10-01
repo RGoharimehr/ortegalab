@@ -34,6 +34,7 @@ export function Nav() {
   const menu = h(
     'div',
     { id: 'site-navigation', class: 'w-nav-links' },
+    ...(state.route !== 'home' ? [navLink('home', 'Home')] : []),
     navLink('research', 'Research'),
     navLink('people', 'People'),
     navLink('publications', 'Publications'),
@@ -242,7 +243,8 @@ export function PublicFooter() {
   );
 }
 
-export function applySiteTheme() {
-  // The public identity is consistently dark, including databases with legacy theme settings.
-  document.body.dataset.theme = 'navy';
+export function applySiteTheme(theme) {
+  const selected = ['navy', 'graphite-green'].includes(theme) ? theme : 'graphite';
+  document.documentElement.dataset.theme = selected;
+  document.body.dataset.theme = selected;
 }

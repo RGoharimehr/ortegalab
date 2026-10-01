@@ -486,3 +486,137 @@ test('research editing persists full pages and rejects invalid links', async (t)
   assert.equal(saved.content, 'Updated full description');
   assert.equal(JSON.parse(saved.links)[0].url, 'https://example.org/data');
 });
+
+test('CMS palettes, categorized gallery and authoritative people survive restarts', async (t) => {
+  const app = await fixture(t);
+  const auth = await login(app);
+  for (const theme of ['navy', 'graphite-green', 'graphite']) {
+    const save = await app.request('/api/settings', {
+      ...auth,
+      method: 'PUT',
+      body: { site_theme: theme },
+    });
+    assert.equal(save.status, 200);
+    assert.equal((await app.request('/api/site-settings')).data.site_theme, theme);
+  }
+  assert.equal(
+    (
+      await app.request('/api/settings', {
+        ...auth,
+        method: 'PUT',
+        body: { site_theme: 'unknown' },
+      })
+    ).status,
+    400,
+  );
+  const backgrounds = JSON.stringify({
+    join: '/assets/lab/lab-wide-view.png',
+    home_gallery: 'none',
+  });
+  assert.equal(
+    (
+      await app.request('/api/settings', {
+        ...auth,
+        method: 'PUT',
+        body: { site_backgrounds: backgrounds },
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await app.request('/api/site-settings')).data.site_backgrounds, backgrounds);
+  assert.equal(
+    (
+      await app.request('/api/settings', {
+        ...auth,
+        method: 'PUT',
+        body: { site_backgrounds: JSON.stringify({ join: 'javascript:alert(1)' }) },
+      })
+    ).status,
+    400,
+  );
+  const photos = (await app.request('/api/gallery')).data;
+  const visit = photos.find((photo) => photo.image_url.includes('arpa-e'));
+  assert.equal(visit.category, 'Visits');
+  assert.equal(
+    (
+      await app.request('/api/gallery/' + visit.id, {
+        ...auth,
+        method: 'PUT',
+        body: { category: 'Exhibition', caption: 'Edited caption', sort_order: 4 },
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await app.request('/api/gallery/999999', { ...auth, method: 'PUT', body: {} })).status,
+    404,
+  );
+  const removedPhoto = photos.find((photo) => photo.id !== visit.id);
+  await app.request('/api/gallery/' + removedPhoto.id, { ...auth, method: 'DELETE' });
+  const account = await app.request('/api/users', {
+    ...auth,
+    method: 'POST',
+    body: {
+      username: 'cms-only-test',
+      password,
+      name: 'CMS Test',
+      email: 'cms@example.test',
+      role: 'student',
+    },
+  });
+  assert.equal(account.status, 200);
+  const profile = await app.request('/api/people', {
+    ...auth,
+    method: 'POST',
+    body: {
+      name: 'CMS Test',
+      email: 'cms@example.test',
+      role: 'Researcher',
+      category: 'phd',
+      bio: 'CMS biography',
+      active: true,
+    },
+  });
+  const publicRows = (await app.request('/api/people/public')).data;
+  assert.equal(publicRows.find((person) => person.id === profile.data.id).bio, 'CMS biography');
+  await app.request('/api/people/' + profile.data.id, { ...auth, method: 'DELETE' });
+  assert.ok(
+    !(await app.request('/api/people/public')).data.some(
+      (person) => person.email === 'cms@example.test',
+    ),
+  );
+  assert.equal(
+    (
+      await app.request('/api/me/profile', {
+        ...auth,
+        method: 'PUT',
+        body: { name: 'Platform edit' },
+      })
+    ).status,
+    403,
+  );
+  await app.request('/api/users/' + account.data.id, {
+    ...auth,
+    method: 'PUT',
+    body: { active: false },
+  });
+  assert.ok(
+    !(await app.request('/api/users', auth)).data.some((user) => user.id === account.data.id),
+  );
+  assert.equal(
+    (await app.request('/api/users?include_disabled=1', auth)).data.find(
+      (user) => user.id === account.data.id,
+    ).active,
+    0,
+  );
+  await app.restart();
+  assert.equal((await app.request('/api/site-settings')).data.site_theme, 'graphite');
+  const after = (await app.request('/api/gallery')).data;
+  assert.equal(after.find((photo) => photo.id === visit.id).category, 'Exhibition');
+  assert.ok(!after.some((photo) => photo.image_url === removedPhoto.image_url));
+  assert.ok(
+    !(await app.request('/api/people/public')).data.some(
+      (person) => person.email === 'cms@example.test',
+    ),
+  );
+});

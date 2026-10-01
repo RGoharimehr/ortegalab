@@ -111,7 +111,7 @@ async function renderAdmin(root) {
     else if (_adminTab === 'research' && isLabStaffRole(SESSION_USER.role))
       await renderResearchTab(body);
     else if (_adminTab === 'people' && isLabStaffRole(SESSION_USER.role))
-      renderPeopleTab(body, await apiGet('/api/people'));
+      await renderPeopleTab(body, await apiGet('/api/people'));
     else if (_adminTab === 'facilities' && isLabStaffRole(SESSION_USER.role))
       await renderFacilitiesTab(body);
     else if (_adminTab === 'hero') await renderHeroTab(body);

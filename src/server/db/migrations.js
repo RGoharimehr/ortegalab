@@ -27,6 +27,7 @@ const migrations = [
   "ALTER TABLE meetings ADD COLUMN meeting_type TEXT DEFAULT 'group'",
   // Tasks → priority field
   "ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT 'normal'",
+  "ALTER TABLE gallery ADD COLUMN category TEXT DEFAULT 'Inside LATFS'",
   // Content tables
   'ALTER TABLE research ADD COLUMN content TEXT DEFAULT ""',
   'ALTER TABLE research ADD COLUMN links TEXT DEFAULT "[]"',
@@ -181,6 +182,39 @@ function migrateData(db) {
       }
     });
     repairSeedImages();
+  });
+  applyOnce(db, 'gallery-cms-photographs-v1', () => {
+    const photos = require('./content/gallery-photos.json');
+    const insert = db.prepare(
+      'INSERT INTO gallery (image_url, caption, category, sort_order) VALUES (?, ?, ?, ?)',
+    );
+    photos.forEach((photo, index) => {
+      if (!db.prepare('SELECT 1 FROM gallery WHERE image_url=?').get(photo.image_url))
+        insert.run(photo.image_url, photo.title, photo.category, index);
+    });
+  });
+  // Preserve previously visible account-only members once. The CMS owns publication thereafter.
+  applyOnce(db, 'people-cms-source-v1', () => {
+    const { createPeopleService } = require('../services/people');
+    const service = createPeopleService(db);
+    const users = db
+      .prepare(
+        "SELECT * FROM users WHERE active!=0 AND role IN ('professor', 'postdoc', 'student', 'moderator') AND username NOT LIKE 'codexmodtemp%'",
+      )
+      .all();
+    for (const user of users) {
+      const existing = service.personForUser(user);
+      if (existing) continue;
+      const result = db
+        .prepare('INSERT INTO people (name, role, category, email, active) VALUES (?, ?, ?, ?, 1)')
+        .run(
+          user.name || user.username,
+          service.publicRoleFromUser(user),
+          service.publicCategoryFromUser(user),
+          user.email || '',
+        );
+      db.prepare('UPDATE users SET person_id=? WHERE id=?').run(result.lastInsertRowid, user.id);
+    }
   });
   applyOnce(db, 'publications-from-user-july-2026-v1', () => {
     const publications = require('./content/publications-july-2026.json');

@@ -1,3 +1,4 @@
+import { backgroundChoice, readBackgrounds } from './backgrounds.mjs';
 import { h } from './dom.mjs';
 import { galleryEntries } from './collections.mjs';
 import { RES } from './config.mjs';
@@ -11,7 +12,12 @@ export function Hero(slides) {
   const published = (slides || []).filter(
     (slide) => !/(?:^|\/)assets\/(?:hero-\d+|facility-\d+)\.png$/.test(slide.image_url || slide),
   );
-  const usable = published.length ? published : HERO_PHOTOS;
+  const heroBackground = backgroundChoice(DATA.settings, 'home_hero');
+  const usable = heroBackground
+    ? [{ image_url: heroBackground, title: 'LATFS laboratory' }]
+    : published.length
+      ? published
+      : HERO_PHOTOS;
   state.heroSlides = usable;
   state.heroIdx %= usable.length;
   const stats = siteStats();
@@ -54,7 +60,10 @@ export function Hero(slides) {
                 'aria-hidden': String(i !== state.heroIdx),
               },
               h('img', {
-                src: slide.image_url || slide,
+                src:
+                  readBackgrounds(DATA.settings).home_hero === 'none'
+                    ? null
+                    : slide.image_url || slide,
                 alt: slide.title || 'LATFS research laboratory',
                 loading: i === 0 ? 'eager' : 'lazy',
               }),
@@ -180,7 +189,10 @@ export function ResearchFeature(rows) {
       return;
     }
     const title = topic.title || topic.name || 'Research at LATFS';
-    image.src = researchPhoto(topic, index);
+    const photo = backgroundChoice(DATA.settings, 'home_research', researchPhoto(topic, index));
+    if (photo) image.src = photo;
+    else image.removeAttribute('src');
+    image.hidden = !photo;
     story.replaceChildren(
       h('h2', { class: 'w-section-title' }, title),
       h(
@@ -423,7 +435,7 @@ export function SponsorMarquee(sponsors) {
     { class: 'w-partners', 'aria-label': 'Research collaborators' },
     h('img', {
       class: 'w-partner-backdrop',
-      src: PARTNER_PHOTO.image_url,
+      src: backgroundChoice(DATA.settings, 'home_partners', PARTNER_PHOTO.image_url) || null,
       alt: '',
       loading: 'lazy',
     }),
@@ -499,7 +511,9 @@ export function Home() {
       { class: 'w-section w-updates' },
       h('img', {
         class: 'w-updates-backdrop',
-        src: '/assets/lab/two-phase-benches.png',
+        src:
+          backgroundChoice(DATA.settings, 'home_updates', '/assets/lab/two-phase-benches.png') ||
+          null,
         alt: '',
         loading: 'lazy',
       }),

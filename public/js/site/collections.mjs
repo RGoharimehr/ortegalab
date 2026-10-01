@@ -1,6 +1,5 @@
 import { h } from './dom.mjs';
 import { PEOPLE_GROUPS } from './config.mjs';
-import { LAB_PHOTOS } from './photography.mjs';
 import { openGalleryPreview } from './overlays.mjs';
 import {
   getInitials,
@@ -371,12 +370,11 @@ export function renderDownloadList(items) {
 }
 
 export function galleryEntries(gallery) {
-  // User-supplied photographs are real published content, independent of demo data.
+  // The CMS owns gallery membership; deleted photographs must not reappear.
   const published = (gallery || []).filter(
     (g) => !/(?:^|\/)assets\/(?:hero-\d+|facility-\d+)\.png$/.test(g.image_url || g.src || ''),
   );
-  const urls = new Set(published.map((g) => g.image_url || g.src));
-  return [...published, ...LAB_PHOTOS.filter((photo) => !urls.has(photo.image_url))]
+  return published
     .filter((g) => g.image_url || g.src)
     .map((g) => ({
       id: g.id,

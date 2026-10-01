@@ -1,7 +1,9 @@
 /* Admin: people. Loaded in order by admin.html. */
 
-function renderPeopleTab(body, people) {
+async function renderPeopleTab(body, people) {
   body.innerHTML = `
+    <div id="peopleAccounts" class="p-card" style="margin-bottom:32px"></div>
+    <h2>Public directory</h2><p class="p-soft-note">Published profiles are managed here. Removing a profile does not disable the member’s login; manage access above.</p>
     <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newP">+ Add person</button></div>
     <div class="p-inv-table">
       <div class="p-inv-row p-inv-head"><div style="flex:2">Name</div><div style="flex:1">Role</div><div style="flex:1">Category</div><div style="flex-basis:100px;text-align:right"></div></div>
@@ -37,6 +39,7 @@ function renderPeopleTab(body, people) {
     .querySelectorAll('[data-edit]')
     .forEach((b) => (b.onclick = () => openP(people.find((x) => x.id == b.dataset.edit))));
   $('#newP').onclick = () => openP(null);
+  await renderPeopleAccounts($('#peopleAccounts', body));
   function openP(p) {
     const isNew = !p;
     p = p || { name: '', role: '', category: 'phd', email: '', bio: '', photo_url: '', active: 1 };
@@ -219,5 +222,57 @@ function renderPeopleTab(body, people) {
         });
       }
     }, 0);
+  }
+}
+
+async function renderPeopleAccounts(root) {
+  const users = await apiGet('/api/users?include_disabled=1');
+  root.innerHTML = `<h2>Lab accounts</h2><p class="p-soft-note">Control platform access here. Login roles are separate from public research titles and bios.</p>
+    <button id="newAccount" class="btn-primary-sm">+ Add lab account</button>
+    ${users.map((user) => `<div class="p-inv-row"><div style="flex:2"><strong>${escHtml(user.name || user.username)}</strong><div>@${escHtml(user.username)} · ${escHtml(user.email || '')}</div></div><div style="flex:1">${escHtml(user.role)} · ${user.active ? 'Active' : 'Disabled'}</div><button data-account="${user.id}" class="btn-ghost-sm">Manage account</button></div>`).join('')}`;
+  root.querySelector('#newAccount').onclick = () => openAccount();
+  root
+    .querySelectorAll('[data-account]')
+    .forEach(
+      (button) =>
+        (button.onclick = () =>
+          openAccount(users.find((user) => String(user.id) === button.dataset.account))),
+    );
+  function openAccount(user) {
+    modal(
+      user ? 'Manage lab account' : 'Add lab account',
+      '',
+      `
+      <label>Username</label><input id="accountUsername" value="${escHtml(user?.username || '')}" ${user ? 'readonly' : ''}>
+      <label>Display name</label><input id="accountName" value="${escHtml(user?.name || '')}">
+      <label>Email</label><input id="accountEmail" type="email" value="${escHtml(user?.email || '')}">
+      <label>Access role</label><select id="accountRole">${['admin', 'professor', 'moderator', 'postdoc', 'student'].map((role) => `<option value="${role}" ${role === (user?.role || 'student') ? 'selected' : ''}>${role}</option>`).join('')}</select>
+      <label>Account status</label><select id="accountActive"><option value="1">Active</option><option value="0" ${user?.active === 0 ? 'selected' : ''}>Disabled</option></select>
+      <label>${user ? 'Reset password (leave blank to keep current password)' : 'Initial password'} — minimum 12 characters</label><input id="accountPassword" type="password" autocomplete="new-password">
+      <label>Confirm password</label><input id="accountPasswordConfirm" type="password" autocomplete="new-password">
+    `,
+      async (mb) => {
+        const password = $('#accountPassword', mb).value;
+        if ((!user || password) && password.length < 12)
+          throw new Error('Password must be at least 12 characters');
+        if (password !== $('#accountPasswordConfirm', mb).value)
+          throw new Error('Passwords do not match');
+        const payload = {
+          username: $('#accountUsername', mb).value.trim(),
+          name: $('#accountName', mb).value.trim(),
+          email: $('#accountEmail', mb).value.trim(),
+          role: $('#accountRole', mb).value,
+          active: $('#accountActive', mb).value === '1',
+        };
+        if (password) payload.password = password;
+        if (user) await apiPut('/api/users/' + user.id, payload);
+        else {
+          if (!payload.username) throw new Error('Username is required');
+          if (!payload.active) throw new Error('Create an active account before disabling it');
+          await apiPost('/api/users', payload);
+        }
+        await renderPeopleAccounts(root);
+      },
+    );
   }
 }

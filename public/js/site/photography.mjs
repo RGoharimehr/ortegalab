@@ -98,7 +98,7 @@ export const LAB_PHOTOS = [
   {
     image_url: '/assets/lab/arpa-e-visit-september-2024.jpg',
     title: 'ARPA-E visit, September 2024',
-    category: 'Lab community',
+    category: 'Visits',
   },
 ];
 
