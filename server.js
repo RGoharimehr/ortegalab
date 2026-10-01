@@ -6,7 +6,7 @@ const { createApp } = require('./src/server/app');
 function startServer(options = {}) {
   const runtime = createApp(options);
   const logger = options.logger || console;
-  const server = runtime.app.listen(runtime.config.port, () => {
+  const server = runtime.app.listen(runtime.config.port, runtime.config.host, () => {
     logger.log(`LATFS listening on port ${server.address().port}`);
   });
   let stopping = false;

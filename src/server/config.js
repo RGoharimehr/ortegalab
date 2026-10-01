@@ -18,6 +18,7 @@ function loadConfig(options = {}) {
     throw new Error('PORT must be between 0 and 65535');
   return Object.freeze({
     port,
+    host: env.HOST || '0.0.0.0',
     isProduction,
     baseUrl: (env.BASE_URL || 'https://latfs.villanova.edu').replace(/\/$/, ''),
     databasePath: options.databasePath || env.DATABASE_PATH || path.join(PROJECT_ROOT, 'latfs.db'),
