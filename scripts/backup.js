@@ -5,7 +5,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const Database = require('better-sqlite3');
 
-async function backup({ root, destination, database, uploads, retain = 14 }) {
+async function backup({ root, destination, database, uploads, retain = 2 }) {
   if (!Number.isInteger(retain) || retain < 1) throw new Error('Invalid backup retention');
   process.umask(0o077);
   await fs.mkdir(destination, { recursive: true, mode: 0o700 });
