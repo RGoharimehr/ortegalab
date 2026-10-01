@@ -1,4 +1,4 @@
-import { h } from './dom.mjs';
+import { h, safeHref } from './dom.mjs';
 import {
   renderPeopleSections,
   renderFacilityCards,
@@ -8,51 +8,136 @@ import {
   renderDownloadList,
   galleryEntries,
 } from './collections.mjs';
+import { researchPhoto } from './photography.mjs';
 import { PEOPLE_GROUPS } from './config.mjs';
 import { DATA } from './data.mjs';
 import { PageBanner } from './layout.mjs';
 import { openInlineApp } from './overlays.mjs';
 import { getInitials, activePeopleRows, assetUrl, matchesQuery, fmtNewsDate } from './utils.mjs';
 
+function researchLinks(value) {
+  try {
+    const links = typeof value === 'string' ? JSON.parse(value || '[]') : value;
+    return Array.isArray(links)
+      ? links.filter(
+          (link) =>
+            link &&
+            typeof link.url === 'string' &&
+            /^https?:\/\//i.test(link.url) &&
+            safeHref(link.url),
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 export function PageResearch() {
-  const items = DATA.research && DATA.research.length ? DATA.research : [];
-  const s = DATA.settings || {};
-  const cards = items.length
-    ? items.map((r, index) =>
-        h(
-          'article',
-          { class: 'w-rc' },
-          h(
-            'div',
-            { class: 'w-rc-heading' },
-            h(
-              'span',
-              { class: 'w-rc-number', 'aria-hidden': 'true' },
-              String(index + 1).padStart(2, '0'),
-            ),
-            h('h2', { class: 'w-rc-title' }, r.title || r.name || ''),
-          ),
-          r.image_url
-            ? h('img', { class: 'w-rc-image', src: r.image_url, alt: '', loading: 'lazy' })
-            : null,
-          h('p', { class: 'w-rc-desc' }, r.summary || r.description || r.desc || ''),
-          r.tag || r.meta ? h('div', { class: 'w-rc-tag' }, r.tag || r.meta) : null,
-        ),
-      )
-    : [h('div', { class: 'w-empty' }, 'No research areas published yet.')];
+  const items = DATA.research || [];
+  const settings = DATA.settings || {};
   return h(
     'div',
-    null,
+    { class: 'w-research-page' },
     PageBanner(
       'Research',
-      s.research_page_title || 'Research areas',
-      s.research_page_intro ||
-        'LATFS investigates the thermal and fluid mechanics of high-power-density systems — from boiling in microchannels to renewable thermal storage.',
+      settings.research_page_title || 'Research areas',
+      settings.research_page_intro ||
+        'Experiments and models for better thermal and fluid systems.',
     ),
     h(
       'section',
       { class: 'w-page-content' },
-      h('div', { class: 'max-w' }, h('div', { class: 'w-research-index' }, ...cards)),
+      h(
+        'div',
+        { class: 'max-w w-research-index' },
+        ...(items.length
+          ? items.map((topic, index) =>
+              h(
+                'a',
+                {
+                  class: 'w-research-cover',
+                  href: '#research/' + topic.id,
+                  'aria-label': 'Explore ' + topic.title,
+                },
+                h('img', { src: researchPhoto(topic, index), alt: '', loading: 'lazy' }),
+                h(
+                  'div',
+                  { class: 'w-research-cover-copy' },
+                  h(
+                    'span',
+                    { class: 'eyebrow' },
+                    'RESEARCH / ' + String(index + 1).padStart(2, '0'),
+                  ),
+                  h('h2', null, topic.title),
+                  h('p', null, topic.description || ''),
+                  h('span', { class: 'w-feature-link' }, 'Explore research ↗'),
+                ),
+              ),
+            )
+          : [h('p', { class: 'w-empty' }, 'No research areas published yet.')]),
+      ),
+    ),
+  );
+}
+
+export function PageResearchDetail(id) {
+  const index = (DATA.research || []).findIndex((topic) => String(topic.id) === String(id));
+  const topic = DATA.research[index];
+  if (!topic)
+    return h(
+      'div',
+      null,
+      PageBanner('Research', 'Research topic not found', ''),
+      h(
+        'section',
+        { class: 'w-page-content max-w' },
+        h('a', { class: 'w-back', href: '#research' }, '← All research areas'),
+      ),
+    );
+  const links = researchLinks(topic.links);
+  return h(
+    'div',
+    { class: 'w-research-detail' },
+    h(
+      'section',
+      { class: 'w-research-detail-hero' },
+      h('img', { src: researchPhoto(topic, index), alt: '', class: 'w-research-backdrop' }),
+      h(
+        'div',
+        { class: 'max-w w-research-detail-heading' },
+        h('a', { class: 'w-back', href: '#research' }, '← All research areas'),
+        h('span', { class: 'eyebrow' }, 'RESEARCH'),
+        h('h1', null, topic.title),
+        h('p', null, topic.description || ''),
+      ),
+    ),
+    h(
+      'section',
+      { class: 'w-page-content' },
+      h(
+        'div',
+        { class: 'max-w w-research-detail-body' },
+        topic.content ? h('div', { class: 'w-detail-copy' }, topic.content) : null,
+        links.length
+          ? h(
+              'aside',
+              { class: 'w-research-links' },
+              h('h2', null, 'Explore further'),
+              ...links.map((link) =>
+                h(
+                  'a',
+                  {
+                    class: 'w-text-link',
+                    href: link.url,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                  },
+                  (link.label || link.title || link.url) + ' ↗',
+                ),
+              ),
+            )
+          : null,
+      ),
     ),
   );
 }
@@ -141,6 +226,16 @@ export function PagePeople() {
       h(
         'div',
         { class: 'max-w' },
+        h(
+          'figure',
+          { class: 'w-people-photo' },
+          h('img', {
+            src: '/assets/lab/arpa-e-visit-september-2024.jpg',
+            alt: 'Group photograph during the ARPA-E visit at Villanova, September 2024',
+            loading: 'lazy',
+          }),
+          h('figcaption', null, 'ARPA-E visit · September 2024'),
+        ),
         h(
           'div',
           { class: 'w-filter-shell', role: 'search', 'aria-label': 'Filter this collection' },
@@ -273,7 +368,7 @@ export function PagePublications() {
   applyFilters();
   return h(
     'div',
-    null,
+    { class: 'w-publications-page' },
     PageBanner(
       'Publications',
       'Selected publications',
@@ -532,6 +627,15 @@ export function PageApps() {
 
 export function PageGallery() {
   const photos = galleryEntries(DATA.gallery);
+  const categories = [
+    ...new Set([
+      'Inside LATFS',
+      'Exhibition',
+      'Visits',
+      'Villanova at a glance',
+      ...photos.map((photo) => photo.cat),
+    ]),
+  ];
   return h(
     'div',
     null,
@@ -543,7 +647,38 @@ export function PageGallery() {
     h(
       'section',
       { class: 'w-page-content' },
-      h('div', { class: 'max-w' }, renderGalleryGrid(photos)),
+      h(
+        'div',
+        { class: 'max-w' },
+        h(
+          'nav',
+          { class: 'w-gallery-sections-nav', 'aria-label': 'Gallery sections' },
+          ...categories.map((category, index) =>
+            h(
+              'button',
+              {
+                class: 'btn-ghost',
+                type: 'button',
+                onclick: () =>
+                  document.getElementById('gallery-section-' + index)?.scrollIntoView({
+                    behavior: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+                      ? 'instant'
+                      : 'smooth',
+                  }),
+              },
+              category,
+            ),
+          ),
+        ),
+        ...categories.map((category, index) =>
+          h(
+            'section',
+            { class: 'w-gallery-section', id: 'gallery-section-' + index },
+            h('h2', { class: 'w-section-title' }, category),
+            renderGalleryGrid(photos.filter((photo) => photo.cat === category)),
+          ),
+        ),
+      ),
     ),
   );
 }

@@ -34,6 +34,7 @@ export function Nav() {
   const menu = h(
     'div',
     { id: 'site-navigation', class: 'w-nav-links' },
+    ...(state.route !== 'home' ? [navLink('home', 'Home')] : []),
     navLink('research', 'Research'),
     navLink('people', 'People'),
     navLink('publications', 'Publications'),
@@ -96,8 +97,7 @@ export function Nav() {
         h(
           'span',
           { class: 'w-brand-copy' },
-          h('strong', null, 'LATFS'),
-          h('span', { class: 'w-brand-sub' }, 'VILLANOVA UNIVERSITY'),
+          h('strong', null, 'Laboratory for Advanced Thermal and Fluid Systems'),
         ),
       ),
       menu,
@@ -106,18 +106,23 @@ export function Nav() {
   );
 }
 
-export function SectionHeader(title, action) {
+export function SectionHeader(title, action, eyebrow) {
   return h(
     'div',
     { class: 'w-sh' },
-    h('div', { class: 'w-sh-inner' }, h('h2', { class: 'w-sh-title' }, title)),
+    h(
+      'div',
+      { class: 'w-sh-inner' },
+      eyebrow ? h('span', { class: 'eyebrow' }, eyebrow) : null,
+      h('h2', { class: 'w-sh-title w-section-title' }, title),
+    ),
     action
       ? h('button', { class: 'w-link-gold', onclick: action.onClick }, action.label + ' →')
       : null,
   );
 }
 
-export function PageBanner(eyebrow, title, intro) {
+export function PageBanner(_eyebrow, title, intro) {
   return h(
     'div',
     { class: 'w-page-banner' },
@@ -127,7 +132,6 @@ export function PageBanner(eyebrow, title, intro) {
       h(
         'div',
         { class: 'w-page-banner-copy' },
-        h('span', { class: 'eyebrow' }, eyebrow),
         h('h1', { class: 'w-page-banner-title' }, title),
         intro ? h('p', { class: 'w-page-banner-intro' }, intro) : null,
       ),
@@ -239,7 +243,8 @@ export function PublicFooter() {
   );
 }
 
-export function applySiteTheme() {
-  // The public identity is consistently dark, including databases with legacy theme settings.
-  document.body.dataset.theme = 'graphite';
+export function applySiteTheme(theme) {
+  const selected = ['navy', 'graphite-green'].includes(theme) ? theme : 'graphite';
+  document.documentElement.dataset.theme = selected;
+  document.body.dataset.theme = selected;
 }

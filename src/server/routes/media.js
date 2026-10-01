@@ -39,12 +39,32 @@ function createMediaRouter({
       if (!req.file) return res.status(400).json({ error: 'No image file provided' });
       const image_url = `/uploads/${req.file.filename}`;
       const caption = (req.body.caption || '').slice(0, 200);
+      const category =
+        String(req.body.category || 'Inside LATFS')
+          .trim()
+          .slice(0, 80) || 'Inside LATFS';
       const sort_order = parseInt(req.body.sort_order, 10) || 0;
       const result = db
-        .prepare('INSERT INTO gallery (image_url, caption, sort_order) VALUES (?, ?, ?)')
-        .run(image_url, caption, sort_order);
-      res.json({ id: result.lastInsertRowid, image_url, caption, sort_order });
+        .prepare(
+          'INSERT INTO gallery (image_url, caption, sort_order, category) VALUES (?, ?, ?, ?)',
+        )
+        .run(image_url, caption, sort_order, category);
+      res.json({ id: result.lastInsertRowid, image_url, caption, sort_order, category });
     });
+  });
+
+  router.put('/api/gallery/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
+    const category =
+      String(req.body.category || 'Inside LATFS')
+        .trim()
+        .slice(0, 80) || 'Inside LATFS';
+    const caption = String(req.body.caption || '').slice(0, 200);
+    const sort_order = parseInt(req.body.sort_order, 10) || 0;
+    const result = db
+      .prepare('UPDATE gallery SET category=?, caption=?, sort_order=? WHERE id=?')
+      .run(category, caption, sort_order, req.params.id);
+    if (!result.changes) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true });
   });
 
   router.delete('/api/gallery/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {

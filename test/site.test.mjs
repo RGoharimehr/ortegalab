@@ -1,9 +1,10 @@
+import { applyBackgrounds, backgroundChoice } from '../public/js/site/backgrounds.mjs';
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { DATA, ENDPOINTS, contentStatus, loadAll } from '../public/js/site/data.mjs';
 import { h } from '../public/js/site/dom.mjs';
-import { Nav } from '../public/js/site/layout.mjs';
+import { Nav, applySiteTheme } from '../public/js/site/layout.mjs';
 import { Home, Hero, ResearchFeature } from '../public/js/site/home.mjs';
 import { LAB_PHOTOS, HERO_PHOTOS } from '../public/js/site/photography.mjs';
 import { galleryEntries } from '../public/js/site/collections.mjs';
@@ -61,7 +62,7 @@ function move(action) {
   });
 }
 
-test('empty API collections stay empty while supplied lab photographs remain available', async () => {
+test('empty API collections stay empty, including explicitly removed gallery photographs', async () => {
   await loadAll({ fetchImpl: async (url) => response(url === ENDPOINTS.settings ? {} : []) });
   assert.deepEqual(contentStatus.failed, []);
   for (const key of Object.keys(ENDPOINTS).filter((key) => key !== 'settings'))
@@ -73,8 +74,8 @@ test('empty API collections stay empty while supplied lab photographs remain ava
     home.querySelector('.w-research-feature').textContent,
     /No research areas published yet/,
   );
-  assert.equal(home.querySelectorAll('.w-sponsor-logo').length, 9);
-  assert.equal(home.querySelectorAll('.w-gallery-slide').length, 3);
+  assert.equal(home.querySelectorAll('.w-sponsor-logo').length, 11);
+  assert.equal(home.querySelectorAll('.w-gallery-slide').length, 0);
   for (const img of home.querySelectorAll('.w-gallery-slide img'))
     assert.match(img.getAttribute('src'), /^\/assets\/lab\//);
 });
@@ -264,11 +265,13 @@ test('join advertisement shows availability and safely renders editable position
 test('research feature changes topic, description and photograph without losing its link', () => {
   const feature = ResearchFeature([
     {
+      id: 1,
       title: 'Cooling research',
       summary: 'Measured cooling performance.',
       image_url: '/uploads/cooling.jpg',
     },
     {
+      id: 2,
       title: 'Fluid research',
       summary: 'Measured fluid behavior.',
       image_url: '/uploads/fluids.jpg',
@@ -279,7 +282,7 @@ test('research feature changes topic, description and photograph without losing 
   assert.equal(feature.querySelector('h2').textContent, 'Fluid research');
   assert.match(feature.textContent, /Measured fluid behavior/);
   assert.equal(feature.querySelector('img').getAttribute('src'), '/uploads/fluids.jpg');
-  assert.equal(feature.querySelector('a').getAttribute('href'), '#research');
+  assert.equal(feature.querySelector('a').getAttribute('href'), '#research/2');
   feature.querySelector('[aria-label="Next research topic"]').click();
   assert.equal(feature.querySelector('h2').textContent, 'Cooling research');
   feature.querySelector('[aria-label="Previous research topic"]').click();
@@ -293,7 +296,7 @@ test('homepage places unboxed collaborators after research and before publicatio
   assert.ok(sections[2].classList.contains('w-partners'));
   assert.ok(sections[3].classList.contains('w-updates'));
   assert.equal(sections[2].querySelectorAll('.w-sponsor-item').length, 0);
-  assert.equal(sections[2].querySelectorAll('.w-sponsor-logo').length, 9);
+  assert.equal(sections[2].querySelectorAll('.w-sponsor-logo').length, 11);
 });
 
 test('supplied photography replaces legacy slides and is available in the gallery without duplicates', () => {
@@ -308,7 +311,92 @@ test('supplied photography replaces legacy slides and is available in the galler
   const gallery = galleryEntries([
     { image_url: LAB_PHOTOS[0].image_url, caption: 'Custom caption' },
   ]);
-  assert.equal(gallery.length, 13);
+  assert.equal(gallery.length, 1);
   assert.equal(gallery[0].title, 'Custom caption');
-  assert.equal(new Set(gallery.map((photo) => photo.src)).size, 13);
+  assert.equal(new Set(gallery.map((photo) => photo.src)).size, 1);
+});
+
+test('research covers lead to dedicated pages with safe links and a useful missing-page state', () => {
+  DATA.research = [
+    {
+      id: 42,
+      title: 'Two-phase cooling',
+      description: 'Measured at rack scale.',
+      content: 'First paragraph.\n\nSecond paragraph.',
+      image_url: '/uploads/research.jpg',
+      links: JSON.stringify([
+        { label: 'Dataset', url: 'https://example.org/data' },
+        { label: 'Unsafe', url: 'javascript:alert(1)' },
+      ]),
+    },
+  ];
+  const index = pages.PageResearch();
+  assert.equal(index.querySelector('.w-research-cover').getAttribute('href'), '#research/42');
+  const detail = pages.PageResearchDetail('42');
+  assert.equal(detail.querySelector('h1').textContent, 'Two-phase cooling');
+  assert.equal(detail.querySelector('img').getAttribute('src'), '/uploads/research.jpg');
+  assert.match(detail.querySelector('.w-detail-copy').textContent, /Second paragraph/);
+  assert.equal(detail.querySelectorAll('.w-research-links a').length, 1);
+  assert.equal(normalizeRoute('#research/42'), 'research/42');
+  assert.equal(activeSection('research/42'), 'research');
+  assert.match(pages.PageResearchDetail('missing').textContent, /not found/);
+  DATA.research[0].links = '{invalid';
+  assert.equal(pages.PageResearchDetail('42').querySelector('.w-research-links'), null);
+});
+
+test('collaborator records without artwork remain visible and known missing logos resolve', () => {
+  DATA.sponsors = [
+    { name: 'Cisco Systems', logo_url: '' },
+    { name: 'Delphi Technologies', logo_url: '' },
+    { name: 'New collaborator', logo_url: '' },
+  ];
+  const home = Home();
+  assert.match(home.querySelector('img[alt="Cisco Systems"]').getAttribute('src'), /cisco.svg$/);
+  assert.match(
+    home.querySelector('img[alt="Delphi Technologies"]').getAttribute('src'),
+    /delphi.svg$/,
+  );
+  assert.match(home.querySelector('.w-sponsor-grid').textContent, /New collaborator/);
+});
+
+test('saved palettes, inner-page Home links and named gallery sections are available', () => {
+  applySiteTheme('graphite');
+  assert.equal(document.body.dataset.theme, 'graphite');
+  assert.equal(document.documentElement.dataset.theme, 'graphite');
+  applySiteTheme('navy');
+  assert.equal(document.body.dataset.theme, 'navy');
+  applySiteTheme('legacy');
+  assert.equal(document.body.dataset.theme, 'graphite');
+  assert.equal(document.documentElement.dataset.theme, 'graphite');
+  state.route = 'people';
+  assert.equal(Nav().querySelector('.w-nav-link[href="#home"]').textContent, 'Home');
+  DATA.gallery = [{ id: 2, image_url: '/visit.jpg', category: 'Visits', caption: 'Visit photo' }];
+  const gallery = pages.PageGallery();
+  const sections = [...gallery.querySelectorAll('.w-gallery-section')];
+  assert.deepEqual(
+    sections.map((section) => section.querySelector('h2').textContent),
+    ['Inside LATFS', 'Exhibition', 'Visits', 'Villanova at a glance'],
+  );
+  assert.equal(sections[2].querySelectorAll('.w-gallery-slide').length, 1);
+  assert.equal(sections[1].querySelectorAll('.w-gallery-slide').length, 0);
+});
+
+test('section backgrounds respect custom photos, no-photo choice, and repeat with space on publications', () => {
+  const settings = {
+    site_backgrounds: JSON.stringify({ join: '/custom.jpg', home_gallery: 'none' }),
+  };
+  assert.equal(backgroundChoice(settings, 'join'), '/custom.jpg');
+  assert.equal(backgroundChoice(settings, 'home_gallery', '/default.jpg'), '');
+  const root = h(
+    'div',
+    null,
+    h('main', { id: 'main-content' }, h('div', null, h('section', { class: 'w-page-content' }))),
+  );
+  applyBackgrounds(root, settings, 'join');
+  assert.equal(root.querySelector('.w-photo-field img').getAttribute('src'), '/custom.jpg');
+  const publicationRoot = h('div', null, h('main', { id: 'main-content' }, h('div')));
+  applyBackgrounds(publicationRoot, {}, 'publications');
+  assert.equal(publicationRoot.querySelectorAll('.w-photo-field img').length, 12);
+  applySiteTheme('graphite-green');
+  assert.equal(document.documentElement.dataset.theme, 'graphite-green');
 });

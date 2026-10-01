@@ -50,7 +50,7 @@ function seedDatabase(db, config, logger = console) {
         'downloads_page_intro',
         'Download papers, forms, media, and supporting files shared by the lab.',
       ],
-      ['site_theme', 'navy-gold'],
+      ['site_theme', 'graphite'],
       ['hero_metric_research_label', 'Research areas'],
       ['hero_metric_publications_label', 'Publications'],
       ['hero_metric_people_label', 'Active members'],

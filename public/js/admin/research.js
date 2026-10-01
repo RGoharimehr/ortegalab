@@ -32,12 +32,21 @@ async function renderResearchTab(body) {
   function openR(r) {
     const isNew = !r;
     r = r || { title: '', description: '', image_url: '', sort_order: 0 };
+    let links = [];
+    try {
+      links = JSON.parse(r.links || '[]');
+    } catch {
+      /* Old records may not have links. */
+    }
+    if (!Array.isArray(links)) links = [];
     modal(
       isNew ? 'Add research area' : 'Edit research area',
       '',
       `
       <label>Title</label><input id="m_t" value="${escHtml(r.title)}">
-      <label>Description</label><textarea id="m_d" style="min-height:140px;">${escHtml(r.description || '')}</textarea>
+      <label>Short description (shown on the cover)</label><textarea id="m_d" style="min-height:140px;">${escHtml(r.description || '')}</textarea>
+      <label>Full research description</label><textarea id="m_content" style="min-height:220px;">${escHtml(r.content || '')}</textarea>
+      <label>Related links (one per line: Label | https://…)</label><textarea id="m_links" placeholder="Project website | https://example.org">${escHtml(links.map((link) => `${link.label || link.title || ''} | ${link.url || ''}`).join('\n'))}</textarea>
       <label>Cover image (upload)</label>
       <div style="display:flex; gap:10px; align-items:center;">
         ${r.image_url ? `<img src="${escHtml(r.image_url)}" alt="" style="height:48px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
@@ -47,6 +56,20 @@ async function renderResearchTab(body) {
       <label>Sort order</label><input id="m_s" type="number" value="${r.sort_order || 0}">
     `,
       async (mb) => {
+        const links = $('#m_links', mb)
+          .value.split('\n')
+          .filter((line) => line.trim())
+          .map((line) => {
+            const separator = line.indexOf('|');
+            const url = (separator < 0 ? line : line.slice(separator + 1)).trim();
+            const label = separator < 0 ? url : line.slice(0, separator).trim();
+            try {
+              if (!['http:', 'https:'].includes(new URL(url).protocol)) throw new Error();
+            } catch {
+              throw new Error('Every research link must use a valid http:// or https:// URL.');
+            }
+            return { label: label || url, url };
+          });
         const f = $('#m_i_file', mb);
         if (f && f.files && f.files[0]) {
           const url = await uploadPhoto(f.files[0]);
@@ -55,6 +78,8 @@ async function renderResearchTab(body) {
         const body = {
           title: $('#m_t', mb).value,
           description: $('#m_d', mb).value,
+          content: $('#m_content', mb).value,
+          links: JSON.stringify(links),
           image_url: $('#m_i', mb).value,
           sort_order: +$('#m_s', mb).value,
         };

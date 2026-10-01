@@ -36,6 +36,7 @@ function createSettingsRouter({
       'hero_metric_people_label',
       'hero_metric_facilities_label',
       'site_theme',
+      'site_backgrounds',
       'join_openings_status',
       'join_openings_title',
       'join_openings_details',
@@ -72,6 +73,7 @@ function createSettingsRouter({
       'contact_email',
       'contact_address',
       'site_theme',
+      'site_backgrounds',
       'join_openings_status',
       'join_openings_title',
       'join_openings_details',
@@ -95,11 +97,61 @@ function createSettingsRouter({
     ) {
       return res.status(400).json({ error: 'Opening status must be open or closed' });
     }
+    if (
+      req.body?.site_theme !== undefined &&
+      !['graphite', 'navy', 'graphite-green'].includes(req.body.site_theme)
+    ) {
+      return res.status(400).json({ error: 'Choose graphite, navy or graphite-green' });
+    }
+    if (req.body?.site_backgrounds !== undefined) {
+      try {
+        const backgrounds = JSON.parse(req.body.site_backgrounds);
+        const allowed = new Set([
+          'home_hero',
+          'home_research',
+          'home_partners',
+          'home_updates',
+          'home_gallery',
+          'home_join',
+          'footer',
+          'research',
+          'people',
+          'publications',
+          'facilities',
+          'gallery',
+          'apps',
+          'downloads',
+          'news',
+          'join',
+          'contact',
+        ]);
+        if (
+          !backgrounds ||
+          typeof backgrounds !== 'object' ||
+          Array.isArray(backgrounds) ||
+          Object.keys(backgrounds).length > allowed.size
+        )
+          throw new Error();
+        for (const [key, value] of Object.entries(backgrounds)) {
+          if (
+            !allowed.has(key) ||
+            typeof value !== 'string' ||
+            value.length > 500 ||
+            (value && value !== 'none' && !/^(?:\/(?!\/)|https?:\/\/)/i.test(value))
+          )
+            throw new Error();
+        }
+        if (req.body.site_backgrounds.length > 12000) throw new Error();
+      } catch {
+        return res.status(400).json({ error: 'Choose valid section background images' });
+      }
+    }
     const pairs = Object.entries(req.body || {}).filter(([k]) => ALLOWED_KEYS.has(k));
     if (!pairs.length) return res.json({ success: true });
     const ups = db.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?,?)');
     const update = db.transaction(() => {
-      for (const [k, v] of pairs) ups.run(k, String(v || '').slice(0, 2000));
+      for (const [k, v] of pairs)
+        ups.run(k, String(v || '').slice(0, k === 'site_backgrounds' ? 12000 : 2000));
     });
     update();
     res.json({ success: true });

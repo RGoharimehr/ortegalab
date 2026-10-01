@@ -141,23 +141,6 @@ function showBackupCodes(codes) {
     'Close',
   );
 }
-$('#profEditBtn').addEventListener('click', () => {
-  modal(
-    `<h2>Edit my details</h2>
-    <label>Display name<input id="meName" value="${escapeHTML(ME.name || '')}"></label>
-    <label>Email<input id="meEmail" value="${escapeHTML(ME.email || '')}"></label>
-    <p style="font-size:12px;color:var(--fg-3);">Role and username are managed by an admin.</p>`,
-    async () => {
-      const body = { name: $('#meName').value.trim(), email: $('#meEmail').value.trim() };
-      await api('/api/me/profile', { method: 'PUT', body });
-      ME.name = body.name;
-      ME.email = body.email;
-      $('#userName').textContent = ME.name || ME.username;
-      setAvatarContent($('#userAv'), ME);
-      loadProfile();
-    },
-  );
-});
 $('#profChPwBtn').addEventListener('click', () => {
   modal(
     `<h2>Change password</h2>

@@ -19,3 +19,14 @@ Provided by the website owner on September 30, 2026 for use on the LATFS website
 | cooling-manifold.jpg        | photo_5037395274527083714_w.jpg |
 
 Captions describe the visible laboratory scene without identifying individuals or asserting project-specific results.
+
+Additional laboratory photos supplied by the user on September 30, 2026; PNG originals preserved.
+
+- `lab-wide-view.png`: `codex-clipboard-b8387df3-d1b9-4007-9f06-62df9c36909e.png`
+- `rack-aisle.png`: `codex-clipboard-006f2402-2fdf-44b5-b64a-3e2bf0aec2a1.png`
+- `two-phase-benches.png`: `codex-clipboard-f18bd89a-a7ac-4fa1-904b-0c6412b96169.png`
+- `pumped-loop.png`: `codex-clipboard-6601ec29-edcb-438f-af1c-232098090fef.png`
+- `cold-plate-workbench.png`: `codex-clipboard-a83386a2-aa61-4aee-a226-0b705cfdade6.png`
+- `daylight-laboratory.png`: `codex-clipboard-89c96e8b-d6ad-436e-a826-4f25262616a7.png`
+
+- `arpa-e-visit-september-2024.jpg`: browser-compatible JPEG conversion of the user-supplied `Photos ARPA-E visit Sept 2024 - 10.HEIC`; original composition preserved.

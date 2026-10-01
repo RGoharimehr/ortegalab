@@ -50,8 +50,14 @@ async function renderSettingsTab(body) {
         <div class="p-theme-grid">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--fg-3);margin-bottom:4px;">Website appearance</div>
-            <div style="color:var(--fg-1);">Graphite · Muted blue and warm sand</div>
-            <div class="p-soft-note">The public website and lab workspace share a dark theme.</div>
+            <label for="siteTheme">Color scheme</label>
+            <select id="siteTheme" class="p-inv-input">
+              <option value="graphite" ${!['navy', 'graphite-green'].includes(s.site_theme) ? 'selected' : ''}>Graphite — charcoal and warm sand</option>
+              <option value="navy" ${s.site_theme === 'navy' ? 'selected' : ''}>Navy — deep blue and soft blue</option>
+            <option value="graphite-green" ${s.site_theme === 'graphite-green' ? 'selected' : ''}>Graphite — fresh green accent</option></select>
+            <p class="p-soft-note">All designs are preserved. Save to apply the selected colors across the public website.</p>
+            <button id="saveTheme" class="btn-primary-sm">Save color scheme</button>
+            <span id="themeMsg" role="status"></span>
           </div>
         </div>
       </div>
@@ -139,6 +145,20 @@ async function renderSettingsTab(body) {
     }
   };
 
+  const backgroundsPanel = document.createElement('div');
+  backgroundsPanel.className = 'p-card';
+  backgroundsPanel.style.marginTop = '24px';
+  body.appendChild(backgroundsPanel);
+  await renderBackgroundSettings(backgroundsPanel, s);
+  $('#saveTheme').onclick = async () => {
+    const status = $('#themeMsg');
+    try {
+      await apiPut('/api/settings', { site_theme: $('#siteTheme').value });
+      status.textContent = 'Saved. Refresh the public site to see this design.';
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  };
   $('#saveOpenings').onclick = async () => {
     try {
       await apiPut('/api/settings', {
@@ -216,4 +236,69 @@ async function renderSettingsTab(body) {
   };
 
   if (window.lucide) window.lucide.createIcons();
+}
+
+async function renderBackgroundSettings(root, settings) {
+  const BACKGROUND_SECTIONS = {
+    home_hero: 'Home · hero',
+    home_research: 'Home · research',
+    home_partners: 'Home · collaborators',
+    home_updates: 'Home · publications and news',
+    home_gallery: 'Home · gallery',
+    home_join: 'Home · invitation',
+    footer: 'Footer',
+    research: 'Research page',
+    people: 'People page',
+    publications: 'Publications page',
+    facilities: 'Facilities page',
+    gallery: 'Gallery page',
+    apps: 'Research tools page',
+    downloads: 'Downloads page',
+    news: 'News page',
+    join: 'Join page',
+    contact: 'Contact page',
+  };
+  const gallery = await apiGet('/api/gallery');
+  let current = {};
+  try {
+    current = JSON.parse(settings.site_backgrounds || '{}') || {};
+  } catch {
+    /* Keep defaults for legacy settings. */
+  }
+  root.innerHTML = `<h2>Section backgrounds</h2><p class="p-soft-note">Choose a gallery photo for each section, upload a new background, or keep a plain theme-colored surface. Research detail images remain editable under Research.</p><div class="p-grid-2">${Object.entries(
+    BACKGROUND_SECTIONS,
+  )
+    .map(([key, label]) => {
+      const choices = new Map([
+        ['', 'Original design'],
+        ['none', 'No photo'],
+        ...gallery.map((photo) => [photo.image_url, photo.caption || photo.image_url]),
+      ]);
+      if (current[key] && !choices.has(current[key]))
+        choices.set(current[key], 'Current custom image');
+      return `<div><label for="bg_${key}">${escHtml(label)}</label><select id="bg_${key}" data-background="${key}" class="p-inv-input">${[...choices].map(([value, title]) => `<option value="${escHtml(value)}" ${value === (current[key] || '') ? 'selected' : ''}>${escHtml(title)}</option>`).join('')}</select><label>Upload background for ${escHtml(label)}<input type="file" accept="image/*" data-bg-upload="${key}"></label></div>`;
+    })
+    .join(
+      '',
+    )}</div><button class="btn-primary-sm" id="saveBackgrounds">Save backgrounds</button><span id="backgroundMsg" role="status"></span>`;
+  root.querySelector('#saveBackgrounds').onclick = async () => {
+    const button = root.querySelector('#saveBackgrounds');
+    const status = root.querySelector('#backgroundMsg');
+    button.disabled = true;
+    try {
+      const backgrounds = {};
+      for (const select of root.querySelectorAll('[data-background]')) {
+        const key = select.dataset.background;
+        const file = root.querySelector(`[data-bg-upload="${key}"]`).files[0];
+        const value = file ? await uploadPhoto(file) : select.value;
+        if (value) backgrounds[key] = value;
+      }
+      await apiPut('/api/settings', { site_backgrounds: JSON.stringify(backgrounds) });
+      status.textContent = 'Saved. Refresh the public website to see your backgrounds.';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
 }

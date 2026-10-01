@@ -1,3 +1,4 @@
+import { applyBackgrounds } from './backgrounds.mjs';
 import { h } from './dom.mjs';
 import { DATA, contentStatus, loadAll } from './data.mjs';
 import { state, startRouter } from './router.mjs';
@@ -6,6 +7,7 @@ import { Home, restartHeroTimer } from './home.mjs';
 import { closeInlineApp } from './overlays.mjs';
 import {
   PageResearch,
+  PageResearchDetail,
   PagePeople,
   PagePersonDetail,
   PagePublications,
@@ -34,6 +36,7 @@ const pages = {
   contact: PageContact,
 };
 const detailPages = {
+  research: PageResearchDetail,
   person: PagePersonDetail,
   facility: PageFacilityDetail,
   news: PageNewsDetail,
@@ -64,6 +67,29 @@ function updateMetadata(main) {
       : `${heading} · LATFS`;
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', document.title);
+}
+
+let sectionObserver;
+function observeSections(root) {
+  sectionObserver?.disconnect();
+  if (
+    !globalThis.IntersectionObserver ||
+    globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  )
+    return;
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries)
+        if (entry.isIntersecting) {
+          entry.target.classList.add('w-section-enter');
+          sectionObserver.unobserve(entry.target);
+        }
+    },
+    { threshold: 0.12 },
+  );
+  root
+    .querySelectorAll('.w-home > section:not(:first-child)')
+    .forEach((section) => sectionObserver.observe(section));
 }
 
 export function render({ focus = false } = {}) {
@@ -99,6 +125,8 @@ export function render({ focus = false } = {}) {
     state.route === 'home' && !contentStatus.loading && contentStatus.failed.length === 0,
   );
   root.replaceChildren(Nav(), main, PublicFooter());
+  applyBackgrounds(root, DATA.settings, state.route);
+  observeSections(root);
   root.setAttribute('aria-busy', String(contentStatus.loading));
   updateMetadata(main);
   if (state.route === 'home' && !contentStatus.loading) restartHeroTimer();

@@ -36,23 +36,9 @@ function createAccountsRouter({
     res.json({ loggedIn: true, ...u, csrfToken: req.session.csrfToken });
   });
 
-  // Self-service: update own display name / email
+  // Legacy self-edit endpoint: identity changes now belong to staff in Web Admin.
   router.put('/api/me/profile', apiWriteLimiter, requireAuth, requireCsrf, (req, res) => {
-    const { name, email } = req.body;
-    const sets = [],
-      params = [];
-    if (name !== undefined) {
-      sets.push('name=?');
-      params.push(String(name).slice(0, 200));
-    }
-    if (email !== undefined) {
-      sets.push('email=?');
-      params.push(String(email).slice(0, 200).toLowerCase().trim());
-    }
-    if (!sets.length) return res.json({ success: true });
-    params.push(req.session.userId);
-    db.prepare('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?').run(...params);
-    res.json({ success: true });
+    res.status(403).json({ error: 'People details are managed in Web Admin by lab staff.' });
   });
 
   // Self-service: change own password
@@ -194,9 +180,11 @@ function createAccountsRouter({
 
   // ---- Users (admin/professor manage; everyone can list lightweight roster for assignment) ----
   router.get('/api/users', apiReadLimiter, requireAuth, (req, res) => {
+    const includeDisabled =
+      req.query.include_disabled === '1' && ['admin', 'professor'].includes(req.session.role);
     const rows = db
       .prepare(
-        'SELECT id, username, name, role, email, active FROM users WHERE active!=0 ORDER BY role, name, username',
+        `SELECT id, username, name, role, email, active FROM users ${includeDisabled ? '' : 'WHERE active!=0'} ORDER BY role, name, username`,
       )
       .all();
     res.json(rows);
@@ -220,6 +208,14 @@ function createAccountsRouter({
   });
   router.put('/api/users/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
     const { name, role, email, active, password } = req.body;
+    if (
+      Number(req.params.id) === req.session.userId &&
+      (active === false || (role !== undefined && !['admin', 'professor'].includes(role)))
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'You cannot disable your own account or remove your own staff access' });
+    }
     const sets = [],
       params = [];
     if (name !== undefined) {

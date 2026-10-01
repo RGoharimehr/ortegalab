@@ -73,48 +73,7 @@ function createPeopleService(db) {
     const cmsPeople = db
       .prepare('SELECT * FROM people WHERE active=1 ORDER BY category, name')
       .all();
-    const platformUsers = db
-      .prepare(
-        `
-      SELECT id, username, name, role, email, person_id
-      FROM users
-      WHERE active != 0 AND role IN ('professor', 'postdoc', 'student', 'moderator')
-        AND username NOT LIKE 'codexmodtemp%'
-      ORDER BY name, username
-    `,
-      )
-      .all();
-    const roster = new Map();
-    const addRow = (row) => {
-      const key = String(row.email || row.id || '')
-        .trim()
-        .toLowerCase();
-      if (!key) return;
-      roster.set(key, { ...(roster.get(key) || {}), ...row });
-    };
-    cmsPeople.forEach(addRow);
-    platformUsers.forEach((user) => {
-      const profiledUser = withUserProfile(user) || user;
-      addRow({
-        id: profiledUser.person_id ? profiledUser.person_id : `user-${profiledUser.id}`,
-        name: profiledUser.name || profiledUser.username,
-        role: publicRoleFromUser(profiledUser),
-        category: publicCategoryFromUser(profiledUser),
-        bio: '',
-        photo_url: profiledUser.photo_url || '',
-        photo_position: profiledUser.photo_position || 'center center',
-        email: profiledUser.email || '',
-        linkedin_url: '',
-        website_url: '',
-        active: 1,
-        source: profiledUser.person_id ? 'people+user' : 'user',
-      });
-    });
-    return Array.from(roster.values()).sort(
-      (a, b) =>
-        String(a.category || '').localeCompare(String(b.category || '')) ||
-        String(a.name || '').localeCompare(String(b.name || '')),
-    );
+    return cmsPeople;
   }
 
   return {

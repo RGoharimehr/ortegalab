@@ -88,7 +88,7 @@ async function renderGalleryTab(body) {
           <img src="${escHtml(g.image_url)}" alt="" style="width:100%; height:170px; object-fit:cover; display:block; background:var(--bg-1);">
           <div style="padding:10px 12px;">
             <div style="font-size:12px;color:var(--fg-2);">${escHtml(g.caption || '(no caption)')}</div>
-            <div class="row-actions" style="margin-top:8px;"><button class="danger" data-del="${g.id}">Delete</button></div>
+            <div class="p-soft-note">${escHtml(g.category || 'Inside LATFS')}</div><div class="row-actions" style="margin-top:8px;"><button data-edit="${g.id}">Edit</button><button class="danger" data-del="${g.id}">Delete</button></div>
           </div>
         </div>`,
               )
@@ -105,21 +105,36 @@ async function renderGalleryTab(body) {
         renderAdmin($('#mainContent'));
       }),
   );
-  $('#newPic').onclick = () => {
+  body
+    .querySelectorAll('[data-edit]')
+    .forEach(
+      (button) =>
+        (button.onclick = () => openPhoto(photos.find((photo) => photo.id == button.dataset.edit))),
+    );
+  $('#newPic').onclick = () => openPhoto();
+  function openPhoto(photo) {
     modal(
-      'Add gallery photo',
+      photo ? 'Edit gallery photo' : 'Add gallery photo',
       '',
       `
-      <label>Image file (required)</label><input type="file" id="m_f" accept="image/*">
-      <label>Caption</label><input id="m_c" value="">
-      <label>Sort order</label><input id="m_s" type="number" value="0">
+      ${photo ? '' : '<label>Image file (required)</label><input type="file" id="m_f" accept="image/*">'}
+      <label>Caption</label><input id="m_c" value="${escHtml(photo?.caption || '')}">
+      <label>Section</label><input id="m_category" list="galleryCategories" maxlength="80" value="${escHtml(photo?.category || 'Inside LATFS')}">
+      <datalist id="galleryCategories">${['Inside LATFS', 'Exhibition', 'Visits', 'Villanova at a glance'].map((category) => `<option value="${category}"></option>`).join('')}</datalist>
+      <label>Sort order</label><input id="m_s" type="number" value="${photo?.sort_order || 0}">
     `,
       async (mb) => {
-        const f = $('#m_f', mb);
-        if (!f.files[0]) throw new Error('Please pick an image file');
-        await uploadGallery(f.files[0], $('#m_c', mb).value, +$('#m_s', mb).value);
+        const category = $('#m_category', mb).value.trim() || 'Inside LATFS';
+        const caption = $('#m_c', mb).value;
+        const sort_order = +$('#m_s', mb).value;
+        if (photo) await apiPut('/api/gallery/' + photo.id, { category, caption, sort_order });
+        else {
+          const file = $('#m_f', mb).files[0];
+          if (!file) throw new Error('Please pick an image file');
+          await uploadGallery(file, caption, sort_order, category);
+        }
         renderAdmin($('#mainContent'));
       },
     );
-  };
+  }
 }

@@ -102,10 +102,11 @@ async function uploadDoc(file) {
   fd.append('document', file);
   return api('/api/upload/document', { method: 'POST', body: fd });
 }
-async function uploadGallery(file, caption = '', sort_order = 0) {
+async function uploadGallery(file, caption = '', sort_order = 0, category = 'Inside LATFS') {
   const fd = new FormData();
   fd.append('photo', file);
   fd.append('caption', caption);
+  fd.append('category', category);
   fd.append('sort_order', sort_order);
   return api('/api/gallery', { method: 'POST', body: fd });
 }
