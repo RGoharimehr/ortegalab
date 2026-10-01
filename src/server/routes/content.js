@@ -2,6 +2,32 @@
 
 const { Router } = require('express');
 
+function researchPayload(body) {
+  if (
+    typeof body.title !== 'string' ||
+    !body.title.trim() ||
+    typeof body.description !== 'string' ||
+    !body.description.trim()
+  )
+    throw new Error('A title and short description are required.');
+  const links = typeof body.links === 'string' ? JSON.parse(body.links || '[]') : body.links || [];
+  if (!Array.isArray(links) || links.length > 30)
+    throw new Error('Provide up to 30 related links.');
+  const normalized = links.map((link) => {
+    if (!link || typeof link.url !== 'string' || !/^https?:\/\//i.test(link.url))
+      throw new Error('Research links must use http:// or https:// URLs.');
+    const url = new URL(link.url);
+    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Invalid research link.');
+    return { label: String(link.label || link.title || link.url).slice(0, 200), url: url.href };
+  });
+  return {
+    ...body,
+    title: body.title.trim(),
+    description: body.description.trim(),
+    links: JSON.stringify(normalized),
+  };
+}
+
 function createContentRouter({
   db,
   sendInternalError,
@@ -267,7 +293,13 @@ function createContentRouter({
   });
 
   router.post('/api/research', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-    const { title, description, content, image_url, links, sort_order } = req.body;
+    let payload;
+    try {
+      payload = researchPayload(req.body);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+    const { title, description, content, image_url, links, sort_order } = payload;
     if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
     const result = db
       .prepare(
@@ -278,7 +310,13 @@ function createContentRouter({
   });
 
   router.put('/api/research/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
-    const { title, description, content, image_url, links, sort_order } = req.body;
+    let payload;
+    try {
+      payload = researchPayload(req.body);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+    const { title, description, content, image_url, links, sort_order } = payload;
     const result = db
       .prepare(
         'UPDATE research SET title=?, description=?, content=?, image_url=?, links=?, sort_order=? WHERE id=?',

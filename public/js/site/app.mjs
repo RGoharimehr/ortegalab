@@ -6,6 +6,7 @@ import { Home, restartHeroTimer } from './home.mjs';
 import { closeInlineApp } from './overlays.mjs';
 import {
   PageResearch,
+  PageResearchDetail,
   PagePeople,
   PagePersonDetail,
   PagePublications,
@@ -34,6 +35,7 @@ const pages = {
   contact: PageContact,
 };
 const detailPages = {
+  research: PageResearchDetail,
   person: PagePersonDetail,
   facility: PageFacilityDetail,
   news: PageNewsDetail,

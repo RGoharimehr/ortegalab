@@ -436,3 +436,53 @@ test('vacancy announcements validate status and persist publicly across restart'
   const settings = (await app.request('/api/site-settings')).data;
   for (const [key, value] of Object.entries(body)) assert.equal(settings[key], value);
 });
+
+test('research editing persists full pages and rejects invalid links', async (t) => {
+  const application = await fixture(t);
+  const auth = await login(application);
+  const record = {
+    title: 'Cooling experiment',
+    description: 'Summary',
+    content: 'Detailed methods\nSecond paragraph',
+    image_url: '/uploads/test.jpg',
+    links: JSON.stringify([{ label: 'Dataset', url: 'https://example.org/data' }]),
+    sort_order: 1,
+  };
+  const created = await application.request('/api/research', {
+    method: 'POST',
+    body: record,
+    ...auth,
+  });
+  assert.equal(created.status, 200);
+  const path = '/api/research/' + created.data.id;
+  assert.equal(
+    (
+      await application.request(path, {
+        method: 'PUT',
+        body: { ...record, links: '[{"url":"javascript:alert(1)"}]' },
+        ...auth,
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await application.request(path, { method: 'PUT', body: { ...record, title: '' }, ...auth }))
+      .status,
+    400,
+  );
+  assert.equal(
+    (
+      await application.request(path, {
+        method: 'PUT',
+        body: { ...record, content: 'Updated full description' },
+        ...auth,
+      })
+    ).status,
+    200,
+  );
+  await application.restart();
+  const rows = (await application.request('/api/research')).data;
+  const saved = rows.find((row) => row.id === created.data.id);
+  assert.equal(saved.content, 'Updated full description');
+  assert.equal(JSON.parse(saved.links)[0].url, 'https://example.org/data');
+});

@@ -1,0 +1,266 @@
+[
+  {
+    "title": "A Review of Recent Developments in Pumped Two-Phase Cooling Technologies for Electronic Devices",
+    "authors": "Hoang, C.H., Rangarjan, S., Manaserh, Y., Tradat, M., Mohsenian, G., Choobineh, L., Ortega, A., Schiffres, S., Sammakia, B",
+    "venue": "IEEE Trans. On Components, Packaging and Manufacturing Technology, vol. 111, 10, Oct. 2021",
+    "year": 2021,
+    "doi_url": "https://doi.org/10.1109/TCPMT.2021.3117572",
+    "source_citation": "Hoang, C.H., Rangarjan, S., Manaserh, Y., Tradat, M., Mohsenian, G., Choobineh, L., Ortega, A., Schiffres, S., Sammakia, B., “A Review of Recent Developments in Pumped Two-Phase Cooling Technologies for Electronic Devices,” IEEE Trans. On Components, Packaging and Manufacturing Technology, vol. 111, 10, Oct. 2021. DOI: 10.1109/TCPMT.2021.3117572"
+  },
+  {
+    "title": "Validation and Application of a Finned Tube Heat Exchanger Model for Rack-Level Cooling",
+    "authors": "Khalid, R., Youssef, E., Amalfi, R. L., Ortega, A., Wemhoff, A. P",
+    "venue": "ASME Journal of Electronics Packaging, 146, 021005",
+    "year": 2024,
+    "doi_url": "https://doi.org/10.1115/1.4063252",
+    "source_citation": "Khalid, R., Youssef, E., Amalfi, R. L., Ortega, A., Wemhoff, A. P. (2024). Validation and Application of a Finned Tube Heat Exchanger Model for Rack-Level Cooling. ASME Journal of Electronics Packaging, 146, 021005. DOI: 10.1115/1.4063252"
+  },
+  {
+    "title": "Characterization of a Rack-Level Thermosyphon-Based Cooling System",
+    "authors": "Khalid, R., Schon, S., Amalfi, R. L., Ortega, A., Wemhoff, A. P",
+    "venue": "ASME Journal of Electronic Packaging, 146(3), 031007",
+    "year": 2024,
+    "doi_url": "https://doi.org/10.1115/1.4064524",
+    "source_citation": "Khalid, R., Schon, S., Amalfi, R. L., Ortega, A., Wemhoff, A. P. (2024). Characterization of a Rack-Level Thermosyphon-Based Cooling System. ASME Journal of Electronic Packaging, 146(3), 031007. DOI: 10.1115/1.4064524"
+  },
+  {
+    "title": "Development of a Thermal Metrology Standard for Evaluation of Cold Plate Thermal Resistance as a Performance Metric",
+    "authors": "Martinez, V. A., Caceres, C., and Ortega, A",
+    "venue": "ASME. J. Electron. Packaging, Vol 146 (4) , 041118 December 2024",
+    "year": 2024,
+    "doi_url": "https://doi.org/10.1115/1.4066101",
+    "source_citation": "Martinez, V. A., Caceres, C., and Ortega, A., \"Development of a Thermal Metrology Standard for Evaluation of Cold Plate Thermal Resistance as a Performance Metric.\" ASME. J. Electron. Packaging, Vol 146 (4) , 041118 December 2024; https://doi.org/10.1115/1.4066101"
+  },
+  {
+    "title": "Implementation of a High-Frequency Phosphor Thermometry Technique to Study the Heat Transfer of Single Droplet Impingement",
+    "authors": "Martinez, V. A. and Ortega, A",
+    "venue": "Experimental Thermal and Fluid Science, 161, Feb. 2025",
+    "year": 2025,
+    "doi_url": "https://doi.org/10.1016/j.expthermflusci.2024.111338",
+    "source_citation": "Martinez, V. A. and Ortega, A., “Implementation of a High-Frequency Phosphor Thermometry Technique to Study the Heat Transfer of Single Droplet Impingement,” Experimental Thermal and Fluid Science, 161, Feb. 2025, https://doi.org/10.1016/j.expthermflusci.2024.111338"
+  },
+  {
+    "title": "Performance Analysis of a Brazed Plate Heat Exchanger during Condensation of R1233zd(E)",
+    "authors": "Khalid, R., McMullen, M., Amalfi, R.L., Ortega, A., Wemhoff, A.P",
+    "venue": "ASME Journal of Electronic Packaging, June 2025, 147(2): 021005",
+    "year": 2025,
+    "doi_url": "https://doi.org/10.1115/1.4067377",
+    "source_citation": "Khalid, R., McMullen, M., Amalfi, R.L., Ortega, A., Wemhoff, A.P., “Performance Analysis of a Brazed Plate Heat Exchanger during Condensation of R1233zd(E), ASME Journal of Electronic Packaging, June 2025, 147(2): 021005  https://doi.org/10.1115/1.4067377"
+  },
+  {
+    "title": "Experimental Validation of the Effectiveness-NTU Approach for Single-Phase Liquid Cold Plates and a Consistent Definition of Thermal Resistance",
+    "authors": "Martinez, V.A., Caceres, C., and Ortega, A",
+    "venue": "International Journal of Heat and Mass Transfer, 247, 1 September 2025",
+    "year": 2025,
+    "doi_url": "https://doi.org/10.1016/j.ijheatmasstransfer.2025.127128",
+    "source_citation": "Martinez, V.A., Caceres, C., and Ortega, A., “Experimental Validation of the Effectiveness-NTU Approach for Single-Phase Liquid Cold Plates and a Consistent Definition of Thermal Resistance,” International Journal of Heat and Mass Transfer, 247, 1 September 2025, https://doi.org/10.1016/j.ijheatmasstransfer.2025.127128"
+  },
+  {
+    "title": "Transient experiments on an air-to-refrigerant pumped crossflow evaporator under air temperature perturbations for data center applications",
+    "authors": "Caceres, C., Mehrabi, M., Jones, G. F., & Ortega, A",
+    "venue": "International Journal of Heat and Mass Transfer, 255, 127750",
+    "year": 2026,
+    "doi_url": "https://doi.org/10.1016/j.ijheatmasstransfer.2025.127750",
+    "source_citation": "Caceres, C., Mehrabi, M., Jones, G. F., & Ortega, A. (2026). Transient experiments on an air-to-refrigerant pumped crossflow evaporator under air temperature perturbations for data center applications. International Journal of Heat and Mass Transfer, 255, 127750. https://doi.org/10.1016/j.ijheatmasstransfer.2025.127750"
+  },
+  {
+    "title": "Experimental Characterization of Two-Phase Flow and Heat Transfer in 50 x 50 mm Copper Microchannel Cold Plates with R-134a",
+    "authors": "Shah, Y., Ortega, A., Mehrabi, M., Elmi, M., Manaserh, Y., and Heydari, A",
+    "venue": "Forthcoming · International Journal of Heat and Mass Transfer, 267, October 2026",
+    "year": 2026,
+    "doi_url": "https://doi.org/10.1016/j.ijheatmasstransfer.2026.128860",
+    "source_citation": "Shah, Y., Ortega, A., Mehrabi, M., Elmi, M., Manaserh, Y., and Heydari, A., “Experimental Characterization of Two-Phase Flow and Heat Transfer in 50 x 50 mm Copper Microchannel Cold Plates with R-134a,” International Journal of Heat and Mass Transfer, 267, October 2026, https://doi.org/10.1016/j.ijheatmasstransfer.2026.128860"
+  },
+  {
+    "title": "Experimental Investigation of R134A Flow Boiling in Copper Foam Evaporators for High Heat Flux Electronics Cooling",
+    "authors": "Kisitu, D., Caceres, C., Zlatinov, M., Schaffarzick, D. and Ortega, A",
+    "venue": "ASME 2022 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems, Oct. 2022, IPACK2022-97400",
+    "year": 2022,
+    "doi_url": "",
+    "source_citation": "Kisitu, D., Caceres, C., Zlatinov, M., Schaffarzick, D. and Ortega, A., “Experimental Investigation of R134A Flow Boiling in Copper Foam Evaporators for High Heat Flux Electronics Cooling,” ASME 2022 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems, Oct. 2022, IPACK2022-97400"
+  },
+  {
+    "title": "Determination of the Thermal Performance Limits for Single Phase Liquid Cooling Using an Improved Effectiveness-NTU Cold Plate Model",
+    "authors": "Ortega, A., Caceres, C., Uras, U., Kisitu, D., Chowdhury, U., Radmard, Vahideh, and Heydari, A",
+    "venue": "ASME 2022 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems, Oct. 2022, IPACK2022-97421",
+    "year": 2022,
+    "doi_url": "",
+    "source_citation": "Ortega, A., Caceres, C., Uras, U., Kisitu, D., Chowdhury, U., Radmard, Vahideh, and Heydari, A., “Determination of the Thermal Performance Limits for Single Phase Liquid Cooling Using an Improved Effectiveness-NTU Cold Plate Model,” ASME 2022 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems, Oct. 2022, IPACK2022-97421"
+  },
+  {
+    "title": "Direct-to-Chip Two-Phase Cooling for High Heat Flux Processors",
+    "authors": "Heydari, A., Manaserh, Y., Abubaker, A., Caceres, C., Miyamura, H., Ortega, A., Rodriguez, J",
+    "venue": "ASME 2022 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems, Oct. 2022, IPACK2022-97047",
+    "year": 2022,
+    "doi_url": "https://doi.org/10.1115/IPACK2022-97047",
+    "source_citation": "Heydari, A., Manaserh, Y., Abubaker, A., Caceres, C., Miyamura, H., Ortega, A., Rodriguez, J.,  “Direct-to-Chip Two-Phase Cooling for High Heat Flux Processors,” ASME 2022 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems, Oct. 2022, IPACK2022-97047, DOI:10.1115/IPACK2022-97047"
+  },
+  {
+    "title": "Dynamic Modeling of a Refrigerant-Based Crossflow Heat Exchanger for Close-Coupled Hybrid Cooled Data Centers",
+    "authors": "Caceres, C., Ortega, A., Jones, G.F",
+    "venue": "Proceedings of the 22nd Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2023),Orlando, FL, May 30-June 2, 2023",
+    "year": 2023,
+    "doi_url": "",
+    "source_citation": "Caceres, C., Ortega, A., Jones, G.F., “Dynamic Modeling of a Refrigerant-Based Crossflow Heat Exchanger for Close-Coupled Hybrid Cooled Data Centers,” Proceedings of the 22nd Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2023),Orlando, FL, May 30-June 2, 2023"
+  },
+  {
+    "title": "Numerical and Analytical Investigation on the Influence of Geometry on Thermohydraulic Performance of Single-phase Split flow Cold Plates for Data Center Liquid Cooling",
+    "authors": "Kisitu, D., Ortega, A",
+    "venue": "Proceedings of the 23rd Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2023),Orlando, FL, May 30-June 2, 2023",
+    "year": 2023,
+    "doi_url": "",
+    "source_citation": "Kisitu, D., Ortega, A., “Numerical and Analytical Investigation on the Influence of Geometry on Thermohydraulic Performance of Single-phase Split flow Cold Plates for Data Center Liquid Cooling,” Proceedings of the 23rd Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2023),Orlando, FL, May 30-June 2, 2023"
+  },
+  {
+    "title": "Two-phase Flow in Compressed Copper Foam with R134a for High Heat Flux Thermal Management:  Effects of Foam Compression Ratio and Refrigerant Operating Conditions on Thermohydraulic Performance",
+    "authors": "Kisitu, D., Ortega, A., Zlatinov, M., and Schaffarzick, D",
+    "venue": "Proceedings of the 23d Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2023),Orlando, FL, May 30-June 2, 2023",
+    "year": 2023,
+    "doi_url": "",
+    "source_citation": "Kisitu, D., Ortega, A., Zlatinov, M., and Schaffarzick, D., “Two-phase Flow in Compressed Copper Foam with R134a for High Heat Flux Thermal Management:  Effects of Foam Compression Ratio and Refrigerant Operating Conditions on Thermohydraulic Performance,” Proceedings of the 23d Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2023),Orlando, FL, May 30-June 2, 2023"
+  },
+  {
+    "title": "Refrigerant to Air Cooling for High Heat Density Two-Phase Cooled Data Centers",
+    "authors": "Ali Heydari, Yaman Manaserh, Mehdi Mehrabi, Ahmad Abubakar, Bahareh Elsami, Harold Miyamura, Alfonso Ortega, Jeremy Rodriguez",
+    "venue": "Proceedings of the 23nd IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems (ITherm 2023), May 30-June 2, 2023",
+    "year": 2023,
+    "doi_url": "https://doi.org/10.1109/ITherm55368.2023.10177545",
+    "source_citation": "Ali Heydari, Yaman Manaserh, Mehdi Mehrabi, Ahmad Abubakar, Bahareh Elsami, Harold Miyamura, Alfonso Ortega, Jeremy Rodriguez, “Refrigerant to Air Cooling for High Heat Density Two-Phase Cooled Data Centers,” Proceedings of the 23nd IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems (ITherm 2023), May 30-June 2, 2023, DOI: 10.1109/ITherm55368.2023.10177545"
+  },
+  {
+    "title": "Development of Thermal Metrology Standards for Experimental Characterization of Thermal Resistance for Single-Phase Liquid Cold Plates",
+    "authors": "Ortega, A, Martinez, VA, Caceres, C, Heydari, A, & Chowdhury, U",
+    "venue": "Proceedings of the ASME 2023 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems. San Diego, California, USA. October 24–26, 2023. V001T02A019. ASME",
+    "year": 2023,
+    "doi_url": "https://doi.org/10.1115/IPACK2023-113883",
+    "source_citation": "Ortega, A, Martinez, VA, Caceres, C, Heydari, A, & Chowdhury, U. \"Development of Thermal Metrology Standards for Experimental Characterization of Thermal Resistance for Single-Phase Liquid Cold Plates.\" Proceedings of the ASME 2023 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems. San Diego, California, USA. October 24–26, 2023. V001T02A019. ASME. https://doi.org/10.1115/IPACK2023-113883"
+  },
+  {
+    "title": "Experimental Measurements of the Effective Thermal Conductivity and Contact Resistance of Compressed and Uncompressed Metal Foam for Applications to Cold Plates",
+    "authors": "Alade, B., Ortega, A., Zlatinov, M., Schaffarzick, D",
+    "venue": "Proceedings of the 24th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2024), Denver, CO, May 28-31, 2024",
+    "year": 2024,
+    "doi_url": "",
+    "source_citation": "Alade, B., Ortega, A., Zlatinov, M., Schaffarzick, D., “Experimental Measurements of the Effective Thermal Conductivity and Contact Resistance of Compressed and Uncompressed Metal Foam for Applications to Cold Plates,” Proceedings of the 24th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2024), Denver, CO, May 28-31, 2024"
+  },
+  {
+    "title": "Commissioning and Thermohydraulic Characterization of a Single-Phase Liquid-Cooled High-Density Data Center Rack",
+    "authors": "Heydari, A., Kisitu, D., Ortega, A., Eslami, B., Shahi, P., Tradat, M., Costello, J., Margaritondo, B",
+    "venue": "Proceedings of the ASME 2024 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2024 October 8-10, 2024, IPACK2024-140672, San Jose, California",
+    "year": 2024,
+    "doi_url": "",
+    "source_citation": "Heydari, A., Kisitu, D., Ortega, A., Eslami, B., Shahi, P., Tradat, M., Costello, J., Margaritondo, B., “Commissioning and Thermohydraulic Characterization of a Single-Phase Liquid-Cooled High-Density Data Center Rack,” Proceedings of the ASME 2024 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2024 October 8-10, 2024, IPACK2024-140672, San Jose, California"
+  },
+  {
+    "title": "Experimental Investigation of Single-Phase Forced Convection Heat Transfer with Water in Compressed Copper Foam",
+    "authors": "Alade, B, Kisitu, D., Battleson, M., Schaffarzick, D., Ortega, A",
+    "venue": "Proceedings of the ASME 2024 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2024 October 8-10, 2024, IPACK2024-140105, San Jose, California",
+    "year": 2024,
+    "doi_url": "",
+    "source_citation": "Alade, B, Kisitu, D., Battleson, M., Schaffarzick, D., Ortega, A., “Experimental Investigation of Single-Phase Forced Convection Heat Transfer with Water in Compressed Copper Foam,” Proceedings of the ASME 2024 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2024 October 8-10, 2024, IPACK2024-140105, San Jose, California"
+  },
+  {
+    "title": "Effect of Aspect Ratio and Flow Rate on the Flow Regimes and Thermal Performance of Two-Phase Micro-Channel Cold Plates for Direct to Chip Cooling",
+    "authors": "Shah, Y., Ortega, A., Mehrabi, M., Martinez, V., Manaserh, Y., Heydari, A., Rodriguez, J",
+    "venue": "Proceedings of the ASME 2024 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2024 October 8-10, 2024, IPACK2024-140277, San Jose, California",
+    "year": 2024,
+    "doi_url": "https://doi.org/10.1115/IPACK2024-140277",
+    "source_citation": "Shah, Y., Ortega, A., Mehrabi, M., Martinez, V., Manaserh, Y., Heydari, A., Rodriguez, J., “Effect of Aspect Ratio and Flow Rate on the Flow Regimes and Thermal Performance of Two-Phase Micro-Channel Cold Plates for Direct to Chip Cooling,” Proceedings of the ASME 2024 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2024 October 8-10, 2024, IPACK2024-140277, San Jose, California. https://doi.org/10.1115/IPACK2024-140277"
+  },
+  {
+    "title": "Two-Phase Cooling Using Capillary-Driven and Hybrid Pumped Evaporation in Copper Wicks for High Heat Flux Applications",
+    "authors": "Ejaz, A., A. Ortega",
+    "venue": "Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Ejaz, A., A. Ortega, “Two-Phase Cooling Using Capillary-Driven and Hybrid Pumped Evaporation in Copper Wicks for High Heat Flux Applications,” Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026."
+  },
+  {
+    "title": "Experimental and Analytical Investigation of Two-Phase Flow Boiling in Copper Gyroid Structures for Cold Plate Applications",
+    "authors": "Alade, B., A. Ortega, I. Winfield, G. Gupta, J. Madril",
+    "venue": "Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Alade, B., A. Ortega, I. Winfield, G. Gupta, J. Madril, “Experimental and Analytical Investigation of Two-Phase Flow Boiling in Copper Gyroid Structures for Cold Plate Applications”,  Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026."
+  },
+  {
+    "title": "Server Level Flow Distribution in Pumped Two-Phase Cooling Systems",
+    "authors": "Mehrabi, M., A. Heydari, Y. Manaserh, O. Al Zu’bi, A. Ortega",
+    "venue": "Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Mehrabi, M., A. Heydari, Y. Manaserh, O. Al Zu’bi, A. Ortega, “Server Level Flow Distribution in Pumped Two-Phase Cooling Systems”,  Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026."
+  },
+  {
+    "title": "Multi-Level Three-Dimensional CFD Modeling and Experimental Validation of Two-Phase Cold Plates",
+    "authors": "M. Ahmadian-Elmi, A. Ortega, Y. Shah, A. Heydari, Y. Manaserh, S. Viyyuri",
+    "venue": "Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "M. Ahmadian-Elmi, A. Ortega, Y. Shah, A. Heydari, Y. Manaserh, S. Viyyuri, “Multi-Level Three-Dimensional CFD Modeling and Experimental Validation of Two-Phase Cold Plates”,  Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026."
+  },
+  {
+    "title": "Characterization of Low GWP Refrigerants in Direct to Chip Two-Phase Cooling For High Heat Flux Applications",
+    "authors": "Shah, Y.,  A. Ortega, Y. Manaserh, A. Heydari",
+    "venue": "Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Shah, Y.,  A. Ortega, Y. Manaserh, A. Heydari, “Characterization of Low GWP Refrigerants in Direct to Chip Two-Phase Cooling For High Heat Flux Applications”,  Proceedings of the 26th Intersociety Conference on Thermal and Thermomechanical Phenomenon in Electronic Systems (ITHERM 2026), Orlando, FL, May 26-29, 2026."
+  },
+  {
+    "title": "Co-generative exergy-matched waste-heat recovery for on-site powered ai-factories to produce power and cooling",
+    "authors": "A. Nayar and A. Ortega",
+    "venue": "in Proceedings of the ASME 2026 20th International Conference on Energy Sustainability, in ES2026. Bellevue, WA, USA: ASME, 2026",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "A. Nayar and A. Ortega, “Co-generative exergy-matched waste-heat recovery for on-site powered ai-factories to produce power and cooling,” in Proceedings of the ASME 2026 20th International Conference on Energy Sustainability, in ES2026. Bellevue, WA, USA: ASME, 2026."
+  },
+  {
+    "title": "Digital Twin for Two-Phase High-Density Computing Data Center: System-Level Experimental Dataset and Manual Component Characterization for Pumped Two-Phase Rack Cooling",
+    "authors": "Heydari, A., Mehrabi, M., Ortega, A., Manaserh, Y., & Al-Zu’bi, O",
+    "venue": "2026 42nd Semiconductor Thermal Measurement, Modeling & Management Symposium (SEMI-THERM), March 2026, San Jose, CA",
+    "year": 2026,
+    "doi_url": "https://doi.org/10.23919/SEMI-THERM71268.2026.11573092",
+    "source_citation": "Heydari, A., Mehrabi, M., Ortega, A., Manaserh, Y., & Al-Zu’bi, O. (2026, March). Digital Twin for Two-Phase High-Density Computing Data Center: System-Level Experimental Dataset and Manual Component Characterization for Pumped Two-Phase Rack Cooling. 2026 42nd Semiconductor Thermal Measurement, Modeling & Management Symposium (SEMI-THERM), March 2026, San Jose, CA. https://doi.org/10.23919/SEMI-THERM71268.2026.11573092"
+  },
+  {
+    "title": "Development Of a Flow Network Modeling Approach for End-To-End Data Center Direct to Chip Two-Phase Cooling Systems",
+    "authors": "Heydari, A., R. Goharimehr, A. Ortega, M. Mehrabikermani, Y. Manaserh, V. Britz, M. Venter",
+    "venue": "2026 42nd Semiconductor Thermal Measurement, Modeling & Management Symposium (SEMI-THERM), March 2026, San Jose, CA",
+    "year": 2026,
+    "doi_url": "https://doi.org/10.23919/SEMI-THERM71268.2026.11573110",
+    "source_citation": "Heydari, A., R. Goharimehr, A. Ortega, M. Mehrabikermani, Y. Manaserh, V. Britz, M. Venter. “Development Of a Flow Network Modeling Approach for End-To-End Data Center Direct to Chip Two-Phase Cooling Systems”, 2026 42nd Semiconductor Thermal Measurement, Modeling & Management Symposium (SEMI-THERM), March 2026, San Jose, CA; https://doi.org/10.23919/SEMI-THERM71268.2026.11573110"
+  },
+  {
+    "title": "Experimental and Computational Investigation of the Effective Thermal Conductivity of TPMS Gyroidal Structures as Extended Surfaces for High Performance Cold Plates",
+    "authors": "Shankar, S.R., A. Ortega, J. Madril, I. Winfield",
+    "venue": "Forthcoming · Proceedings of the ASME 2026 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2026 October 26-29, 2026, IPACK 2026-194709, San Diego, CA",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Shankar, S.R., A. Ortega, J. Madril, I. Winfield, \"Experimental and Computational Investigation of the Effective Thermal Conductivity of TPMS Gyroidal Structures as Extended Surfaces for High Performance Cold Plates,” Proceedings of the ASME 2026 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2026 October 26-29, 2026, IPACK 2026-194709, San Diego, CA."
+  },
+  {
+    "title": "Numerical Optimization and Performance Analysis of Spatially Graded Gyroid TPMS Single Phase Liquid Cold Plates",
+    "authors": "Mohsenian, S., A. Ortega",
+    "venue": "Forthcoming · Proceedings of the ASME 2026 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2026 October 26-29, 2026, IPACK2026-194873 , San Diego, CA",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Mohsenian, S., A. Ortega, “Numerical Optimization and Performance Analysis of Spatially Graded Gyroid TPMS Single Phase Liquid Cold Plates,” Proceedings of the ASME 2026 International Technical Conference and Exhibition on Packaging and Integration of Electronic and Photonic Microsystems InterPACK2026 October 26-29, 2026, IPACK2026-194873 , San Diego, CA."
+  },
+  {
+    "title": "Experimental Investigation of Heat Transfer in Skived Fin Cold Plates with Split-Flow Jet Impingement Two-Phase Refrigerant Boiling",
+    "authors": "Richards, C., Alade, B., Shah, Y., Ortega, A",
+    "venue": "Presentation only · Proceedings of the SEMI-THERM 2026, IEEE Semiconductor Thermal Measurement, Modeling and Management Symposium, March 2026, San Jose, California",
+    "year": 2026,
+    "doi_url": "",
+    "source_citation": "Richards, C., Alade, B., Shah, Y., Ortega, A., “Experimental Investigation of Heat Transfer in Skived Fin Cold Plates with Split-Flow Jet Impingement Two-Phase Refrigerant Boiling,” Proceedings of the SEMI-THERM 2026, IEEE Semiconductor Thermal Measurement, Modeling and Management Symposium, March 2026, San Jose, California."
+  },
+  {
+    "title": "Experimental Characterization and Data-Driven Compact Modeling of Two-Phase Cold Plates",
+    "authors": "Ahmadian-Elmi, M., A. Baloochiyan, and A. Ortega",
+    "venue": "Presentation only · Presentation at InterPACK 2025, Anaheim, California, August 2025",
+    "year": 2025,
+    "doi_url": "",
+    "source_citation": "Ahmadian-Elmi, M., A. Baloochiyan, and A. Ortega. “Experimental Characterization and Data-Driven Compact Modeling of Two-Phase Cold Plates.” Presentation at InterPACK 2025, Anaheim, California, August 2025."
+  }
+]

@@ -12,6 +12,8 @@ export const RES = {
   rDroplet: './assets/research-droplet.png',
   rMini: './assets/research-minichannel.png',
   rGeo: './assets/research-geothermal.png',
+  spDelphi: './assets/sponsors/delphi.svg',
+  spCisco: './assets/sponsors/cisco.svg',
   spIntel: './assets/sponsors/intel.svg',
   spAmd: './assets/sponsors/amd.svg',
   spHoneywell: './assets/sponsors/honeywell.svg',

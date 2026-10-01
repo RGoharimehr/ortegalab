@@ -182,6 +182,35 @@ function migrateData(db) {
     });
     repairSeedImages();
   });
+  applyOnce(db, 'publications-from-user-july-2026-v1', () => {
+    const publications = require('./content/publications-july-2026.json');
+    const normalize = (value) =>
+      String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+    const existing = db.prepare('SELECT title, doi_url FROM publications').all();
+    const titles = new Set(existing.map((row) => normalize(row.title)));
+    const dois = new Set(existing.map((row) => normalize(row.doi_url)).filter(Boolean));
+    const insert = db.prepare(
+      'INSERT INTO publications (title, authors, venue, year, doi_url) VALUES (?, ?, ?, ?, ?)',
+    );
+    for (const publication of publications) {
+      if (
+        titles.has(normalize(publication.title)) ||
+        (publication.doi_url && dois.has(normalize(publication.doi_url)))
+      )
+        continue;
+      insert.run(
+        publication.title,
+        publication.authors,
+        publication.venue,
+        publication.year,
+        publication.doi_url,
+      );
+      titles.add(normalize(publication.title));
+      if (publication.doi_url) dois.add(normalize(publication.doi_url));
+    }
+  });
 }
 
 module.exports = { migrateColumns, migrateData, applyOnce };

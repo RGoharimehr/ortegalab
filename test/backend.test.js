@@ -190,3 +190,30 @@ test('legacy user tables gain new columns without changing stored credentials', 
   application.runtime.close();
   assert.equal(db.open, true, 'The factory must not close a caller-owned connection');
 });
+
+test('curated publication import avoids duplicates and preserves subsequent edits and deletions', (t) => {
+  const application = fixture(t);
+  const { db } = application.runtime;
+  const imported = require('../src/server/db/content/publications-july-2026.json');
+  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM publications').get().count, 33);
+  const first = db.prepare('SELECT * FROM publications ORDER BY id LIMIT 1').get();
+  db.prepare('UPDATE publications SET venue=? WHERE id=?').run('Editor corrected venue', first.id);
+  db.prepare(
+    "DELETE FROM schema_migrations WHERE name='publications-from-user-july-2026-v1'",
+  ).run();
+  application.restart();
+  assert.equal(
+    application.runtime.db.prepare('SELECT COUNT(*) AS count FROM publications').get().count,
+    imported.length,
+  );
+  assert.equal(
+    application.runtime.db.prepare('SELECT venue FROM publications WHERE id=?').get(first.id).venue,
+    'Editor corrected venue',
+  );
+  application.runtime.db.prepare('DELETE FROM publications WHERE id=?').run(first.id);
+  application.restart();
+  assert.equal(
+    application.runtime.db.prepare('SELECT COUNT(*) AS count FROM publications').get().count,
+    imported.length - 1,
+  );
+});

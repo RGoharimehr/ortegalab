@@ -234,13 +234,6 @@ export function renderPublicationTable(pubs) {
       h(
         'div',
         { class: 'w-pub-list w-publication-index' },
-        h(
-          'div',
-          { class: 'w-pub-row2 w-pub-head', 'aria-hidden': 'true' },
-          h('div', { class: 'w-pub-colhead' }, 'Year'),
-          h('div', { class: 'w-pub-colhead' }, 'Title'),
-          h('div', { class: 'w-pub-colhead w-pub-colhead-actions' }, 'Links'),
-        ),
         ...ordered.map((p) =>
           h(
             'article',

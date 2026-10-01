@@ -9,3 +9,9 @@ NSF logo: unmodified transparent PNG served by the U.S. National Science Foundat
 Source page: https://www.nsf.gov/policies/brand
 Image: https://www.nsf.gov/themes/custom/nsf_theme/components/molecules/logo/logo-desktop.png
 Retrieved September 30, 2026. This 320 × 320 RGBA image replaces the white-backed variant in the homepage collaborator section. Transparency verified: all four corners have alpha 0; 43,968 pixels are fully transparent.
+
+Cisco: official SVG from https://brand-assets.security.cisco.com/cisco-dark.svg (retrieved September 30, 2026).
+
+Delphi Technologies: historical company logo, unmodified SVG from https://upload.wikimedia.org/wikipedia/en/1/17/Logo_of_company_Delphi_Technologies%2C_LLC_as_of_Nov_2018.svg (retrieved September 30, 2026).
+
+LATFS artwork remains unchanged. `remove-black.svg` provides a display-time SVG alpha filter so its black canvas is transparent against every page background.

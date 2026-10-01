@@ -13,11 +13,12 @@ let renderPage = () => {};
 
 export function normalizeRoute(hash) {
   const route = String(hash || '').replace(/^#/, '') || 'home';
-  if (routes.has(route) || /^(person|facility|news)\/[^/]+$/.test(route)) return route;
+  if (routes.has(route) || /^(person|facility|news|research)\/[^/]+$/.test(route)) return route;
   return 'not-found';
 }
 
 export function activeSection(route) {
+  if (route.startsWith('research/')) return 'research';
   if (route.startsWith('person/')) return 'people';
   if (route.startsWith('facility/')) return 'facilities';
   if (route.startsWith('news/')) return 'news';

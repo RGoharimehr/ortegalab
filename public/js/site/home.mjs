@@ -1,7 +1,7 @@
 import { h } from './dom.mjs';
 import { galleryEntries } from './collections.mjs';
 import { RES } from './config.mjs';
-import { HERO_PHOTOS, RESEARCH_PHOTOS, PARTNER_PHOTO } from './photography.mjs';
+import { HERO_PHOTOS, RESEARCH_PHOTOS, PARTNER_PHOTO, researchPhoto } from './photography.mjs';
 import { DATA, siteStats, heroMetricLabel } from './data.mjs';
 import { SectionHeader } from './layout.mjs';
 import { state } from './router.mjs';
@@ -36,12 +36,7 @@ export function Hero(slides) {
         h(
           'div',
           { class: 'w-hero-heading' },
-          h(
-            'h1',
-            { class: 'w-hero-title' },
-            h('span', { class: 'w-hero-prefix' }, 'Laboratory for Advanced'),
-            h('span', { class: 'w-hero-subject' }, 'Thermal and', h('br'), 'Fluid Systems'),
-          ),
+          h('h1', { class: 'w-hero-title' }, 'Laboratory for Advanced Thermal and Fluid Systems'),
         ),
         h(
           'div',
@@ -185,16 +180,9 @@ export function ResearchFeature(rows) {
       return;
     }
     const title = topic.title || topic.name || 'Research at LATFS';
-    const customPhoto =
-      topic.image_url &&
-      !/(?:^|\/)assets\/(?:research-(?:droplet|minichannel|geothermal)|hero-\d+|facility-\d+)\.png$/.test(
-        topic.image_url,
-      );
-    image.src = customPhoto
-      ? topic.image_url
-      : RESEARCH_PHOTOS[index % RESEARCH_PHOTOS.length].image_url;
+    image.src = researchPhoto(topic, index);
     story.replaceChildren(
-      h('h2', null, title),
+      h('h2', { class: 'w-section-title' }, title),
       h(
         'p',
         null,
@@ -205,7 +193,11 @@ export function ResearchFeature(rows) {
       ),
       h(
         'a',
-        { class: 'w-feature-link', href: '#research', 'aria-label': `Read more about ${title}` },
+        {
+          class: 'w-feature-link',
+          href: '#research/' + topic.id,
+          'aria-label': `Read more about ${title}`,
+        },
         'Explore this research ↗',
       ),
     );
@@ -264,7 +256,7 @@ export function NewsList(news) {
   return h(
     'div',
     { class: 'w-home-news' },
-    SectionHeader('From the lab'),
+    SectionHeader('From the lab', null, 'NEWS'),
     news?.length
       ? h(
           'div',
@@ -299,7 +291,7 @@ export function FeaturedPub(pubs) {
   return h(
     'div',
     { class: 'w-home-publication' },
-    SectionHeader('Latest publication'),
+    SectionHeader('Latest publication', null, 'PUBLICATIONS'),
     top
       ? h(
           'article',
@@ -411,7 +403,7 @@ export function SponsorMarquee(sponsors) {
       src: sponsorLogoSrc(s.logo_url || s.image_url, s.name),
       name: s.name || 'Research collaborator',
     }))
-    .filter((s) => s.src);
+    .filter((s) => s.name);
   if (!logos.length)
     logos.push(
       { src: RES.spNsf, name: 'National Science Foundation' },
@@ -419,6 +411,8 @@ export function SponsorMarquee(sponsors) {
       { src: RES.spEs2, name: 'Center for Energy-Smart Electronic Systems' },
       { src: RES.spIntel, name: 'Intel' },
       { src: RES.spAmd, name: 'AMD' },
+      { src: RES.spCisco, name: 'Cisco Systems' },
+      { src: RES.spDelphi, name: 'Delphi Technologies' },
       { src: RES.spHoneywell, name: 'Honeywell' },
       { src: RES.spRtx, name: 'Raytheon' },
       { src: RES.spTi, name: 'Texas Instruments' },
@@ -436,23 +430,25 @@ export function SponsorMarquee(sponsors) {
     h(
       'div',
       { class: 'max-w' },
-      h('span', { class: 'eyebrow' }, 'RESEARCH COLLABORATORS'),
+      SectionHeader('Research collaborators', null, 'OUR COMMUNITY'),
       h(
         'div',
         { class: 'w-sponsor-grid' },
         ...logos.map((logo) =>
-          h('img', {
-            src: logo.src,
-            alt: logo.name,
-            class:
-              'w-sponsor-logo' +
-              (logo.src === RES.spEs2
-                ? ' w-sponsor-logo-paper'
-                : logo.src.endsWith('.svg')
-                  ? ' w-sponsor-logo-mono'
-                  : ''),
-            loading: 'lazy',
-          }),
+          logo.src
+            ? h('img', {
+                src: logo.src,
+                alt: logo.name,
+                class:
+                  'w-sponsor-logo' +
+                  (logo.src === RES.spEs2
+                    ? ' w-sponsor-logo-paper'
+                    : logo.src.endsWith('.svg')
+                      ? ' w-sponsor-logo-mono'
+                      : ''),
+                loading: 'lazy',
+              })
+            : h('span', { class: 'w-sponsor-name' }, logo.name),
         ),
       ),
     ),
@@ -473,7 +469,7 @@ function JoinBanner() {
           'div',
           null,
           h('span', { class: 'eyebrow' }, 'LET’S EXPLORE WHAT’S NEXT'),
-          h('h2', null, 'Good questions bring us together.'),
+          h('h2', { class: 'w-section-title' }, 'Good questions bring us together.'),
           h(
             'p',
             null,
@@ -501,6 +497,12 @@ export function Home() {
     h(
       'section',
       { class: 'w-section w-updates' },
+      h('img', {
+        class: 'w-updates-backdrop',
+        src: '/assets/lab/two-phase-benches.png',
+        alt: '',
+        loading: 'lazy',
+      }),
       h('div', { class: 'max-w w-two' }, FeaturedPub(DATA.pubs), NewsList(DATA.news)),
     ),
     HomeGalleryCarousel(DATA.gallery),
@@ -516,6 +518,8 @@ export function sponsorLogoSrc(src, name = '') {
     [/es2|e3s|energy smart/, RES.spEs2],
     [/villanova/, RES.spVillanova],
     [/intel/, RES.spIntel],
+    [/cisco/, RES.spCisco],
+    [/delphi/, RES.spDelphi],
     [/amd/, RES.spAmd],
     [/honeywell/, RES.spHoneywell],
     [/rtx|raytheon/, RES.spRtx],
