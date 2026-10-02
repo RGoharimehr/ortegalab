@@ -23,3 +23,9 @@ For recovery, stop the app, preserve the current database/config/uploads separat
 ## Logs and monitoring
 
 PM2 log rotation uses a 10 MB threshold, seven retained compressed logs, and daily rotation. Check with `pm2 conf pm2-logrotate`. HTTPS health is `/healthz`; a healthy response is HTTP 200 with `{"ok":true}`. The maintenance task alerts on failures/recovery or stale backups and stays quiet otherwise. Server backup failures are recorded in `/home/reza/latfs-backups/backup.log` (latest run).
+
+## Search indexing
+
+Public pages now have path URLs (for example `/research` and `/research/1`), server-rendered readable content, metadata, and organization structured data. Old fragment links redirect in the browser to the corresponding path. `/sitemap.xml` includes public research, active people, facilities and news details. Admin, platform and password-reset responses carry `X-Robots-Tag: noindex, nofollow`.
+
+Canonical URLs, social preview URLs, robots.txt and the sitemap use the private server `BASE_URL` setting. It currently points to the working DuckDNS hostname. When the final domain is ready, configure DNS/TLS, update `BASE_URL`, restart PM2, redirect the old hostname to matching paths, then verify the final domain in Google Search Console and submit `/sitemap.xml`. Never set a canonical hostname that is not serving the website.

@@ -620,3 +620,49 @@ test('CMS palettes, categorized gallery and authoritative people survive restart
     ),
   );
 });
+
+test('SEO pages expose public content, canonical URLs and safe sitemap without JavaScript', async (t) => {
+  const app = await fixture(t);
+  const id = Number(
+    app.db
+      .prepare('INSERT INTO research (title,description,content) VALUES (?,?,?)')
+      .run('Cooling & heat', 'Study of boiling', '<script>alert(1)</script>').lastInsertRowid,
+  );
+  app.db
+    .prepare('INSERT INTO people (name,role,category,active) VALUES (?,?,?,0)')
+    .run('Hidden Person', 'Researcher', 'phd');
+  for (const route of [
+    '/',
+    '/research',
+    '/people',
+    '/publications',
+    '/facilities',
+    '/news',
+    '/gallery',
+    '/apps',
+    '/downloads',
+    '/join',
+    '/contact',
+  ]) {
+    const page = await app.request(route);
+    assert.equal(page.status, 200, route);
+    assert.match(page.text, /<main/);
+    assert.match(page.text, /<base href="\/">/);
+    assert.doesNotMatch(page.text, /latfs\.villanova\.edu|Hidden Person/);
+  }
+  const detail = await app.request('/research/' + id);
+  assert.match(detail.text, /Cooling &amp; heat/);
+  assert.match(detail.text, new RegExp('https://lab.example.org/research/' + id));
+  assert.doesNotMatch(detail.text, /<script>alert/);
+  const sitemap = await app.request('/sitemap.xml');
+  assert.match(sitemap.text, new RegExp('/research/' + id));
+  assert.doesNotMatch(sitemap.text, /#|\/admin|\/platform/);
+  const robots = await app.request('/robots.txt');
+  assert.match(robots.text, /https:\/\/lab.example.org\/sitemap.xml/);
+  for (const route of ['/admin', '/admin.html', '/platform', '/platform.html', '/reset-password']) {
+    assert.match((await app.request(route)).headers.get('x-robots-tag'), /noindex/);
+  }
+  const missing = await app.request('/research/999999');
+  assert.equal(missing.status, 404);
+  assert.equal(missing.headers.get('x-robots-tag'), 'noindex');
+});

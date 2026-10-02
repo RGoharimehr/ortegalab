@@ -39,7 +39,9 @@ export function startRouter(render) {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
   state.route = normalizeRoute(
-    window.location.hash === '#main-content' ? '' : window.location.hash,
+    window.location.hash && window.location.hash !== '#main-content'
+      ? window.location.hash
+      : window.location.pathname.replace(/^\/|\/$/g, ''),
   );
   window.addEventListener('hashchange', onHashChange);
   return () => window.removeEventListener('hashchange', onHashChange);

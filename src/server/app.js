@@ -41,7 +41,13 @@ function createApp(options = {}) {
       },
     }),
   );
-  app.use(express.static(config.publicPath, { dotfiles: 'deny' }));
+  app.use((req, res, next) => {
+    if (/^\/(?:admin|platform|reset-password)(?:\.html)?(?:\/|$)/.test(req.path))
+      res.set('X-Robots-Tag', 'noindex, nofollow');
+    next();
+  });
+  app.use(require('./routes/seo').createSeoRouter({ db, config }));
+  app.use(express.static(config.publicPath, { dotfiles: 'deny', index: false }));
   const dependencies = {
     db,
     config,

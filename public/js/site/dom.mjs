@@ -2,7 +2,14 @@
 export function h(tag, attrs, ...kids) {
   const element = document.createElement(tag);
   for (const [key, rawValue] of Object.entries(attrs || {})) {
-    const value = key === 'href' ? safeHref(rawValue) : rawValue;
+    let value = key === 'href' ? safeHref(rawValue) : rawValue;
+    if (
+      key === 'href' &&
+      /^#(?:home|research|people|person|publications|facilities|facility|news|gallery|apps|downloads|join|contact)(?:\/[^/]+)?$/.test(
+        value || '',
+      )
+    )
+      value = value === '#home' ? '/' : '/' + value.slice(1);
     if (key === 'class') element.className = value;
     else if (key === 'style' && typeof value === 'object') Object.assign(element.style, value);
     else if (key === 'html') element.innerHTML = value;
