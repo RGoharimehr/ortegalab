@@ -23,7 +23,7 @@ export function Nav() {
       'summary',
       { class: 'w-nav-link' + (resourceIds.has(activeSection(state.route)) ? ' active' : '') },
       'Resources',
-      h('span', { 'aria-hidden': 'true' }, '⌄'),
+      h('span', { class: 'w-resource-toggle', 'aria-hidden': 'true' }),
     ),
     h(
       'div',
@@ -195,7 +195,6 @@ export function PublicFooter() {
         ['#join', 'Join the lab'],
         ['#contact', 'Contact'],
         ['mailto:aortega@villanova.edu', 'aortega@villanova.edu'],
-        ['tel:+16105194996', '+1 (610) 519-4996'],
       ]),
     ),
     h(
