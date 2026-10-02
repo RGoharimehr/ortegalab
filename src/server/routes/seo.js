@@ -150,7 +150,11 @@ function createSeoRouter({ db, config }) {
         )
         .replace(
           '</head>',
-          head + '<script type="application/ld+json">' + structured + '</script></head>',
+          head +
+            '<style>html.site-booting #app{visibility:hidden}</style><script>document.documentElement.classList.add("site-booting");setTimeout(function(){document.documentElement.classList.remove("site-booting")},3000)</script>' +
+            '<script type="application/ld+json">' +
+            structured +
+            '</script></head>',
         );
       const nav = Object.entries(titles)
         .map(([k, v]) => link(routePath(k), v))
