@@ -63,11 +63,6 @@ export function PageResearch() {
                 h(
                   'div',
                   { class: 'w-research-cover-copy' },
-                  h(
-                    'span',
-                    { class: 'eyebrow' },
-                    'RESEARCH / ' + String(index + 1).padStart(2, '0'),
-                  ),
                   h('h2', null, topic.title),
                   h('p', null, topic.description || ''),
                   h('span', { class: 'w-feature-link' }, 'Explore research ↗'),
@@ -934,14 +929,6 @@ export function PageJoin() {
               h('span', { class: 'w-icon-card-icon', 'aria-hidden': 'true' }, c.icon),
               h('h2', null, c.title),
               h('p', null, c.body),
-              h(
-                'a',
-                {
-                  class: 'w-link-gold',
-                  href: 'mailto:aortega@villanova.edu?subject=' + encodeURIComponent(c.title),
-                },
-                'Contact the lab →',
-              ),
             ),
           ),
         ),

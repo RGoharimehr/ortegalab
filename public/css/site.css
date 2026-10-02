@@ -359,6 +359,32 @@ summary {
 .w-nav-resources summary::-webkit-details-marker {
   display: none;
 }
+.w-resource-toggle {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+.w-resource-toggle::before,
+.w-resource-toggle::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+}
+.w-resource-toggle::before {
+  width: 10px;
+  height: 1px;
+  left: 0;
+  top: 4.5px;
+}
+.w-resource-toggle::after {
+  width: 1px;
+  height: 10px;
+  left: 4.5px;
+  top: 0;
+}
+.w-nav-resources[open] .w-resource-toggle::after {
+  display: none;
+}
 .w-resource-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -476,7 +502,7 @@ summary {
   inset: auto var(--hero-gutter) 145px;
   z-index: 2;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 16px;
 }

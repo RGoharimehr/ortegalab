@@ -73,12 +73,6 @@ export function Hero(slides) {
             'div',
             { class: 'w-hero-media-bar' },
             h(
-              'span',
-              { class: 'w-media-label' },
-              h('span', { 'aria-hidden': 'true' }, '↗'),
-              'Inside LATFS',
-            ),
-            h(
               'div',
               { class: 'w-hero-dots' },
               ...usable.map((_, i) =>
