@@ -205,7 +205,7 @@ test('entrypoint loads real modules, handles populated routes and exposes retry 
   state.route = 'person/1';
   render();
   assert.equal(document.querySelector('h1').textContent, 'Actual Member');
-  assert.equal(document.title, 'Actual Member · LATFS');
+  assert.equal(document.title, 'Actual Member · LATFS · Villanova University');
   assert.equal(root.classList.contains('w-home-immersive'), false);
   assert.equal(document.querySelector('[aria-current="page"]').getAttribute('href'), '/people');
 });
