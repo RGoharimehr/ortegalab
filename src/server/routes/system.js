@@ -45,21 +45,6 @@ function createSystemRouter({ db, config, sendInternalError, requireRole, adminO
     }
   });
 
-  // ── Sitemap.xml — dynamic, generated from DB content ────────────────────────
-  router.get('/sitemap.xml', (req, res) => {
-    const host = config.baseUrl.replace(/\/$/, '');
-    const staticUrls = ['/', '/#publications', '/#research', '/#people', '/#facilities', '/#news'];
-    const lines = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-      ...staticUrls.map(
-        (u) => `  <url><loc>${host}${u}</loc><changefreq>weekly</changefreq></url>`,
-      ),
-      '</urlset>',
-    ];
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.send(lines.join('\n'));
-  });
   return router;
 }
 

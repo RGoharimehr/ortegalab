@@ -118,7 +118,7 @@ test('a small real roster renders only its real members and supports unknown cat
   const page = pages.PagePeople();
   const profiles = page.querySelectorAll('.w-person-v2');
   assert.equal(profiles.length, 1);
-  assert.equal(profiles[0].getAttribute('href'), '#person/47');
+  assert.equal(profiles[0].getAttribute('href'), '/person/47');
   assert.match(profiles[0].textContent, /Actual Member/);
   assert.doesNotMatch(page.textContent, /Maya|Alejandro|Inactive Member/);
   assert.match(pages.PagePersonDetail(47).textContent, /Actual Member/);
@@ -133,7 +133,10 @@ test('native navigation preserves Back and Forward history and marks detail sect
   stopRouter = startRouter(() => visited.push(state.route));
   document.getElementById('app').appendChild(Nav());
   const initialHistoryLength = window.history.length;
-  await move(() => document.querySelector('a[href="#people"]').click());
+  assert.ok(document.querySelector('a[href="/people"]'));
+  await move(() => {
+    window.location.hash = '#people';
+  });
   assert.equal(state.route, 'people');
   await move(() => {
     window.location.hash = '#publications';
@@ -204,7 +207,7 @@ test('entrypoint loads real modules, handles populated routes and exposes retry 
   assert.equal(document.querySelector('h1').textContent, 'Actual Member');
   assert.equal(document.title, 'Actual Member · LATFS');
   assert.equal(root.classList.contains('w-home-immersive'), false);
-  assert.equal(document.querySelector('[aria-current="page"]').getAttribute('href'), '#people');
+  assert.equal(document.querySelector('[aria-current="page"]').getAttribute('href'), '/people');
 });
 
 test('published collections render their details and filter publications and downloads', () => {
@@ -282,7 +285,7 @@ test('research feature changes topic, description and photograph without losing 
   assert.equal(feature.querySelector('h2').textContent, 'Fluid research');
   assert.match(feature.textContent, /Measured fluid behavior/);
   assert.equal(feature.querySelector('img').getAttribute('src'), '/uploads/fluids.jpg');
-  assert.equal(feature.querySelector('a').getAttribute('href'), '#research/2');
+  assert.equal(feature.querySelector('a').getAttribute('href'), '/research/2');
   feature.querySelector('[aria-label="Next research topic"]').click();
   assert.equal(feature.querySelector('h2').textContent, 'Cooling research');
   feature.querySelector('[aria-label="Previous research topic"]').click();
@@ -331,7 +334,7 @@ test('research covers lead to dedicated pages with safe links and a useful missi
     },
   ];
   const index = pages.PageResearch();
-  assert.equal(index.querySelector('.w-research-cover').getAttribute('href'), '#research/42');
+  assert.equal(index.querySelector('.w-research-cover').getAttribute('href'), '/research/42');
   const detail = pages.PageResearchDetail('42');
   assert.equal(detail.querySelector('h1').textContent, 'Two-phase cooling');
   assert.equal(detail.querySelector('img').getAttribute('src'), '/uploads/research.jpg');
@@ -369,7 +372,7 @@ test('saved palettes, inner-page Home links and named gallery sections are avail
   assert.equal(document.body.dataset.theme, 'graphite');
   assert.equal(document.documentElement.dataset.theme, 'graphite');
   state.route = 'people';
-  assert.equal(Nav().querySelector('.w-nav-link[href="#home"]').textContent, 'Home');
+  assert.equal(Nav().querySelector('.w-nav-link[href="/"]').textContent, 'Home');
   DATA.gallery = [{ id: 2, image_url: '/visit.jpg', category: 'Visits', caption: 'Visit photo' }];
   const gallery = pages.PageGallery();
   const sections = [...gallery.querySelectorAll('.w-gallery-section')];

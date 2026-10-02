@@ -63,8 +63,8 @@ function updateMetadata(main) {
     main.querySelector('h1')?.textContent || 'Laboratory for Advanced Thermal & Fluid Systems';
   document.title =
     state.route === 'home'
-      ? 'Laboratory for Advanced Thermal and Fluid Systems'
-      : `${heading} · LATFS`;
+      ? 'Laboratory for Advanced Thermal and Fluid Systems · Villanova University'
+      : `${heading} · LATFS · Villanova University`;
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', document.title);
 }
@@ -144,5 +144,16 @@ async function reloadContent() {
   render();
 }
 
-startRouter(render);
+// Resolve old shared fragment URLs through their crawlable server route.
+const legacyRoute = window.location.hash.slice(1);
+if (
+  /^(home|research|people|person|publications|facilities|facility|news|gallery|apps|downloads|join|contact)(\/[^/]+)?$/.test(
+    legacyRoute,
+  ) &&
+  document.querySelector('base')
+) {
+  window.location.replace(legacyRoute === 'home' ? '/' : '/' + legacyRoute);
+} else {
+  startRouter(render);
+}
 await reloadContent();
