@@ -403,3 +403,21 @@ test('section backgrounds respect custom photos, no-photo choice, and repeat wit
   applySiteTheme('graphite-green');
   assert.equal(document.documentElement.dataset.theme, 'graphite-green');
 });
+
+test('clean public links navigate in place and Back restores the previous page', async () => {
+  window.history.replaceState(null, '', '/research');
+  const visited = [];
+  stopRouter = startRouter(() => visited.push(state.route));
+  document.getElementById('app').appendChild(Nav());
+  document.querySelector('a[href="/people"]').click();
+  assert.equal(window.location.pathname, '/people');
+  assert.equal(state.route, 'people');
+  assert.deepEqual(visited, ['people']);
+  const back = new Promise((resolve) =>
+    window.addEventListener('popstate', resolve, { once: true }),
+  );
+  window.history.back();
+  await back;
+  assert.equal(window.location.pathname, '/research');
+  assert.equal(state.route, 'research');
+});

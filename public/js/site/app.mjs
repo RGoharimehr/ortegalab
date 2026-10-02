@@ -59,12 +59,28 @@ function pageForRoute(route) {
 }
 
 function updateMetadata(main) {
+  if (contentStatus.loading) return;
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) {
+    const path = state.route === 'home' ? '/' : '/' + state.route;
+    canonical.href = new URL(path, canonical.href).href;
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonical.href);
+  }
   const heading =
     main.querySelector('h1')?.textContent || 'Laboratory for Advanced Thermal & Fluid Systems';
   document.title =
     state.route === 'home'
       ? 'Laboratory for Advanced Thermal and Fluid Systems · Villanova University'
       : `${heading} · LATFS · Villanova University`;
+  const description =
+    main.querySelector('.w-page-banner p, .w-detail-copy, p')?.textContent?.trim().slice(0, 170) ||
+    heading;
+  for (const selector of [
+    'meta[name="description"]',
+    'meta[property="og:description"]',
+    'meta[name="twitter:description"]',
+  ])
+    document.querySelector(selector)?.setAttribute('content', description);
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', document.title);
 }
@@ -129,6 +145,7 @@ export function render({ focus = false } = {}) {
   observeSections(root);
   root.setAttribute('aria-busy', String(contentStatus.loading));
   updateMetadata(main);
+  if (!contentStatus.loading) document.documentElement.classList.remove('site-booting');
   if (state.route === 'home' && !contentStatus.loading) restartHeroTimer();
   else {
     clearInterval(state.heroTimer);
