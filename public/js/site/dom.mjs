@@ -5,7 +5,7 @@ export function h(tag, attrs, ...kids) {
     let value = key === 'href' ? safeHref(rawValue) : rawValue;
     if (
       key === 'href' &&
-      /^#(?:home|research|people|person|publications|facilities|facility|news|gallery|apps|downloads|join|contact)(?:\/[^/]+)?$/.test(
+      /^#(?:home|research|people|person|white-papers|publications|facilities|facility|news|gallery|apps|downloads|join|contact)(?:\/[^/]+)?$/.test(
         value || '',
       )
     )

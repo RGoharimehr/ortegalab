@@ -117,6 +117,7 @@ function createSettingsRouter({
           'research',
           'people',
           'publications',
+          'white-papers',
           'facilities',
           'gallery',
           'apps',

@@ -276,6 +276,7 @@ test('all administrator content tabs render after extraction', async (t) => {
     'people',
     'news',
     'publications',
+    'white-papers',
     'research',
     'facilities',
     'hero',

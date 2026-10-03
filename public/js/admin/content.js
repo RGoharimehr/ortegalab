@@ -6,6 +6,10 @@
    ─────────────────────────────────────────────────────────── */
 let _adminTab = 'people';
 const ADMIN_TAB_META = {
+  'white-papers': {
+    title: 'White Papers',
+    copy: 'Create technical reports with authors, abstracts, topic filters and PDF downloads.',
+  },
   people: {
     title: 'People and profiles',
     copy: 'Keep bios, roles, contact links, and photos aligned with the current lab roster.',
@@ -108,6 +112,8 @@ async function renderAdmin(root) {
     if (_adminTab === 'news') renderNewsTab(body, await apiGet('/api/news'));
     else if (_adminTab === 'publications' && isLabStaffRole(SESSION_USER.role))
       renderPubsTab(body, await apiGet('/api/publications'));
+    else if (_adminTab === 'white-papers' && isLabStaffRole(SESSION_USER.role))
+      await renderWhitePapersTab(body);
     else if (_adminTab === 'research' && isLabStaffRole(SESSION_USER.role))
       await renderResearchTab(body);
     else if (_adminTab === 'people' && isLabStaffRole(SESSION_USER.role))

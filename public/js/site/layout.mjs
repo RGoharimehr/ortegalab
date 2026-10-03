@@ -38,6 +38,7 @@ export function Nav() {
     navLink('research', 'Research'),
     navLink('people', 'People'),
     navLink('publications', 'Publications'),
+    navLink('white-papers', 'White Papers'),
     resources,
     navLink('join', 'Join the lab'),
     h(
@@ -182,6 +183,7 @@ export function PublicFooter() {
         ['#research', 'Research'],
         ['#people', 'People'],
         ['#publications', 'Publications'],
+        ['#white-papers', 'White Papers'],
         ['#facilities', 'Facilities'],
       ]),
       footerColumn('Resources', [

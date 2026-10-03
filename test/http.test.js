@@ -666,3 +666,65 @@ test('SEO pages expose public content, canonical URLs and safe sitemap without J
   assert.equal(missing.status, 404);
   assert.equal(missing.headers.get('x-robots-tag'), 'noindex');
 });
+
+test('white paper drafts, PDF visibility and staff publishing stay synchronized', async (t) => {
+  const app = await fixture(t);
+  const auth = await login(app);
+  writeFileSync(path.join(app.config.uploadsPath, 'report.pdf'), '%PDF-1.4\nTest report');
+  const body = {
+    title: 'Cooling report',
+    authors: 'Test Author',
+    abstract: 'Experimental results',
+    year: 2026,
+    category: 'Two-Phase Flow',
+    file_url: '/uploads/report.pdf',
+    published: 0,
+  };
+  assert.equal((await app.request('/api/white-papers/all')).status, 401);
+  assert.equal((await app.request('/api/white-papers', { method: 'POST', body })).status, 401);
+  assert.equal(
+    (await app.request('/api/white-papers', { method: 'POST', cookie: auth.cookie, body })).status,
+    403,
+  );
+  const saved = await app.request('/api/white-papers', { method: 'POST', ...auth, body });
+  assert.equal(saved.status, 201, saved.text);
+  const id = saved.data.id;
+  assert.deepEqual((await app.request('/api/white-papers')).data, []);
+  assert.equal((await app.request('/uploads/report.pdf')).status, 401);
+  assert.equal((await app.request('/white-papers/' + id)).status, 404);
+  assert.doesNotMatch(
+    (await app.request('/sitemap.xml')).text,
+    new RegExp('/white-papers/' + id + '<'),
+  );
+  assert.equal(
+    (
+      await app.request('/api/white-papers/' + id, {
+        method: 'PUT',
+        ...auth,
+        body: { ...body, published: 1, file_url: 'javascript:alert(1)' },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await app.request('/api/white-papers/' + id, {
+        method: 'PUT',
+        ...auth,
+        body: { ...body, published: 1 },
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await app.request('/api/white-papers')).data.length, 1);
+  assert.equal((await app.request('/uploads/report.pdf')).status, 200);
+  assert.match((await app.request('/white-papers/' + id)).text, /Cooling report/);
+  assert.match((await app.request('/sitemap.xml')).text, new RegExp('/white-papers/' + id + '<'));
+  await app.restart();
+  assert.equal((await app.request('/api/white-papers')).data.length, 1);
+  assert.equal(
+    (await app.request('/api/white-papers/' + id, { method: 'DELETE', ...auth })).status,
+    200,
+  );
+  assert.equal((await app.request('/uploads/report.pdf')).status, 401);
+});

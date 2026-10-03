@@ -17,6 +17,7 @@ const titles = {
   research: 'Research areas',
   people: 'Our people',
   publications: 'Selected publications',
+  'white-papers': 'White Papers',
   facilities: 'Research facilities',
   news: 'Updates from the lab',
   gallery: 'Laboratory gallery',
@@ -28,6 +29,7 @@ const titles = {
 const intro =
   'Laboratory for Advanced Thermal and Fluid Systems (LATFS) at Villanova University: research in heat transfer, fluid mechanics, and electronic systems.';
 const specs = {
+  'white-papers': ['white_papers', 'title', 'abstract', 'white-papers'],
   research: ['research', 'title', 'description', 'research'],
   people: ['people', 'name', 'bio', 'person'],
   facilities: ['facilities', 'name', 'description', 'facility'],
@@ -45,6 +47,10 @@ function createSeoRouter({ db, config }) {
   function rows(key) {
     const spec = specs[key];
     if (!spec) return [];
+    if (key === 'white-papers')
+      return db
+        .prepare('SELECT * FROM white_papers WHERE published=1 ORDER BY year DESC,id DESC')
+        .all();
     if (key === 'downloads')
       return db
         .prepare("SELECT * FROM documents WHERE entity_type='download' AND published=1")
@@ -65,6 +71,7 @@ function createSeoRouter({ db, config }) {
             row[key],
             key === 'doi_url' ? 'DOI' : key === 'pdf_url' ? 'Read paper' : 'Citation',
           ) + ' ';
+    if (spec[0] === 'white_papers' && row.file_url) result += link(row.file_url, 'Read PDF');
     return result + '</article>';
   }
   router.get('/robots.txt', (req, res) =>
@@ -74,7 +81,7 @@ function createSeoRouter({ db, config }) {
   );
   router.get('/sitemap.xml', (req, res) => {
     const urls = Object.keys(titles).map(routePath);
-    for (const key of ['research', 'people', 'facilities', 'news'])
+    for (const key of ['research', 'people', 'facilities', 'news', 'white-papers'])
       for (const row of rows(key)) urls.push('/' + specs[key][3] + '/' + row.id);
     res
       .type('application/xml')
@@ -91,7 +98,7 @@ function createSeoRouter({ db, config }) {
       ...Object.keys(titles)
         .filter((k) => k !== 'home')
         .map((k) => '/' + k),
-      '/:kind(research|person|facility|news)/:id',
+      '/:kind(research|person|facility|news|white-papers)/:id',
     ],
     (req, res) => {
       const key = req.params.kind
