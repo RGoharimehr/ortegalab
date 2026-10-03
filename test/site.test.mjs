@@ -462,3 +462,25 @@ test('white papers filter by topic and search and open an abstract and PDF', asy
   );
   assert.equal(normalizeRoute('#white-papers/1'), 'white-papers/1');
 });
+
+test('white paper template renders numbered figures and accessible tables', async () => {
+  const { paperBlocks, paperTags } = await import('../public/js/site/white-papers.mjs');
+  assert.deepEqual(paperTags({ tags: ['Cooling', 'Modeling'] }), ['Cooling', 'Modeling']);
+  const root = h(
+    'article',
+    {},
+    ...paperBlocks([
+      {
+        type: 'image',
+        src: '/uploads/figure.png',
+        alt: 'Flow apparatus',
+        caption: 'Experimental rig',
+      },
+      { type: 'table', headers: ['Flow', 'Pressure'], rows: [['1', '2']], caption: 'Results' },
+    ]),
+  );
+  assert.equal(root.querySelector('figcaption').textContent, 'Figure 1. Experimental rig');
+  assert.equal(root.querySelector('caption').textContent, 'Table 1. Results');
+  assert.equal(root.querySelector('th').getAttribute('scope'), 'col');
+  assert.equal(root.querySelector('img').alt, 'Flow apparatus');
+});

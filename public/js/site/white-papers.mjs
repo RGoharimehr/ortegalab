@@ -1,13 +1,52 @@
 import { h } from './dom.mjs';
 import { DATA } from './data.mjs';
 import { PageBanner } from './layout.mjs';
-const topics = [
-  'Data Center Cooling',
-  'Two-Phase Flow',
-  'Digital Twin',
-  'Thermal Management',
-  'System Modeling',
-];
+export function paperTags(paper) {
+  return Array.isArray(paper.tags) ? paper.tags : paper.category ? [paper.category] : [];
+}
+function tagList(paper) {
+  return h(
+    'div',
+    { class: 'w-paper-tags' },
+    ...paperTags(paper).map((tag) => h('span', null, tag)),
+  );
+}
+export function paperBlocks(blocks = []) {
+  let figure = 0,
+    table = 0;
+  return blocks.map((b) => {
+    if (b.type === 'heading') return h('h2', null, b.text);
+    if (b.type === 'paragraph') return h('p', { style: { whiteSpace: 'pre-wrap' } }, b.text);
+    if (b.type === 'image')
+      return h(
+        'figure',
+        null,
+        h('img', { src: b.src, alt: b.alt, loading: 'lazy' }),
+        h('figcaption', null, `Figure ${++figure}. ${b.caption}`),
+      );
+    if (b.type === 'table')
+      return h(
+        'div',
+        { class: 'w-paper-table-wrap' },
+        h(
+          'table',
+          null,
+          h('caption', null, `Table ${++table}. ${b.caption}`),
+          h(
+            'thead',
+            null,
+            h('tr', null, ...b.headers.map((cell) => h('th', { scope: 'col' }, cell))),
+          ),
+          h(
+            'tbody',
+            null,
+            ...b.rows.map((row) => h('tr', null, ...row.map((cell) => h('td', null, cell)))),
+          ),
+        ),
+      );
+    return null;
+  });
+}
 export function PageWhitePapers() {
   const papers = DATA.whitePapers || [];
   let query = '',
@@ -17,8 +56,8 @@ export function PageWhitePapers() {
   function draw() {
     const shown = papers.filter(
       (p) =>
-        (!topic || p.category === topic) &&
-        [p.title, p.authors, p.abstract].join(' ').toLowerCase().includes(query),
+        (!topic || paperTags(p).includes(topic)) &&
+        [p.title, p.authors, p.abstract, ...paperTags(p)].join(' ').toLowerCase().includes(query),
     );
     const years = [...new Set(shown.map((p) => p.year))].sort((a, b) => b - a);
     count.textContent = `${shown.length} white paper${shown.length === 1 ? '' : 's'}`;
@@ -37,7 +76,7 @@ export function PageWhitePapers() {
                     { class: 'w-white-paper' },
                     h('h3', null, h('a', { href: '/white-papers/' + p.id }, p.title)),
                     h('p', { class: 'w-muted' }, p.authors),
-                    p.category ? h('p', { class: 'eyebrow' }, p.category) : null,
+                    tagList(p),
                     h(
                       'p',
                       null,
@@ -80,12 +119,9 @@ export function PageWhitePapers() {
   const filters = h('div', {
     class: 'w-filter-chips',
     role: 'group',
-    'aria-label': 'Filter white papers by topic',
+    'aria-label': 'Filter white papers by tag',
   });
-  for (const value of [
-    '',
-    ...new Set([...topics, ...papers.map((p) => p.category).filter(Boolean)]),
-  ]) {
+  for (const value of ['', ...new Set(papers.flatMap(paperTags))]) {
     const button = h(
       'button',
       {
@@ -167,13 +203,11 @@ export function PageWhitePaperDetail(id) {
       h(
         'div',
         { class: 'max-w' },
-        h(
-          'p',
-          { class: 'eyebrow' },
-          `${paper.year}${paper.category ? ' · ' + paper.category : ''}`,
-        ),
+        h('p', { class: 'eyebrow' }, String(paper.year)),
+        tagList(paper),
         h('h2', null, 'Abstract'),
         h('p', { class: 'w-detail-copy', style: { whiteSpace: 'pre-wrap' } }, paper.abstract),
+        h('article', { class: 'w-paper-body' }, ...paperBlocks(paper.blocks || [])),
         h(
           'div',
           { class: 'w-white-paper-links' },

@@ -370,3 +370,33 @@ test('people management directs staff to Web Admin without duplicate platform ed
   assert.equal(document.querySelector('#addUserBtn'), null);
   assert.equal(document.querySelector('#usersList a').getAttribute('href'), '/admin#content');
 });
+
+test('white paper editor preserves tags and adds structured table blocks', async (t) => {
+  const { document } = await page(t, 'admin', {
+    role: 'admin',
+    url: 'https://lab.test/admin#content',
+    respond: (route) =>
+      route === '/api/white-papers/all'
+        ? json([
+            {
+              id: 1,
+              title: 'Report',
+              authors: 'Author',
+              abstract: 'Abstract',
+              year: 2026,
+              tags: ['Cooling', 'Modeling'],
+              blocks: [{ type: 'paragraph', text: 'Existing text' }],
+            },
+          ])
+        : null,
+  });
+  document.querySelector('[data-tab="white-papers"]').click();
+  for (let i = 0; i < 5; i++) await tick();
+  document.querySelector('[data-edit-download="1"]').click();
+  assert.equal(document.querySelector('#d_cat').value, 'Cooling, Modeling');
+  assert.equal(document.querySelector('[data-field="text"]').value, 'Existing text');
+  document.querySelector('[data-add-block="table"]').click();
+  assert.equal(document.querySelectorAll('[data-paper-block]').length, 2);
+  assert.equal(document.querySelector('[data-field="text"]').value, 'Existing text');
+  assert.ok(document.querySelector('[data-field="cells"]'));
+});

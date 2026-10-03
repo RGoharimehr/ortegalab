@@ -1,6 +1,8 @@
 'use strict';
 
 const migrations = [
+  "ALTER TABLE white_papers ADD COLUMN tags TEXT DEFAULT '[]'",
+  "ALTER TABLE white_papers ADD COLUMN blocks TEXT DEFAULT '[]'",
   // Users → richer accounts
   "ALTER TABLE users ADD COLUMN name TEXT DEFAULT ''",
   "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'student'",

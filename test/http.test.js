@@ -686,11 +686,30 @@ test('white paper drafts, PDF visibility and staff publishing stay synchronized'
     (await app.request('/api/white-papers', { method: 'POST', cookie: auth.cookie, body })).status,
     403,
   );
+  body.tags = ['Two-Phase Flow', 'Digital Twin', 'digital twin'];
+  body.blocks = [
+    { type: 'heading', text: 'Methods' },
+    { type: 'paragraph', text: 'A standardized experimental method.' },
+    {
+      type: 'image',
+      src: '/uploads/figure.png',
+      alt: 'Test apparatus',
+      caption: 'Experimental apparatus',
+    },
+    {
+      type: 'table',
+      caption: 'Measured values',
+      headers: ['Flow', 'Temperature'],
+      rows: [['1', '25']],
+    },
+  ];
+  writeFileSync(path.join(app.config.uploadsPath, 'figure.png'), 'test fixture');
   const saved = await app.request('/api/white-papers', { method: 'POST', ...auth, body });
   assert.equal(saved.status, 201, saved.text);
   const id = saved.data.id;
   assert.deepEqual((await app.request('/api/white-papers')).data, []);
   assert.equal((await app.request('/uploads/report.pdf')).status, 401);
+  assert.equal((await app.request('/uploads/figure.png')).status, 401);
   assert.equal((await app.request('/white-papers/' + id)).status, 404);
   assert.doesNotMatch(
     (await app.request('/sitemap.xml')).text,
@@ -718,6 +737,12 @@ test('white paper drafts, PDF visibility and staff publishing stay synchronized'
   );
   assert.equal((await app.request('/api/white-papers')).data.length, 1);
   assert.equal((await app.request('/uploads/report.pdf')).status, 200);
+  assert.equal((await app.request('/uploads/figure.png')).status, 200);
+  assert.deepEqual((await app.request('/api/white-papers')).data[0].tags, [
+    'Two-Phase Flow',
+    'Digital Twin',
+  ]);
+  assert.match((await app.request('/white-papers/' + id)).text, /Measured values/);
   assert.match((await app.request('/white-papers/' + id)).text, /Cooling report/);
   assert.match((await app.request('/sitemap.xml')).text, new RegExp('/white-papers/' + id + '<'));
   await app.restart();
@@ -727,4 +752,5 @@ test('white paper drafts, PDF visibility and staff publishing stay synchronized'
     200,
   );
   assert.equal((await app.request('/uploads/report.pdf')).status, 401);
+  assert.equal((await app.request('/uploads/figure.png')).status, 401);
 });

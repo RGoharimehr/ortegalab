@@ -118,6 +118,21 @@ function createSeoRouter({ db, config }) {
           title = row[specs[key][1]];
           description = plain(row[specs[key][2]]) || intro;
           content = article(row, specs[key]) + `<p>${escape(plain(row.content || ''))}</p>`;
+          if (key === 'white-papers') {
+            let figure = 0,
+              table = 0;
+            content += JSON.parse(row.blocks || '[]')
+              .map((b) => {
+                if (b.type === 'heading') return `<h2>${escape(b.text)}</h2>`;
+                if (b.type === 'paragraph') return `<p>${escape(b.text)}</p>`;
+                if (b.type === 'image')
+                  return `<figure><img src="${escape(b.src)}" alt="${escape(b.alt)}" loading="lazy"><figcaption>Figure ${++figure}. ${escape(b.caption)}</figcaption></figure>`;
+                if (b.type === 'table')
+                  return `<table><caption>Table ${++table}. ${escape(b.caption)}</caption><thead><tr>${b.headers.map((c) => `<th scope="col">${escape(c)}</th>`).join('')}</tr></thead><tbody>${b.rows.map((r) => `<tr>${r.map((c) => `<td>${escape(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+                return '';
+              })
+              .join('');
+          }
         }
       } else if (specs[key]) {
         content = rows(key)
