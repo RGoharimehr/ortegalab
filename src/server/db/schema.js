@@ -2,6 +2,19 @@
 
 function createSchema(db) {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS white_papers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      authors TEXT NOT NULL,
+      abstract TEXT NOT NULL,
+      year INTEGER NOT NULL,
+      category TEXT DEFAULT '',
+      file_url TEXT DEFAULT '',
+      file_name TEXT DEFAULT '',
+      published INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,

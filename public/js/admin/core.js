@@ -63,6 +63,7 @@ function allowedContentTabs() {
       ['people', 'People', 'users'],
       ['news', 'News', 'megaphone'],
       ['publications', 'Publications', 'book-open'],
+      ['white-papers', 'White Papers', 'file-text'],
       ['research', 'Research', 'flask-conical'],
       ['facilities', 'Facilities', 'building-2'],
       ['hero', 'Hero / homepage', 'image'],

@@ -421,3 +421,44 @@ test('clean public links navigate in place and Back restores the previous page',
   assert.equal(window.location.pathname, '/research');
   assert.equal(state.route, 'research');
 });
+
+test('white papers filter by topic and search and open an abstract and PDF', async () => {
+  const { PageWhitePapers, PageWhitePaperDetail } =
+    await import('../public/js/site/white-papers.mjs');
+  DATA.whitePapers = [
+    {
+      id: 1,
+      title: 'Boiling study',
+      authors: 'Researcher One',
+      abstract: 'Flow experiments',
+      year: 2026,
+      category: 'Two-Phase Flow',
+      file_url: '/uploads/report.pdf',
+    },
+    {
+      id: 2,
+      title: 'Simulation study',
+      authors: 'Researcher Two',
+      abstract: 'Numerical model',
+      year: 2025,
+      category: 'Digital Twin',
+      file_url: '/uploads/model.pdf',
+    },
+  ];
+  const page = PageWhitePapers();
+  assert.equal(page.querySelectorAll('article').length, 2);
+  [...page.querySelectorAll('button')].find((b) => b.textContent === 'Digital Twin').click();
+  assert.equal(page.querySelectorAll('article').length, 1);
+  assert.match(page.querySelector('article').textContent, /Simulation/);
+  const input = page.querySelector('input');
+  input.value = 'missing';
+  input.dispatchEvent(new window.Event('input'));
+  assert.equal(page.querySelectorAll('article').length, 0);
+  const detail = PageWhitePaperDetail(1);
+  assert.match(detail.textContent, /Flow experiments/);
+  assert.equal(
+    detail.querySelector('a[target="_blank"]').getAttribute('href'),
+    '/uploads/report.pdf',
+  );
+  assert.equal(normalizeRoute('#white-papers/1'), 'white-papers/1');
+});

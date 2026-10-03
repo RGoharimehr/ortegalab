@@ -32,6 +32,7 @@ export const NAV = [
   ['research', 'Research'],
   ['people', 'People'],
   ['publications', 'Publications'],
+  ['white-papers', 'White Papers'],
   ['facilities', 'Facilities'],
   ['gallery', 'Gallery'],
   ['apps', 'Apps'],

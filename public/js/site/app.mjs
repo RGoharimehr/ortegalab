@@ -1,3 +1,4 @@
+import { PageWhitePapers, PageWhitePaperDetail } from './white-papers.mjs';
 import { applyBackgrounds } from './backgrounds.mjs';
 import { h } from './dom.mjs';
 import { DATA, contentStatus, loadAll } from './data.mjs';
@@ -23,6 +24,7 @@ import {
 } from './pages.mjs';
 
 const pages = {
+  'white-papers': PageWhitePapers,
   home: Home,
   research: PageResearch,
   people: PagePeople,
@@ -36,6 +38,7 @@ const pages = {
   contact: PageContact,
 };
 const detailPages = {
+  'white-papers': PageWhitePaperDetail,
   research: PageResearchDetail,
   person: PagePersonDetail,
   facility: PageFacilityDetail,
@@ -164,7 +167,7 @@ async function reloadContent() {
 // Resolve old shared fragment URLs through their crawlable server route.
 const legacyRoute = window.location.hash.slice(1);
 if (
-  /^(home|research|people|person|publications|facilities|facility|news|gallery|apps|downloads|join|contact)(\/[^/]+)?$/.test(
+  /^(home|research|people|person|white-papers|publications|facilities|facility|news|gallery|apps|downloads|join|contact)(\/[^/]+)?$/.test(
     legacyRoute,
   ) &&
   document.querySelector('base')

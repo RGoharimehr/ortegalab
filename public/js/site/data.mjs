@@ -4,6 +4,7 @@ import { activePeopleRows } from './utils.mjs';
 export const ENDPOINTS = Object.freeze({
   news: '/api/news',
   pubs: '/api/publications',
+  whitePapers: '/api/white-papers',
   people: '/api/people/public',
   research: '/api/research',
   gallery: '/api/gallery',

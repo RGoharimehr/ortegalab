@@ -4,6 +4,7 @@
 const routers = [
   require('./auth').createAuthRouter,
   require('./content').createContentRouter,
+  require('./white-papers').createWhitePapersRouter,
   require('./uploads').createUploadsRouter,
   require('./media').createMediaRouter,
   require('./schedule').createScheduleRouter,

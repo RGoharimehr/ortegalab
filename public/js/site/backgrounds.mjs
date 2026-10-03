@@ -11,6 +11,7 @@ export const BACKGROUND_SECTIONS = {
   research: 'Research page',
   people: 'People page',
   publications: 'Publications page',
+  'white-papers': 'White Papers page',
   facilities: 'Facilities page',
   gallery: 'Gallery page',
   apps: 'Research tools page',
