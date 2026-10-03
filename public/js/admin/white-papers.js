@@ -1,10 +1,10 @@
-/* Admin: downloads. Loaded in order by admin.html. */
+/* Admin: white papers. Loaded in order by admin.html. */
 
 async function renderWhitePapersTab(body) {
   const rows = await apiGet('/api/white-papers/all');
   body.innerHTML = `
     <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Manage technical reports separately from peer-reviewed publications. Save drafts, upload a PDF, then publish when ready.</div>
-    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newDownload">+ Add white paper</button></div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newDownload">+ Add white paper</button><a class="btn-primary-sm" href="/templates/LATFS-White-Paper-Template.docx" download>Download Word template</a><a href="/templates/author-guide.html" target="_blank" rel="noopener">Author guide ↗</a></div>
     <div class="p-inv-table">
       <div class="p-inv-row p-inv-head"><div style="flex:2">Title</div><div style="flex:1">Tags</div><div style="flex:1">File</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
       ${rows
