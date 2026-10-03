@@ -53,7 +53,7 @@ export function applyBackgrounds(root, settings, route) {
     publications: '/assets/lab/lab-wide-view.png',
     join: '/assets/lab/research-collaboration.jpg',
   };
-  const src = backgroundChoice(settings, key, defaults[key] || '');
+  const src = backgroundChoice(settings, key, defaults[key] || '/assets/lab/lab-wide-view.png');
   if (target && src) addField(target, src, key === 'publications' ? 12 : 3);
 }
 function addField(target, src, count = 1) {

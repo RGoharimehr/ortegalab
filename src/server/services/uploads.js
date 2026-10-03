@@ -117,7 +117,7 @@ function createUploadService({ db, config, logger = console }) {
   // editor references it in public content or publishes a download-library item.
   const publicSources = [
     ['people', ['photo_url'], 'active=1'],
-    ['white_papers', ['file_url'], 'published=1'],
+    ['white_papers', ['file_url', 'blocks'], 'published=1'],
     ['publications', ['pdf_url', 'doi_url', 'citation_url', 'ris_url']],
     ['research', ['image_url', 'content', 'links', 'description']],
     ['news', ['image_url', 'content']],
