@@ -1,6 +1,7 @@
 'use strict';
 
 const migrations = [
+  "ALTER TABLE white_papers ADD COLUMN latex_engine TEXT DEFAULT 'web'",
   "ALTER TABLE white_papers ADD COLUMN latex_source TEXT DEFAULT ''",
   "ALTER TABLE white_papers ADD COLUMN compiled_html TEXT DEFAULT ''",
   "ALTER TABLE white_papers ADD COLUMN tags TEXT DEFAULT '[]'",

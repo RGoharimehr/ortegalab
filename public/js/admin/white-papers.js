@@ -69,8 +69,9 @@ async function renderWhitePapersTab(body) {
       <label>File URL</label><input id="d_url" value="${escHtml(item.file_url || '')}" placeholder="/uploads/your-file.pdf">
       <label>Visible file name</label><input id="d_name" value="${escHtml(item.file_name || '')}" placeholder="Original file name">
       <h3>LaTeX source</h3>
-      <p>Use the shared <a href="/templates/LATFS-White-Paper-Template.tex" download>LaTeX template</a>. Standard sections, equations, figures and tables become the page automatically. <a href="/templates/author-guide.html" target="_blank" rel="noopener">Supported format ↗</a></p>
+      <p>Use the shared <a href="/templates/LATFS-White-Paper-Template.tex" download>LaTeX template</a>. Auto uses full LaTeX for TikZ, custom tables and title layouts, displaying the compiled PDF on the page. Simple papers become responsive HTML. <a href="/templates/author-guide.html" target="_blank" rel="noopener">Supported format ↗</a></p>
       <label>Open .tex file (up to 100 KB)</label><input id="wp_tex_file" type="file" accept=".tex,text/plain">
+      <label>Compilation mode</label><select id="wp_mode"><option value="auto">Auto — detect full LaTeX documents</option><option value="full">Full LaTeX — PDF with TikZ and page layout</option><option value="web">Web — responsive HTML for simple documents</option></select>
       <label for="wp_source">Edit LaTeX</label><textarea id="wp_source" spellcheck="false" style="min-height:420px;font-family:monospace;tab-size:2">${escHtml(item.latex_source || legacyPaperLatex(item.blocks || []))}</textarea>
       <label>Upload a figure</label><input id="wp_figure" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
       <p id="wp_figure_url"></p>
@@ -103,6 +104,7 @@ async function renderWhitePapersTab(body) {
             .map((tag) => tag.trim())
             .filter(Boolean),
           latex_source: $('#wp_source', mb).value,
+          latex_mode: $('#wp_mode', mb).value,
           file_url: fileUrl,
           file_name: fileName,
           mime_type: mimeType,
@@ -119,6 +121,7 @@ async function renderWhitePapersTab(body) {
     );
     bg.querySelector('.modal').classList.add('is-wide');
     setupPaperLatex(bg);
+    if (item.latex_engine === 'full') bg.querySelector('#wp_mode').value = 'full';
   }
 }
 
@@ -172,6 +175,7 @@ function setupPaperLatex(root) {
     status.textContent = 'Source changed. Compile again to refresh the preview.';
     preview.hidden = true;
   };
+  root.querySelector('#wp_mode').onchange = () => source.oninput();
   root.querySelector('#wp_tex_file').onchange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -190,9 +194,24 @@ function setupPaperLatex(root) {
     status.textContent = 'Compiling…';
     preview.hidden = true;
     try {
-      const result = await apiPost('/api/white-papers/compile', { latex_source: source.value });
+      const result = await apiPost('/api/white-papers/compile', {
+        latex_source: source.value,
+        latex_mode: root.querySelector('#wp_mode').value,
+      });
       if (revision !== current) return;
-      preview.innerHTML = result.html;
+      preview.replaceChildren();
+      if (result.pdf_url) {
+        const link = document.createElement('a');
+        link.href = result.pdf_url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = 'Open compiled PDF ↗';
+        const frame = document.createElement('iframe');
+        frame.src = result.pdf_url;
+        frame.title = 'Compiled LaTeX preview';
+        frame.style.cssText = 'width:100%;height:550px;border:0';
+        preview.append(link, frame);
+      } else preview.innerHTML = result.html;
       preview.hidden = false;
       status.textContent =
         'Compiled successfully. Save to update the paper. Publishing makes it public.';

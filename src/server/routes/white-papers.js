@@ -1,9 +1,10 @@
 'use strict';
 const { Router } = require('express');
-const { compileLatex } = require('../services/latex');
+const { compilePaper } = require('../services/full-latex');
 const { validateBlocks } = require('../services/white-paper-blocks');
 function createWhitePapersRouter({
   db,
+  config,
   requireStaff,
   requireCsrf,
   apiReadLimiter,
@@ -42,7 +43,7 @@ function createWhitePapersRouter({
     requireCsrf,
     async (req, res) => {
       try {
-        res.json({ html: await compileLatex(req.body.latex_source) });
+        res.json(await compilePaper(req.body.latex_source, config, req.body.latex_mode || 'auto'));
       } catch (error) {
         res.status(400).json({ error: error.message });
       }
@@ -53,8 +54,8 @@ function createWhitePapersRouter({
     const title = String(b.title || '').trim(),
       authors = String(b.authors || '').trim(),
       abstract = String(b.abstract || '').trim();
-    const year = Number(b.year),
-      file = String(b.file_url || '').trim();
+    const year = Number(b.year);
+    let file = String(b.file_url || '').trim();
     if (
       !title ||
       !authors ||
@@ -102,10 +103,15 @@ function createWhitePapersRouter({
       : null;
     if (req.params.id && !previous) return res.status(404).json({ error: 'White paper not found' });
     let source = previous?.latex_source || '',
-      html = previous?.compiled_html || '';
+      html = previous?.compiled_html || '',
+      engine = previous?.latex_engine || 'web';
     if (Object.hasOwn(b, 'latex_source')) {
       try {
-        html = await compileLatex(b.latex_source);
+        const compiled = await compilePaper(b.latex_source, config, b.latex_mode || 'auto');
+        html = compiled.html;
+        engine = compiled.engine;
+        if (compiled.pdf_url) file = compiled.pdf_url;
+        else if (previous?.latex_engine === 'full' && file === previous.file_url) file = '';
         source = b.latex_source;
       } catch (error) {
         return res.status(400).json({ error: error.message });
@@ -124,11 +130,12 @@ function createWhitePapersRouter({
       JSON.stringify(blocks),
       source,
       html,
+      engine,
     ];
     if (req.params.id) {
       const result = db
         .prepare(
-          'UPDATE white_papers SET title=?,authors=?,abstract=?,year=?,category=?,file_url=?,file_name=?,published=?,tags=?,blocks=?,latex_source=?,compiled_html=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
+          'UPDATE white_papers SET title=?,authors=?,abstract=?,year=?,category=?,file_url=?,file_name=?,published=?,tags=?,blocks=?,latex_source=?,compiled_html=?,latex_engine=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
         )
         .run(...values, req.params.id);
       if (!result.changes) return res.status(404).json({ error: 'White paper not found' });
@@ -136,7 +143,7 @@ function createWhitePapersRouter({
     }
     const result = db
       .prepare(
-        'INSERT INTO white_papers (title,authors,abstract,year,category,file_url,file_name,published,tags,blocks,latex_source,compiled_html) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO white_papers (title,authors,abstract,year,category,file_url,file_name,published,tags,blocks,latex_source,compiled_html,latex_engine) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
       )
       .run(...values);
     res.status(201).json({ id: result.lastInsertRowid });
