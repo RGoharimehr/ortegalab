@@ -63,7 +63,7 @@ async function compilePaper(source, config, mode = 'auto') {
       '--as=1073741824',
       '--cpu=45',
       '--fsize=52428800',
-      '--nproc=32',
+      '--nproc=256',
       '--',
       '/usr/bin/bwrap',
       '--die-with-parent',
