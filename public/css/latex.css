@@ -1,0 +1,40 @@
+/* LaTeX output inherits the active website palette and shared article layout. */
+.w-latex-body {
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.w-latex-body h2,
+.w-latex-body h3 {
+  margin-top: 2em;
+}
+.w-latex-body figure {
+  margin: 2em 0;
+}
+.w-latex-body img {
+  max-width: 100%;
+  height: auto;
+}
+.w-latex-body figcaption,
+.w-latex-body caption {
+  font-size: 0.9em;
+  padding: 0.8em 0;
+  text-align: left;
+}
+.w-latex-body table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5em 0;
+}
+.w-latex-body th,
+.w-latex-body td {
+  padding: 0.7em 1em;
+  border-bottom: 1px solid currentColor;
+  text-align: left;
+}
+.w-latex-body math[display='block'] {
+  display: block;
+  overflow-x: auto;
+  padding: 1em 0;
+}

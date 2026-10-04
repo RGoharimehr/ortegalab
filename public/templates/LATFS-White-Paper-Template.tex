@@ -1,0 +1,51 @@
+% LATFS white paper web template
+% Set title, authors, abstract, year and tags in Web Admin.
+% Upload figures using the editor, then paste the returned /uploads/... URL.
+% Standard LaTeX content compiles to a styled web page (not a PDF).
+\documentclass{article}
+\usepackage{amsmath,graphicx,booktabs}
+\begin{document}
+
+\section{Introduction}
+Explain the engineering problem, scope, and contribution of this report.
+
+\section{Methods}
+Describe the apparatus or model, assumptions, and operating conditions.
+For example, heat transfer follows $Q = h A (T_s - T_f)$.
+
+\subsection{Governing equation}
+\[
+\Delta T = \frac{Q}{\dot{m} c_p}
+\]
+
+\section{Results}
+Replace the example table with your measured or modeled results.
+\begin{table}[ht]
+\caption{Example operating conditions; replace with actual data.}
+\begin{tabular}{lll}
+\toprule
+Quantity & Unit & Value \\
+\midrule
+Heat load & W & 100 \\
+Mass flow rate & kg/s & 0.01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Uncomment after uploading your figure:
+% \begin{figure}[ht]
+% \includegraphics{/uploads/your-figure.png}
+% \caption{Describe the apparatus or result and its operating conditions.}
+% \end{figure}
+
+\section{Discussion}
+Compare the results with prior work and explain their practical meaning.
+\section{Limitations}
+State uncertainty, assumptions, and untested conditions.
+\section{Conclusions}
+Summarize the findings supported by the evidence.
+\section{References}
+\begin{enumerate}
+\item Author. Report title. Publisher, year. DOI or stable URL.
+\end{enumerate}
+\end{document}

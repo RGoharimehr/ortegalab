@@ -94,11 +94,11 @@ export function PageWhitePapers() {
                         'a',
                         {
                           class: 'w-text-link',
-                          href: p.file_url,
+                          href: p.file_url || '/white-papers/' + p.id,
                           target: '_blank',
                           rel: 'noopener',
                         },
-                        'PDF ↗',
+                        p.file_url ? 'PDF ↗' : 'Read paper ↗',
                       ),
                     ),
                   ),
@@ -193,6 +193,9 @@ export function PageWhitePaperDetail(id) {
         h('a', { href: '/white-papers' }, 'Browse white papers →'),
       ),
     );
+  const article = h('article', { class: 'w-paper-body w-latex-body' });
+  if (paper.compiled_html) article.innerHTML = paper.compiled_html;
+  else article.append(...paperBlocks(paper.blocks || []).filter(Boolean));
   return h(
     'div',
     { class: 'w-white-papers-page' },
@@ -207,14 +210,19 @@ export function PageWhitePaperDetail(id) {
         tagList(paper),
         h('h2', null, 'Abstract'),
         h('p', { class: 'w-detail-copy', style: { whiteSpace: 'pre-wrap' } }, paper.abstract),
-        h('article', { class: 'w-paper-body' }, ...paperBlocks(paper.blocks || [])),
+        article,
         h(
           'div',
           { class: 'w-white-paper-links' },
           h(
             'a',
-            { class: 'w-text-link', href: paper.file_url, target: '_blank', rel: 'noopener' },
-            'Read PDF ↗',
+            {
+              class: 'w-text-link',
+              href: paper.file_url || '/white-papers',
+              target: '_blank',
+              rel: 'noopener',
+            },
+            paper.file_url ? 'Read PDF ↗' : 'Browse reports ↗',
           ),
           h('a', { class: 'w-text-link', href: '/white-papers' }, 'All white papers →'),
         ),

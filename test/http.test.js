@@ -754,3 +754,75 @@ test('white paper drafts, PDF visibility and staff publishing stay synchronized'
   assert.equal((await app.request('/uploads/report.pdf')).status, 401);
   assert.equal((await app.request('/uploads/figure.png')).status, 401);
 });
+
+test(
+  'LaTeX preview and publication are protected, indexed and atomic on compile failure',
+  {
+    skip: !require('node:fs').existsSync(
+      process.env.PANDOC_PATH || path.join(__dirname, '../data/bin/pandoc'),
+    ),
+  },
+  async (t) => {
+    const app = await fixture(t),
+      auth = await login(app);
+    const source =
+      '\\section{Methods}\nSaved scientific content.\n\\begin{figure}\n\\includegraphics{/uploads/latex-figure.png}\n\\caption{Apparatus}\n\\end{figure}';
+    const body = {
+      title: 'LaTeX report',
+      authors: 'Researcher',
+      abstract: 'Study abstract',
+      year: 2026,
+      tags: ['Cooling'],
+      latex_source: source,
+      published: 0,
+    };
+    writeFileSync(path.join(app.config.uploadsPath, 'latex-figure.png'), 'fixture');
+    assert.equal(
+      (await app.request('/api/white-papers/compile', { method: 'POST', body })).status,
+      401,
+    );
+    assert.equal(
+      (
+        await app.request('/api/white-papers/compile', {
+          method: 'POST',
+          cookie: auth.cookie,
+          body,
+        })
+      ).status,
+      403,
+    );
+    const preview = await app.request('/api/white-papers/compile', {
+      method: 'POST',
+      ...auth,
+      body,
+    });
+    assert.equal(preview.status, 200, preview.text);
+    assert.match(preview.data.html, /Saved scientific content/);
+    const saved = await app.request('/api/white-papers', { method: 'POST', ...auth, body });
+    assert.equal(saved.status, 201, saved.text);
+    const id = saved.data.id;
+    assert.equal((await app.request('/uploads/latex-figure.png')).status, 401);
+    const published = await app.request('/api/white-papers/' + id, {
+      method: 'PUT',
+      ...auth,
+      body: { ...body, published: 1 },
+    });
+    assert.equal(published.status, 200, published.text);
+    assert.equal((await app.request('/uploads/latex-figure.png')).status, 200);
+    assert.match((await app.request('/white-papers/' + id)).text, /Saved scientific content/);
+    const publicPaper = (await app.request('/api/white-papers')).data[0];
+    assert.equal(publicPaper.latex_source, undefined);
+    assert.match(publicPaper.compiled_html, /Saved scientific content/);
+    const failed = await app.request('/api/white-papers/' + id, {
+      method: 'PUT',
+      ...auth,
+      body: { ...body, published: 1, latex_source: '\\section{Broken' },
+    });
+    assert.equal(failed.status, 400);
+    assert.match((await app.request('/white-papers/' + id)).text, /Saved scientific content/);
+    const draft = await app.request('/api/white-papers/' + id, { method: 'PUT', ...auth, body });
+    assert.equal(draft.status, 200);
+    assert.equal((await app.request('/white-papers/' + id)).status, 404);
+    assert.equal((await app.request('/uploads/latex-figure.png')).status, 401);
+  },
+);

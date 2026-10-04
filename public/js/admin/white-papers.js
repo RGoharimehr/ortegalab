@@ -3,8 +3,8 @@
 async function renderWhitePapersTab(body) {
   const rows = await apiGet('/api/white-papers/all');
   body.innerHTML = `
-    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Manage technical reports separately from peer-reviewed publications. Save drafts, upload a PDF, then publish when ready.</div>
-    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newDownload">+ Add white paper</button><a class="btn-primary-sm" href="/templates/LATFS-White-Paper-Template.docx" download>Download Word template</a><a href="/templates/author-guide.html" target="_blank" rel="noopener">Author guide ↗</a></div>
+    <div style="font-size:13px; color:var(--fg-3); margin-bottom:14px;">Manage technical reports separately from peer-reviewed publications. Upload or edit LaTeX, compile a preview, then publish the generated page. PDFs are optional.</div>
+    <div class="p-inv-toolbar"><button class="btn-primary-sm" id="newDownload">+ Add white paper</button><a class="btn-primary-sm" href="/templates/LATFS-White-Paper-Template.tex" download>Download LaTeX template</a><a href="/templates/author-guide.html" target="_blank" rel="noopener">Author guide ↗</a></div>
     <div class="p-inv-table">
       <div class="p-inv-row p-inv-head"><div style="flex:2">Title</div><div style="flex:1">Tags</div><div style="flex:1">File</div><div style="flex-basis:80px;text-align:center">Live</div><div style="flex-basis:100px;text-align:right"></div></div>
       ${rows
@@ -65,13 +65,18 @@ async function renderWhitePapersTab(body) {
       <label>Year</label><input id="wp_year" type="number" min="1900" max="2200" value="${Number(item.year) || new Date().getFullYear()}">
       <label>Abstract</label><textarea id="d_desc">${escHtml(item.abstract || '')}</textarea>
       <label>Tags (comma-separated)</label><input id="d_cat" value="${escHtml((item.tags || (item.category ? [item.category] : [])).join(', '))}" placeholder="Data Center Cooling, Two-Phase Flow, Digital Twin...">
-      <label>Upload file (optional if keeping current file)</label><input id="d_file" type="file" accept=".pdf,application/pdf">
+      <label>Optional PDF attachment</label><input id="d_file" type="file" accept=".pdf,application/pdf">
       <label>File URL</label><input id="d_url" value="${escHtml(item.file_url || '')}" placeholder="/uploads/your-file.pdf">
       <label>Visible file name</label><input id="d_name" value="${escHtml(item.file_name || '')}" placeholder="Original file name">
-      <h3>Page content</h3>
-      <p>One shared template controls all typography, figure numbering, captions and tables. Add sections, text, figures and tables below. Recommended sections: Introduction, Methods, Results, Conclusions, References. Tables accept tab-separated cells pasted from a spreadsheet; the first row is the header.</p>
-      <div id="wp_blocks"></div>
-      <div class="row-actions"><button type="button" data-add-block="heading">+ Section</button><button type="button" data-add-block="paragraph">+ Text</button><button type="button" data-add-block="image">+ Figure</button><button type="button" data-add-block="table">+ Table</button></div>
+      <h3>LaTeX source</h3>
+      <p>Use the shared <a href="/templates/LATFS-White-Paper-Template.tex" download>LaTeX template</a>. Standard sections, equations, figures and tables become the page automatically. <a href="/templates/author-guide.html" target="_blank" rel="noopener">Supported format ↗</a></p>
+      <label>Open .tex file (up to 100 KB)</label><input id="wp_tex_file" type="file" accept=".tex,text/plain">
+      <label for="wp_source">Edit LaTeX</label><textarea id="wp_source" spellcheck="false" style="min-height:420px;font-family:monospace;tab-size:2">${escHtml(item.latex_source || legacyPaperLatex(item.blocks || []))}</textarea>
+      <label>Upload a figure</label><input id="wp_figure" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      <p id="wp_figure_url"></p>
+      <div class="row-actions"><button type="button" id="wp_compile">Compile preview</button><button type="button" id="wp_download_source">Download source</button></div>
+      <p id="wp_compile_status" role="status"></p>
+      <article id="wp_preview" class="w-paper-body w-latex-body" style="max-height:600px;overflow:auto;padding:20px;border:1px solid var(--border-1)" hidden></article>
       <label><input type="checkbox" id="d_pub" ${item.published ? 'checked' : ''}> Published (visible on public site)</label>
     `,
       async (mb) => {
@@ -97,7 +102,7 @@ async function renderWhitePapersTab(body) {
             .value.split(',')
             .map((tag) => tag.trim())
             .filter(Boolean),
-          blocks: readPaperBlocks(mb),
+          latex_source: $('#wp_source', mb).value,
           file_url: fileUrl,
           file_name: fileName,
           mime_type: mimeType,
@@ -106,93 +111,127 @@ async function renderWhitePapersTab(body) {
         };
         if (!payload.title || !payload.authors || !payload.abstract)
           throw new Error('Title, authors and abstract are required');
-        if (payload.published && !payload.file_url)
-          throw new Error('Upload a PDF before publishing');
+
         if (isNew) await apiPost('/api/white-papers', payload);
         else await apiPut('/api/white-papers/' + item.id, payload);
         renderAdmin($('#mainContent'));
       },
     );
     bg.querySelector('.modal').classList.add('is-wide');
-    setupPaperBlocks(bg, item.blocks || []);
+    setupPaperLatex(bg);
   }
 }
 
-function readPaperBlocks(root) {
-  return [...root.querySelectorAll('[data-paper-block]')].map((el) => {
-    const type = el.dataset.paperBlock;
-    const val = (name) => el.querySelector(`[data-field="${name}"]`).value;
-    if (type === 'heading' || type === 'paragraph') return { type, text: val('text') };
-    if (type === 'image')
-      return { type, src: val('src'), alt: val('alt'), caption: val('caption') };
-    const lines = val('cells')
-      .replace(/\r/g, '')
-      .replace(/\n+$/, '')
-      .split('\n')
-      .map((line) => line.split('\t'));
-    return { type, caption: val('caption'), headers: lines[0], rows: lines.slice(1) };
-  });
-}
-function setupPaperBlocks(root, initial) {
-  let blocks = initial;
-  const list = root.querySelector('#wp_blocks');
-  const field = (name, label, value, large = false) =>
-    `<label>${label}</label>${large ? `<textarea data-field="${name}">${escHtml(value || '')}</textarea>` : `<input data-field="${name}" value="${escHtml(value || '')}">`}`;
-  function draw() {
-    list.innerHTML = blocks
-      .map(
-        (b, i) =>
-          `<fieldset data-paper-block="${b.type}" style="border:1px solid var(--border-1);padding:16px;margin:16px 0;border-radius:6px"><legend>${i + 1}. ${escHtml(b.type)}</legend>${b.type === 'heading' || b.type === 'paragraph' ? field('text', b.type === 'heading' ? 'Section title' : 'Text', b.text, b.type === 'paragraph') : b.type === 'image' ? field('src', 'Image URL', b.src) + '<label>Upload figure</label><input type="file" data-image-upload accept="image/png,image/jpeg,image/webp,image/gif">' + field('alt', 'Alternative text (describe the image)', b.alt) + field('caption', 'Figure caption', b.caption) : field('caption', 'Table caption', b.caption) + field('cells', 'Paste table (tabs between columns; first row contains headings)', [b.headers || ['Column 1', 'Column 2'], ...(b.rows || [])].map((row) => row.join('\t')).join('\n'), true)}<div class="row-actions"><button type="button" data-move="-1" data-index="${i}" ${i === 0 ? 'disabled' : ''}>Move up</button><button type="button" data-move="1" data-index="${i}" ${i === blocks.length - 1 ? 'disabled' : ''}>Move down</button><button type="button" data-remove="${i}">Remove block</button></div></fieldset>`,
-      )
-      .join('');
-    list.querySelectorAll('[data-remove]').forEach(
-      (button) =>
-        (button.onclick = () => {
-          blocks = readPaperBlocks(root);
-          blocks.splice(Number(button.dataset.remove), 1);
-          draw();
-        }),
+function legacyPaperLatex(blocks) {
+  const escape = (text) =>
+    String(text || '').replace(
+      /[\\{}$&#%_^~]/g,
+      (c) =>
+        ({ '\\': '\\textbackslash{}', '^': '\\textasciicircum{}', '~': '\\textasciitilde{}' })[c] ||
+        '\\' + c,
     );
-    list.querySelectorAll('[data-move]').forEach(
-      (button) =>
-        (button.onclick = () => {
-          blocks = readPaperBlocks(root);
-          const i = Number(button.dataset.index),
-            j = i + Number(button.dataset.move);
-          [blocks[i], blocks[j]] = [blocks[j], blocks[i]];
-          draw();
-        }),
-    );
-    list.querySelectorAll('[data-image-upload]').forEach(
-      (input) =>
-        (input.onchange = async () => {
-          if (!input.files[0]) return;
-          input.disabled = true;
-          try {
-            const url = await uploadPhoto(input.files[0]);
-            input.closest('[data-paper-block]').querySelector('[data-field="src"]').value = url;
-          } catch (error) {
-            alert(error.message || 'Image upload failed');
-          } finally {
-            input.disabled = false;
-          }
-        }),
-    );
-  }
-  root.querySelectorAll('[data-add-block]').forEach(
-    (button) =>
-      (button.onclick = () => {
-        blocks = readPaperBlocks(root);
-        const type = button.dataset.addBlock;
-        blocks.push(
-          type === 'table'
-            ? { type, caption: '', headers: ['Column 1', 'Column 2'], rows: [['', '']] }
-            : type === 'image'
-              ? { type, src: '', alt: '', caption: '' }
-              : { type, text: '' },
+  const body = blocks
+    .map((b) => {
+      if (b.type === 'heading') return '\\section{' + escape(b.text) + '}';
+      if (b.type === 'paragraph') return escape(b.text);
+      if (b.type === 'image')
+        return (
+          '\\begin{figure}\n\\includegraphics{' +
+          b.src +
+          '}\n\\caption{' +
+          escape(b.caption) +
+          '}\n\\end{figure}'
         );
-        draw();
-      }),
+      if (b.type === 'table')
+        return (
+          '\\begin{table}\n\\caption{' +
+          escape(b.caption) +
+          '}\n\\begin{tabular}{' +
+          'l'.repeat(b.headers.length) +
+          '}\n' +
+          [b.headers, ...b.rows].map((row) => row.map(escape).join(' & ') + ' \\\\').join('\n') +
+          '\n\\end{tabular}\n\\end{table}'
+        );
+      return '';
+    })
+    .join('\n\n');
+  return (
+    '\\documentclass{article}\n\\usepackage{amsmath,graphicx,booktabs}\n\\begin{document}\n\n' +
+    (body ||
+      '\\section{Introduction}\nWrite your white paper here.\n\n\\section{Methods}\n\n\\section{Results}\n\n\\section{Conclusions}') +
+    '\n\n\\end{document}\n'
   );
-  draw();
+}
+function setupPaperLatex(root) {
+  const source = root.querySelector('#wp_source');
+  const status = root.querySelector('#wp_compile_status');
+  const preview = root.querySelector('#wp_preview');
+  let revision = 0;
+  source.oninput = () => {
+    revision++;
+    status.textContent = 'Source changed. Compile again to refresh the preview.';
+    preview.hidden = true;
+  };
+  root.querySelector('#wp_tex_file').onchange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!/\.tex$/i.test(file.name) || file.size > 100000) {
+      status.textContent = 'Choose a .tex file up to 100 KB.';
+      return;
+    }
+    if (source.value.trim() && !confirm('Replace the editor contents with this file?')) return;
+    source.value = await file.text();
+    source.oninput();
+  };
+  root.querySelector('#wp_compile').onclick = async (event) => {
+    const button = event.currentTarget,
+      current = revision;
+    button.disabled = true;
+    status.textContent = 'Compiling…';
+    preview.hidden = true;
+    try {
+      const result = await apiPost('/api/white-papers/compile', { latex_source: source.value });
+      if (revision !== current) return;
+      preview.innerHTML = result.html;
+      preview.hidden = false;
+      status.textContent =
+        'Compiled successfully. Save to update the paper. Publishing makes it public.';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
+  root.querySelector('#wp_download_source').onclick = () => {
+    const url = URL.createObjectURL(new Blob([source.value], { type: 'text/plain' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'white-paper.tex';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  root.querySelector('#wp_figure').onchange = async (event) => {
+    const input = event.target,
+      file = input.files[0];
+    if (!file) return;
+    input.disabled = true;
+    try {
+      const url = await uploadPhoto(file);
+      root.querySelector('#wp_figure_url').textContent = 'Uploaded: ' + url;
+      const figure =
+        '\\begin{figure}\n\\includegraphics{' +
+        url +
+        '}\n\\caption{Describe this figure.}\n\\end{figure}\n';
+      const end = source.value.lastIndexOf('\\end{document}');
+      source.value =
+        end >= 0
+          ? source.value.slice(0, end) + figure + source.value.slice(end)
+          : source.value + '\n' + figure;
+      source.oninput();
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      input.disabled = false;
+    }
+  };
 }
