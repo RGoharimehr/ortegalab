@@ -484,3 +484,27 @@ test('white paper template renders numbered figures and accessible tables', asyn
   assert.equal(root.querySelector('th').getAttribute('scope'), 'col');
   assert.equal(root.querySelector('img').alt, 'Flow apparatus');
 });
+
+test('full LaTeX papers render native HTML with paper-local references and optional PDF', async () => {
+  const { PageWhitePaperDetail } = await import('../public/js/site/white-papers.mjs');
+  DATA.whitePapers = [
+    {
+      id: 42,
+      title: 'Compiled paper',
+      authors: 'LATFS',
+      year: 2026,
+      abstract: 'Abstract',
+      tags: [],
+      latex_engine: 'full',
+      file_url: '/uploads/paper.pdf',
+      compiled_html:
+        '<h2 id="results">Results</h2><p>Native article text <a href="#results">Results</a></p><table><tr><td>Measured value</td></tr></table>',
+    },
+  ];
+  const page = PageWhitePaperDetail(42);
+  assert.match(page.textContent, /Native article text/);
+  assert.ok(page.querySelector('article table'));
+  assert.equal(page.querySelector('iframe'), null);
+  assert.equal(page.querySelector('article a').getAttribute('href'), '/white-papers/42#results');
+  assert.ok(page.querySelector('a[href="/uploads/paper.pdf"]'));
+});
