@@ -67,11 +67,19 @@
         page remains unchanged until a successful save.
       </p>
       <p>
-        This is LaTeX-to-web compilation using Pandoc, not a full TeX engine or a PDF generator.
-        Custom document classes, layout packages, TikZ, shell commands, external file inclusion and
-        external bibliography processing are not supported. Unsupported commands may cause a
-        compiler error; use the provided template and review the output. A separately prepared PDF
-        can still be attached as an optional download.
+        Auto mode selects Full LaTeX for documents with TikZ, custom table columns or title layouts.
+        Full LaTeX compiles a PDF and displays it on the paper page. It supports the installed
+        article, geometry, inputenc, fontenc, lmodern, microtype, xcolor, graphicx, booktabs,
+        tabularx, array, enumitem, titlesec, caption, float, TikZ and hyperref packages, including
+        arrows.meta, positioning and calc. Cross-references are resolved automatically. The engine
+        is Tectonic (XeTeX), not pdfLaTeX; engine-specific packages may differ.
+      </p>
+      <p>
+        Simple Web mode produces responsive HTML. Full LaTeX preserves the source’s page layout.
+        Full compilation runs on the production Linux server with no network, shell escape, or
+        access to website data. New packages must be installed by the administrator. Referenced
+        figures must use uploaded or site asset paths. The full compiler has a 60-second and 1-GB
+        memory limit.
       </p>
       <p>
         Source files are limited to 100 KB; compilation is limited to 15 seconds. Use Download

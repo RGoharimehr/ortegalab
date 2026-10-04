@@ -36,7 +36,11 @@ function createApp(options = {}) {
     express.static(config.uploadsPath, {
       dotfiles: 'deny',
       index: false,
-      setHeaders(res) {
+      setHeaders(res, filePath) {
+        if (/compiled_[a-f0-9-]+\.pdf$/.test(filePath)) {
+          res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'self'");
+          res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+        }
         if (!res.getHeader('Cache-Control')) res.setHeader('Cache-Control', 'no-cache');
       },
     }),
