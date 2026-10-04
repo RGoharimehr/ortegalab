@@ -1,5 +1,6 @@
 'use strict';
 const { Router } = require('express');
+const { compileLatex } = require('../services/latex');
 const { validateBlocks } = require('../services/white-paper-blocks');
 function createWhitePapersRouter({
   db,
@@ -24,13 +25,30 @@ function createWhitePapersRouter({
       list()
         .all()
         .filter((row) => row.published === 1)
-        .map(serialize),
+        .map((row) => {
+          const result = serialize(row);
+          delete result.latex_source;
+          return result;
+        }),
     ),
   );
   router.get('/api/white-papers/all', apiReadLimiter, requireStaff, (req, res) =>
     res.json(list().all().map(serialize)),
   );
-  function save(req, res) {
+  router.post(
+    '/api/white-papers/compile',
+    apiWriteLimiter,
+    requireStaff,
+    requireCsrf,
+    async (req, res) => {
+      try {
+        res.json({ html: await compileLatex(req.body.latex_source) });
+      } catch (error) {
+        res.status(400).json({ error: error.message });
+      }
+    },
+  );
+  async function save(req, res) {
     const b = req.body || {};
     const title = String(b.title || '').trim(),
       authors = String(b.authors || '').trim(),
@@ -58,8 +76,8 @@ function createWhitePapersRouter({
     )
       return res.status(400).json({ error: 'Choose an uploaded PDF or an HTTPS PDF URL.' });
     const published = b.published === 1 ? 1 : 0;
-    if (published && !file)
-      return res.status(400).json({ error: 'A PDF is required before publishing.' });
+    if (published && !file && !b.latex_source)
+      return res.status(400).json({ error: 'Compile LaTeX or attach a PDF before publishing.' });
     let tags, blocks;
     try {
       if (!Array.isArray(b.tags ?? [])) throw new Error('Tags must be a list.');
@@ -75,9 +93,23 @@ function createWhitePapersRouter({
         }
       }
       if (tags.length > 20) throw new Error('Use at most 20 tags.');
-      blocks = validateBlocks(b.blocks ?? []);
+      blocks = Object.hasOwn(b, 'latex_source') ? [] : validateBlocks(b.blocks ?? []);
     } catch (error) {
       return res.status(400).json({ error: error.message });
+    }
+    const previous = req.params.id
+      ? db.prepare('SELECT * FROM white_papers WHERE id=?').get(req.params.id)
+      : null;
+    if (req.params.id && !previous) return res.status(404).json({ error: 'White paper not found' });
+    let source = previous?.latex_source || '',
+      html = previous?.compiled_html || '';
+    if (Object.hasOwn(b, 'latex_source')) {
+      try {
+        html = await compileLatex(b.latex_source);
+        source = b.latex_source;
+      } catch (error) {
+        return res.status(400).json({ error: error.message });
+      }
     }
     const values = [
       title,
@@ -90,11 +122,13 @@ function createWhitePapersRouter({
       published,
       JSON.stringify(tags),
       JSON.stringify(blocks),
+      source,
+      html,
     ];
     if (req.params.id) {
       const result = db
         .prepare(
-          'UPDATE white_papers SET title=?,authors=?,abstract=?,year=?,category=?,file_url=?,file_name=?,published=?,tags=?,blocks=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
+          'UPDATE white_papers SET title=?,authors=?,abstract=?,year=?,category=?,file_url=?,file_name=?,published=?,tags=?,blocks=?,latex_source=?,compiled_html=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
         )
         .run(...values, req.params.id);
       if (!result.changes) return res.status(404).json({ error: 'White paper not found' });
@@ -102,13 +136,14 @@ function createWhitePapersRouter({
     }
     const result = db
       .prepare(
-        'INSERT INTO white_papers (title,authors,abstract,year,category,file_url,file_name,published,tags,blocks) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO white_papers (title,authors,abstract,year,category,file_url,file_name,published,tags,blocks,latex_source,compiled_html) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
       )
       .run(...values);
     res.status(201).json({ id: result.lastInsertRowid });
   }
-  router.post('/api/white-papers', apiWriteLimiter, requireStaff, requireCsrf, save);
-  router.put('/api/white-papers/:id', apiWriteLimiter, requireStaff, requireCsrf, save);
+  const saveHandler = (req, res, next) => save(req, res).catch(next);
+  router.post('/api/white-papers', apiWriteLimiter, requireStaff, requireCsrf, saveHandler);
+  router.put('/api/white-papers/:id', apiWriteLimiter, requireStaff, requireCsrf, saveHandler);
   router.delete('/api/white-papers/:id', apiWriteLimiter, requireStaff, requireCsrf, (req, res) => {
     const result = db.prepare('DELETE FROM white_papers WHERE id=?').run(req.params.id);
     res
