@@ -29,7 +29,21 @@ export function activeSection(route) {
 
 export function startRouter(render) {
   renderPage = render;
+  const paperAnchor = () =>
+    /^\/white-papers\/[^/]+$/.test(window.location.pathname) &&
+    window.location.hash &&
+    normalizeRoute(window.location.hash) === 'not-found';
+  const scrollAnchor = () => {
+    if (paperAnchor())
+      document
+        .getElementById(decodeURIComponent(window.location.hash.slice(1)))
+        ?.scrollIntoView?.({ block: 'start' });
+  };
   const onHashChange = () => {
+    if (paperAnchor()) {
+      scrollAnchor();
+      return;
+    }
     // The skip link is a document anchor, not a page route.
     if (window.location.hash === '#main-content') {
       document.getElementById('main-content')?.focus();
@@ -41,14 +55,18 @@ export function startRouter(render) {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
   state.route = normalizeRoute(
-    window.location.hash && window.location.hash !== '#main-content'
+    window.location.hash && window.location.hash !== '#main-content' && !paperAnchor()
       ? window.location.hash
       : window.location.pathname.replace(/^\/|\/$/g, ''),
   );
   const onPopState = () => {
-    if (window.location.hash && window.location.hash !== '#main-content') return;
+    if (paperAnchor() && state.route === normalizeRoute(window.location.pathname.slice(1))) {
+      scrollAnchor();
+      return;
+    }
+    if (window.location.hash && window.location.hash !== '#main-content' && !paperAnchor()) return;
     state.route = normalizeRoute(
-      window.location.hash && window.location.hash !== '#main-content'
+      window.location.hash && window.location.hash !== '#main-content' && !paperAnchor()
         ? window.location.hash
         : window.location.pathname.replace(/^\/|\/$/g, ''),
     );

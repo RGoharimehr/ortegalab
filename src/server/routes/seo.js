@@ -122,7 +122,7 @@ function createSeoRouter({ db, config }) {
             let figure = 0,
               table = 0;
             content +=
-              row.compiled_html ||
+              row.compiled_html?.replace(/href="#/g, 'href="/white-papers/' + row.id + '#') ||
               JSON.parse(row.blocks || '[]')
                 .map((b) => {
                   if (b.type === 'heading') return `<h2>${escape(b.text)}</h2>`;

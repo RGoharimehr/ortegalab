@@ -177,3 +177,7 @@ if (
   startRouter(render);
 }
 await reloadContent();
+if (/^\/white-papers\//.test(window.location.pathname) && window.location.hash)
+  document
+    .getElementById(decodeURIComponent(window.location.hash.slice(1)))
+    ?.scrollIntoView?.({ block: 'start' });

@@ -51,9 +51,10 @@ function cleanHtml(html) {
     },
     exclusiveFilter: (frame) =>
       frame.tag === 'img' &&
-      (!/^\/(uploads|assets)\/[a-zA-Z0-9/_.-]+\.(png|jpe?g|webp|gif)$/i.test(
+      ((!/^\/(uploads|assets)\/[a-zA-Z0-9/_.-]+\.(png|jpe?g|webp|gif)$/i.test(
         frame.attribs.src || '',
-      ) ||
+      ) &&
+        !/^\/uploads\/compiled_diagram_[a-zA-Z0-9_-]+\.svg$/.test(frame.attribs.src || '')) ||
         frame.attribs.src.includes('..')),
   });
 }

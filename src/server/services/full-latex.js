@@ -5,6 +5,7 @@ const os = require('node:os');
 const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const { compileLatex } = require('./latex');
+const { prepareWebLatex } = require('./latex-web');
 const root = path.resolve(__dirname, '../../..');
 let busy = false;
 function needsFullLatex(source) {
@@ -18,10 +19,7 @@ async function compilePaper(source, config, mode = 'auto') {
   if (!['auto', 'web', 'full'].includes(mode)) throw new Error('Choose Auto, Web or Full LaTeX.');
   const full = mode === 'full' || needsFullLatex(source);
   if (!full) return { html: await compileLatex(source), engine: 'web' };
-  if (mode === 'web')
-    throw new Error(
-      'This document needs Full LaTeX to preserve its diagrams or layout. Choose Auto or Full LaTeX.',
-    );
+
   if (process.platform !== 'linux')
     throw new Error(
       'Full LaTeX runs on the production server. Open Web Admin at https://latfs.duckdns.org/admin to compile this document.',
@@ -136,12 +134,86 @@ async function compilePaper(source, config, mode = 'auto') {
         },
       );
     });
+    const web = prepareWebLatex(input);
+    const diagramUrls = [];
+    const generated = [];
+    const run = (commandArgs) =>
+      new Promise((resolve, reject) => {
+        execFile(
+          '/usr/bin/prlimit',
+          commandArgs,
+          {
+            timeout: 60000,
+            killSignal: 'SIGKILL',
+            maxBuffer: 1024 * 1024,
+            env: { PATH: '/usr/bin:/bin' },
+          },
+          (error, stdout, stderr) => {
+            if (error)
+              reject(new Error('Web figure conversion failed: ' + (stderr || stdout).slice(-2000)));
+            else resolve();
+          },
+        );
+      });
+    if (web.diagrams.length) {
+      await fs.writeFile(
+        path.join(dir, 'diagrams.tex'),
+        web.preamble +
+          '\\usepackage[active,tightpage]{preview}\n\\PreviewEnvironment{tikzpicture}\n\\begin{document}\n' +
+          web.diagrams.join('\n') +
+          '\n\\end{document}',
+      );
+      await run([...args.slice(0, -1), 'diagrams.tex']);
+      const tools = path.join(root, 'data/pdf-tools');
+      await fs.access(path.join(tools, 'usr/bin/pdftocairo'));
+      for (let i = 0; i < web.diagrams.length; i++) {
+        const output = 'diagram-' + i + '.svg';
+        await run([
+          ...args.slice(0, -5),
+          '--ro-bind',
+          tools,
+          '/pdf-tools',
+          '--setenv',
+          'LD_LIBRARY_PATH',
+          '/pdf-tools/usr/lib/x86_64-linux-gnu',
+          '/pdf-tools/usr/bin/pdftocairo',
+          '-svg',
+          '-f',
+          String(i + 1),
+          '-l',
+          String(i + 1),
+          'diagrams.pdf',
+          output,
+        ]);
+        const svg = await fs.readFile(path.join(dir, output), 'utf8');
+        if (
+          !svg.includes('<svg') ||
+          svg.length > 10 * 1024 * 1024 ||
+          /<(?:script|foreignObject)\b/i.test(svg)
+        )
+          throw new Error('Invalid rendered diagram.');
+        const name = 'compiled_diagram_' + crypto.randomUUID() + '.svg';
+        generated.push({ name, content: svg });
+        diagramUrls.push('/uploads/' + name);
+      }
+    }
+    const normalized = prepareWebLatex(source, diagramUrls);
+    const html = await compileLatex(normalized.source);
+    if (
+      (html.match(/<figure\b/g) || []).length !== normalized.figureCount ||
+      (html.match(/<table\b/g) || []).length !== normalized.tableCount
+    )
+      throw new Error(
+        'HTML conversion did not preserve every figure and table. The saved paper has not changed.',
+      );
     const pdf = await fs.readFile(path.join(dir, 'paper.pdf'));
     if (pdf.subarray(0, 5).toString() !== '%PDF-')
       throw new Error('The compiler did not produce a PDF.');
     const name = 'compiled_' + crypto.randomUUID() + '.pdf';
+    for (const file of generated)
+      await fs.writeFile(path.join(config.uploadsPath, file.name), file.content, { flag: 'wx' });
     await fs.writeFile(path.join(config.uploadsPath, name), pdf, { flag: 'wx' });
-    return { html: '', pdf_url: '/uploads/' + name, engine: 'full' };
+    return { html, pdf_url: '/uploads/' + name, engine: 'full' };
   } catch (error) {
     if (error.code === 'ENOENT')
       throw new Error(
