@@ -836,8 +836,8 @@ test('news preserves captioned photos, placement and safe hyperlinks across rest
     content: 'Read [the event](https://example.org/event). <script>alert(1)</script>',
     image_url: '',
     photos: [
-      { url: '/uploads/before.jpg', caption: 'Our team', position: 'before' },
-      { url: '/uploads/after.jpg', caption: 'The exhibit', position: 'after' },
+      { url: '/uploads/before.jpg', caption: 'Our team', position: 'before', size: 'large' },
+      { url: '/uploads/after.jpg', caption: 'The exhibit', position: 'after', size: 'grid' },
     ],
   };
   const saved = await app.request('/api/news', { method: 'POST', body, ...auth });
