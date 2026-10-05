@@ -38,3 +38,24 @@
   overflow-x: auto;
   padding: 1em 0;
 }
+.w-latex-body {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.w-latex-body [id] {
+  scroll-margin-top: 125px;
+}
+.w-latex-body img[src$='.svg'] {
+  width: 100%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.w-latex-body h5 {
+  font-size: 1.1em;
+  margin: 1.5em 0 0.5em;
+}
+.w-latex-body td {
+  min-width: 120px;
+}

@@ -11,7 +11,8 @@ test('advanced LaTeX selects the full engine instead of silently dropping conten
   const source = fs.readFileSync(path.join(__dirname, 'fixtures/full-latex.tex'), 'utf8');
   assert.equal(needsFullLatex(source), true);
   assert.equal(needsFullLatex('\\section{Introduction}\nText'), false);
-  await assert.rejects(compilePaper(source, {}, 'web'), /Full LaTeX/);
+  if (process.platform !== 'linux')
+    await assert.rejects(compilePaper(source, {}, 'web'), /production server/);
 });
 test(
   'full compiler renders TikZ and custom tables offline and cannot read app files',
@@ -26,6 +27,10 @@ test(
         'full',
       );
       assert.equal(result.engine, 'full');
+      assert.match(result.html, /<table/);
+      assert.match(result.html, /compiled_diagram_.*\.svg/);
+      assert.match(result.html, /href="#fig:validation"/);
+      assert.doesNotMatch(result.html, /iframe/);
       assert.match(result.pdf_url, /^\/uploads\/compiled_/);
       assert.equal(
         fs

@@ -194,16 +194,10 @@ export function PageWhitePaperDetail(id) {
       ),
     );
   const article = h('article', { class: 'w-paper-body w-latex-body' });
-  if (paper.latex_engine === 'full' && /^\/uploads\/compiled_[a-f0-9-]+\.pdf$/.test(paper.file_url))
-    article.append(
-      h('iframe', {
-        src: paper.file_url,
-        title: 'Compiled white paper: ' + paper.title,
-        style: { width: '100%', height: '85vh', border: '0', background: '#fff' },
-      }),
-    );
-  else if (paper.compiled_html) article.innerHTML = paper.compiled_html;
+  if (paper.compiled_html) article.innerHTML = paper.compiled_html;
   else article.append(...paperBlocks(paper.blocks || []).filter(Boolean));
+  for (const link of article.querySelectorAll('a[href^="#"]'))
+    link.setAttribute('href', '/white-papers/' + paper.id + link.getAttribute('href'));
   return h(
     'div',
     { class: 'w-white-papers-page' },

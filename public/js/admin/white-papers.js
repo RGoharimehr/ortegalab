@@ -69,9 +69,9 @@ async function renderWhitePapersTab(body) {
       <label>File URL</label><input id="d_url" value="${escHtml(item.file_url || '')}" placeholder="/uploads/your-file.pdf">
       <label>Visible file name</label><input id="d_name" value="${escHtml(item.file_name || '')}" placeholder="Original file name">
       <h3>LaTeX source</h3>
-      <p>Use the shared <a href="/templates/LATFS-White-Paper-Template.tex" download>LaTeX template</a>. Auto uses full LaTeX for TikZ, custom tables and title layouts, displaying the compiled PDF on the page. Simple papers become responsive HTML. <a href="/templates/author-guide.html" target="_blank" rel="noopener">Supported format ↗</a></p>
+      <p>Use the shared <a href="/templates/LATFS-White-Paper-Template.tex" download>LaTeX template</a>. Your source becomes an HTML article. TikZ diagrams render as SVG images; tables, text and references remain native webpage content. The PDF is an optional download. <a href="/templates/author-guide.html" target="_blank" rel="noopener">Supported format ↗</a></p>
       <label>Open .tex file (up to 100 KB)</label><input id="wp_tex_file" type="file" accept=".tex,text/plain">
-      <label>Compilation mode</label><select id="wp_mode"><option value="auto">Auto — detect full LaTeX documents</option><option value="full">Full LaTeX — PDF with TikZ and page layout</option><option value="web">Web — responsive HTML for simple documents</option></select>
+      <label>Compilation mode</label><select id="wp_mode"><option value="auto">Auto — HTML article with rendered diagrams</option><option value="full">Full LaTeX — HTML article and optional PDF</option><option value="web">Web — responsive HTML for simple documents</option></select>
       <label for="wp_source">Edit LaTeX</label><textarea id="wp_source" spellcheck="false" style="min-height:420px;font-family:monospace;tab-size:2">${escHtml(item.latex_source || legacyPaperLatex(item.blocks || []))}</textarea>
       <label>Upload a figure</label><input id="wp_figure" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
       <p id="wp_figure_url"></p>
@@ -199,19 +199,25 @@ function setupPaperLatex(root) {
         latex_mode: root.querySelector('#wp_mode').value,
       });
       if (revision !== current) return;
-      preview.replaceChildren();
+      preview.innerHTML = result.html;
       if (result.pdf_url) {
         const link = document.createElement('a');
         link.href = result.pdf_url;
         link.target = '_blank';
         link.rel = 'noopener';
-        link.textContent = 'Open compiled PDF ↗';
-        const frame = document.createElement('iframe');
-        frame.src = result.pdf_url;
-        frame.title = 'Compiled LaTeX preview';
-        frame.style.cssText = 'width:100%;height:550px;border:0';
-        preview.append(link, frame);
-      } else preview.innerHTML = result.html;
+        link.textContent = 'View optional PDF ↗';
+        preview.prepend(link);
+      }
+      preview.querySelectorAll('a[href^="#"]').forEach(
+        (link) =>
+          (link.onclick = (event) => {
+            event.preventDefault();
+            const target = [...preview.querySelectorAll('[id]')].find(
+              (el) => el.id === decodeURIComponent(link.getAttribute('href').slice(1)),
+            );
+            target?.scrollIntoView({ block: 'start' });
+          }),
+      );
       preview.hidden = false;
       status.textContent =
         'Compiled successfully. Save to update the paper. Publishing makes it public.';
