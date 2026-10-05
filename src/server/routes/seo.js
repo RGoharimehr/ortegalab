@@ -119,6 +119,8 @@ function createSeoRouter({ db, config }) {
           description = plain(row[specs[key][2]]) || intro;
           content = article(row, specs[key]) + `<p>${escape(plain(row.content || ''))}</p>`;
           if (key === 'white-papers') {
+            if (row.compiled_html || JSON.parse(row.blocks || '[]').length)
+              content = article({ ...row, abstract: '' }, specs[key]);
             let figure = 0,
               table = 0;
             content +=
