@@ -94,9 +94,7 @@ async function apiRows(p) {
 }
 
 async function uploadPhoto(file) {
-  const fd = new FormData();
-  fd.append('photo', file);
-  return (await api('/api/upload/photo', { method: 'POST', body: fd })).url;
+  return uploadContentPhoto(file);
 }
 async function uploadDoc(file) {
   const fd = new FormData();

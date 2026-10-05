@@ -55,7 +55,7 @@ async function renderPeopleTab(body, people) {
       <label>Profile photo (upload)</label>
       <div style="display:flex; gap:10px; align-items:center;">
         <img id="m_ph_prev" src="${escHtml(p.photo_url || '')}" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:${escHtml(p.photo_position || 'center center')};background:var(--bg-1);border:1px solid var(--border-1);${p.photo_url ? '' : 'visibility:hidden;'}">
-        <input type="file" id="m_ph_file" accept="image/*" style="flex:1;">
+        <input type="file" id="m_ph_file" data-photo-target="#m_ph" accept="image/*" style="flex:1;">
       </div>
       <label>Photo URL (or use upload above)</label><input id="m_ph" value="${escHtml(p.photo_url || '')}">
       <label>Photo focal point — click on the image to choose what should be centered in the circle</label>

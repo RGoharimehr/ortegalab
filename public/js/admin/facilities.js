@@ -59,7 +59,7 @@ async function renderFacilitiesTab(body) {
       <label>Cover photo (upload)</label>
       <div style="display:flex; gap:10px; align-items:center;">
         ${f.photo_url ? `<img src="${escHtml(f.photo_url)}" alt="" style="height:50px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
-        <input type="file" id="m_pf" accept="image/*" style="flex:1;">
+        <input type="file" id="m_pf" data-photo-target="#m_p" accept="image/*" style="flex:1;">
       </div>
       <label>Photo URL (or use upload above)</label><input id="m_p" value="${escHtml(f.photo_url || '')}">
       <label>Documentation file (PDF, upload)</label>
