@@ -44,7 +44,7 @@ async function renderSponsorsTab(body) {
       <label>Logo (upload)</label>
       <div style="display:flex; gap:10px; align-items:center;">
         ${sp.logo_url ? `<img src="${escHtml(sp.logo_url)}" alt="" style="max-height:40px; max-width:120px;">` : ''}
-        <input type="file" id="m_lf" accept="image/*">
+        <input type="file" id="m_lf" data-photo-target="#m_l" accept="image/*">
       </div>
       <label>Logo URL (or use upload above)</label><input id="m_l" value="${escHtml(sp.logo_url || '')}">
       <label>Sort order</label><input id="m_s" type="number" value="${sp.sort_order || 0}">

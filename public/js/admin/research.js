@@ -50,7 +50,7 @@ async function renderResearchTab(body) {
       <label>Cover image (upload)</label>
       <div style="display:flex; gap:10px; align-items:center;">
         ${r.image_url ? `<img src="${escHtml(r.image_url)}" alt="" style="height:48px; border-radius:6px; border:1px solid var(--border-1);">` : ''}
-        <input type="file" id="m_i_file" accept="image/*" style="flex:1;">
+        <input type="file" id="m_i_file" data-photo-target="#m_i" accept="image/*" style="flex:1;">
       </div>
       <label>Image URL (or use upload above)</label><input id="m_i" value="${escHtml(r.image_url || '')}">
       <label>Sort order</label><input id="m_s" type="number" value="${r.sort_order || 0}">

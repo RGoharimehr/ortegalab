@@ -47,7 +47,7 @@ function renderNewsTab(body, news) {
       <label>Cover image (upload)</label>
       <div style="display:flex; gap:10px; align-items:center;">
         ${n.image_url ? `<img src="${escHtml(n.image_url)}" alt="" style="height:48px;border-radius:6px;border:1px solid var(--border-1);">` : ''}
-        <input type="file" id="m_img_file" accept="image/*" style="flex:1;">
+        <input type="file" id="m_img_file" data-photo-target="#m_img" accept="image/*" style="flex:1;">
       </div>
       <label>Cover image URL</label><input id="m_img" value="${escHtml(n.image_url || '')}">
       <label>Content</label><textarea id="m_c" style="min-height:160px;">${escHtml(n.content)}</textarea>

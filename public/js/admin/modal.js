@@ -15,6 +15,7 @@ function modal(title, sub, body, onSave) {
     </div>
   </div>`;
   document.body.appendChild(bg);
+  installPhotoControls(bg);
   let saving = false;
   let releaseFocus;
   const close = () => {
