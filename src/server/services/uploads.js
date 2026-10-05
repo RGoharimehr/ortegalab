@@ -120,7 +120,7 @@ function createUploadService({ db, config, logger = console }) {
     ['white_papers', ['file_url', 'blocks', 'compiled_html'], 'published=1'],
     ['publications', ['pdf_url', 'doi_url', 'citation_url', 'ris_url']],
     ['research', ['image_url', 'content', 'links', 'description']],
-    ['news', ['image_url', 'content']],
+    ['news', ['image_url', 'content', 'photos']],
     ['sponsors', ['logo_url']],
     ['gallery', ['image_url']],
     ['hero_slides', ['image_url']],

@@ -28,6 +28,29 @@ function researchPayload(body) {
   };
 }
 
+function newsPhotos(value) {
+  if (!Array.isArray(value) || value.length > 20) throw new Error('Use up to 20 news photos.');
+  return JSON.stringify(
+    value.map((photo) => {
+      if (
+        !photo ||
+        typeof photo.url !== 'string' ||
+        photo.url.length > 500 ||
+        !/^(https?:\/\/|\/(?!\/))/i.test(photo.url) ||
+        /[\s<>"\\]/.test(photo.url)
+      )
+        throw new Error('Invalid photo URL.');
+      if (
+        !['before', 'after'].includes(photo.position) ||
+        typeof photo.caption !== 'string' ||
+        photo.caption.length > 500
+      )
+        throw new Error('Invalid photo caption or placement.');
+      return { url: photo.url, caption: photo.caption, position: photo.position };
+    }),
+  );
+}
+
 function createContentRouter({
   db,
   sendInternalError,
@@ -65,21 +88,45 @@ function createContentRouter({
 
   router.post('/api/news', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
     const { title, content, date, image_url, slug } = req.body;
+    let photos;
+    try {
+      photos = req.body.photos === undefined ? null : newsPhotos(req.body.photos);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
     if (!title || !content || !date) return res.status(400).json({ error: 'Missing fields' });
     const result = db
-      .prepare('INSERT INTO news (title, content, date, image_url, slug) VALUES (?, ?, ?, ?, ?)')
-      .run(str(title, 500), str(content, 20000), date, str(image_url, 500), str(slug, 200));
+      .prepare(
+        'INSERT INTO news (title, content, date, image_url, slug, photos) VALUES (?, ?, ?, ?, ?, ?)',
+      )
+      .run(
+        str(title, 500),
+        str(content, 20000),
+        date,
+        str(image_url, 500),
+        str(slug, 200),
+        photos || '[]',
+      );
     res.json({ id: result.lastInsertRowid, title, content, date });
   });
 
   router.put('/api/news/:id', apiWriteLimiter, requireModerator, requireCsrf, (req, res) => {
     const { title, content, date, image_url, slug } = req.body;
-    db.prepare('UPDATE news SET title=?, content=?, date=?, image_url=?, slug=? WHERE id=?').run(
+    let photos;
+    try {
+      photos = req.body.photos === undefined ? null : newsPhotos(req.body.photos);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+    db.prepare(
+      'UPDATE news SET title=?, content=?, date=?, image_url=?, slug=?, photos=COALESCE(?, photos) WHERE id=?',
+    ).run(
       str(title, 500),
       str(content, 20000),
       date,
       str(image_url, 500),
       str(slug, 200),
+      photos,
       req.params.id,
     );
     res.json({ success: true });

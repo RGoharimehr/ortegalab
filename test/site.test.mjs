@@ -539,3 +539,24 @@ test('abstract previews expand and collapse without duplicating the article abst
     1,
   );
 });
+
+test('news displays captioned photos before and after linked text', () => {
+  DATA.news = [
+    {
+      id: 91,
+      title: 'News',
+      content: 'Visit [event](https://example.org). [bad](javascript:alert)',
+      photos: JSON.stringify([
+        { url: '/uploads/a.jpg', caption: 'First', position: 'before' },
+        { url: '/uploads/b.jpg', caption: 'Last', position: 'after' },
+      ]),
+    },
+  ];
+  const page = pages.PageNewsDetail(91);
+  assert.equal(page.querySelectorAll('figure').length, 2);
+  assert.equal(page.querySelectorAll('figcaption')[1].textContent, 'Last');
+  assert.equal(page.querySelector('.w-news-body-rich a').href, 'https://example.org/');
+  assert.equal(page.querySelectorAll('.w-news-body-rich a').length, 1);
+  assert.ok(page.textContent.indexOf('First') < page.textContent.indexOf('Visit'));
+  assert.ok(page.textContent.indexOf('Last') > page.textContent.indexOf('Visit'));
+});

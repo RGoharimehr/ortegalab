@@ -1294,3 +1294,21 @@
   color: var(--text-primary);
   background: transparent;
 }
+
+.w-news-figure {
+  margin: 32px auto;
+  text-align: center;
+}
+.w-news-figure .w-news-detail-img {
+  margin: 0 auto;
+}
+.w-news-figure figcaption {
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.w-news-body-rich a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

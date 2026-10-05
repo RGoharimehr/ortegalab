@@ -38,36 +38,77 @@ function renderNewsTab(body, news) {
   function openNews(n) {
     const isNew = !n;
     n = n || { title: '', content: '', date: new Date().toISOString().slice(0, 10), image_url: '' };
-    modal(
+    const dialog = modal(
       isNew ? 'New news item' : 'Edit news',
       '',
       `
       <label>Date</label><input id="m_date" type="date" value="${escHtml(n.date)}">
       <label>Title</label><input id="m_t" value="${escHtml(n.title)}">
-      <label>Cover image (upload)</label>
-      <div style="display:flex; gap:10px; align-items:center;">
-        ${n.image_url ? `<img src="${escHtml(n.image_url)}" alt="" style="height:48px;border-radius:6px;border:1px solid var(--border-1);">` : ''}
-        <input type="file" id="m_img_file" data-photo-target="#m_img" accept="image/*" style="flex:1;">
-      </div>
-      <label>Cover image URL</label><input id="m_img" value="${escHtml(n.image_url || '')}">
+      <div id="newsPhotos"></div><button type="button" class="btn-ghost-sm" id="addNewsPhoto">+ Add photo</button>
+      <div style="margin-top:16px"><label>Link text</label><input id="newsLinkText"><label>Link URL</label><input id="newsLinkUrl" type="url" placeholder="https://…"><button type="button" class="btn-ghost-sm" id="insertNewsLink">Insert link into text</button></div>
       <label>Content</label><textarea id="m_c" style="min-height:160px;">${escHtml(n.content)}</textarea>
     `,
       async (mb) => {
-        const f = $('#m_img_file', mb);
-        if (f && f.files && f.files[0]) {
-          const url = await uploadPhoto(f.files[0]);
-          $('#m_img', mb).value = url;
+        const photos = [];
+        for (const row of mb.querySelectorAll('[data-news-photo]')) {
+          const file = row.querySelector('input[type="file"]');
+          const field = row.querySelector('[data-url]');
+          if (file.files[0]) field.value = await uploadPhoto(file.files[0]);
+          if (!field.value.trim()) throw new Error('Choose an image or remove the empty photo.');
+          photos.push({
+            url: field.value.trim(),
+            caption: row.querySelector('[data-news-caption]').value,
+            position: row.querySelector('select').value,
+          });
         }
         const body = {
           date: $('#m_date', mb).value,
           title: $('#m_t', mb).value,
           content: $('#m_c', mb).value,
-          image_url: $('#m_img', mb).value,
+          image_url: photos[0]?.url || '',
+          photos,
         };
         if (isNew) await apiPost('/api/news', body);
         else await apiPut('/api/news/' + n.id, body);
         renderAdmin($('#mainContent'));
       },
     );
+    let sequence = 0;
+    const container = dialog.querySelector('#newsPhotos');
+    function addPhoto(photo = { url: '', caption: '', position: 'before' }) {
+      if (container.children.length >= 20) return;
+      const id = 'newsPhoto' + sequence++;
+      const row = document.createElement('fieldset');
+      row.dataset.newsPhoto = '';
+      row.innerHTML = `<legend>News photo</legend><div><label>Upload photo</label><input type="file" id="${id}File" accept="image/*" data-photo-target="#${id}Url"></div>
+        <label>Image URL</label><input id="${id}Url" data-url value="${escHtml(photo.url)}">
+        <label>Caption</label><input data-news-caption maxlength="500" value="${escHtml(photo.caption)}">
+        <label>Placement</label><select><option value="before">Before news text</option><option value="after">After news text</option></select>
+        <button type="button" class="btn-ghost-sm" data-remove>Remove photo</button>`;
+      row.querySelector('select').value = photo.position || 'before';
+      row.querySelector('[data-remove]').onclick = () => row.remove();
+      container.append(row);
+      installPhotoControls(row);
+    }
+    NewsContent.photos(n).forEach(addPhoto);
+    dialog.querySelector('#addNewsPhoto').onclick = () => addPhoto();
+    dialog.querySelector('#insertNewsLink').onclick = () => {
+      const label = dialog.querySelector('#newsLinkText').value.trim();
+      const url = dialog.querySelector('#newsLinkUrl').value.trim();
+      const error = dialog.querySelector('.form-error');
+      if (!label || /[\]\n]/.test(label) || !NewsContent.safe(url) || /[()]/.test(url)) {
+        error.textContent = 'Enter link text and a valid URL (encode parentheses in the URL).';
+        return;
+      }
+      error.textContent = '';
+      const field = dialog.querySelector('#m_c');
+      field.setRangeText(
+        '[' + label + '](' + url + ')',
+        field.selectionStart,
+        field.selectionEnd,
+        'end',
+      );
+      field.focus();
+    };
   }
 }
