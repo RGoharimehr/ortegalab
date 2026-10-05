@@ -508,3 +508,34 @@ test('full LaTeX papers render native HTML with paper-local references and optio
   assert.equal(page.querySelector('article a').getAttribute('href'), '/white-papers/42#results');
   assert.ok(page.querySelector('a[href="/uploads/paper.pdf"]'));
 });
+
+test('abstract previews expand and collapse without duplicating the article abstract', async () => {
+  const { PageWhitePapers, PageWhitePaperDetail } =
+    await import('../public/js/site/white-papers.mjs');
+  const abstract = 'A complete abstract with all its content. '.repeat(30);
+  DATA.whitePapers = [
+    {
+      id: 7,
+      title: 'Paper',
+      authors: 'Author',
+      year: 2026,
+      tags: [],
+      abstract,
+      compiled_html: '<h2>Abstract</h2><p>' + abstract + '</p><h2>Results</h2><p>Findings.</p>',
+    },
+  ];
+  const listing = PageWhitePapers();
+  const toggle = listing.querySelector('[aria-controls="paper-abstract-7"]');
+  assert.equal(listing.querySelector('#paper-abstract-7').textContent, abstract);
+  toggle.click();
+  assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+  assert.ok(listing.querySelector('.w-abstract-preview.is-expanded'));
+  toggle.click();
+  assert.equal(toggle.getAttribute('aria-expanded'), 'false');
+  const detail = PageWhitePaperDetail(7);
+  assert.equal(detail.textContent.split(abstract).length - 1, 1);
+  assert.equal(
+    [...detail.querySelectorAll('h2')].filter((el) => el.textContent === 'Abstract').length,
+    1,
+  );
+});

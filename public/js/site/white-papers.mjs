@@ -47,6 +47,26 @@ export function paperBlocks(blocks = []) {
     return null;
   });
 }
+function abstractPreview(paper) {
+  const text = paper.abstract || '';
+  const paragraph = h('p', { id: 'paper-abstract-' + paper.id, class: 'w-abstract-preview' }, text);
+  const toggle = h(
+    'button',
+    {
+      class: 'w-text-link',
+      'aria-expanded': 'false',
+      'aria-controls': paragraph.id,
+      onclick: () => {
+        const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(expanded));
+        paragraph.classList.toggle('is-expanded', expanded);
+        toggle.textContent = expanded ? 'Show less' : 'Read full abstract';
+      },
+    },
+    'Read full abstract',
+  );
+  return h('div', { class: 'w-abstract-excerpt' }, paragraph, text ? toggle : null);
+}
 export function PageWhitePapers() {
   const papers = DATA.whitePapers || [];
   let query = '',
@@ -77,11 +97,7 @@ export function PageWhitePapers() {
                     h('h3', null, h('a', { href: '/white-papers/' + p.id }, p.title)),
                     h('p', { class: 'w-muted' }, p.authors),
                     tagList(p),
-                    h(
-                      'p',
-                      null,
-                      p.abstract.length > 300 ? p.abstract.slice(0, 300) + '…' : p.abstract,
-                    ),
+                    abstractPreview(p),
                     h(
                       'div',
                       { class: 'w-white-paper-links' },
@@ -210,8 +226,8 @@ export function PageWhitePaperDetail(id) {
         { class: 'max-w' },
         h('p', { class: 'eyebrow' }, String(paper.year)),
         tagList(paper),
-        h('h2', null, 'Abstract'),
-        h('p', { class: 'w-detail-copy', style: { whiteSpace: 'pre-wrap' } }, paper.abstract),
+        !article.hasChildNodes() &&
+          h('p', { class: 'w-detail-copy w-paper-abstract' }, paper.abstract),
         article,
         h(
           'div',

@@ -66,3 +66,31 @@
 .w-latex-body td {
   min-width: 120px;
 }
+
+/* Justify prose, leaving captions and table cells with their own alignment. */
+.w-latex-body > p,
+.w-latex-body section > p,
+.w-latex-body .abstract p,
+.w-paper-abstract,
+.w-abstract-preview {
+  text-align: justify;
+  hyphens: auto;
+}
+.w-abstract-preview {
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.w-abstract-preview.is-expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+.w-abstract-excerpt button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
