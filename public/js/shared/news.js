@@ -49,7 +49,7 @@
         html += '</div>';
         gridOpen = false;
       }
-      html += `<figure class="w-news-figure w-news-photo-${size === 'grid' ? 'small' : size}"><img class="w-news-detail-img" src="${escape(p.url)}" alt="${escape(p.caption || '')}" loading="lazy">${p.caption ? `<figcaption>${escape(p.caption)}</figcaption>` : ''}</figure>`;
+      html += `<figure class="w-news-figure w-news-photo-${size === 'grid' ? 'small' : size}"><a class="w-news-photo-open" href="${escape(p.url)}" aria-label="${escape(p.caption ? 'Enlarge photo: ' + p.caption : 'Enlarge news photo')}" target="_blank" rel="noopener"><img class="w-news-detail-img" src="${escape(p.url)}" alt="${escape(p.caption || '')}" loading="lazy"></a>${p.caption ? `<figcaption>${escape(p.caption)}</figcaption>` : ''}</figure>`;
     }
     return html + (gridOpen ? '</div>' : '');
   }

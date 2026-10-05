@@ -585,3 +585,33 @@ test('news groups consecutive small photos while keeping feature and medium imag
   assert.equal(grids[1].querySelectorAll('figure').length, 1);
   assert.equal(page.querySelectorAll('figure').length, 5);
 });
+
+test('news photos open a larger accessible preview and Escape restores focus', () => {
+  DATA.news = [
+    {
+      id: 93,
+      title: 'Event',
+      content: 'News text',
+      photos: [
+        {
+          url: '/uploads/portrait.jpg',
+          caption: 'Portrait caption',
+          size: 'grid',
+          position: 'after',
+        },
+      ],
+    },
+  ];
+  const page = pages.PageNewsDetail(93);
+  document.querySelector('#app').append(page);
+  const link = page.querySelector('.w-news-photo-open');
+  link.focus();
+  link.click();
+  const dialog = document.querySelector('[role="dialog"]');
+  assert.ok(dialog);
+  assert.equal(dialog.querySelector('img').getAttribute('src'), '/uploads/portrait.jpg');
+  assert.match(dialog.textContent, /Portrait caption/);
+  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
+  assert.equal(document.querySelector('[role="dialog"]'), null);
+  assert.equal(document.activeElement, link);
+});
