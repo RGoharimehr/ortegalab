@@ -826,3 +826,42 @@ test(
     assert.equal((await app.request('/uploads/latex-figure.png')).status, 401);
   },
 );
+
+test('news preserves captioned photos, placement and safe hyperlinks across restart', async (t) => {
+  const app = await fixture(t);
+  const auth = await login(app);
+  const body = {
+    title: 'Exhibition',
+    date: '2026-10-05',
+    content: 'Read [the event](https://example.org/event). <script>alert(1)</script>',
+    image_url: '',
+    photos: [
+      { url: '/uploads/before.jpg', caption: 'Our team', position: 'before' },
+      { url: '/uploads/after.jpg', caption: 'The exhibit', position: 'after' },
+    ],
+  };
+  const saved = await app.request('/api/news', { method: 'POST', body, ...auth });
+  assert.equal(saved.status, 200, saved.text);
+  await app.restart();
+  const row = (await app.request('/api/news')).data.find((n) => n.id === saved.data.id);
+  assert.deepEqual(JSON.parse(row.photos), body.photos);
+  const html = (await app.request('/news/' + row.id)).text;
+  assert.ok(html.indexOf('before.jpg') < html.indexOf('href="https://example.org/event"'));
+  assert.ok(html.indexOf('after.jpg') > html.indexOf('href="https://example.org/event"'));
+  assert.match(html, /<figcaption>Our team<\/figcaption>/);
+  assert.match(html, /href="https:\/\/example.org\/event"/);
+  assert.doesNotMatch(html, /<script>alert\(1\)<\/script>/);
+  const invalid = await app.request('/api/news/' + row.id, {
+    method: 'PUT',
+    ...auth,
+    body: { ...body, photos: [{ url: 'javascript:alert(1)', caption: '', position: 'before' }] },
+  });
+  assert.equal(invalid.status, 400);
+  const removed = await app.request('/api/news/' + row.id, {
+    method: 'PUT',
+    ...auth,
+    body: { ...body, photos: [] },
+  });
+  assert.equal(removed.status, 200);
+  assert.equal((await app.request('/api/news')).data.find((n) => n.id === row.id).photos, '[]');
+});

@@ -1,3 +1,4 @@
+import '../shared/news.js';
 import { h, safeHref } from './dom.mjs';
 import {
   renderPeopleSections,
@@ -845,8 +846,12 @@ export function PageNewsDetail(id) {
         h(
           'article',
           { class: 'w-news-detail' },
-          n.image_url ? h('img', { src: n.image_url, alt: '', class: 'w-news-detail-img' }) : null,
-          h('div', { class: 'w-detail-copy w-news-body-rich' }, n.content || n.body || ''),
+          h('div', { html: globalThis.NewsContent.figures(n, 'before') }),
+          h('div', {
+            class: 'w-detail-copy w-news-body-rich',
+            html: globalThis.NewsContent.text(n.content || n.body || ''),
+          }),
+          h('div', { html: globalThis.NewsContent.figures(n, 'after') }),
         ),
       ),
     ),

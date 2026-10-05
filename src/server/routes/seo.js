@@ -1,4 +1,5 @@
 'use strict';
+const NewsContent = require('../../../public/js/shared/news');
 const { Router } = require('express');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -118,6 +119,12 @@ function createSeoRouter({ db, config }) {
           title = row[specs[key][1]];
           description = plain(row[specs[key][2]]) || intro;
           content = article(row, specs[key]) + `<p>${escape(plain(row.content || ''))}</p>`;
+          if (key === 'news')
+            content =
+              `<h2>${escape(row.title)}</h2>` +
+              NewsContent.figures(row, 'before') +
+              `<div style="white-space:pre-wrap">${NewsContent.text(row.content)}</div>` +
+              NewsContent.figures(row, 'after');
           if (key === 'white-papers') {
             if (row.compiled_html || JSON.parse(row.blocks || '[]').length)
               content = article({ ...row, abstract: '' }, specs[key]);
