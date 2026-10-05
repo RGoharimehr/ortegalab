@@ -13,7 +13,7 @@ import { researchPhoto } from './photography.mjs';
 import { PEOPLE_GROUPS } from './config.mjs';
 import { DATA } from './data.mjs';
 import { PageBanner } from './layout.mjs';
-import { openInlineApp } from './overlays.mjs';
+import { openInlineApp, openGalleryPreview } from './overlays.mjs';
 import { getInitials, activePeopleRows, assetUrl, matchesQuery, fmtNewsDate } from './utils.mjs';
 
 function researchLinks(value) {
@@ -845,7 +845,19 @@ export function PageNewsDetail(id) {
         h('a', { class: 'w-back', href: '#' + 'news' }, '← Back to News'),
         h(
           'article',
-          { class: 'w-news-detail' },
+          {
+            class: 'w-news-detail',
+            onclick: (event) => {
+              const link = event.target.closest('.w-news-photo-open');
+              if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              openGalleryPreview({
+                src: link.getAttribute('href'),
+                title: link.querySelector('img').alt || n.title || 'News photo',
+                cat: 'News',
+              });
+            },
+          },
           h('div', { html: globalThis.NewsContent.figures(n, 'before') }),
           h('div', {
             class: 'w-detail-copy w-news-body-rich',

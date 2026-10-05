@@ -1336,7 +1336,8 @@
   margin: 0;
 }
 .w-page-content .w-news-photo-grid .w-news-detail-img {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: auto;
+  height: auto;
   object-fit: contain;
 }
 @media (max-width: 900px) {
@@ -1348,4 +1349,21 @@
   .w-news-photo-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.w-news-photo-grid {
+  align-items: start;
+}
+.w-news-photo-open {
+  display: block;
+  cursor: zoom-in;
+}
+.w-news-photo-open:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 5px;
+  border-radius: 12px;
+}
+.w-page-content .w-news-body-rich {
+  text-align: justify;
+  hyphens: auto;
 }
