@@ -46,7 +46,7 @@ export const PEOPLE_GROUPS = [
   ['director', 'Director'],
   ['manager', 'Lab manager / assistant'],
   ['faculty', 'Faculty & senior researchers'],
-  ['postdoc', 'Postdoctoral researchers'],
+  ['postdoc', 'Postdocs'],
   ['phd', 'PhD candidates'],
   ['ms', 'MS students'],
   ['ug', 'Undergraduate researchers'],

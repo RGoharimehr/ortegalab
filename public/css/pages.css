@@ -424,6 +424,8 @@
   color: var(--page-dim);
 }
 .w-page-content .w-pdetail-bio {
+  text-align: justify;
+  hyphens: auto;
   margin-top: 36px;
   padding-top: 30px;
   border-top: 1px solid var(--page-line);
