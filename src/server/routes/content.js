@@ -46,7 +46,14 @@ function newsPhotos(value) {
         photo.caption.length > 500
       )
         throw new Error('Invalid photo caption or placement.');
-      return { url: photo.url, caption: photo.caption, position: photo.position };
+      if (photo.size !== undefined && !['large', 'medium', 'grid'].includes(photo.size))
+        throw new Error('Choose a valid photo display size.');
+      return {
+        url: photo.url,
+        caption: photo.caption,
+        position: photo.position,
+        ...(photo.size ? { size: photo.size } : {}),
+      };
     }),
   );
 }

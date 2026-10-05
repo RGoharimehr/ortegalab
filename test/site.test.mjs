@@ -560,3 +560,28 @@ test('news displays captioned photos before and after linked text', () => {
   assert.ok(page.textContent.indexOf('First') < page.textContent.indexOf('Visit'));
   assert.ok(page.textContent.indexOf('Last') > page.textContent.indexOf('Visit'));
 });
+
+test('news groups consecutive small photos while keeping feature and medium images separate', () => {
+  DATA.news = [
+    {
+      id: 92,
+      title: 'Event',
+      content: 'News text',
+      photos: [
+        { url: '/uploads/hero.jpg', size: 'large', position: 'before' },
+        { url: '/uploads/a.jpg', size: 'grid', position: 'after', caption: 'A' },
+        { url: '/uploads/b.jpg', size: 'grid', position: 'after', caption: 'B' },
+        { url: '/uploads/c.jpg', size: 'medium', position: 'after', caption: 'C' },
+        { url: '/uploads/d.jpg', size: 'grid', position: 'after', caption: 'D' },
+      ],
+    },
+  ];
+  const page = pages.PageNewsDetail(92);
+  assert.equal(page.querySelectorAll('.w-news-photo-large').length, 1);
+  assert.equal(page.querySelectorAll('.w-news-photo-medium').length, 1);
+  const grids = page.querySelectorAll('.w-news-photo-grid');
+  assert.equal(grids.length, 2);
+  assert.equal(grids[0].querySelectorAll('figure').length, 2);
+  assert.equal(grids[1].querySelectorAll('figure').length, 1);
+  assert.equal(page.querySelectorAll('figure').length, 5);
+});

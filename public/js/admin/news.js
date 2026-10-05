@@ -58,7 +58,8 @@ function renderNewsTab(body, news) {
           photos.push({
             url: field.value.trim(),
             caption: row.querySelector('[data-news-caption]').value,
-            position: row.querySelector('select').value,
+            position: row.querySelector('[data-position]').value,
+            size: row.querySelector('[data-size]').value,
           });
         }
         const body = {
@@ -83,9 +84,11 @@ function renderNewsTab(body, news) {
       row.innerHTML = `<legend>News photo</legend><div><label>Upload photo</label><input type="file" id="${id}File" accept="image/*" data-photo-target="#${id}Url"></div>
         <label>Image URL</label><input id="${id}Url" data-url value="${escHtml(photo.url)}">
         <label>Caption</label><input data-news-caption maxlength="500" value="${escHtml(photo.caption)}">
-        <label>Placement</label><select><option value="before">Before news text</option><option value="after">After news text</option></select>
+        <label>Placement</label><select data-position><option value="before">Before news text</option><option value="after">After news text</option></select>
+        <label>Display size</label><select data-size><option value="large">Large feature photo — full width</option><option value="medium">Medium — centered</option><option value="grid">Small — grid with neighboring grid photos</option></select>
         <button type="button" class="btn-ghost-sm" data-remove>Remove photo</button>`;
-      row.querySelector('select').value = photo.position || 'before';
+      row.querySelector('[data-position]').value = photo.position || 'before';
+      row.querySelector('[data-size]').value = photo.size || 'large';
       row.querySelector('[data-remove]').onclick = () => row.remove();
       container.append(row);
       installPhotoControls(row);

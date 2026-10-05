@@ -35,14 +35,25 @@
         : [];
   }
   function figures(item, position) {
-    return photos(item)
-      .filter((p) => (p.position || 'before') === position && safe(p.url))
-      .map(
-        (p) =>
-          `<figure class="w-news-figure"><img class="w-news-detail-img" src="${escape(p.url)}" alt="${escape(p.caption || '')}" loading="lazy">${p.caption ? `<figcaption>${escape(p.caption)}</figcaption>` : ''}</figure>`,
-      )
-      .join('');
+    let html = '',
+      gridOpen = false;
+    for (const p of photos(item).filter(
+      (p) => (p.position || 'before') === position && safe(p.url),
+    )) {
+      const size = ['large', 'medium', 'grid'].includes(p.size) ? p.size : 'large';
+      if (size === 'grid' && !gridOpen) {
+        html += '<div class="w-news-photo-grid">';
+        gridOpen = true;
+      }
+      if (size !== 'grid' && gridOpen) {
+        html += '</div>';
+        gridOpen = false;
+      }
+      html += `<figure class="w-news-figure w-news-photo-${size === 'grid' ? 'small' : size}"><img class="w-news-detail-img" src="${escape(p.url)}" alt="${escape(p.caption || '')}" loading="lazy">${p.caption ? `<figcaption>${escape(p.caption)}</figcaption>` : ''}</figure>`;
+    }
+    return html + (gridOpen ? '</div>' : '');
   }
+
   const api = { text, photos, figures, safe };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.NewsContent = api;
